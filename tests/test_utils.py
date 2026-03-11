@@ -7,6 +7,7 @@ import pytest
 from scripts.utils import (
     ensure_dir,
     get_categories,
+    get_config,
     load_database,
     save_database,
     slugify,
@@ -72,6 +73,72 @@ class TestLoadDatabase:
         bad_file.write_text('{"key": "value"}', encoding="utf-8")
         with pytest.raises(ValueError, match="must contain a JSON array"):
             load_database(bad_file)
+
+    def test_load_database_injects_defaults(self, tmp_path):
+        db_path = tmp_path / "partial_db.json"
+        partial_items = [
+            {"name": "Minimal API", "url": "https://example.com"}
+        ]
+        db_path.write_text(json.dumps(partial_items), encoding="utf-8")
+        
+        items = load_database(db_path)
+        assert len(items) == 1
+        item = items[0]
+        assert item["title"] == "Minimal API"
+        assert "slug" in item
+        assert item["description"] == "No description provided."
+        assert item["auth"] == "None"
+        assert item["category"] == "Uncategorized"
+        assert item["https"] is True
+
+    def test_load_database_uses_id_for_slug(self, tmp_path):
+        db_path = tmp_path / "id_db.json"
+        items_with_id = [
+            {"id": "stable-id", "name": "API"}
+        ]
+        db_path.write_text(json.dumps(items_with_id), encoding="utf-8")
+        
+        items = load_database(db_path)
+        assert items[0]["slug"] == "stable-id"
+
+    def test_load_database_default_path(self, monkeypatch, tmp_path):
+        # Mock DATA_DIR to point to tmp_path
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "DATA_DIR", tmp_path)
+        db_path = tmp_path / "database.json"
+        db_path.write_text(json.dumps([{"name": "test"}]), encoding="utf-8")
+        
+        items = load_database()
+        assert len(items) == 1
+
+
+class TestGetConfig:
+    """Test the get_config utility function."""
+
+    def test_get_config_environment_override(self, monkeypatch):
+        # We need to monkeypatch _CONFIG as well or just rely on env
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "_CONFIG", {"TEST_KEY": "config_val"})
+        
+        assert get_config("TEST_KEY", "default") == "config_val"
+        
+        monkeypatch.setenv("TEST_KEY", "env_val")
+        assert get_config("TEST_KEY", "default") == "env_val"
+
+    def test_get_config_boolean_parsing(self, monkeypatch):
+        cases = [
+            ("true", True),
+            ("yes", True),
+            ("1", True),
+            ("TRUE", True),
+            ("false", False),
+            ("no", False),
+            ("0", False),
+            ("random", "random"),
+        ]
+        for val, expected in cases:
+            monkeypatch.setenv("TEST_BOOL", val)
+            assert get_config("TEST_BOOL", "default") == expected
 
 
 class TestSaveDatabase:
