@@ -1,0 +1,317 @@
+[
+  {
+    "id": "github-status",
+    "name": "GitHub Status",
+    "description": "Real-time status for GitHub.com and API.",
+    "category": "DevOps",
+    "url": "https://www.githubstatus.com/"
+  },
+  {
+    "id": "cloudflare-status",
+    "name": "Cloudflare Systems",
+    "description": "Global network and edge computing status.",
+    "category": "Infrastructure",
+    "url": "https://www.cloudflarestatus.com/"
+  },
+  {
+    "id": "aws-health-dash",
+    "name": "AWS Health Dashboard",
+    "description": "Live status of all AWS regions and services.",
+    "category": "Infrastructure",
+    "url": "https://health.aws.amazon.com/"
+  },
+  {
+    "id": "stripe-status",
+    "name": "Stripe API Status",
+    "description": "Payments, dashboard, and webhooks status.",
+    "category": "Fintech",
+    "url": "https://status.stripe.com/"
+  },
+  {
+    "id": "openai-status",
+    "name": "OpenAI API Health",
+    "description": "ChatGPT and API uptime and incidents.",
+    "category": "AI",
+    "url": "https://status.openai.com/"
+  },
+  {
+    "id": "vercel-status",
+    "name": "Vercel Incident Log",
+    "description": "Deployment platform and edge network status.",
+    "category": "Hosting",
+    "url": "https://www.vercel-status.com/"
+  },
+  {
+    "id": "netlify-status",
+    "name": "Netlify Systems",
+    "description": "Build, DNS, and CDN performance status.",
+    "category": "Hosting",
+    "url": "https://www.netlifystatus.com/"
+  },
+  {
+    "id": "google-cloud-status",
+    "name": "GCP Status Dashboard",
+    "description": "Live updates for Google Cloud services.",
+    "category": "Infrastructure",
+    "url": "https://status.cloud.google.com/"
+  },
+  {
+    "id": "azure-status",
+    "name": "Microsoft Azure Status",
+    "description": "Global status of Microsoft Azure services.",
+    "category": "Infrastructure",
+    "url": "https://azure.status.microsoft/"
+  },
+  {
+    "id": "digitalocean-status",
+    "name": "DigitalOcean Health",
+    "description": "Droplets, Managed DB, and App Platform status.",
+    "category": "Hosting",
+    "url": "https://status.digitalocean.com/"
+  },
+  {
+    "id": "heroku-status",
+    "name": "Heroku Uptime",
+    "description": "Dynos, Data, and Core API status pages.",
+    "category": "Hosting",
+    "url": "https://status.heroku.com/"
+  },
+  {
+    "id": "datadog-status",
+    "name": "Datadog Platform",
+    "description": "Monitoring and observability platform health.",
+    "category": "Monitoring",
+    "url": "https://status.datadoghq.com/"
+  },
+  {
+    "id": "sentry-status",
+    "name": "Sentry Error Tracking",
+    "description": "Real-time status for Sentry.io services.",
+    "category": "Development",
+    "url": "https://status.sentry.io/"
+  },
+  {
+    "id": "mongo-atlas-status",
+    "name": "MongoDB Atlas Status",
+    "description": "Cloud database and search performance.",
+    "category": "Database",
+    "url": "https://status.mongodb.com/"
+  },
+  {
+    "id": "supabase-status",
+    "name": "Supabase Infrastructure",
+    "description": "Database, Auth, and Storage status.",
+    "category": "Backend",
+    "url": "https://status.supabase.com/"
+  },
+  {
+    "id": "postman-status",
+    "name": "Postman API Platform",
+    "description": "Status of Postman app and cloud services.",
+    "category": "API",
+    "url": "https://status.postman.com/"
+  },
+  {
+    "id": "discord-status",
+    "name": "Discord Platform",
+    "description": "Voice, text, and API gateway health.",
+    "category": "Social",
+    "url": "https://discordstatus.com/"
+  },
+  {
+    "id": "slack-status",
+    "name": "Slack Service Health",
+    "description": "Messaging and API platform availability.",
+    "category": "Productivity",
+    "url": "https://status.slack.com/"
+  },
+  {
+    "id": "zoom-status",
+    "name": "Zoom Video Systems",
+    "description": "Webinar, meetings, and phone status.",
+    "category": "Communication",
+    "url": "https://status.zoom.us/"
+  },
+  {
+    "id": "twilio-status",
+    "name": "Twilio Communication",
+    "description": "SMS, Voice, and Messaging API logs.",
+    "category": "Communication",
+    "url": "https://status.twilio.com/"
+  },
+  {
+    "id": "mailgun-status",
+    "name": "Mailgun Email API",
+    "description": "Email delivery and API performance logs.",
+    "category": "Marketing",
+    "url": "https://status.mailgun.com/"
+  },
+  {
+    "id": "sendgrid-status",
+    "name": "Twilio SendGrid",
+    "description": "Global email delivery infrastructure health.",
+    "category": "Marketing",
+    "url": "https://status.sendgrid.com/"
+  },
+  {
+    "id": "intercom-status",
+    "name": "Intercom Business Messaging",
+    "description": "Dashboard and messenger visibility.",
+    "category": "Support",
+    "url": "https://www.intercomstatus.com/"
+  },
+  {
+    "id": "zendesk-status",
+    "name": "Zendesk Support",
+    "description": "Helpdesk and ticketing system availability.",
+    "category": "Support",
+    "url": "https://status.zendesk.com/"
+  },
+  {
+    "id": "hubspot-status",
+    "name": "HubSpot CRM Systems",
+    "description": "Sales, marketing, and CMS hub health.",
+    "category": "Marketing",
+    "url": "https://status.hubspot.com/"
+  },
+  {
+    "id": "atlassian-status",
+    "name": "Jira & Confluence",
+    "description": "Atlassian cloud products status page.",
+    "category": "Productivity",
+    "url": "https://status.atlassian.com/"
+  },
+  {
+    "id": "trello-status",
+    "name": "Trello Board Status",
+    "description": "Web, mobile, and API availability for Trello.",
+    "category": "Productivity",
+    "url": "https://trello.status.atlassian.com/"
+  },
+  {
+    "id": "notion-status",
+    "name": "Notion Desktop & API",
+    "description": "Workspace and collaborative editor status.",
+    "category": "Productivity",
+    "url": "https://status.notion.so/"
+  },
+  {
+    "id": "figma-status",
+    "name": "Figma Design Tool",
+    "description": "Collaborative design and prototyping status.",
+    "category": "Design",
+    "url": "https://status.figma.com/"
+  },
+  {
+    "id": "canva-status",
+    "name": "Canva Design Systems",
+    "description": "Graphics platform and printing status.",
+    "category": "Design",
+    "url": "https://www.canvastatus.com/"
+  },
+  {
+    "slug": "gitlab-status",
+    "title": "GitLab Status",
+    "description": "Monitoring and operations status for GitLab.com.",
+    "category": "DevOps",
+    "url": "https://status.gitlab.com/"
+  },
+  {
+    "slug": "bitbucket-status",
+    "title": "Bitbucket Status",
+    "description": "Real-time status information for Bitbucket services.",
+    "category": "DevOps",
+    "url": "https://bitbucket.status.atlassian.com/"
+  },
+  {
+    "slug": "docker-status",
+    "title": "Docker Status",
+    "description": "Hub, Desktop, and cloud infrastructure status.",
+    "category": "DevOps",
+    "url": "https://www.dockerstatus.com/"
+  },
+  {
+    "slug": "npm-status",
+    "title": "NPM Registry Status",
+    "description": "Status of the Node Package Manager registry.",
+    "category": "Registry",
+    "url": "https://status.npmjs.org/"
+  },
+  {
+    "slug": "pypi-status",
+    "title": "PyPI Status",
+    "description": "Availability of the Python Package Index.",
+    "category": "Registry",
+    "url": "https://status.python.org/"
+  },
+  {
+    "slug": "stripe-dashboard-status",
+    "title": "Stripe Dashboard",
+    "description": "Uptime of the Stripe merchant dashboard.",
+    "category": "Fintech",
+    "url": "https://status.stripe.com/"
+  },
+  {
+    "slug": "paypal-status",
+    "title": "PayPal Developer Status",
+    "description": "API and sandbox environment availability.",
+    "category": "Fintech",
+    "url": "https://www.paypal-status.com/"
+  },
+  {
+    "slug": "adobestatus",
+    "title": "Adobe System Status",
+    "description": "Creative Cloud and document cloud status.",
+    "category": "Design",
+    "url": "https://status.adobe.com/"
+  },
+  {
+    "slug": "reddit-status",
+    "title": "Reddit Status",
+    "description": "Real-time updates for Reddit.com and apps.",
+    "category": "Social",
+    "url": "https://www.redditstatus.com/"
+  },
+  {
+    "slug": "wikipedia-status",
+    "title": "Wikipedia Health",
+    "description": "Availability of Wikipedia and Wikimedia tools.",
+    "category": "Education",
+    "url": "https://wikitech.wikimedia.org/wiki/Main_Page"
+  },
+  {
+    "slug": "mailchimp-status",
+    "title": "Mailchimp Health",
+    "description": "Email delivery and campaign platform status.",
+    "category": "Marketing",
+    "url": "https://status.mailchimp.com/"
+  },
+  {
+    "slug": "constantcontact-status",
+    "title": "Constant Contact Status",
+    "description": "Email marketing service availability.",
+    "category": "Marketing",
+    "url": "https://status.constantcontact.com/"
+  },
+  {
+    "slug": "linode-status",
+    "title": "Linode Status",
+    "description": "Cloud instances and block storage health.",
+    "category": "Hosting",
+    "url": "https://status.linode.com/"
+  },
+  {
+    "slug": "vultr-status",
+    "title": "Vultr Status",
+    "description": "Global cloud data center availability.",
+    "category": "Hosting",
+    "url": "https://status.vultr.com/"
+  },
+  {
+    "slug": "upcloud-status",
+    "title": "UpCloud Status",
+    "description": "Deployment and block storage health.",
+    "category": "Hosting",
+    "url": "https://status.upcloud.com/"
+  }
+]

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyLift — Daily Quotes, Free Tools & Inspiration</title>
+  <meta name="description"
+    content="Start your day with motivational quotes, free online calculators (Bill Splitter, BMI, Unit Converter), and insightful blog articles. Updated daily, 100% free.">
+  <meta name="keywords"
+    content="daily quotes, motivational quotes, free bill splitter, BMI calculator, unit converter, productivity tips, inspiration">
+  <meta name="author" content="DailyLift">
+  <meta name="robots" content="index, follow">
+
+  <!-- Pinterest Domain Verification -->
+  <meta name="p:domain_verify" content="c816c2b41079835efd234cb5afef59bf">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DailyLift — Daily Quotes, Free Tools & Inspiration">
+  <meta property="og:description"
+    content="Start your day with motivational quotes, free online calculators, and insightful articles.">
+  <meta property="og:url" content="https://quickutils.top">
+  <meta property="og:site_name" content="DailyLift">
+  <meta property="og:image" content="https://quickutils.top/images/pinterest-cover.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DailyLift — Daily Quotes & Free Tools">
+  <meta name="twitter:description" content="Daily motivation, free calculators, and expert articles.">
+  <meta name="twitter:image" content="https://quickutils.top/images/pinterest-cover.png">
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "DailyLift",
+    "url": "https://quickutils.top",
+    "description": "Daily motivational quotes, free online tools, and inspiring blog articles.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://quickutils.top/blog.html?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Google AdSense (replace ca-pub-XXXX with your publisher ID) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377"
+    crossorigin="anonymous"></script>
+
+  <!-- Google Analytics GA4 (replace G-XXXX with your measurement ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QPDP38ZCCV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-QPDP38ZCCV');
+  </script>
+</head>
+
+<body>
+  <!-- Animated Background -->
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <span class="brand-icon">⚡</span>
+        DailyLift
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Home</a>
+        <a href="tools.html">Tools</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html">About</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-tagline">✨ Updated Daily — 100% Free</span>
+        <h1>Your Daily Dose of <span class="gradient-text">Motivation</span> & Free Tools</h1>
+        <p class="hero-description">
+          Start every morning with a powerful quote, use our free calculators,
+          and explore expert articles — all automated, all free, forever.
+        </p>
+        <div class="hero-buttons">
+          <a href="#quote-section" class="btn btn-primary">Today's Quote ↓</a>
+          <a href="tools.html" class="btn btn-secondary">Try Free Tools</a>
+        </div>
+      </div>
+      <div class="hero-quote">
+        <div class="glass-card quote-card" id="heroQuoteCard">
+          <span class="quote-icon">❝</span>
+          <p class="quote-text" id="heroQuoteText">Loading today's inspiration...</p>
+          <p class="quote-author" id="heroQuoteAuthor">—</p>
+          <p class="quote-date" id="heroQuoteDate"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Daily Quote Section -->
+  <section class="section" id="quote-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">Quote of the Day</span>
+        <h2>Today's <span class="gradient-text">Inspiration</span></h2>
+        <p>A new motivational quote every day to keep you moving forward.</p>
+      </div>
+      <div class="glass-card quote-card animate-on-scroll" style="max-width: 700px; margin: 0 auto;">
+        <span class="quote-icon">❝</span>
+        <p class="quote-text" id="dailyQuoteText">Loading today's quote...</p>
+        <p class="quote-author" id="dailyQuoteAuthor">—</p>
+        <p class="quote-date" id="dailyQuoteDate"></p>
+      </div>
+      <div style="text-align:center; margin-top: var(--space-xl);">
+        <a href="#" class="btn btn-ghost" id="downloadQuotePdf">📄 Download 500+ Quotes PDF (Free)</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ad Slot -->
+  <div class="container" style="margin: var(--space-lg) auto;">
+    <div class="ad-slot" id="ad-top">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5193703345853377" data-ad-slot="2246027256"
+        data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+  </div>
+
+  <!-- Tools Section -->
+  <section class="section" id="tools-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">Free Tools</span>
+        <h2>Handy <span class="gradient-text">Calculators</span></h2>
+        <p>Simple, fast, and free — no sign-up needed. All calculations happen in your browser.</p>
+      </div>
+      <div class="tools-grid">
+        <a href="tools.html#bill-splitter" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">💰</div>
+          <h3>Bill Splitter</h3>
+          <p>Split bills with friends, add tip percentages, and get per-person totals instantly.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#bmi-calculator" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">⚖️</div>
+          <h3>BMI Calculator</h3>
+          <p>Calculate your Body Mass Index with our visual gauge and get health category insights.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#unit-converter" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">🔄</div>
+          <h3>Unit Converter</h3>
+          <p>Convert between units of length, weight, temperature, volume, and speed — all in one place.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#loan-emi" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">💳</div>
+          <h3>Loan EMI</h3>
+          <p>Calculate your monthly EMI, total interest, and payment schedule for any loan amount and tenure.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#insurance-estimator" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">🏥</div>
+          <h3>Insurance Estimator</h3>
+          <p>Estimate health, auto, or life insurance premiums based on your age and coverage needs.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#currency-converter" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">💱</div>
+          <h3>Currency Converter</h3>
+          <p>Convert between 50+ world currencies with offline static rates — no API calls needed.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+        <a href="tools.html#tax-calculator" class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">🧮</div>
+          <h3>Tax Calculator</h3>
+          <p>Calculate income tax for US, UK, Canada, and India with progressive bracket breakdowns.</p>
+          <span class="btn btn-ghost">Use Tool →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Section -->
+  <section class="section" id="blog-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">Latest Articles</span>
+        <h2>Expert <span class="gradient-text">Insights</span></h2>
+        <p>Actionable articles on productivity, health, finance, and personal growth.</p>
+      </div>
+      <div class="blog-grid" id="blogGrid">
+        <!-- Blog cards populated by JS during build or runtime -->
+      </div>
+      <div style="text-align: center; margin-top: var(--space-xl);">
+        <a href="blog.html" class="btn btn-secondary">View All Articles →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / Digital Products -->
+  <section class="section cta-section">
+    <div class="container">
+      <div class="cta-content animate-on-scroll">
+        <span class="badge">Digital Products</span>
+        <h2>Premium <span class="gradient-text">Resources</span></h2>
+        <p>Level up with curated collections, printable planners, and premium tools — affordable and thoughtfully
+          designed.</p>
+        <div
+          style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; margin-top: var(--space-lg);">
+          <a href="https://gumroad.com" class="btn btn-primary" target="_blank" rel="noopener">
+            🛒 Browse Products on Gumroad
+          </a>
+          <a href="#" class="btn btn-secondary" id="downloadQuotePdfCta">
+            📄 Free: 500 Quotes PDF
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Affiliate Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">Recommended</span>
+        <h2>Books We <span class="gradient-text">Love</span></h2>
+        <p>Hand-picked books on motivation, productivity, and personal growth.</p>
+      </div>
+      <div class="tools-grid">
+        <div class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">📚</div>
+          <h3>Atomic Habits</h3>
+          <p>James Clear's masterpiece on building good habits and breaking bad ones.</p>
+          <a href="https://www.amazon.in/Atomic-Habits-James-Clear/dp/1847941834?crid=XELW09J5O222&dib=eyJ2IjoiMSJ9.PKBaM_GfHGm7U3dMciLHr27XrLUHf16BTsk3Y3jXi2I9Bv8mcu9EJ_5bTX10MzSIUXU1nvQH08DuKGk_Qwbg2y-kbJZo4iFtY9Q51wLMtvkGgijGQ2Azz8p5xdGxIqKVevyR0Ruz9NN9ER2GfTydodQg7-h8y6QG-xNfUfV11eW4fS6Vop3WTmyyscyyPf6L0k0naURfojrNpK0LuUD6yzNVUIRr479brFhuxCXRHNU.iZnRRl-D8rKU88jKSveudiBNsxz_c1kXMR92ckRqjjM&dib_tag=se&keywords=atomic+habits&qid=1771762591&sprefix=atomi%2Caps%2C393&sr=8-3&linkCode=ll2&tag=quickutils-21&linkId=33c702bb3a8020c1fb98eebe0cf16455&ref_=as_li_ss_tl"
+            class="btn btn-ghost" target="_blank" rel="noopener nofollow">Buy on Amazon →</a>
+        </div>
+        <div class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">📖</div>
+          <h3>The 5 AM Club</h3>
+          <p>Robin Sharma's guide to owning your mornings and transforming productivity.</p>
+          <a href="https://www.amazon.in/AM-Club-Your-Morning-Elevate/dp/9387944891?crid=IVAVW82OI6V4&dib=eyJ2IjoiMSJ9.NSelgH05V3JhhAHDlE36kDdOTdiFl827cYSJF5fsJGoFs42YCTtxW2-Kz-Idf4xDWVJqq75M5XOeOhFbVd1tlh5kODu1g60rpJrk81VT4uWY8gjRs19Padq9er7ytOo4sovLyhLTGIddSkvYrgLpUE1FDhZCUKk9q9VMPEcI2GiBwXx4nDOU4kJU0bQfuauAds57va6V5HH6YoENjmvou_303nLFmAb78rb__ClA4WA.YT2u7Q83ZmzINltjAknWzeF7h6PXKXJjYJtE5LFQT5E&dib_tag=se&keywords=The+5+AM+Club&qid=1771762828&sprefix=the+5+am+club%2Caps%2C377&sr=8-1&linkCode=ll2&tag=quickutils-21&linkId=f824973cecac8e31c27a9f3c65b15fbb&ref_=as_li_ss_tl"
+            class="btn btn-ghost" target="_blank" rel="noopener nofollow">Buy on Amazon →</a>
+        </div>
+        <div class="glass-card tool-card animate-on-scroll">
+          <div class="tool-icon">🧠</div>
+          <h3>Deep Work</h3>
+          <p>Cal Newport's rules for focused success in a distracted world.</p>
+          <a href="https://www.amazon.in/DEEP-WORK-FOCUSED-SUCCESS-DISTRACTED/dp/0349413681?crid=13TVFE03KZ9HN&dib=eyJ2IjoiMSJ9.XZ0pWrQqipiaHiqRFqbGEvzQpIVGEPwBDJlco4VWCSsRHlKI_gxpgEwCPO58THN5Pk5oUPAMKphsZS4tQk05KB9yvsXSlLyV86U8qlm2kmcMiNEbmVFusmtrAB2vDbhyTjLc9q0AJUWkafGHEmmB9_GCGJAi_zQ4Sm62z7y_0-N2qmEk-ku3NYXgEKFfmAHgF6-v25Y7mB0BYnDE7lsta9c7xB3ZhXznGFbmYSq8dyM.hTlu4vTUNn4RImcJhMdsgVSP0-g1NR0K2Jf5ilLnTCA&dib_tag=se&keywords=deep+work&qid=1771762758&sprefix=deep+work%2Caps%2C421&sr=8-2&linkCode=ll2&tag=quickutils-21&linkId=194a0b27bf4b499219682b893b8c131e&ref_=as_li_ss_tl"
+            class="btn btn-ghost" target="_blank" rel="noopener nofollow">Buy on Amazon →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recommended Books (Amazon Affiliate) -->
+  <section class="section" id="recommended-books">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">Recommended</span>
+        <h2>Books We <span class="gradient-text">Love</span></h2>
+        <p>Level up your productivity and financial literacy with these top-rated books.</p>
+      </div>
+      <div class="tools-grid" style="max-width: 900px; margin: 0 auto;">
+        <div class="glass-card" style="padding: 1.5rem;">
+          <h3 style="margin-bottom: 0.5rem;">📘 Atomic Habits</h3>
+          <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by James Clear — Tiny changes, remarkable
+            results. The #1 NYT bestseller on building good habits.</p>
+          <a href="https://www.amazon.com/dp/0735211299?tag=df-quickutils-21" target="_blank" rel="noopener sponsored"
+            class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+        </div>
+        <div class="glass-card" style="padding: 1.5rem;">
+          <h3 style="margin-bottom: 0.5rem;">📗 The Psychology of Money</h3>
+          <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by Morgan Housel — Timeless lessons on wealth,
+            greed, and happiness.</p>
+          <a href="https://www.amazon.com/dp/0857197681?tag=df-quickutils-21" target="_blank" rel="noopener sponsored"
+            class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+        </div>
+        <div class="glass-card" style="padding: 1.5rem;">
+          <h3 style="margin-bottom: 0.5rem;">📙 Rich Dad Poor Dad</h3>
+          <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by Robert Kiyosaki — The classic personal
+            finance book that changed millions of lives.</p>
+          <a href="https://www.amazon.com/dp/1612681131?tag=df-quickutils-21" target="_blank" rel="noopener sponsored"
+            class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Share on Pinterest -->
+  <div class="container" style="text-align: center; padding: 1.5rem 0;">
+    <a href="https://pinterest.com/pin/create/button/?url=https%3A%2F%2Fquickutils.top&description=DailyLift%20%E2%80%94%20Daily%20Quotes%2C%20Free%20Tools%20%26%20Inspiration"
+      target="_blank" rel="noopener" class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:0.5rem;">
+      📌 Pin This Page on Pinterest
+    </a>
+  </div>
+
+  <!-- Ad Slot -->
+  <div class="container" style="margin: var(--space-lg) auto;">
+    <div class="ad-slot" id="ad-bottom">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5193703345853377" data-ad-slot="2246027256"
+        data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="nav-brand">
+            <span class="brand-icon">⚡</span>
+            DailyLift
+          </a>
+          <p>Your daily source of motivation, free tools, and expert insights. Updated automatically, every single day.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <a href="index.html">Home</a>
+          <a href="tools.html">Tools</a>
+          <a href="blog.html">Blog</a>
+          <a href="about.html">About</a>
+        </div>
+        <div class="footer-col">
+          <h4>Tools</h4>
+          <a href="tools.html#bill-splitter">Bill Splitter</a>
+          <a href="tools.html#bmi-calculator">BMI Calculator</a>
+          <a href="tools.html#unit-converter">Unit Converter</a>
+          <a href="tools.html#loan-emi">Loan EMI</a>
+          <a href="tools.html#insurance-estimator">Insurance</a>
+          <a href="tools.html#currency-converter">Currency Converter</a>
+          <a href="tools.html#tax-calculator">Tax Calculator</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal & Social</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Use</a>
+          <a href="https://twitter.com" target="_blank" rel="noopener">Twitter / X</a>
+          <a href="https://pinterest.com" target="_blank" rel="noopener">Pinterest</a>
+          <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 DailyLift. All rights reserved.</p>
+        <div class="social-links">
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">𝕏</a>
+          <a href="https://pinterest.com" target="_blank" rel="noopener" aria-label="Pinterest">P</a>
+          <a href="https://github.com" target="_blank" rel="noopener" aria-label="GitHub">GH</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>

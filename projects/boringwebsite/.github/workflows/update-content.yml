@@ -1,0 +1,37 @@
+name: Daily Quote Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-quote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Fetch Daily Quote
+        run: node scripts/fetch-quote.js
+
+      - name: Post to Social Media
+        run: node scripts/post-social.js
+        env:
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+          MASTODON_INSTANCE_URL: ${{ secrets.MASTODON_INSTANCE_URL }}
+          SITE_URL: "https://quickutils.top"
+        continue-on-error: true
+

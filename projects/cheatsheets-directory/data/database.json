@@ -1,0 +1,350 @@
+[
+  {
+    "id": "python-standard-lib",
+    "name": "Python Standard Library",
+    "description": "Common methods for os, sys, json, and datetime.",
+    "category": "Programming"
+  },
+  {
+    "id": "javascript-es6+",
+    "name": "JavaScript ES6+ Essentials",
+    "description": "Arrow functions, destructuring, and spread operators.",
+    "category": "Programming"
+  },
+  {
+    "id": "sql-joins-basics",
+    "name": "SQL Joins & Aggregates",
+    "description": "Visual guide to INNER, LEFT, RIGHT, and FULL joins.",
+    "category": "Database"
+  },
+  {
+    "id": "docker-cli-usage",
+    "name": "Docker CLI & Compose",
+    "description": "Commands for managing containers, images, and volumes.",
+    "category": "DevOps"
+  },
+  {
+    "id": "git-workflow-pro",
+    "name": "Git Workflow & Branching",
+    "description": "Rebase, cherry-pick, and stash commands explained.",
+    "category": "Development"
+  },
+  {
+    "id": "css-grid-layout",
+    "name": "CSS Grid Cheatsheet",
+    "description": "Grid-template properties and alignment cheatsheet.",
+    "category": "Design"
+  },
+  {
+    "id": "css-flexbox-guide",
+    "name": "CSS Flexbox One-Pager",
+    "description": "Justify-content, align-items, and flex-grow properties.",
+    "category": "Design"
+  },
+  {
+    "id": "markdown-extended",
+    "name": "Markdown & GFM Syntax",
+    "description": "Tables, checklists, and code block formatting.",
+    "category": "Writing"
+  },
+  {
+    "id": "vim-shortcuts-all",
+    "name": "Vim Navigation & Editing",
+    "description": "Essential movement and mode switching commands.",
+    "category": "Development"
+  },
+  {
+    "id": "linux-terminal-basic",
+    "name": "Linux Terminal Commands",
+    "description": "File manipulation, permissions, and networking basics.",
+    "category": "DevOps"
+  },
+  {
+    "id": "regex-tokens-quick",
+    "name": "Regular Expressions Meta",
+    "description": "Lookaheads, anchors, and grouping tokens.",
+    "category": "Programming"
+  },
+  {
+    "id": "rust-ownership-rules",
+    "name": "Rust Ownership & Borrowing",
+    "description": "Memory management rules for new Rustaceans.",
+    "category": "Programming"
+  },
+  {
+    "id": "go-concurrency-pattern",
+    "name": "Go Routines & Channels",
+    "description": "The 'Don't communicate by sharing memory' guide.",
+    "category": "Programming"
+  },
+  {
+    "id": "postgresql-pquery",
+    "name": "PostgreSQL Performance",
+    "description": "EXPLAIN ANALYZE and Indexing strategies.",
+    "category": "Database"
+  },
+  {
+    "id": "react-hooks-cheatsheet",
+    "name": "React Hooks & Lifecycle",
+    "description": "useEffect, useMemo, and useCallback examples.",
+    "category": "Frontend"
+  },
+  {
+    "id": "tailwind-css-utility",
+    "name": "Tailwind CSS Layout",
+    "description": "Spacing, sizing, and responsive design classes.",
+    "category": "Frontend"
+  },
+  {
+    "id": "typescript-types",
+    "name": "TypeScript Type System",
+    "description": "Interfaces, Types, Unions, and Intersections.",
+    "category": "Programming"
+  },
+  {
+    "id": "mongodb-aggregation",
+    "name": "MongoDB Aggregation Pipeline",
+    "description": "$match, $group, and $lookup stage guide.",
+    "category": "Database"
+  },
+  {
+    "id": "redis-data-types",
+    "name": "Redis Commands & Types",
+    "description": "Working with Strings, Hashes, Lists, and Sets.",
+    "category": "Database"
+  },
+  {
+    "id": "aws-cli-essentials",
+    "name": "AWS CLI S3 & EC2",
+    "description": "Top 20 commands for daily AWS management.",
+    "category": "Cloud"
+  },
+  {
+    "id": "kubernetes-kubectl",
+    "name": "Kubectl Cheat Sheet",
+    "description": "Context switching, logs, and port-forwarding.",
+    "category": "DevOps"
+  },
+  {
+    "id": "bash-scripting",
+    "name": "Bash Scripting Basics",
+    "description": "Loops, conditionals, and exit codes.",
+    "category": "DevOps"
+  },
+  {
+    "id": "nginx-config-proxy",
+    "name": "Nginx Reverse Proxy",
+    "description": "Common server blocks and SSL configurations.",
+    "category": "DevOps"
+  },
+  {
+    "id": "ansible-playbook",
+    "name": "Ansible Playbook Syntax",
+    "description": "YAML structure, tasks, and handler guide.",
+    "category": "DevOps"
+  },
+  {
+    "id": "graphql-schema",
+    "name": "GraphQL Query & Schema",
+    "description": "Mutations, Fragments, and Resolver types.",
+    "category": "API"
+  },
+  {
+    "id": "html-semantic-tags",
+    "name": "HTML5 Semantic Elements",
+    "description": "Proper structure for SEO and Accessibility.",
+    "category": "Frontend"
+  },
+  {
+    "id": "rest-api-design",
+    "name": "REST API Best Practices",
+    "description": "HTTP methods, status codes, and path naming.",
+    "category": "API"
+  },
+  {
+    "id": "chrome-devtools",
+    "name": "Chrome DevTools Shortcuts",
+    "description": "Console, Network, and Performance panel tips.",
+    "category": "Development"
+  },
+  {
+    "id": "django-orm-query",
+    "name": "Django ORM Queries",
+    "description": "Filter, exclude, and prefetch_related usage.",
+    "category": "Programming"
+  },
+  {
+    "id": "flask-app-structure",
+    "name": "Flask App Patterns",
+    "description": "Blueprints, factories, and context management.",
+    "category": "Programming"
+  },
+  {
+    "slug": "git-cheatsheet",
+    "title": "Git Cheat Sheet",
+    "description": "Essential Git commands and workflows summary.",
+    "category": "VCS",
+    "url": "https://education.github.com/git-cheat-sheet-education.pdf"
+  },
+  {
+    "slug": "bash-quick-ref",
+    "title": "Bash Quick Reference",
+    "description": "Most common shell commands and parameters.",
+    "category": "Linux",
+    "url": "https://cheatography.com/davechild/cheat-sheets/linux-command-line/"
+  },
+  {
+    "slug": "vim-commands",
+    "title": "Vim Reference Map",
+    "description": "Comprehensive map of Vim navigation shortcuts.",
+    "category": "Editors",
+    "url": "https://vim.rtorr.com/"
+  },
+  {
+    "slug": "docker-compose-yaml",
+    "title": "Docker Compose Guide",
+    "description": "Syntax and common configurations for YAML.",
+    "category": "DevOps",
+    "url": "https://docs.docker.com/compose/"
+  },
+  {
+    "slug": "kubernetes-ref",
+    "title": "Kubernetes Concepts",
+    "description": "Quick look at pods, services, and ingresses.",
+    "category": "DevOps",
+    "url": "https://kubernetes.io/docs/reference/kubectl/cheatsheet/"
+  },
+  {
+    "slug": "sql-syntax-basic",
+    "title": "SQL Syntax Ref",
+    "description": "Standard SQL commands for SELECT, INSERT, UPDATE.",
+    "category": "Database",
+    "url": "https://www.w3schools.com/sql/sql_ref_sql.asp"
+  },
+  {
+    "slug": "mongodb-query-ops",
+    "title": "MangoDB Queries",
+    "description": "Quick reference for BSON query operators.",
+    "category": "Database",
+    "url": "https://www.mongodb.com/docs/manual/reference/operator/query/"
+  },
+  {
+    "slug": "python-syntax-3",
+    "title": "Python 3 Syntax",
+    "description": "Idioms and syntax basics for Python 3.",
+    "category": "Languages",
+    "url": "https://docs.python.org/3/reference/"
+  },
+  {
+    "slug": "js-cheat-sheet",
+    "title": "JS Cheat Sheet",
+    "description": "Modern JavaScript ES6+ features in one page.",
+    "category": "Languages",
+    "url": "https://htmlcheatsheet.com/js/"
+  },
+  {
+    "slug": "java-collections",
+    "title": "Java Collections Map",
+    "description": "Visual guide to the Java collection hierarchy.",
+    "category": "Languages",
+    "url": "https://docs.oracle.com/javase/8/docs/technotes/guides/collections/overview.html"
+  },
+  {
+    "slug": "cpp-std-library",
+    "title": "C++ STL Reference",
+    "description": "Quick guide to C++ standard template library.",
+    "category": "Languages",
+    "url": "https://cppreference.com/"
+  },
+  {
+    "slug": "go-syntax-guide",
+    "title": "Go Syntax Guide",
+    "description": "Variables, loops, and pointers in Golang.",
+    "category": "Languages",
+    "url": "https://go.dev/ref/spec"
+  },
+  {
+    "slug": "rust-syntax-ref",
+    "title": "Rust Syntax Reference",
+    "description": "Cheat sheet for ownership and lifetimes syntax.",
+    "category": "Languages",
+    "url": "https://cheats.rs/"
+  },
+  {
+    "slug": "regex-syntax-common",
+    "title": "Regex Syntax Patterns",
+    "description": "Common patterns and meta-characters ref.",
+    "category": "Regex",
+    "url": "https://regexr.com/"
+  },
+  {
+    "slug": "html5-tags-list",
+    "title": "HTML5 Tags List",
+    "description": "Complete list of semantic HTML5 tags.",
+    "category": "Web",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element"
+  },
+  {
+    "slug": "css-selectors",
+    "title": "CSS Selectors",
+    "description": "Reference for class, ID, attribute, and pseudo-selectors.",
+    "category": "Design",
+    "url": "https://www.w3schools.com/cssref/css_selectors.php"
+  },
+  {
+    "slug": "flexbox-visual",
+    "title": "Flexbox Visual Guide",
+    "description": "Interactive visual reference for flex properties.",
+    "category": "Design",
+    "url": "https://flexbox.help/"
+  },
+  {
+    "slug": "grid-visual",
+    "title": "Grid Visual Guide",
+    "description": "Visual reference for CSS grid-template areas.",
+    "category": "Design",
+    "url": "https://grid.malven.co/"
+  },
+  {
+    "slug": "npm-scripts",
+    "title": "NPM Scripts Guide",
+    "description": "Common CLI commands for package management.",
+    "category": "DevOps",
+    "url": "https://docs.npmjs.com/cli/v8/commands"
+  },
+  {
+    "slug": "yarn-commands",
+    "title": "Yarn CLI Ref",
+    "description": "Commands for Yarn 1, 2, and 3+.",
+    "category": "DevOps",
+    "url": "https://yarnpkg.com/cli"
+  },
+  {
+    "slug": "pnpm-cheatsheet",
+    "title": "PNPM Commands",
+    "description": "Fast, disk space efficient package manager ref.",
+    "category": "DevOps",
+    "url": "https://pnpm.io/cli"
+  },
+  {
+    "slug": "markdown-gfm",
+    "title": "GitHub Flavored Markdown",
+    "description": "Reference for emojis, mentions, and tasks.",
+    "category": "Writing",
+    "url": "https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+  },
+  {
+    "slug": "yaml-syntax",
+    "title": "YAML 1.2 Syntax",
+    "description": "Structures, lists, and dicts in YAML.",
+    "category": "Data",
+    "url": "https://yaml.org/spec/1.2.2/"
+  },
+  {
+    "slug": "json-ld-spec",
+    "title": "JSON-LD Context",
+    "description": "Structured data patterns for SEO and schemas.",
+    "category": "Data",
+    "url": "https://json-ld.org/"
+  }
+]

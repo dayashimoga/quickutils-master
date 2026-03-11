@@ -1,0 +1,828 @@
+[
+    {
+        "slug": "vscode",
+        "title": "Visual Studio Code",
+        "url": "https://code.visualstudio.com/",
+        "description": "A powerful, lightweight source code editor with built-in Git support.",
+        "category": "Development",
+        "alternative_to": "Sublime Text",
+        "github_repo": "https://github.com/microsoft/vscode",
+        "license": "MIT",
+        "id": "1"
+    },
+    {
+        "slug": "linux",
+        "title": "Linux Kernel",
+        "url": "https://www.kernel.org/",
+        "description": "The open-source core of the Linux operating system.",
+        "category": "Operating Systems",
+        "alternative_to": "Windows",
+        "github_repo": "https://github.com/torvalds/linux",
+        "license": "GPL-2.0",
+        "id": "2"
+    },
+    {
+        "slug": "react",
+        "title": "React",
+        "url": "https://reactjs.org/",
+        "description": "A declarative, efficient, and flexible JavaScript library for building UI.",
+        "category": "Development",
+        "alternative_to": "Angular",
+        "github_repo": "https://github.com/facebook/react",
+        "license": "MIT",
+        "id": "3"
+    },
+    {
+        "slug": "vue",
+        "title": "Vue.js",
+        "url": "https://vuejs.org/",
+        "description": "The Progressive JavaScript Framework.",
+        "category": "Development",
+        "alternative_to": "React",
+        "github_repo": "https://github.com/vuejs/vue",
+        "license": "MIT",
+        "id": "4"
+    },
+    {
+        "slug": "django",
+        "title": "Django",
+        "url": "https://www.djangoproject.com/",
+        "description": "The Web framework for perfectionists with deadlines.",
+        "category": "Developer Tools",
+        "alternative_to": "Ruby on Rails",
+        "github_repo": "https://github.com/django/django",
+        "license": "BSD-3-Clause",
+        "id": "5"
+    },
+    {
+        "slug": "flask",
+        "title": "Flask",
+        "url": "https://flask.palletsprojects.com/",
+        "description": "A lightweight WSGI web application framework.",
+        "category": "Developer Tools",
+        "alternative_to": "Express.js",
+        "github_repo": "https://github.com/pallets/flask",
+        "license": "BSD-3-Clause",
+        "id": "6"
+    },
+    {
+        "slug": "fastapi",
+        "title": "FastAPI",
+        "url": "https://fastapi.tiangolo.com/",
+        "description": "A modern, fast web framework for building APIs with Python.",
+        "category": "Developer Tools",
+        "alternative_to": "Django REST Framework",
+        "github_repo": "https://github.com/tiangolo/fastapi",
+        "license": "MIT",
+        "id": "7"
+    },
+    {
+        "slug": "docker",
+        "title": "Docker CE",
+        "url": "https://www.docker.com/",
+        "description": "Empowers developers to build, share, and run applications anywhere.",
+        "category": "DevOps",
+        "alternative_to": "VMware",
+        "github_repo": "https://github.com/moby/moby",
+        "license": "Apache-2.0",
+        "id": "8"
+    },
+    {
+        "slug": "kubernetes",
+        "title": "Kubernetes",
+        "url": "https://kubernetes.io/",
+        "description": "Production-Grade Container Scheduling and Management.",
+        "category": "DevOps",
+        "alternative_to": "Docker Swarm",
+        "github_repo": "https://github.com/kubernetes/kubernetes",
+        "license": "Apache-2.0",
+        "id": "9"
+    },
+    {
+        "slug": "ansible",
+        "title": "Ansible",
+        "url": "https://www.ansible.com/",
+        "description": "A radically simple IT automation system.",
+        "category": "DevOps",
+        "alternative_to": "Puppet",
+        "github_repo": "https://github.com/ansible/ansible",
+        "license": "GPL-3.0",
+        "id": "10"
+    },
+    {
+        "slug": "postgresql",
+        "title": "PostgreSQL",
+        "url": "https://www.postgresql.org/",
+        "description": "The world's most advanced open source relational database.",
+        "category": "Database / Backend",
+        "alternative_to": "Oracle DB",
+        "github_repo": "https://github.com/postgres/postgres",
+        "license": "PostgreSQL",
+        "id": "11"
+    },
+    {
+        "slug": "mysql",
+        "title": "MySQL",
+        "url": "https://www.mysql.com/",
+        "description": "The world's most popular open source database.",
+        "category": "Database / Backend",
+        "alternative_to": "SQL Server",
+        "github_repo": "https://github.com/mysql/mysql-server",
+        "license": "GPL-2.0",
+        "id": "12"
+    },
+    {
+        "slug": "redis",
+        "title": "Redis",
+        "url": "https://redis.io/",
+        "description": "An in-memory data structure store, used as a database, cache.",
+        "category": "Database / Backend",
+        "alternative_to": "Memcached",
+        "github_repo": "https://github.com/redis/redis",
+        "license": "BSD-3-Clause",
+        "id": "13"
+    },
+    {
+        "slug": "mongodb",
+        "title": "MongoDB",
+        "url": "https://www.mongodb.com/",
+        "description": "A document-based, distributed database built for modern developers.",
+        "category": "Database / Backend",
+        "alternative_to": "DynamoDB",
+        "github_repo": "https://github.com/mongodb/mongo",
+        "license": "SSPL-1.0",
+        "id": "14"
+    },
+    {
+        "slug": "nginx",
+        "title": "NGINX",
+        "url": "https://nginx.org/",
+        "description": "A high performance load balancer, web server, and reverse proxy.",
+        "category": "DevOps",
+        "alternative_to": "Apache HTTP Server",
+        "github_repo": "https://github.com/nginx/nginx",
+        "license": "BSD-2-Clause",
+        "id": "15"
+    },
+    {
+        "slug": "apache",
+        "title": "Apache HTTP Server",
+        "url": "https://httpd.apache.org/",
+        "description": "The number one HTTP server on the Internet.",
+        "category": "DevOps",
+        "alternative_to": "IIS",
+        "github_repo": "https://github.com/apache/httpd",
+        "license": "Apache-2.0",
+        "id": "16"
+    },
+    {
+        "slug": "wordpress",
+        "title": "WordPress",
+        "url": "https://wordpress.org/",
+        "description": "A free and open-source content management system.",
+        "category": "CMS & Website Builders",
+        "alternative_to": "Wix",
+        "github_repo": "https://github.com/WordPress/WordPress",
+        "license": "GPL-2.0",
+        "id": "17"
+    },
+    {
+        "slug": "ghost",
+        "title": "Ghost",
+        "url": "https://ghost.org/",
+        "description": "The creator economy platform.",
+        "category": "CMS & Website Builders",
+        "alternative_to": "Substack",
+        "github_repo": "https://github.com/TryGhost/Ghost",
+        "license": "MIT",
+        "id": "18"
+    },
+    {
+        "slug": "strapi",
+        "title": "Strapi",
+        "url": "https://strapi.io/",
+        "description": "The leading open-source headless CMS.",
+        "category": "CMS & Website Builders",
+        "alternative_to": "Contentful",
+        "github_repo": "https://github.com/strapi/strapi",
+        "license": "MIT",
+        "id": "19"
+    },
+    {
+        "slug": "nextcloud",
+        "title": "Nextcloud",
+        "url": "https://nextcloud.com/",
+        "description": "A safe home for all your data.",
+        "category": "File Storage",
+        "alternative_to": "Google Drive",
+        "github_repo": "https://github.com/nextcloud/server",
+        "license": "AGPL-3.0",
+        "id": "20"
+    },
+    {
+        "slug": "owncloud",
+        "title": "ownCloud",
+        "url": "https://owncloud.com/",
+        "description": "Your files, where you need them.",
+        "category": "File Storage",
+        "alternative_to": "Dropbox",
+        "github_repo": "https://github.com/owncloud/core",
+        "license": "AGPL-3.0",
+        "id": "21"
+    },
+    {
+        "slug": "jellyfin",
+        "title": "Jellyfin",
+        "url": "https://jellyfin.org/",
+        "description": "The Free Software Media System.",
+        "category": "Media",
+        "alternative_to": "Plex",
+        "github_repo": "https://github.com/jellyfin/jellyfin",
+        "license": "GPL-2.0",
+        "id": "22"
+    },
+    {
+        "slug": "vlc",
+        "title": "VLC Media Player",
+        "url": "https://www.videolan.org/vlc/",
+        "description": "A free and open source cross-platform multimedia player.",
+        "category": "Media",
+        "alternative_to": "Windows Media Player",
+        "github_repo": "https://github.com/videolan/vlc",
+        "license": "GPL-2.0",
+        "id": "23"
+    },
+    {
+        "slug": "obs",
+        "title": "OBS Studio",
+        "url": "https://obsproject.com/",
+        "description": "Free and open source software for video recording and live streaming.",
+        "category": "Media",
+        "alternative_to": "XSplit",
+        "github_repo": "https://github.com/obsproject/obs-studio",
+        "license": "GPL-2.0",
+        "id": "24"
+    },
+    {
+        "slug": "blender",
+        "title": "Blender",
+        "url": "https://www.blender.org/",
+        "description": "The free and open source 3D creation suite.",
+        "category": "Media",
+        "alternative_to": "Maya",
+        "github_repo": "https://github.com/blender/blender",
+        "license": "GPL-3.0",
+        "id": "25"
+    },
+    {
+        "slug": "gimp",
+        "title": "GIMP",
+        "url": "https://www.gimp.org/",
+        "description": "The Free and Open Source Image Editor.",
+        "category": "Media",
+        "alternative_to": "Photoshop",
+        "github_repo": "https://github.com/GNOME/gimp",
+        "license": "GPL-3.0",
+        "id": "26"
+    },
+    {
+        "slug": "inkscape",
+        "title": "Inkscape",
+        "url": "https://inkscape.org/",
+        "description": "Draw Freely.",
+        "category": "Media",
+        "alternative_to": "Illustrator",
+        "github_repo": "https://gitlab.com/inkscape/inkscape",
+        "license": "GPL-3.0",
+        "id": "27"
+    },
+    {
+        "slug": "audacity",
+        "title": "Audacity",
+        "url": "https://github.com/audacity/audacity",
+        "description": "Free, open source, cross-platform audio software.",
+        "category": "Media",
+        "alternative_to": "Adobe Audition",
+        "github_repo": "https://github.com/audacity/audacity",
+        "license": "GPL-2.0",
+        "id": "28"
+    },
+    {
+        "slug": "kdenlive",
+        "title": "Kdenlive",
+        "url": "https://kdenlive.org/",
+        "description": "Open source video editor.",
+        "category": "Media",
+        "alternative_to": "Premiere Pro",
+        "github_repo": "https://invent.kde.org/multimedia/kdenlive",
+        "license": "GPL-3.0",
+        "id": "29"
+    },
+    {
+        "slug": "libreoffice",
+        "title": "LibreOffice",
+        "url": "https://www.libreoffice.org/",
+        "description": "A powerful office suite.",
+        "category": "Productivity",
+        "alternative_to": "Microsoft Office",
+        "github_repo": "https://github.com/LibreOffice/core",
+        "license": "MPL-2.0",
+        "id": "30"
+    },
+    {
+        "slug": "bitwarden",
+        "title": "Bitwarden",
+        "url": "https://bitwarden.com/",
+        "description": "Open source password manager.",
+        "category": "Security / Passwords",
+        "alternative_to": "1Password",
+        "github_repo": "https://github.com/bitwarden/server",
+        "license": "AGPL-3.0",
+        "id": "31"
+    },
+    {
+        "slug": "keepassxc",
+        "title": "KeePassXC",
+        "url": "https://keepassxc.org/",
+        "description": "Cross-Platform Password Manager.",
+        "category": "Security / Passwords",
+        "alternative_to": "LastPass",
+        "github_repo": "https://github.com/keepassxreboot/keepassxc",
+        "license": "GPL-2.0",
+        "id": "32"
+    },
+    {
+        "slug": "signal",
+        "title": "Signal",
+        "url": "https://signal.org/",
+        "description": "Speak Freely.",
+        "category": "Communication",
+        "alternative_to": "WhatsApp",
+        "github_repo": "https://github.com/signalapp/Signal-Desktop",
+        "license": "AGPL-3.0",
+        "id": "33"
+    },
+    {
+        "slug": "mattermost",
+        "title": "Mattermost",
+        "url": "https://mattermost.com/",
+        "description": "Open source alternative to Slack.",
+        "category": "Communication",
+        "alternative_to": "Slack",
+        "github_repo": "https://github.com/mattermost/mattermost-server",
+        "license": "AGPL-3.0",
+        "id": "34"
+    },
+    {
+        "slug": "jitsi",
+        "title": "Jitsi Meet",
+        "url": "https://jitsi.org/",
+        "description": "Secure, Simple and Scalable Video Conferences.",
+        "category": "Communication",
+        "alternative_to": "Zoom",
+        "github_repo": "https://github.com/jitsi/jitsi-meet",
+        "license": "Apache-2.0",
+        "id": "35"
+    },
+    {
+        "slug": "element",
+        "title": "Element",
+        "url": "https://element.io/",
+        "description": "Secure and independent communication.",
+        "category": "Communication",
+        "alternative_to": "Discord",
+        "github_repo": "https://github.com/vector-im/element-web",
+        "license": "Apache-2.0",
+        "id": "36"
+    },
+    {
+        "slug": "plausible",
+        "title": "Plausible Analytics",
+        "url": "https://plausible.io/",
+        "description": "Simple and privacy-friendly alternative to Google Analytics.",
+        "category": "Analytics",
+        "alternative_to": "Google Analytics",
+        "github_repo": "https://github.com/plausible/analytics",
+        "license": "AGPL-3.0",
+        "id": "37"
+    },
+    {
+        "slug": "matomo",
+        "title": "Matomo",
+        "url": "https://matomo.org/",
+        "description": "Google Analytics alternative that protects your data.",
+        "category": "Analytics",
+        "alternative_to": "Google Analytics",
+        "github_repo": "https://github.com/matomo-org/matomo",
+        "license": "GPL-3.0",
+        "id": "38"
+    },
+    {
+        "slug": "posthog",
+        "title": "PostHog",
+        "url": "https://posthog.com/",
+        "description": "The open-source product OS.",
+        "category": "Analytics",
+        "alternative_to": "Mixpanel",
+        "github_repo": "https://github.com/PostHog/posthog",
+        "license": "MIT",
+        "id": "39"
+    },
+    {
+        "slug": "grafana",
+        "title": "Grafana",
+        "url": "https://grafana.com/",
+        "description": "The open observability platform.",
+        "category": "Analytics",
+        "alternative_to": "Datadog",
+        "github_repo": "https://github.com/grafana/grafana",
+        "license": "AGPL-3.0",
+        "id": "40"
+    },
+    {
+        "slug": "metabase",
+        "title": "Metabase",
+        "url": "https://www.metabase.com/",
+        "description": "The easiest way for people to get answers from their data.",
+        "category": "Analytics",
+        "alternative_to": "Tableau",
+        "github_repo": "https://github.com/metabase/metabase",
+        "license": "AGPL-3.0",
+        "id": "41"
+    },
+    {
+        "slug": "redash",
+        "title": "Redash",
+        "url": "https://redash.io/",
+        "description": "Make Sense of Your Data.",
+        "category": "Analytics",
+        "alternative_to": "Looker",
+        "github_repo": "https://github.com/getredash/redash",
+        "license": "BSD-2-Clause",
+        "id": "42"
+    },
+    {
+        "slug": "superset",
+        "title": "Apache Superset",
+        "url": "https://superset.apache.org/",
+        "description": "A modern data exploration and visualization platform.",
+        "category": "Analytics",
+        "alternative_to": "PowerBI",
+        "github_repo": "https://github.com/apache/superset",
+        "license": "Apache-2.0",
+        "id": "43"
+    },
+    {
+        "slug": "calcom",
+        "title": "Cal.com",
+        "url": "https://cal.com/",
+        "description": "The open-source Calendly alternative.",
+        "category": "Productivity",
+        "alternative_to": "Calendly",
+        "github_repo": "https://github.com/calcom/cal.com",
+        "license": "AGPL-3.0",
+        "id": "44"
+    },
+    {
+        "slug": "n8n",
+        "title": "n8n",
+        "url": "https://n8n.io/",
+        "description": "Free and open fair-code licensed node based Workflow Automation Tool.",
+        "category": "Automation",
+        "alternative_to": "Zapier",
+        "github_repo": "https://github.com/n8n-io/n8n",
+        "license": "FairCode",
+        "id": "45"
+    },
+    {
+        "slug": "huginn",
+        "title": "Huginn",
+        "url": "https://github.com/huginn/huginn",
+        "description": "Create agents that monitor and act on your behalf.",
+        "category": "Automation",
+        "alternative_to": "IFTTT",
+        "github_repo": "https://github.com/huginn/huginn",
+        "license": "MIT",
+        "id": "46"
+    },
+    {
+        "slug": "outline",
+        "title": "Outline",
+        "url": "https://www.getoutline.com/",
+        "description": "The fastest wiki and knowledge base for growing teams.",
+        "category": "Productivity",
+        "alternative_to": "Notion",
+        "github_repo": "https://github.com/outline/outline",
+        "license": "BSD-3-Clause",
+        "id": "47"
+    },
+    {
+        "slug": "appsmith",
+        "title": "Appsmith",
+        "url": "https://www.appsmith.com/",
+        "description": "Build internal tools faster.",
+        "category": "Development",
+        "alternative_to": "Retool",
+        "github_repo": "https://github.com/appsmithorg/appsmith",
+        "license": "Apache-2.0",
+        "id": "48"
+    },
+    {
+        "slug": "nocodb",
+        "title": "NocoDB",
+        "url": "https://nocodb.com/",
+        "description": "The Open Source Airtable Alternative.",
+        "category": "Development",
+        "alternative_to": "Airtable",
+        "github_repo": "https://github.com/nocodb/nocodb",
+        "license": "AGPL-3.0",
+        "id": "49"
+    },
+    {
+        "slug": "penpot",
+        "title": "Penpot",
+        "url": "https://penpot.app/",
+        "description": "The open-source design & prototyping platform.",
+        "category": "Design",
+        "alternative_to": "Figma",
+        "github_repo": "https://github.com/penpot/penpot",
+        "license": "MPL-2.0",
+        "id": "50"
+    },
+    {
+        "slug": "vlc-media-player",
+        "title": "VLC Media Player",
+        "url": "https://www.videolan.org/vlc/",
+        "description": "VLC is a free and open source cross-platform multimedia player and framework.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/videolan/vlc",
+        "alternative_to": "Windows Media Player",
+        "tags": [
+            "video",
+            "media",
+            "player",
+            "open-source",
+            "audio"
+        ]
+    },
+    {
+        "slug": "obs-studio",
+        "title": "OBS Studio",
+        "url": "https://obsproject.com/",
+        "description": "Free and open source software for video recording and live streaming.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/obsproject/obs-studio",
+        "alternative_to": "XSplit",
+        "tags": [
+            "streaming",
+            "recording",
+            "video",
+            "broadcasting",
+            "open-source"
+        ]
+    },
+    {
+        "slug": "rufus",
+        "title": "Rufus",
+        "url": "https://rufus.ie/",
+        "description": "Rufus is a utility that helps format and create bootable USB flash drives, such as USB keys/pendrives.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/pbatard/rufus",
+        "alternative_to": "BalenaEtcher",
+        "tags": [
+            "usb",
+            "bootable",
+            "utility",
+            "windows",
+            "open-source"
+        ]
+    },
+    {
+        "slug": "7-zip",
+        "title": "7-Zip",
+        "url": "https://www.7-zip.org/",
+        "description": "A file archiver with a high compression ratio.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/mcmilk/7-Zip",
+        "tags": [
+            "archiver",
+            "compression",
+            "utility"
+        ]
+    },
+    {
+        "slug": "krita",
+        "title": "Krita",
+        "url": "https://krita.org/",
+        "description": "Professional free and open source painting program.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/KDE/krita",
+        "tags": [
+            "painting",
+            "art",
+            "drawing"
+        ]
+    },
+    {
+        "slug": "handbrake",
+        "title": "HandBrake",
+        "url": "https://handbrake.fr/",
+        "description": "An open source video transcoder available for Linux, Mac, and Windows.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/HandBrake/HandBrake",
+        "tags": [
+            "video",
+            "transcoder",
+            "converter"
+        ]
+    },
+    {
+        "slug": "filezilla",
+        "title": "FileZilla",
+        "url": "https://filezilla-project.org/",
+        "description": "The free FTP solution for both client and server.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/FileZilla/FileZilla",
+        "tags": [
+            "ftp",
+            "transfer",
+            "network"
+        ]
+    },
+    {
+        "slug": "qbittorrent",
+        "title": "qBittorrent",
+        "url": "https://www.qbittorrent.org/",
+        "description": "A free software alternative to µTorrent.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/qbittorrent/qBittorrent",
+        "tags": [
+            "torrent",
+            "p2p",
+            "download"
+        ]
+    },
+    {
+        "slug": "brave-browser",
+        "title": "Brave Browser",
+        "url": "https://brave.com/",
+        "description": "Secure, fast, and private web browser with ad blocker.",
+        "category": "Free Software",
+        "github_repo": "https://github.com/brave/brave-browser",
+        "tags": [
+            "browser",
+            "web",
+            "privacy"
+        ]
+    },
+    {
+        "slug": "suitecrm",
+        "title": "SuiteCRM",
+        "url": "https://suitecrm.com/",
+        "description": "Enterprise-ready open source CRM alternative to Salesforce with sales automation and customer management.",
+        "category": "CRM",
+        "alternative_to": "Salesforce",
+        "github_repo": "https://github.com/salesagility/SuiteCRM",
+        "license": "AGPL-3.0"
+    },
+    {
+        "slug": "espocrm",
+        "title": "EspoCRM",
+        "url": "https://www.espocrm.com/",
+        "description": "Free self-hosted CRM with sales automation, email tracking, and customizable dashboards.",
+        "category": "CRM",
+        "alternative_to": "HubSpot CRM",
+        "github_repo": "https://github.com/espocrm/espocrm",
+        "license": "GPL-3.0"
+    },
+    {
+        "slug": "twenty",
+        "title": "Twenty",
+        "url": "https://twenty.com/",
+        "description": "Modern open-source CRM with a beautiful interface, designed as a Salesforce alternative for startups.",
+        "category": "CRM",
+        "alternative_to": "Salesforce",
+        "github_repo": "https://github.com/twentyhq/twenty",
+        "license": "AGPL-3.0"
+    },
+    {
+        "slug": "erxes",
+        "title": "Erxes",
+        "url": "https://erxes.io/",
+        "description": "Open-source experience operating system with CRM, marketing automation, and customer engagement tools.",
+        "category": "CRM",
+        "alternative_to": "HubSpot",
+        "github_repo": "https://github.com/erxes/erxes",
+        "license": "MIT"
+    },
+    {
+        "slug": "monica",
+        "title": "Monica",
+        "url": "https://www.monicahq.com/",
+        "description": "Personal relationship management system for tracking interactions with friends and family.",
+        "category": "CRM",
+        "alternative_to": "Contacts+",
+        "github_repo": "https://github.com/monicahq/monica",
+        "license": "AGPL-3.0"
+    },
+    {
+        "slug": "mlflow",
+        "title": "MLflow",
+        "url": "https://mlflow.org/",
+        "description": "Open-source platform for managing the end-to-end machine learning lifecycle including tracking and deployment.",
+        "category": "Machine Learning",
+        "alternative_to": "Weights & Biases",
+        "github_repo": "https://github.com/mlflow/mlflow",
+        "license": "Apache-2.0"
+    },
+    {
+        "slug": "label-studio",
+        "title": "Label Studio",
+        "url": "https://labelstud.io/",
+        "description": "Multi-type data labeling and annotation tool for NLP, computer vision, and audio ML projects.",
+        "category": "Machine Learning",
+        "alternative_to": "Labelbox",
+        "github_repo": "https://github.com/HumanSignal/label-studio",
+        "license": "Apache-2.0"
+    },
+    {
+        "slug": "haystack",
+        "title": "Haystack",
+        "url": "https://haystack.deepset.ai/",
+        "description": "Open-source NLP framework for building production-ready LLM applications and semantic search pipelines.",
+        "category": "Machine Learning",
+        "alternative_to": "LangChain",
+        "github_repo": "https://github.com/deepset-ai/haystack",
+        "license": "Apache-2.0"
+    },
+    {
+        "slug": "opencv",
+        "title": "OpenCV",
+        "url": "https://opencv.org/",
+        "description": "Leading open-source computer vision library with 2500+ algorithms for image and video analysis.",
+        "category": "Machine Learning",
+        "alternative_to": "MATLAB Computer Vision Toolbox",
+        "github_repo": "https://github.com/opencv/opencv",
+        "license": "Apache-2.0"
+    },
+    {
+        "slug": "scikit-learn",
+        "title": "scikit-learn",
+        "url": "https://scikit-learn.org/",
+        "description": "Simple and efficient machine learning library for Python with classification, regression, and clustering.",
+        "category": "Machine Learning",
+        "alternative_to": "MATLAB ML Toolbox",
+        "github_repo": "https://github.com/scikit-learn/scikit-learn",
+        "license": "BSD-3-Clause"
+    },
+    {
+        "slug": "openproject",
+        "title": "OpenProject",
+        "url": "https://www.openproject.org/",
+        "description": "Open-source project management software with Gantt charts, agile boards, and time tracking.",
+        "category": "Project Management",
+        "alternative_to": "Jira",
+        "github_repo": "https://github.com/opf/openproject",
+        "license": "GPL-3.0"
+    },
+    {
+        "slug": "taiga",
+        "title": "Taiga",
+        "url": "https://taiga.io/",
+        "description": "Free open-source project management tool for agile developers and designers with kanban and scrum.",
+        "category": "Project Management",
+        "alternative_to": "Asana",
+        "github_repo": "https://github.com/taigaio/taiga-front",
+        "license": "MPL-2.0"
+    },
+    {
+        "slug": "wekan",
+        "title": "WeKan",
+        "url": "https://wekan.github.io/",
+        "description": "Open-source kanban board with drag-and-drop task management for teams and individuals.",
+        "category": "Project Management",
+        "alternative_to": "Trello",
+        "github_repo": "https://github.com/wekan/wekan",
+        "license": "MIT"
+    },
+    {
+        "slug": "focalboard",
+        "title": "Focalboard",
+        "url": "https://www.focalboard.com/",
+        "description": "Self-hosted project management tool with boards, lists, and calendar views for task organization.",
+        "category": "Project Management",
+        "alternative_to": "Notion",
+        "github_repo": "https://github.com/mattermost/focalboard",
+        "license": "MIT"
+    },
+    {
+        "slug": "plane",
+        "title": "Plane",
+        "url": "https://plane.so/",
+        "description": "Open-source project tracking tool with issue management, cycles, and modules for software teams.",
+        "category": "Project Management",
+        "alternative_to": "Linear",
+        "github_repo": "https://github.com/makeplane/plane",
+        "license": "AGPL-3.0"
+    }
+]

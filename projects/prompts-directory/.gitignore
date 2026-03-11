@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+test_error.txt
+test_out_cmd.txt
+link_report.md
+tests_report.txt
+pytest_debug.txt
+pytest_report.txt
+venv_pytest_out.txt
+test_output.txt
+test_output_utf8.txt
+tests_output.txt
+
+# OS
+.DS_Store
+Thumbs.db

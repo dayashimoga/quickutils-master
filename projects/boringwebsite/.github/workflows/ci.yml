@@ -1,0 +1,59 @@
+name: CI — Tests & Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Lint Check
+        run: npm run lint
+
+      - name: Run Tests with Coverage
+        run: npm run test:ci
+
+      - name: Verify Coverage Threshold
+        run: |
+          COVERAGE=$(node -e "const c=require('./coverage/coverage-summary.json');console.log(c.total.lines.pct)")
+          echo "Line coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below 95% threshold"
+            exit 1
+          fi
+          echo "✅ Coverage meets threshold"
+
+      - name: Build Site
+        run: npm run build
+
+      - name: Verify Build Artifacts
+        run: |
+          test -f dist/index.html || (echo "Missing index.html" && exit 1)
+          test -f dist/sitemap.xml || (echo "Missing sitemap.xml" && exit 1)
+          test -f dist/robots.txt || (echo "Missing robots.txt" && exit 1)
+          test -d dist/blog || (echo "Missing blog directory" && exit 1)
+          echo "✅ All build artifacts verified"
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyFacts — Mind-Blowing WTF Facts Updated Daily | facts.quickutils.top</title>
+    <meta name="description"
+        content="Discover 1000+ mind-blowing WTF facts about science, history, space, animals, and more. New fact every day — free, fast, and no sign-up needed.">
+    <meta name="keywords"
+        content="wtf facts, amazing facts, daily facts, mind blowing facts, fun facts, trivia, did you know">
+    <meta property="og:title" content="DailyFacts — Mind-Blowing WTF Facts Updated Daily">
+    <meta property="og:description" content="1000+ jaw-dropping facts about science, history, space, and more.">
+    <meta property="og:image" content="https://facts.quickutils.top/images/pinterest-cover.png">
+    <meta property="og:url" content="https://facts.quickutils.top">
+    <meta property="og:site_name" content="DailyFacts">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DailyFacts — Mind-Blowing WTF Facts">
+    <!-- Pinterest Domain Verification -->
+    <meta name="p:domain_verify" content="c816c2b41079835efd234cb5afef59bf">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤯</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377"
+        crossorigin="anonymous"></script>
+
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9PEGCBXCL7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-9PEGCBXCL7');
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "DailyFacts",
+        "url": "https://facts.quickutils.top",
+        "description": "Mind-blowing WTF facts updated daily — science, history, space, animals, and more."
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is DailyFacts?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "DailyFacts is a repository of over 1000 mind-blowing facts about science, history, space, and nature, updated daily."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Are the facts verified?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, our team researches and verifies every fact against scientific journals and historical records."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I share these facts?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Absolutely! You can share them on Pinterest, Twitter, or Discord using our built-in sharing tools."
+                }
+            }
+        ]
+    }
+    </script>
+</head>
+
+<body>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="container">
+            <a href="index.html" class="nav-brand"><span class="brand-icon">🤯</span> DailyFacts</a>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html" class="active">Home</a>
+                <a href="#categories">Categories</a>
+                <a href="#tools-section">Tools</a>
+                <a href="https://quickutils.top" target="_blank" rel="noopener">DailyLift</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-tagline">🤯 New Fact Every Day — 100% Free</span>
+                <h1>Mind-Blowing <span class="gradient-text">WTF Facts</span></h1>
+                <p class="hero-description">
+                    Discover jaw-dropping facts about science, history, space, animals, and more.
+                    Updated daily — every fact will make you say "Wait, really?!"
+                </p>
+                <div class="hero-buttons">
+                    <a href="#daily-fact" class="btn btn-primary">Today's Fact ↓</a>
+                    <a href="#tools-section" class="btn btn-secondary">Fun Tools</a>
+                </div>
+            </div>
+            <div class="hero-quote">
+                <div class="glass-card quote-card" id="heroFactCard">
+                    <span class="quote-icon">💡</span>
+                    <p class="quote-text" id="heroFactText">Loading today's fact...</p>
+                    <p class="quote-author" id="heroFactCategory">—</p>
+                    <p class="quote-date" id="heroFactDate"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Daily Fact Section -->
+    <section class="section" id="daily-fact">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">Fact of the Day</span>
+                <h2>Today's <span class="gradient-text">WTF Fact</span></h2>
+                <p>A new mind-blowing fact every day to share with your friends.</p>
+            </div>
+            <div class="glass-card quote-card animate-on-scroll" style="max-width: 700px; margin: 0 auto;">
+                <span class="quote-icon">🧠</span>
+                <p class="quote-text" id="dailyFactText">Loading today's fact...</p>
+                <p class="quote-author" id="dailyFactCategory">—</p>
+                <p class="quote-date" id="dailyFactDate"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Browser -->
+    <section class="section" id="categories">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">Browse</span>
+                <h2>Explore by <span class="gradient-text">Category</span></h2>
+                <p>1000+ facts organized into 10 fascinating categories.</p>
+            </div>
+            <div class="category-tabs" id="categoryTabs" role="tablist"></div>
+            <div class="facts-grid" id="factsGrid"></div>
+            <div style="text-align:center; margin-top: var(--space-lg);">
+                <button class="btn btn-secondary" id="loadMoreBtn" style="display:none;">Load More Facts</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="section" id="tools-section">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">Fun Tools</span>
+                <h2>Fact <span class="gradient-text">Tools</span></h2>
+                <p>Interactive tools powered by our fact database.</p>
+            </div>
+
+            <div class="tool-tabs" role="tablist" aria-label="Tools">
+                <button class="tool-tab active" role="tab" aria-selected="true" data-tool="random" id="tab-random">🎲
+                    Random Fact</button>
+                <button class="tool-tab" role="tab" aria-selected="false" data-tool="quiz" id="tab-quiz">❓ Fact
+                    Quiz</button>
+                <button class="tool-tab" role="tab" aria-selected="false" data-tool="search" id="tab-search">🔍
+                    Search</button>
+            </div>
+
+            <!-- Random Fact Tool -->
+            <div class="tool-panel active" id="panel-random" role="tabpanel">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">🎲 Random Fact Generator</h2>
+                        <div class="result-box" id="randomResult" aria-live="polite">
+                            <div class="result-value" id="randomFactText">Click the button for a random mind-blowing
+                                fact!</div>
+                            <div class="result-label" id="randomFactMeta"></div>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:var(--space-md);" id="randomBtn">🎲
+                            Give Me a Fact!</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Tool -->
+            <div class="tool-panel" id="panel-quiz" role="tabpanel">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">❓ Fact Quiz</h2>
+                        <div id="quizArea">
+                            <div class="result-box" id="quizQuestion" aria-live="polite">
+                                <div class="result-value" id="quizFactText">Press Start to begin the quiz!</div>
+                                <div class="result-label" id="quizScore">Score: 0/0</div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-md);margin-top:var(--space-md);" id="quizButtons">
+                                <button class="btn btn-primary" style="flex:1;" id="quizTrue">✅ True</button>
+                                <button class="btn btn-secondary" style="flex:1;" id="quizFalse">❌ False</button>
+                            </div>
+                            <button class="btn btn-primary" style="width:100%;margin-top:var(--space-md);"
+                                id="quizStart">Start Quiz</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Tool -->
+            <div class="tool-panel" id="panel-search" role="tabpanel">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">🔍 Fact Search</h2>
+                        <div class="form-group">
+                            <label for="searchInput">Search Facts</label>
+                            <input type="text" id="searchInput" class="form-control"
+                                placeholder="Try 'moon', 'DNA', 'coffee'...">
+                        </div>
+                        <div id="searchResults" class="facts-grid" style="margin-top:var(--space-md);"></div>
+                        <div class="result-box" style="margin-top:var(--space-md);">
+                            <div class="result-label" id="searchCount">Type to search 1000+ facts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Share on Pinterest -->
+    <section class="section" id="share-section" style="padding: 2rem 0;">
+        <div class="container" style="text-align: center;">
+            <a href="https://pinterest.com/pin/create/button/?url=https%3A%2F%2Ffacts.quickutils.top&description=Mind-blowing%20WTF%20Facts%20Updated%20Daily"
+                target="_blank" rel="noopener" class="btn btn-secondary"
+                style="display:inline-flex;align-items:center;gap:0.5rem;">
+                📌 Pin This Page on Pinterest
+            </a>
+        </div>
+    </section>
+
+    <!-- Recommended Books (Amazon Affiliate) -->
+    <section class="section" id="recommended-books">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">Recommended</span>
+                <h2>Books for <span class="gradient-text">Curious Minds</span></h2>
+                <p>Love learning facts? Dive deeper with these highly rated books.</p>
+            </div>
+            <div class="facts-grid" style="max-width: 800px; margin: 0 auto;">
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <h3 style="margin-bottom: 0.5rem;">📘 The Book of Amazing Facts</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by Ross McCarthy — 1000+ incredible
+                        facts about science, history, nature, and more.</p>
+                    <a href="https://www.amazon.com/dp/B0B1JG29RY?tag=df-quickutils-21" target="_blank"
+                        rel="noopener sponsored" class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+                </div>
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <h3 style="margin-bottom: 0.5rem;">📗 1,000 Random Facts Everyone Should Know</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by Scott Matthews — A fun collection
+                        of interesting trivia for quiz lovers.</p>
+                    <a href="https://www.amazon.com/dp/B0B8R3QLZP?tag=df-quickutils-21" target="_blank"
+                        rel="noopener sponsored" class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+                </div>
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <h3 style="margin-bottom: 0.5rem;">📙 A Short History of Nearly Everything</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">by Bill Bryson — The ultimate science
+                        book that makes the universe understandable.</p>
+                    <a href="https://www.amazon.com/dp/076790818X?tag=df-quickutils-21" target="_blank"
+                        rel="noopener sponsored" class="btn btn-primary" style="width:100%;">View on Amazon →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest from Blog (Internal Linking) -->
+    <section class="section" id="blog">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">Blog</span>
+                <h2>Latest <span class="gradient-text">Articles</span></h2>
+                <p>Deep dives into the world's most fascinating trivia.</p>
+            </div>
+            <div class="blog-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg);">
+                <a href="blog/the-science-of-space-junk.html" class="glass-card blog-card">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🛰️</div>
+                    <h3>The Science of Space Junk</h3>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Explore the fascinating reality of
+                        orbital debris and the Kessler Syndrome.</p>
+                </a>
+                <a href="blog/unheard-animal-behaviors.html" class="glass-card blog-card">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🐋</div>
+                    <h3>Unheard Animal Behaviors</h3>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Discover the secret lives and social
+                        structures of the animal kingdom.</p>
+                </a>
+                <a href="blog/incredible-human-body-facts.html" class="glass-card blog-card">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🧬</div>
+                    <h3>Incredible Human Body Facts</h3>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">From bioluminescence to super-pumps,
+                        learn what makes you amazing.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense Ad Unit -->
+    <div style="text-align:center; padding: 1.5rem 0;">
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5193703345853377"
+            data-ad-slot="2246027256" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-brand"><span class="brand-icon">🤯</span> DailyFacts</a>
+                    <p>Mind-blowing facts updated daily. Part of the QuickUtils network.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Explore</h4>
+                    <a href="#daily-fact">Daily Fact</a>
+                    <a href="#categories">Categories</a>
+                    <a href="#tools-section">Tools</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Network</h4>
+                    <a href="https://quickutils.top" target="_blank" rel="noopener">DailyLift</a>
+                    <a href="https://quickutils.top/tools.html" target="_blank" rel="noopener">Free Tools</a>
+                    <a href="https://quickutils.top/blog.html" target="_blank" rel="noopener">Blog</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Social</h4>
+                    <a href="https://quickutils.top/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+                    <a href="https://quickutils.top/terms.html" target="_blank" rel="noopener">Terms of Use</a>
+                    <a href="https://pinterest.com" target="_blank" rel="noopener">Pinterest</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 DailyFacts. Part of QuickUtils. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

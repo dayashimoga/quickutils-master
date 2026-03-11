@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online Tools — Bill Splitter, BMI Calculator, Unit Converter, Loan EMI, Insurance, Currency, Tax |
+        DailyLift</title>
+    <meta name="description"
+        content="7 free online tools: bill splitter with tip calculator, BMI calculator, unit converter, loan EMI calculator, insurance premium estimator, currency converter, and income tax calculator — all in your browser, no sign-up needed.">
+    <meta name="keywords"
+        content="free online tools, bill splitter, tip calculator, BMI calculator, unit converter, loan EMI calculator, insurance estimator, currency converter, tax calculator">
+    <!-- Pinterest Domain Verification -->
+    <meta name="p:domain_verify" content="c816c2b41079835efd234cb5afef59bf">
+    <meta property="og:title" content="7 Free Online Tools — Bill Splitter, BMI, EMI, Tax & More">
+    <meta property="og:description"
+        content="Free Bill Splitter, BMI Calculator, Unit Converter, Loan EMI, Insurance Estimator, Currency Converter, and Tax Calculator — fast and private.">
+    <meta property="og:url" content="https://quickutils.top/tools.html">
+    <meta property="og:site_name" content="DailyLift">
+    <meta property="og:image" content="https://quickutils.top/images/pinterest-cover.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="7 Free Online Tools & Calculators — DailyLift">
+    <meta name="twitter:description"
+        content="Fast, free, and no sign-up required. Bill splitter, BMI, unit converter, loan EMI, insurance, currency, and tax calculator.">
+    <meta name="twitter:image" content="https://quickutils.top/images/pinterest-cover.png">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DailyLift Free Tools",
+    "url": "https://dailylift.site/tools.html",
+    "applicationCategory": "UtilityApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+    "description": "Free online calculators: Bill Splitter, BMI Calculator, and Unit Converter."
+  }
+  </script>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377"
+        crossorigin="anonymous"></script>
+
+    <!-- Google Analytics GA4 (replace G-XXXX with your measurement ID) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QPDP38ZCCV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-QPDP38ZCCV');
+    </script>
+</head>
+
+<body>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="container">
+            <a href="index.html" class="nav-brand"><span class="brand-icon">⚡</span> DailyLift</a>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html">Home</a>
+                <a href="tools.html" class="active">Tools</a>
+                <a href="blog.html">Blog</a>
+                <a href="about.html">About</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Tools Page -->
+    <section class="section" style="padding-top: calc(var(--nav-height) + var(--space-2xl));">
+        <div class="container">
+            <div class="section-header">
+                <span class="badge">100% Free</span>
+                <h1>Online <span class="gradient-text">Tools</span></h1>
+                <p>Simple, fast, and private — everything runs in your browser. No data is ever sent to a server.</p>
+            </div>
+
+            <!-- Tool Tabs -->
+            <div class="tool-tabs" role="tablist" aria-label="Tools">
+                <button class="tool-tab active" role="tab" aria-selected="true" aria-controls="panel-bill" id="tab-bill"
+                    data-tool="bill-splitter">💰 Bill Splitter</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-bmi" id="tab-bmi"
+                    data-tool="bmi-calculator">⚖️ BMI Calculator</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-unit" id="tab-unit"
+                    data-tool="unit-converter">🔄 Unit Converter</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-loan" id="tab-loan"
+                    data-tool="loan-emi">💳 Loan EMI</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-insurance"
+                    id="tab-insurance" data-tool="insurance-estimator">🏥 Insurance</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-currency"
+                    id="tab-currency" data-tool="currency-converter">💱 Currency</button>
+                <button class="tool-tab" role="tab" aria-selected="false" aria-controls="panel-tax" id="tab-tax"
+                    data-tool="tax-calculator">🧮 Tax</button>
+            </div>
+
+            <!-- Bill Splitter Panel -->
+            <div class="tool-panel active" id="panel-bill" role="tabpanel" aria-labelledby="tab-bill">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">💰 Bill Splitter</h2>
+                        <form id="billForm" aria-label="Bill Splitter Calculator">
+                            <div class="form-group">
+                                <label for="billTotal">Total Bill Amount (₹)</label>
+                                <input type="number" id="billTotal" class="form-control" placeholder="e.g. 2500" min="0"
+                                    step="0.01" required aria-required="true">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billPeople">Number of People</label>
+                                    <input type="number" id="billPeople" class="form-control" placeholder="e.g. 4"
+                                        min="1" step="1" value="2" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billTip">Tip Percentage (%)</label>
+                                    <input type="number" id="billTip" class="form-control" placeholder="e.g. 10" min="0"
+                                        max="100" step="1" value="10">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Calculate Split</button>
+                        </form>
+                        <div class="result-box" id="billResult" aria-live="polite">
+                            <div class="result-value" id="billPerPerson">—</div>
+                            <div class="result-label">Per Person</div>
+                            <div
+                                style="margin-top: var(--space-md); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="billTipAmount">—</div>
+                                    <div class="result-label">Total Tip</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="billGrandTotal">—</div>
+                                    <div class="result-label">Grand Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Bill Splitter -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">The Protocol of Fair Bill Splitting</h3>
+                    <p>Navigating the financial mathematics of a shared restaurant check or household utility bill is
+                        historically fraught with social anxiety. Our <strong>Algorithmic Bill Splitter</strong>
+                        completely removes human emotion from financial division.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">1. How to Calculate
+                        Gratuity Correctly</h4>
+                    <p>The most frequent mathematical error when dining out is applying gratuity to the post-tax total.
+                        In North America and many international jurisdictions, gratuity should mathematically only be
+                        applied to the pre-tax subtotal. To calculate a 20% tip, you multiply the subtotal by 0.20. Our
+                        calculator natively handles this algorithmic fractional compounding, ensuring you never over-tip
+                        on federal taxes.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">2. The Ethics of Itemized
+                        vs. Equal Splits</h4>
+                    <p>If all parties consumed items of roughly identical value, an egalitarian equal split is the most
+                        efficient sociological method. However, if there is extreme consumption variance (e.g., premium
+                        alcohol vs. water), an equal split becomes inherently predatory toward the frugal party. By
+                        utilizing a digital calculator, you offload the friction of dispute to a neutral third-party
+                        algorithm.</p>
+                </div>
+            </div>
+
+            <!-- BMI Calculator Panel -->
+            <div class="tool-panel" id="panel-bmi" role="tabpanel" aria-labelledby="tab-bmi">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">⚖️ BMI Calculator</h2>
+                        <form id="bmiForm" aria-label="BMI Calculator">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="bmiWeight">Weight (kg)</label>
+                                    <input type="number" id="bmiWeight" class="form-control" placeholder="e.g. 70"
+                                        min="1" max="500" step="0.1" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="bmiHeight">Height (cm)</label>
+                                    <input type="number" id="bmiHeight" class="form-control" placeholder="e.g. 175"
+                                        min="50" max="300" step="0.1" required aria-required="true">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Calculate BMI</button>
+                        </form>
+                        <div class="result-box" id="bmiResult" aria-live="polite">
+                            <div class="result-value" id="bmiValue">—</div>
+                            <div class="result-label" id="bmiCategory">Enter your details above</div>
+                            <div class="bmi-gauge" id="bmiGauge" style="display:none;">
+                                <div class="gauge-marker" id="bmiMarker"></div>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--clr-text-dim);">
+                                <span>Underweight</span>
+                                <span>Normal</span>
+                                <span>Overweight</span>
+                                <span>Obese</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for BMI Calculator -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">The Clinical Science of Body Mass Index (BMI)</h3>
+                    <p>The Body Mass Index is the absolute foundational metric used by the World Health Organization
+                        (WHO), cardiologists, and insurance underwriters to rapidly determine macro-population health
+                        risks. It is a critical first-step diagnostic heuristic.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">1. The Mathematical
+                        Algorithm</h4>
+                    <p>The BMI algorithm is derived by dividing a person's mass in kilograms by the square of their
+                        height in meters. For example, an adult weighing 70kg at a height of 1.75m possesses a BMI of
+                        exactly 22.86, placing them squarely in the optimal physiological "Normal" zone, presenting the
+                        lowest statistical probability for cardiovascular disease and metabolic syndrome development.
+                    </p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">2. Physiological
+                        Limitations of BMI</h4>
+                    <p>While BMI is mathematically flawless for standardized populations, it suffers from significant
+                        anatomical limitations on an individual basis. Specifically, the formula cannot differentiate
+                        between adipose tissue (fat mass) and skeletal muscle. Therefore, elite powerlifters, NFL
+                        players, and heavy manual laborers frequently output a BMI classifying them as "Obese," despite
+                        possessing single-digit body fat percentages. Always correlate your BMI reading from our
+                        calculator alongside an authentic waist-to-height ratio measurement for true metabolic clarity.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Unit Converter Panel -->
+            <div class="tool-panel" id="panel-unit" role="tabpanel" aria-labelledby="tab-unit">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">🔄 Unit Converter</h2>
+                        <form id="unitForm" aria-label="Unit Converter">
+                            <div class="form-group">
+                                <label for="unitCategory">Category</label>
+                                <select id="unitCategory" class="form-control">
+                                    <option value="length">Length</option>
+                                    <option value="weight">Weight</option>
+                                    <option value="temperature">Temperature</option>
+                                    <option value="volume">Volume</option>
+                                    <option value="speed">Speed</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unitFrom">From</label>
+                                    <select id="unitFrom" class="form-control"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="unitTo">To</label>
+                                    <select id="unitTo" class="form-control"></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="unitValue">Value</label>
+                                <input type="number" id="unitValue" class="form-control" placeholder="Enter value"
+                                    step="any" required aria-required="true">
+                            </div>
+                            <div style="display: flex; gap: var(--space-md);">
+                                <button type="submit" class="btn btn-primary" style="flex:1;">Convert</button>
+                                <button type="button" class="btn btn-secondary" id="unitSwap" aria-label="Swap units">⇄
+                                    Swap</button>
+                            </div>
+                        </form>
+                        <div class="result-box" id="unitResult" aria-live="polite">
+                            <div class="result-value" id="unitResultValue">—</div>
+                            <div class="result-label" id="unitResultLabel">Result</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Unit Converter -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">International Metric and Imperial Conversion Dynamics
+                    </h3>
+                    <p>The global schism between the International System of Units (Metric) and the United States
+                        Customary System (Imperial) creates massive mathematical friction in international engineering,
+                        logistics, and culinary sciences. Our instantaneous algorithmic <strong>Unit Converter</strong>
+                        guarantees zero calculation drift.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">1. Thermodynamic
+                        Calculations (Celsius vs. Fahrenheit)</h4>
+                    <p>Temperature conversion requires complex fractional algebra, unlike distance which operates on
+                        fixed constants. To convert Celsius to Fahrenheit manually, the formula is:
+                        <code>(°C × 9/5) + 32 = °F</code>. This scalar difference exists because the scales do not share
+                        the same zero-point. It is mathematically hazardous to estimate thermodynamics loosely; rely on
+                        digital algorithmic translation to prevent catastrophic errors in chemical or biological
+                        environments.
+                    </p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">2. Gravitational Mass and
+                        Distance</h4>
+                    <p>The United States remains one of only three countries globally refusing to adapt to Base-10
+                        metric scaling. When tracking international shipments or importing equipment, you must utilize
+                        rigid conversions: precisely 1 Kilogram equalizes to 2.20462 Pounds, and 1 Kilometer calibrates
+                        to 0.621371 Miles. Relying on mental math for these measurements frequently results in severe
+                        architectural and structural miscalculations.</p>
+                </div>
+            </div>
+
+            <!-- Loan EMI Calculator Panel -->
+            <div class="tool-panel" id="panel-loan" role="tabpanel" aria-labelledby="tab-loan">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">💳 Loan EMI Calculator</h2>
+                        <form id="loanForm" aria-label="Loan EMI Calculator">
+                            <div class="form-group">
+                                <label for="loanPrincipal">Loan Amount (₹)</label>
+                                <input type="number" id="loanPrincipal" class="form-control" placeholder="e.g. 1000000"
+                                    min="1" step="1" required aria-required="true">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="loanRate">Annual Interest Rate (%)</label>
+                                    <input type="number" id="loanRate" class="form-control" placeholder="e.g. 8.5"
+                                        min="0.1" max="50" step="0.1" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="loanTenure">Tenure (Years)</label>
+                                    <input type="number" id="loanTenure" class="form-control" placeholder="e.g. 20"
+                                        min="1" max="40" step="1" required aria-required="true">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Calculate EMI</button>
+                        </form>
+                        <div class="result-box" id="loanResult" aria-live="polite">
+                            <div class="result-value" id="loanEmi">—</div>
+                            <div class="result-label">Monthly EMI</div>
+                            <div
+                                style="margin-top: var(--space-md); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="loanTotalInterest">—</div>
+                                    <div class="result-label">Total Interest</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="loanTotalPayment">—</div>
+                                    <div class="result-label">Total Payment</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Loan EMI -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">Understanding Loan Amortization Mathematics</h3>
+                    <p>The Equated Monthly Installment (EMI) is derived from the standard amortization formula:
+                        <code>EMI = P × r × (1+r)^n / ((1+r)^n − 1)</code>, where P is the principal, r is the monthly
+                        interest rate, and n is the total number of payments. This formula ensures each payment covers
+                        both principal reduction and accumulated interest, systematically reducing the outstanding
+                        balance to zero by the end of the tenure.
+                    </p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">Global Mortgage Rate
+                        Landscape</h4>
+                    <p>In 2026, mortgage rates vary significantly across regions: US Federal Reserve rates hover around
+                        5.5-7%, UK base rates near 4.5-5%, EU ECB rates at 3.5-4%, and India's RBI repo rate at 6.5%.
+                        Understanding your local interest rate environment is critical when evaluating the true cost of
+                        borrowing over 15-30 year horizons. Even a 0.5% rate difference on a $300,000 mortgage
+                        translates to over $30,000 in lifetime interest savings.</p>
+                </div>
+            </div>
+
+            <!-- Insurance Premium Estimator Panel -->
+            <div class="tool-panel" id="panel-insurance" role="tabpanel" aria-labelledby="tab-insurance">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">🏥 Insurance Premium Estimator</h2>
+                        <form id="insuranceForm" aria-label="Insurance Premium Estimator">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="insAge">Your Age</label>
+                                    <input type="number" id="insAge" class="form-control" placeholder="e.g. 30" min="18"
+                                        max="85" step="1" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="insType">Coverage Type</label>
+                                    <select id="insType" class="form-control">
+                                        <option value="health">Health Insurance</option>
+                                        <option value="auto">Auto Insurance</option>
+                                        <option value="life">Life Insurance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="insCoverage">Coverage Amount ($)</label>
+                                <input type="number" id="insCoverage" class="form-control" placeholder="e.g. 500000"
+                                    min="10000" step="10000" required aria-required="true">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Estimate Premium</button>
+                        </form>
+                        <div class="result-box" id="insResult" aria-live="polite">
+                            <div class="result-value" id="insMonthly">—</div>
+                            <div class="result-label">Monthly Premium</div>
+                            <div
+                                style="margin-top: var(--space-md); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="insAnnual">—</div>
+                                    <div class="result-label">Annual Premium</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="insRisk">—</div>
+                                    <div class="result-label">Risk Profile</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Insurance -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">Actuarial Science Behind Insurance Premiums</h3>
+                    <p>Insurance premiums are calculated using actuarial tables that model the statistical probability
+                        of claim events across age demographics. The core principle is the Law of Large Numbers:
+                        insurers pool risk across millions of policyholders, pricing each individual's premium based on
+                        their demographic risk profile. Age is the single most influential variable, as morbidity and
+                        mortality rates increase exponentially after age 40.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">Health vs. Auto vs. Life
+                        Coverage</h4>
+                    <p>Health insurance premiums in the US average $456/month for individual coverage (2026 KFF data).
+                        Auto insurance averages $1,771/year nationally, varying by state and driving record. Term life
+                        insurance for a healthy 30-year-old typically costs $20-30/month for $500K coverage, making it
+                        the most cost-effective protection per dollar of coverage among all insurance categories.</p>
+                </div>
+            </div>
+
+            <!-- Currency Converter Panel -->
+            <div class="tool-panel" id="panel-currency" role="tabpanel" aria-labelledby="tab-currency">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">💱 Currency Converter</h2>
+                        <form id="currencyForm" aria-label="Currency Converter">
+                            <div class="form-group">
+                                <label for="currAmount">Amount</label>
+                                <input type="number" id="currAmount" class="form-control" placeholder="e.g. 1000"
+                                    min="0.01" step="any" required aria-required="true">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="currFrom">From</label>
+                                    <select id="currFrom" class="form-control"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="currTo">To</label>
+                                    <select id="currTo" class="form-control"></select>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-md);">
+                                <button type="submit" class="btn btn-primary" style="flex:1;">Convert</button>
+                                <button type="button" class="btn btn-secondary" id="currSwap"
+                                    aria-label="Swap currencies">⇄ Swap</button>
+                            </div>
+                        </form>
+                        <div class="result-box" id="currencyResult" aria-live="polite">
+                            <div class="result-value" id="currResult">—</div>
+                            <div class="result-label" id="currRate">Exchange Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Currency -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">Global Foreign Exchange Market Dynamics</h3>
+                    <p>The foreign exchange (forex) market processes over $7.5 trillion in daily trading volume, making
+                        it the largest financial market on Earth. Exchange rates are determined by macroeconomic factors
+                        including interest rate differentials, inflation expectations, trade balances, and geopolitical
+                        stability. Our converter supports 50+ world currencies with cross-rate calculations via the USD
+                        base pair methodology.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">Understanding Cross-Rate
+                        Calculations</h4>
+                    <p>When converting between two non-USD currencies (e.g., EUR to INR), the calculation routes through
+                        the USD intermediary: EUR→USD→INR. The resulting rate equals the EUR/USD rate multiplied by the
+                        USD/INR rate. This triangulation method is the same approach used by international banks, wire
+                        transfer services, and SWIFT payment networks for settlement calculations.</p>
+                </div>
+            </div>
+
+            <!-- Tax Calculator Panel -->
+            <div class="tool-panel" id="panel-tax" role="tabpanel" aria-labelledby="tab-tax">
+                <div class="tool-container">
+                    <div class="glass-card">
+                        <h2 style="margin-bottom: var(--space-lg);">🧮 Income Tax Calculator</h2>
+                        <form id="taxForm" aria-label="Income Tax Calculator">
+                            <div class="form-group">
+                                <label for="taxCountry">Country</label>
+                                <select id="taxCountry" class="form-control">
+                                    <option value="us">🇺🇸 United States</option>
+                                    <option value="uk">🇬🇧 United Kingdom</option>
+                                    <option value="canada">🇨🇦 Canada</option>
+                                    <option value="india">🇮🇳 India</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="taxIncome">Annual Gross Income</label>
+                                <input type="number" id="taxIncome" class="form-control" placeholder="e.g. 75000"
+                                    min="1" step="1" required aria-required="true">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Calculate Tax</button>
+                        </form>
+                        <div class="result-box" id="taxResult" aria-live="polite">
+                            <div class="result-value" id="taxAmount">—</div>
+                            <div class="result-label" id="taxEffective">Estimated Tax</div>
+                            <div
+                                style="margin-top: var(--space-md); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="taxTakeHome">—</div>
+                                    <div class="result-label">Take-Home Pay</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--clr-text);"
+                                        id="taxBracket">—</div>
+                                    <div class="result-label">Tax Bracket</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content for Tax -->
+                <div class="glass-card" style="margin-top: var(--space-2xl); text-align: left;">
+                    <h3 style="margin-bottom: var(--space-md);">Progressive Taxation and Marginal Rate Systems</h3>
+                    <p>All four countries supported by this calculator use progressive taxation, where income is divided
+                        into brackets taxed at increasing rates. A critical misconception is that moving into a higher
+                        bracket taxes ALL your income at the higher rate. In reality, only the income exceeding the
+                        bracket threshold is taxed at the marginal rate. For example, in the US 2026 system, a $50,000
+                        income is taxed at 10% on the first $11,600, then 12% on the remaining $38,400.</p>
+                    <h4 style="margin-top: var(--space-lg); margin-bottom: var(--space-sm);">Effective vs. Marginal Tax
+                        Rates</h4>
+                    <p>Your effective tax rate (total tax divided by total income) is always lower than your marginal
+                        rate (the rate on your last dollar earned). Understanding this distinction is essential for
+                        financial planning: a person in the US 22% bracket actually pays an effective rate of
+                        approximately 12-15%. This calculator displays both metrics to give you a complete picture of
+                        your tax liability across US, UK, Canadian, and Indian jurisdiction systems.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Ad Slot -->
+    <div class="container" style="margin: var(--space-lg) auto;">
+        <div class="ad-slot" id="ad-tools">
+            <script async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377"
+                crossorigin="anonymous"></script>
+            <!-- DailyLift Tools Page -->
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5193703345853377"
+                data-ad-slot="2573330311" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="section" style="padding: var(--space-3xl) 0;">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="badge">FAQ</span>
+                <h2>Frequently Asked <span class="gradient-text">Questions</span></h2>
+                <p>Everything you need to know about our free tools — from calculation methods to privacy.</p>
+            </div>
+
+            <div class="faq-list" style="max-width: 800px; margin: 0 auto;">
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Bill Splitter — How It Works
+                    </h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">How does the tip
+                            calculation work when splitting bills?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Our bill splitter applies the
+                            tip percentage to the subtotal before dividing by the number of people. For example, a $100
+                            bill with 15% tip becomes $115, then split equally among diners. This matches how
+                            restaurants expect tips to be calculated — based on the pre-tax food and service total, not
+                            the post-tax amount. The per-person amount is rounded to the nearest cent for practical use.
+                        </p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Should I tip on
+                            the pre-tax or post-tax amount?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Etiquette experts recommend
+                            tipping on the pre-tax subtotal. Our calculator is designed with this approach. In India,
+                            where the tool is commonly used, a 10–15% tip is standard at sit-down restaurants, while
+                            5–10% is typical for delivery services. In the US, 15–20% is the norm. Our tool lets you set
+                            any percentage so it works regardless of your country's customs.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">BMI Calculator —
+                        Understanding Your Results</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">What BMI formula
+                            do you use and is it accurate?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">We use the World Health
+                            Organization's standard BMI formula: weight (kg) ÷ height² (m²). While BMI is widely used
+                            for population health screening, it has limitations — it doesn't distinguish between muscle
+                            and fat mass, and accuracy varies across ethnic groups. The WHO recommends Asian populations
+                            use lower BMI thresholds (23+ for overweight vs. 25+ globally). Our tool shows both standard
+                            and Asian BMI interpretations for comprehensive guidance.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">What is a healthy
+                            BMI range and when should I be concerned?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">WHO defines a normal BMI as
+                            18.5–24.9. Below 18.5 is underweight, 25–29.9 is overweight, and 30+ is obese. However, BMI
+                            alone isn't a complete health indicator. Athletes may have high BMI due to muscle mass.
+                            Factors like waist circumference, body fat percentage, and family health history provide
+                            more complete context. If your BMI falls outside the normal range, consult a healthcare
+                            provider for personalized advice rather than relying solely on calculator outputs.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Unit Converter — Precision
+                        &amp; Coverage</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Which unit
+                            categories and conversions are supported?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Our converter covers 5 major
+                            categories: Length (meters, feet, inches, kilometers, miles, yards, centimeters), Weight
+                            (kilograms, pounds, ounces, grams, tons), Temperature (Celsius, Fahrenheit, Kelvin), Volume
+                            (liters, gallons, cups, milliliters, tablespoons, fluid ounces), and Speed (km/h, mph, m/s,
+                            knots). Each conversion uses internationally standardized ratios for scientific-grade
+                            accuracy up to 4 decimal places.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Why do temperature
+                            conversions use a different formula?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Unlike length or weight where
+                            conversions are simple multiplication ratios, temperature scales have different zero points.
+                            Celsius and Fahrenheit use different reference points (water's freezing point is 0°C but
+                            32°F), requiring offset-based formulas. Our tool applies the exact formulas: °F = (°C × 9/5)
+                            + 32, °C = (°F − 32) × 5/9, and K = °C + 273.15. This is why our converter separates
+                            temperature from multiplier-based categories.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Loan EMI Calculator — How
+                        Monthly Payments Are Computed</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">What formula is
+                            used to calculate EMI?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">We use the standard
+                            reducing-balance EMI formula used by all major banks: EMI = P × r × (1+r)ⁿ / [(1+r)ⁿ − 1],
+                            where P is principal loan amount, r is monthly interest rate (annual rate ÷ 12 ÷ 100), and n
+                            is the total number of monthly installments. This is the same formula used by SBI, HDFC,
+                            ICICI, and other banks for home loans, personal loans, and car loans. Results match actual
+                            bank calculations to the nearest rupee.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">What's the
+                            difference between flat-rate and reducing-balance EMI?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Flat-rate interest charges
+                            interest on the full original principal throughout the loan term, making it more expensive.
+                            Reducing-balance (which our calculator uses) charges interest only on the remaining
+                            outstanding principal — as you pay down the loan, the interest component decreases. RBI
+                            mandates that banks disclose the reducing-balance rate. A 12% flat rate is roughly
+                            equivalent to a 21% reducing-balance rate, so always compare loans using the
+                            reducing-balance method.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Insurance Estimator — Premium
+                        Factors</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">How are insurance
+                            premiums estimated?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Our estimator uses
+                            industry-standard factors: a base rate per coverage type (health, auto, life), multiplied by
+                            an age factor and coverage amount. Younger policyholders (under 30) pay lower premiums due
+                            to lower actuarial risk. The age factor increases progressively — a 50-year-old typically
+                            pays 2–3× more than a 25-year-old for the same coverage. These are estimates for comparison
+                            purposes; actual premiums from insurers also consider medical history, occupation,
+                            lifestyle, and location.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">What does the risk
+                            profile indicator mean?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">The risk profile (Low,
+                            Medium, High) is based primarily on age. Under 35 is typically Low Risk, 35–50 is Medium,
+                            and over 50 is High. This reflects how insurance companies assess mortality and morbidity
+                            risk. A higher risk profile generally means higher premiums but doesn't mean you'll be
+                            denied coverage. Many insurers offer wellness programs that can reduce premiums regardless
+                            of age — regular health checkups, non-smoking status, and BMI within healthy range are
+                            common discount factors.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Currency Converter — Exchange
+                        Rate Information</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Are exchange rates
+                            live or static?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Our converter uses static
+                            reference exchange rates that represent approximate mid-market rates. They are suitable for
+                            quick estimations, budgeting, and understanding relative currency values. For actual money
+                            transfers or trades, always check live rates from your bank or service provider like Wise,
+                            Xe, or your forex dealer. Live rates fluctuate throughout the day based on market
+                            conditions, and banks typically add a margin of 1-3% above the mid-market rate.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">How does the
+                            cross-rate conversion work?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">When converting between two
+                            non-USD currencies (e.g., INR to EUR), our tool first converts to USD using the source
+                            currency's rate, then converts from USD to the target currency. This is called cross-rate
+                            conversion and mirrors how most international forex transactions work in practice — USD
+                            serves as the global intermediary currency. The cross-rate may differ slightly from direct
+                            exchange rates quoted by banks, but the difference is typically under 0.5%.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Tax Calculator — Bracket
+                        System Explained</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">How does
+                            progressive tax calculation work?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">Progressive taxation means
+                            different portions of your income are taxed at different rates. For example, in India's new
+                            tax regime, income up to ₹3,00,000 is tax-free, ₹3–6 lakh is taxed at 5%, ₹6–9 lakh at 10%,
+                            and so on. A common misconception is that moving into a higher tax bracket means ALL your
+                            income is taxed at the higher rate — this is false. Only the income within each bracket is
+                            taxed at that bracket's rate. Our calculator shows both the total tax and the effective rate
+                            (total tax ÷ total income) to clarify this.</p>
+                    </details>
+                    <details>
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Which countries
+                            and tax years are supported?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">We support progressive tax
+                            calculations for the United States (federal brackets), United Kingdom (income tax bands
+                            including personal allowance), Canada (federal brackets), and India (new tax regime). Tax
+                            brackets are based on the latest available rates. For a complete tax picture, you should
+                            also consider state/provincial taxes, deductions, credits, and special provisions like
+                            India's 80C deductions or the US standard deduction. Our calculator shows the base
+                            federal/national tax for comparison purposes.</p>
+                    </details>
+                </div>
+
+                <div class="glass-card animate-on-scroll" style="margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--clr-primary); margin-bottom: var(--space-sm);">Privacy &amp; General</h3>
+                    <details style="margin-bottom: var(--space-md);">
+                        <summary style="cursor:pointer; font-weight:600; padding: var(--space-sm) 0;">Is my data stored
+                            or sent to any server?</summary>
+                        <p style="padding: var(--space-md) 0; color: var(--clr-text-dim);">No. All computations run
+                            entirely in your browser using JavaScript. No input data (bill amounts, health measurements,
+                            income figures, or any other values you enter) is ever sent to our servers, stored in
+                            databases, or shared with third parties. When you close the tab, all data is gone. This
+                            makes our tools safer for sensitive financial and health calculations compared to tools that
+                            require server-side processing or account creation.</p>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-brand"><span class="brand-icon">⚡</span> DailyLift</a>
+                    <p>Your daily source of motivation, free tools, and expert insights.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Pages</h4>
+                    <a href="index.html">Home</a>
+                    <a href="tools.html">Tools</a>
+                    <a href="blog.html">Blog</a>
+                    <a href="about.html">About</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <a href="tools.html#bill-splitter">Bill Splitter</a>
+                    <a href="tools.html#bmi-calculator">BMI Calculator</a>
+                    <a href="tools.html#unit-converter">Unit Converter</a>
+                    <a href="tools.html#loan-emi">Loan EMI</a>
+                    <a href="tools.html#insurance-estimator">Insurance</a>
+                    <a href="tools.html#currency-converter">Currency Converter</a>
+                    <a href="tools.html#tax-calculator">Tax Calculator</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal & Social</h4>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Use</a>
+                    <a href="https://twitter.com" target="_blank" rel="noopener">Twitter / X</a>
+                    <a href="https://pinterest.com" target="_blank" rel="noopener">Pinterest</a>
+                    <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 DailyLift. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">𝕏</a>
+                    <a href="https://pinterest.com" target="_blank" rel="noopener" aria-label="Pinterest">P</a>
+                    <a href="https://github.com" target="_blank" rel="noopener" aria-label="GitHub">GH</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script src="tools/bill-splitter.js"></script>
+    <script src="tools/bmi-calculator.js"></script>
+    <script src="tools/unit-converter.js"></script>
+    <script src="tools/loan-emi.js"></script>
+    <script src="tools/insurance-estimator.js"></script>
+    <script src="tools/currency-converter.js"></script>
+    <script src="tools/tax-calculator.js"></script>
+</body>
+
+</html>

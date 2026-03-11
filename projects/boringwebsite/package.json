@@ -1,0 +1,71 @@
+{
+    "name":  "boringwebsite",
+    "version":  "1.0.0",
+    "description":  "Automated static website with daily quotes, tools, blog, and monetization — runs on autopilot via GitHub Actions.",
+    "main":  "scripts/build.js",
+    "scripts":  {
+                    "build":  "node scripts/build.js",
+                    "fetch-quote":  "node scripts/fetch-quote.js",
+                    "generate-sitemap":  "node scripts/generate-sitemap.js",
+                    "post-social":  "node scripts/post-social.js",
+                    "dev":  "npx serve dist -l 3000",
+                    "clean":  "node -e \"const fs=require(\u0027fs\u0027);fs.rmSync(\u0027dist\u0027,{recursive:true,force:true})\"",
+                    "test":  "jest --coverage",
+                    "test:coverage":  "jest --runInBand --coverage --verbose --forceExit --detectOpenHandles 2\u003e\u00261",
+                    "test:ci":  "jest --runInBand --coverage --ci --verbose --forceExit --detectOpenHandles 2\u003e\u00261",
+                    "lint":  "node scripts/lint-check.js"
+                },
+    "jest":  {
+                 "testEnvironment":  "node",
+                 "roots":  [
+                               "\u003crootDir\u003e/tests"
+                           ],
+                 "testMatch":  [
+                                   "**/*.test.js"
+                               ],
+                 "collectCoverageFrom":  [
+                                             "scripts/**/*.js",
+                                             "src/tools/**/*.js",
+                                             "src/js/**/*.js",
+                                             "!scripts/lint-check.js"
+                                         ],
+                 "coverageDirectory":  "coverage",
+                 "coverageReporters":  [
+                                           "text",
+                                           "text-summary",
+                                           "lcov",
+                                           "json-summary"
+                                       ],
+                 "coverageThreshold":  {
+                                           "global":  {
+                                                          "branches":  90,
+                                                          "functions":  90,
+                                                          "lines":  90,
+                                                          "statements":  90
+                                                      }
+                                       }
+             },
+    "dependencies":  {
+                         "marked":  "^12.0.0",
+                         "gray-matter":  "^4.0.3"
+                     },
+    "devDependencies":  {
+                            "jest":  "^29.7.0",
+                            "jest-environment-jsdom":  "^29.7.0",
+                            "jsdom":  "^24.0.0",
+                            "cheerio":  "^1.1.0",
+                            "htmlparser2":  "^10.0.0"
+                        },
+    "keywords":  [
+                     "quotes",
+                     "tools",
+                     "automation",
+                     "static-site",
+                     "passive-income"
+                 ],
+    "author":  "",
+    "license":  "MIT",
+    "engines":  {
+                    "node":  "\u003e=20.0.0"
+                }
+}

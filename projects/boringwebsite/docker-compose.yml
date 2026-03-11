@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  # Run tests with coverage
+  test:
+    build: .
+    command: npm run test:coverage
+    volumes:
+      - ./coverage:/app/coverage
+
+  # Build the site
+  build:
+    build: .
+    environment:
+      - IS_DOCKER=true
+    command: npm run build
+    volumes:
+      - ./dist:/app/dist
+
+  # Serve the site locally (http://localhost:3000)
+  serve:
+    build: .
+    command: npx serve dist -l 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dist:/app/dist
+    depends_on:
+      build:
+        condition: service_completed_successfully
+
+  # Fetch daily quote
+  fetch-quote:
+    build: .
+    command: node scripts/fetch-quote.js
+    volumes:
+      - ./data:/app/data
+
+  # Run lint checks
+  lint:
+    build: .
+    command: npm run lint
+
+  # Full CI pipeline: lint, test, build
+  ci:
+    build: .
+    command: sh -c "npm run lint && npm run test:coverage && npm run build"
+    volumes:
+      - ./coverage:/app/coverage
+      - ./dist:/app/dist
