@@ -45,6 +45,10 @@
     },
     "master": {
         "directory": "projects/quickutils-master",
-        "repo_name": "quickutils-master"
+        "repo_name": "quickutils-master",
+        "src_dir": "projects/quickutils-master/src",
+        "data_dir": "projects/quickutils-master/data",
+        "dist_dir": "dist",
+        "destination_dir": "dist"
     }
 }
