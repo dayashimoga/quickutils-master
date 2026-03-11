@@ -130,7 +130,7 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>{{ site_name }}</h1>"
-        "<p>{{ total_items }} APIs in {{ total_categories }} categories</p>"
+        "<p>{{ total_apis }} APIs in {{ total_categories }} categories</p>"
         "{% for cat in categories %}"
         '<a href="/category/{{ cat.slug }}.html">{{ cat.name }} ({{ cat.count }})</a>'
         "{% endfor %}"

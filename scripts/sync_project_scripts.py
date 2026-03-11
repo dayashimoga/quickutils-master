@@ -30,9 +30,14 @@ def sync_scripts():
         print(f"  ✗ Projects directory not found at {PROJECTS_DIR}")
         return
 
+    MASTER_PROJECT_DIR = PROJECTS_DIR / "quickutils-master"
+    if not MASTER_PROJECT_DIR.exists():
+        print(f"  ✗ Master project not found at {MASTER_PROJECT_DIR}")
+        return
+
     # Sync to each project directory
     for project in PROJECTS_DIR.iterdir():
-        if not project.is_dir():
+        if not project.is_dir() or project.name == "quickutils-master":
             continue
         
         # Skip hidden directories
@@ -41,7 +46,10 @@ def sync_scripts():
 
         print(f"  → Syncing to {project.name}...")
         for file_rel_path in MASTER_FILES:
-            src = ROOT_DIR / file_rel_path
+            if file_rel_path.startswith("scripts/") or file_rel_path == "requirements.txt" or file_rel_path == ".gitignore":
+                src = ROOT_DIR / file_rel_path
+            else:
+                src = MASTER_PROJECT_DIR / file_rel_path
             
             # Determine destination
             if file_rel_path.startswith("scripts/"):

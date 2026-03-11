@@ -6,20 +6,22 @@ import os
 import re
 import unicodedata
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Resolve base directories, prioritizing environment variables, then falling back to local or project-mapped paths
+# Resolve base directories, prioritizing environment variables, then falling back to local paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
+DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
+SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
+TEMPLATES_DIR = SRC_DIR / "templates"
+
+# Optional fallback for orchestrator context (only if local dirs don't exist)
 if not DATA_DIR.exists() and (PROJECT_ROOT / "projects").exists():
     for proj in (PROJECT_ROOT / "projects").iterdir():
         if proj.is_dir() and (proj / "data").exists():
             DATA_DIR = proj / "data"
             break
-
-DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
-SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
-TEMPLATES_DIR = SRC_DIR / "templates"
 
 if not TEMPLATES_DIR.exists() and (PROJECT_ROOT / "projects").exists():
     for proj in (PROJECT_ROOT / "projects").iterdir():
@@ -60,7 +62,7 @@ ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
 
 # Project Identification
-PROJECT_TYPE = get_config("PROJECT_TYPE", "master")
+PROJECT_TYPE = str(get_config("PROJECT_TYPE", "master") or "master")
 
 # Site Identity
 if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory":
@@ -99,7 +101,7 @@ def slugify(text: str) -> str:
     return n_text
 
 
-def load_database(path: Path = None) -> list:
+def load_database(path: Optional[Path] = None) -> list:
     """Load the database JSON file and return a list of items with optimized slug generation."""
     if path is None:
         path = DATA_DIR / "database.json"
@@ -141,7 +143,7 @@ def load_database(path: Path = None) -> list:
     return data
 
 
-def save_database(items: list, path: Path = None) -> None:
+def save_database(items: list, path: Optional[Path] = None) -> None:
     """Save items to the database JSON file with deterministic sorting.
 
     Args:
@@ -185,8 +187,14 @@ def get_categories(items: list) -> dict:
 
 def truncate(text: str, max_length: int = 160) -> str:
     """Truncate text to max_length, adding ellipsis if needed."""
-    if not text:
-        return ""
-    if len(text) <= max_length:
-        return text
-    return text[: max_length - 3].rsplit(" ", 1)[0] + "..."
+    if not text or len(text) <= max_length:
+        return text or ""
+
+    # Ensure we have at least 3 characters room for ellipsis
+    limit = max(0, max_length - 3)
+    trimmed = text[:limit]
+
+    # Try to break at a space to avoid cutting words
+    if " " in trimmed:
+        return trimmed.rsplit(" ", 1)[0] + "..."
+    return trimmed + "..."

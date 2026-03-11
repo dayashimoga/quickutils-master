@@ -73,6 +73,11 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
         run: |
+          # Ensure root templates and scripts are distributed to child project directories first
+          # This intelligently handles dependency changes: if root scripts/templates are updated,
+          # this script modifies all project folders, causing them all to be pushed to Cloudflare.
+          python scripts/sync_project_scripts.py
+          
           git config --global user.email "bot@quickutils.top"
           git config --global user.name "QuickUtils Bot"
           

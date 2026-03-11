@@ -9,17 +9,22 @@ def test_sync_scripts_basic(tmp_path, monkeypatch):
     # Setup mock root structure
     root = tmp_path / "root"
     root.mkdir()
-    
-    # Create master files
-    for f_rel in MASTER_FILES:
-        f_path = root / f_rel
-        f_path.parent.mkdir(parents=True, exist_ok=True)
-        f_path.write_text(f"content of {f_rel}", encoding="utf-8")
-        
     # Create projects directory
     projects_dir = root / "projects"
     projects_dir.mkdir()
     
+    master_proj = projects_dir / "quickutils-master"
+    master_proj.mkdir()
+    
+    # Create master files
+    for f_rel in MASTER_FILES:
+        if f_rel.startswith("scripts/") or f_rel == "requirements.txt" or f_rel == ".gitignore":
+            f_path = root / f_rel
+        else:
+            f_path = master_proj / f_rel
+        f_path.parent.mkdir(parents=True, exist_ok=True)
+        f_path.write_text(f"content of {f_rel}", encoding="utf-8")
+        
     proj1 = projects_dir / "project1"
     proj1.mkdir()
     

@@ -27,6 +27,9 @@ def sample_items():
             "tool_type": "50GB+",
             "pricing": "Public Domain",
             "slug": "nyc-taxi-and-limousine-commission-trip-record-data",
+            "auth": "None",
+            "https": True,
+            "cors": "unknown",
         },
         {
             "title": "World Bank Open Data",
@@ -37,6 +40,9 @@ def sample_items():
             "tool_type": "Various",
             "pricing": "CC BY 4.0",
             "slug": "world-bank-open-data",
+            "auth": "None",
+            "https": True,
+            "cors": "unknown",
         },
         {
             "title": "Common Crawl",
@@ -47,6 +53,9 @@ def sample_items():
             "tool_type": "Petabytes",
             "pricing": "Open usage terms",
             "slug": "common-crawl",
+            "auth": "None",
+            "https": True,
+            "cors": "unknown",
         },
         {
             "title": "Wikipedia Dumps",
@@ -57,6 +66,9 @@ def sample_items():
             "tool_type": "20GB+",
             "pricing": "CC BY-SA 4.0",
             "slug": "wikipedia-dumps",
+            "auth": "None",
+            "https": True,
+            "cors": "unknown",
         },
     ]
 
@@ -119,7 +131,7 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>{{ site_name }}</h1>"
-        "<p>{{ total_items }} Tools in {{ total_categories }} categories</p>"
+        "<p>{{ total_apis }} Tools in {{ total_categories }} categories</p>"
         "{% for cat in categories %}"
         '<a href="/category/{{ cat.slug }}.html">{{ cat.name }} ({{ cat.count }})</a>'
         "{% endfor %}"

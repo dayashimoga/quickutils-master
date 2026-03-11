@@ -27,6 +27,10 @@ def real_env():
         "current_year": 2025,
         "ga_measurement_id": "G-TEST",
         "adsense_publisher_id": "ca-pub-TEST",
+        "enable_adsense": True,
+        "enable_amazon": True,
+        "enable_social": True,
+        "enable_indexnow": True,
     })
     return env
 
