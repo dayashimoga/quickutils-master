@@ -10,10 +10,7 @@ def main():
     root_dir = Path("h:/boring/projects")
     projects = [d for d in root_dir.iterdir() if d.is_dir() and d.name.endswith("-directory")]
     
-    # 1. Build Master Site
-    print("\n--- Building Master Site ---")
-    run_cmd(["python", "scripts/build_directory.py"], "h:/boring")
-    run_cmd(["python", "scripts/generate_sitemap.py"], "h:/boring")
+    # Master Site is no longer built directly from root (src/data purged)
 
     # 2. Build Sub-Projects
     for proj in projects:
