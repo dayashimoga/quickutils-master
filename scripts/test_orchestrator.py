@@ -4,13 +4,17 @@ import json
 import sys
 from pathlib import Path
 
-def run_command(command, cwd):
+def run_command(command, cwd, root_dir):
     try:
         sys.stdout.reconfigure(encoding='utf-8')
     except AttributeError:
         pass
     print(f"--- Running: {' '.join(command)} in {cwd} ---")
-    env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+    # Inject root_dir into PYTHONPATH so projects can find 'scripts.utils'
+    env = dict(os.environ, 
+               PYTHONIOENCODING="utf-8", 
+               PYTHONUTF8="1",
+               PYTHONPATH=str(root_dir))
     try:
         result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, encoding='utf-8', env=env)
         return result.returncode, result.stdout, result.stderr
@@ -29,14 +33,20 @@ def main():
     
     # 1. Process Master Repository (Full Coverage)
     print("\n--- Testing Master Repository ---")
-    code, out, err = run_command(["pytest", "--cov=scripts", "--cov-report=json:coverage.json", "tests/"], base_dir)
+    code, out, err = run_command(["pytest", "--cov=scripts", "--cov-report=json:coverage.json", "tests/"], base_dir, base_dir)
     cov_file = base_dir / "coverage.json"
     master_cov = 0
     if cov_file.exists():
         with open(cov_file, 'r') as f:
             data = json.load(f)
             master_cov = data['totals']['percent_covered']
-            results.append({"name": "quickutils-master", "coverage": master_cov, "status": "PASS" if code == 0 else "FAIL:\n" + out[-500:]})
+            results.append({
+            "name": "quickutils-master", 
+            "coverage": master_cov, 
+            "status": "PASS" if code == 0 else "FAIL",
+            "full_out": out,
+            "full_err": err
+        })
     else:
         results.append({"name": "quickutils-master", "coverage": 0, "status": "FAIL (No Coverage)"})
 
@@ -47,16 +57,28 @@ def main():
              results.append({"name": proj.name, "coverage": "N/A", "status": "SKIPPED (No Tests)"})
              continue
              
-        code, out, err = run_command(["pytest", "tests/test_core_optimized.py"], proj)
-        results.append({"name": proj.name, "coverage": "N/A", "status": "PASS" if code == 0 else "FAIL"})
+        code, out, err = run_command(["pytest", "tests/test_core_optimized.py"], proj, base_dir)
+        results.append({
+            "name": proj.name, 
+            "coverage": "N/A", 
+            "status": "PASS" if code == 0 else "FAIL",
+            "full_out": out,
+            "full_err": err
+        })
 
     # 3. Process Node.js Project (boringwebsite)
     node_proj = root_dir / "boringwebsite"
     if node_proj.exists():
         try:
             subprocess.run(["npm", "--version"], capture_output=True, check=True)
-            code, out, err = run_command(["npm", "test", "--", "--passWithNoTests"], node_proj)
-            results.append({"name": "boringwebsite", "coverage": "N/A", "status": "PASS" if code == 0 else "FAIL"})
+            code, out, err = run_command(["npm", "test", "--", "--passWithNoTests"], node_proj, base_dir)
+            results.append({
+                "name": "boringwebsite", 
+                "coverage": "N/A", 
+                "status": "PASS" if code == 0 else "FAIL",
+                "full_out": out,
+                "full_err": err
+            })
         except (FileNotFoundError, subprocess.CalledProcessError):
             print("  ⚠️ Warning: npm not found. Skipping Node.js tests for boringwebsite.")
             results.append({"name": "boringwebsite", "coverage": "N/A", "status": "SKIPPED (npm not found)"})
@@ -72,8 +94,11 @@ def main():
         print(f"{r['name']:<25} | {cov_str} | {status_line}")
         if not r['status'].startswith("PASS") and not r['status'].startswith("SKIPPED"):
             all_pass = False
-            if "FAIL:\n" in r['status']:
-                print(r['status'])
+            print(f"\n--- FAILED: {r['name']} ---")
+            if r.get('full_out'):
+                print(f"STDOUT:\n{r['full_out']}")
+            if r.get('full_err'):
+                print(f"STDERR:\n{r['full_err']}")
     
     print("-"*40)
     print(f"MASTER SCRIPT COVERAGE: {master_cov:.2f}%")
