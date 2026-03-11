@@ -7,12 +7,25 @@ import re
 import unicodedata
 from pathlib import Path
 
-# Project root is one level up from scripts/
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Resolve base directories, prioritizing environment variables, then falling back to local or project-mapped paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
+if not DATA_DIR.exists() and (PROJECT_ROOT / "projects").exists():
+    for proj in (PROJECT_ROOT / "projects").iterdir():
+        if proj.is_dir() and (proj / "data").exists():
+            DATA_DIR = proj / "data"
+            break
+
 DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
 SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
 TEMPLATES_DIR = SRC_DIR / "templates"
+
+if not TEMPLATES_DIR.exists() and (PROJECT_ROOT / "projects").exists():
+    for proj in (PROJECT_ROOT / "projects").iterdir():
+        if proj.is_dir() and (proj / "src" / "templates").exists():
+            TEMPLATES_DIR = proj / "src" / "templates"
+            break
 
 # Dynamic Configuration
 CONFIG_PATH = PROJECT_ROOT / "project_config.json"
