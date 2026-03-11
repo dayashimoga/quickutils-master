@@ -12,6 +12,8 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.json
+coverage.xml
 .tox/
 .noseids/
 
@@ -47,6 +49,7 @@ test_output.txt
 test_output_utf8.txt
 tests_output.txt
 final_test_report.txt
+test_summary.txt
 test_report*.txt
 temp_*/
 
@@ -74,3 +77,6 @@ __pycache__/
 
 build*.txt
 venv_*
+
+# Project Redundancy
+projects/quickutils-master/
