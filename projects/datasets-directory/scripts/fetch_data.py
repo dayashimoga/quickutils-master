@@ -153,6 +153,17 @@ def fetch_and_save() -> bool:
     raw_entries = get_remote_data()
 
     if not raw_entries:
+        # Preserve existing database.json if it has real data
+        db_path = DATA_DIR / "database.json"
+        if db_path.exists():
+            try:
+                import json as _json
+                existing = _json.loads(db_path.read_text(encoding="utf-8"))
+                if isinstance(existing, list) and len(existing) > 5:
+                    logger.info(f"Remote fetch failed but existing database has {len(existing)} items. Keeping existing data.")
+                    return True
+            except Exception:
+                pass
         logger.warning("Could not fetch remote datasets. Falling back to built-in seed data.")
         raw_entries = get_seed_data()
 
