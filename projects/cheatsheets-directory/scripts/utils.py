@@ -7,12 +7,25 @@ import re
 import unicodedata
 from pathlib import Path
 
-# Project root is one level up from scripts/
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Resolve base directories, prioritizing environment variables, then falling back to local or project-mapped paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
+if not DATA_DIR.exists() and (PROJECT_ROOT / "projects").exists():
+    for proj in (PROJECT_ROOT / "projects").iterdir():
+        if proj.is_dir() and (proj / "data").exists():
+            DATA_DIR = proj / "data"
+            break
+
 DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
 SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
 TEMPLATES_DIR = SRC_DIR / "templates"
+
+if not TEMPLATES_DIR.exists() and (PROJECT_ROOT / "projects").exists():
+    for proj in (PROJECT_ROOT / "projects").iterdir():
+        if proj.is_dir() and (proj / "src" / "templates").exists():
+            TEMPLATES_DIR = proj / "src" / "templates"
+            break
 
 # Dynamic Configuration
 CONFIG_PATH = PROJECT_ROOT / "project_config.json"
@@ -33,11 +46,7 @@ def get_config(key, default):
         return False
     return val
 
-# Determine default subdomain based on directory name
-# Example: "prompts-directory" -> "prompts"
-project_slug = PROJECT_ROOT.name.replace("-directory", "")
-if project_slug == "boring" or project_slug == "quickutils-master": 
-    project_slug = "directory" # Root/Master fallback
+# (Constants moved below)
 
 # Global Configuration Constants
 GH_USERNAME = get_config("GH_USERNAME", "dayashimoga")
@@ -50,10 +59,20 @@ ENABLE_ADSENSE = get_config("ENABLE_ADSENSE", True)
 ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
 
+# Project Identification
+PROJECT_TYPE = get_config("PROJECT_TYPE", "master")
+
 # Site Identity
-SITE_URL = get_config("SITE_URL", f"https://{project_slug}.quickutils.top")
-SITE_NAME = get_config("SITE_NAME", f"QuickUtils {project_slug.capitalize()} Directory")
-SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {project_slug.capitalize()} — searchable and categorized.")
+if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory":
+    DEFAULT_SITE_URL = "https://quickutils.top"
+    DEFAULT_SITE_NAME = "QuickUtils Directory"
+else:
+    DEFAULT_SITE_URL = f"https://{PROJECT_TYPE}.quickutils.top"
+    DEFAULT_SITE_NAME = f"QuickUtils {PROJECT_TYPE.capitalize()} Directory"
+
+SITE_URL = get_config("SITE_URL", DEFAULT_SITE_URL)
+SITE_NAME = get_config("SITE_NAME", DEFAULT_SITE_NAME)
+SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {PROJECT_TYPE.capitalize()} — searchable and categorized.")
 
 
 _SLUG_CACHE = {}
@@ -116,6 +135,8 @@ def load_database(path: Path = None) -> list:
             item["https"] = True
         if "category" not in item:
             item["category"] = "Uncategorized"
+        if "url" not in item:
+            item["url"] = "#"
                 
     return data
 
