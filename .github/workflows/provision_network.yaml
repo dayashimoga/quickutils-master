@@ -3,11 +3,6 @@ name: QuickUtils Network Orchestrator
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'projects/**'
-      - 'terraform/**'
-      - 'scripts/**'
-      - '.github/workflows/provision_network.yaml'
   workflow_dispatch:
 
 jobs:
