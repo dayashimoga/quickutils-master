@@ -5,9 +5,14 @@ import sys
 from pathlib import Path
 
 def run_command(command, cwd):
-    print(f"--- Running: {' '.join(command)} in {cwd} ---")
     try:
-        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+    print(f"--- Running: {' '.join(command)} in {cwd} ---")
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+    try:
+        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, encoding='utf-8', env=env)
         return result.returncode, result.stdout, result.stderr
     except Exception as e:
         return 1, "", str(e)
