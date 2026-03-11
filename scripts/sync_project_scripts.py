@@ -7,7 +7,15 @@ MASTER_FILES = [
     "scripts/build_directory.py",
     "scripts/generate_sitemap.py",
     "scripts/utils.py",
+    "scripts/__init__.py",
     "requirements.txt",
+    "src/_redirects",
+    "src/_headers",
+    "src/templates/base.html",
+    "src/templates/index.html",
+    "src/templates/item.html",
+    "src/templates/category.html",
+    "src/templates/404.html",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

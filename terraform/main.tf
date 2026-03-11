@@ -29,7 +29,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   }
 
   build_config {
-    build_command       = lookup(each.value, "build_command", "pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py")
+    build_command       = lookup(each.value, "build_command", "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py")
     destination_dir     = lookup(each.value, "destination_dir", "dist")
     root_dir            = "" # This might need adjustment depending on mono-repo setup vs individual repos
   }
