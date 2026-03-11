@@ -1,0 +1,5 @@
+﻿FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install pytest pytest-cov pytest-asyncio aiohttp jinja2 responses requests htmlmin
+CMD ["pytest", "tests/", "--cov=scripts", "--cov-report=term", "--cov-fail-under=90"]
