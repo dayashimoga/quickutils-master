@@ -20,7 +20,13 @@ if str(PROJECT_ROOT) not in sys.path:
 from jinja2 import Environment, FileSystemLoader
 
 from scripts.utils import (
+    ADSENSE_PUBLISHER_ID,
+    AMAZON_AFFILIATE_TAG,
     DIST_DIR,
+    ENABLE_ADSENSE,
+    ENABLE_AMAZON,
+    ENABLE_PINTEREST,
+    GA_MEASUREMENT_ID,
     PROJECT_ROOT,
     SITE_DESCRIPTION,
     SITE_NAME,
@@ -34,8 +40,8 @@ from scripts.utils import (
     truncate,
 )
 
-# Amazon Affiliate tag from environment variable
-AMAZON_TAG = (os.environ.get("AMAZON_AFFILIATE_TAG") or "").strip() or "quickutils-20"
+# Amazon Affiliate tag
+AMAZON_TAG = AMAZON_AFFILIATE_TAG
 
 # Curated book recommendations per category (Amazon affiliate links)
 BOOK_RECOMMENDATIONS = {
@@ -150,12 +156,16 @@ try:
     import htmlmin
 
     def minify_html(html: str) -> str:
-        return htmlmin.minify(
-            html,
-            remove_comments=True,
-            remove_empty_space=True,
-            reduce_boolean_attributes=True,
-        )
+        try:
+            return htmlmin.minify(
+                html,
+                remove_comments=True,
+                remove_empty_space=True,
+                reduce_boolean_attributes=True,
+            )
+        except Exception as e:
+            print(f"  ⚠️ Minification failed: {e}")
+            return html
 except ImportError:
     def minify_html(html: str) -> str:
         return html
@@ -182,10 +192,12 @@ def create_jinja_env() -> Environment:
             "site_description": SITE_DESCRIPTION,
             "build_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "current_year": datetime.now(timezone.utc).year,
-            "site_description": SITE_DESCRIPTION,
-            "ga_measurement_id": (os.environ.get("GA_MEASUREMENT_ID") or "").strip() or "G-QPDP38ZCCV",
-            "adsense_publisher_id": (os.environ.get("ADSENSE_PUBLISHER_ID") or "").strip() or "ca-pub-5193703345853377",
+            "ga_measurement_id": GA_MEASUREMENT_ID,
+            "adsense_publisher_id": ADSENSE_PUBLISHER_ID,
             "amazon_affiliate_tag": AMAZON_TAG,
+            "enable_adsense": ENABLE_ADSENSE,
+            "enable_amazon": ENABLE_AMAZON,
+            "enable_pinterest": ENABLE_PINTEREST,
         }
     )
 
@@ -269,6 +281,8 @@ def build_item_pages(env: Environment, items: list, categories: dict):
     ensure_dir(items_dir)
 
     for item in items:
+        if "auth" not in item:
+            item["auth"] = "None"
         # Get related items from the same category (up to 6, excluding self)
         related = [
             i
@@ -362,7 +376,7 @@ def build_index_page(env: Environment, items: list, categories: dict):
     html = template.render(
         categories=category_cards,
         featured_items=featured,
-        total_items=len(items),
+        total_apis=len(items),
         total_categories=len(categories),
         page_title=f"{SITE_NAME} — Discover Free & Open APIs",
         page_description=SITE_DESCRIPTION,

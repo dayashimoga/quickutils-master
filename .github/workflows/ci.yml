@@ -1,0 +1,32 @@
+name: CI & Operations
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      - name: Run Core Scripts Tests
+        run: |
+          pytest --cov=scripts --cov-report=xml tests/
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
+          echo "Core scripts coverage: $COVERAGE"
+          python -c "import sys; print('Coverage OK') if float('$COVERAGE') >= 0.90 else (print('Coverage below 90%'), sys.exit(1))"
+      - name: Run Global Site Orchestrator Tests
+        run: python scripts/test_orchestrator.py

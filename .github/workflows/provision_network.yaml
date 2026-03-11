@@ -1,0 +1,117 @@
+name: QuickUtils Network Orchestrator
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'projects/**'
+      - 'terraform/**'
+      - 'scripts/**'
+      - '.github/workflows/provision_network.yaml'
+  workflow_dispatch:
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Provision GitHub Repositories
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          OWNER: "dayashimoga"
+        run: |
+          # Read the generated JSON to get project names
+          PROJECTS=$(cat terraform/projects.json | jq -r '.[] | .repo_name')
+          
+          for project in $PROJECTS; do
+            if [ "$project" == "quickutils-master" ]; then continue; fi
+            echo "Checking repository: $project"
+            if ! gh repo view "$OWNER/$project" > /dev/null 2>&1; then
+              echo "Creating new repository: $project"
+              gh repo create "$OWNER/$project" --public --description "Part of the QuickUtils Network"
+            else
+              echo "Repository $project already exists."
+            fi
+          done
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init & Apply
+        working-directory: terraform
+        env:
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          terraform init
+          
+          # Smart Adoption Logic
+          echo "Checking for existing Cloudflare Pages projects to import..."
+          jq -r 'to_entries[] | "\(.key) \(.value.repo_name)"' projects.json | while read -r key repo; do
+            if [ "$repo" == "quickutils-master" ]; then continue; fi
+            
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
+              -H "Authorization: Bearer $CF_API_TOKEN" \
+              -H "Content-Type: application/json")
+              
+            if [ "$STATUS" == "200" ]; then
+              if ! terraform state show "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1; then
+                echo "Adopting existing project: $repo (key: $key)"
+                terraform import "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || echo "Import failed, might already be tracked."
+              fi
+            fi
+          done
+          
+          # Final Apply
+          terraform apply -auto-approve
+
+      - name: Sync Code to Child Repos
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          OWNER: "dayashimoga"
+        run: |
+          git config --global user.email "bot@quickutils.top"
+          git config --global user.name "QuickUtils Bot"
+          
+          PROJECTS=$(cat terraform/projects.json | jq -r '.[] | .repo_name')
+          
+          for project in $PROJECTS; do
+            if [ "$project" == "quickutils-master" ]; then continue; fi
+            
+            echo "Syncing code for $project..."
+            TEMP_DIR="/tmp/sync_$project"
+            rm -rf $TEMP_DIR
+            mkdir -p $TEMP_DIR
+            
+            # Find the directory mapping for this repo
+            PROJ_DIR=$(cat terraform/projects.json | jq -r ".[] | select(.repo_name==\"$project\") | .directory")
+            
+            # Copy content from source directory to temp
+            cp -r $PROJ_DIR/. $TEMP_DIR/
+            
+            # CRITICAL: Remove any existing .git from project folder to ensure a clean sync
+            rm -rf $TEMP_DIR/.git
+            
+            cd $TEMP_DIR
+            git init
+            git checkout -b main
+            git add .
+            
+            # Only commit and push if there are actual changes
+            if git commit -m "Automation: Sync from Master Repository"; then
+              echo "Pushing changes for $project..."
+              git push "https://$GH_PAT@github.com/$OWNER/$project.git" main --force
+            else
+              echo "No changes to sync for $project"
+            fi
+            cd -
+          done

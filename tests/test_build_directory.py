@@ -48,12 +48,12 @@ class TestBuildItemPages:
             categories = get_categories(sample_items)
             build_item_pages(env, sample_items, categories)
 
-        api_dir = dist_dir / "api"
-        assert api_dir.exists()
+        item_dir = dist_dir / "item"
+        assert item_dir.exists()
 
         # Check each item has a page
         for item in sample_items:
-            page = api_dir / f"{item['slug']}.html"
+            page = item_dir / f"{item['slug']}.html"
             assert page.exists(), f"Missing page: {page}"
             content = page.read_text(encoding="utf-8")
             assert item["title"] in content
@@ -67,7 +67,7 @@ class TestBuildItemPages:
             categories = get_categories(sample_items)
             build_item_pages(env, sample_items, categories)
 
-        page = dist_dir / "api" / "dog-api.html"
+        page = dist_dir / "item" / "dog-api.html"
         content = page.read_text(encoding="utf-8")
         assert "<title>" in content
         # htmlmin may strip attribute quotes, so check for both forms
@@ -84,7 +84,7 @@ class TestBuildItemPages:
             build_item_pages(env, sample_items, categories)
 
         # Dog API is in Animals category, Cat Facts is also in Animals
-        page = dist_dir / "api" / "dog-api.html"
+        page = dist_dir / "item" / "dog-api.html"
         content = page.read_text(encoding="utf-8")
         assert "Cat Facts" in content
 
@@ -244,7 +244,7 @@ class TestBuildSite:
         assert (dist_dir / "404.html").exists()
         assert (dist_dir / "feed.xml").exists(), "RSS feed missing"
         assert (dist_dir / "search.json").exists(), "Search index missing"
-        assert (dist_dir / "api").is_dir()
+        assert (dist_dir / "item").is_dir()
         assert (dist_dir / "category").is_dir()
 
     def test_empty_database(self, tmp_path, templates_dir):
@@ -265,6 +265,9 @@ class TestBuildSite:
         dist_dir.mkdir()
         old_file = dist_dir / "old_file.html"
         old_file.write_text("old", encoding="utf-8")
+        # Add a dir to trigger rmtree
+        old_dir = dist_dir / "old_dir"
+        old_dir.mkdir()
 
         with patch("scripts.build_directory.TEMPLATES_DIR", templates_dir), \
              patch("scripts.build_directory.DIST_DIR", dist_dir), \
@@ -272,3 +275,71 @@ class TestBuildSite:
             build_site(sample_database_path)
 
         assert not old_file.exists()
+        assert not old_dir.exists()
+
+class TestOptimizeImages:
+    """Test image optimization."""
+
+    def test_optimizes_images(self, tmp_path):
+        from PIL import Image
+        dist_dir = tmp_path / "dist"
+        images_dir = dist_dir / "images"
+        images_dir.mkdir(parents=True)
+        
+        # Create dummy images
+        img_png = images_dir / "test.png"
+        Image.new('RGB', (100, 100), color = 'red').save(img_png)
+        
+        img_jpg = images_dir / "test.jpg"
+        Image.new('RGB', (100, 100), color = 'blue').save(img_jpg, format='JPEG')
+        
+        with patch("scripts.build_directory.DIST_DIR", dist_dir):
+            from scripts.build_directory import optimize_images
+            optimize_images()
+        
+        assert img_png.exists()
+        assert img_jpg.exists()
+
+    def test_handles_optimization_error(self, tmp_path):
+        dist_dir = tmp_path / "dist"
+        images_dir = dist_dir / "images"
+        images_dir.mkdir(parents=True)
+        (images_dir / "bad.png").write_text("not an image")
+        
+        with patch("scripts.build_directory.DIST_DIR", dist_dir):
+            from scripts.build_directory import optimize_images
+            optimize_images() # Should handle exception and continue
+
+class TestMinifyHtml:
+    """Test HTML minification."""
+
+    def test_minify_failure_returns_original(self):
+        from scripts.build_directory import minify_html
+        with patch("scripts.build_directory.htmlmin.minify", side_effect=Exception("Minify error")):
+            result = minify_html("<html></html>")
+            assert result == "<html></html>"
+
+class TestCopyStaticAssetsExtended:
+    """Extended tests for static asset copying."""
+
+    def test_cleans_existing_asset_dir(self, tmp_path):
+        src_dir = tmp_path / "src"
+        dist_dir = tmp_path / "dist"
+        dist_dir.mkdir()
+        
+        # Source asset
+        css_src = src_dir / "css"
+        css_src.mkdir(parents=True)
+        (css_src / "new.css").write_text("new", encoding="utf-8")
+        
+        # Existing destination asset dir
+        css_dst = dist_dir / "css"
+        css_dst.mkdir()
+        (css_dst / "old.css").write_text("old", encoding="utf-8")
+        
+        with patch("scripts.build_directory.SRC_DIR", src_dir), \
+             patch("scripts.build_directory.DIST_DIR", dist_dir):
+            copy_static_assets()
+            
+        assert (css_dst / "new.css").exists()
+        assert not (css_dst / "old.css").exists()

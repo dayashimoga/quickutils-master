@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 
 # Configuration - Renamed to match orchestrator standard
+from scripts.utils import GH_USERNAME
 PAT = os.environ.get("GH_PAT") or os.environ.get("GITHUB_PAT")
+
 _username_cache = None
 
 def get_username():
@@ -46,10 +48,10 @@ def get_projects():
     return projects
 
 def create_github_repo(repo_name):
-    username = get_username()
+    username = get_username() or GH_USERNAME
     if not PAT or not username:
         # Fallback to existing git remote if we can find it
-        return f"https://github.com/dayashimoga/{repo_name}.git" # Hardcoded fallback for the known user
+        return f"https://github.com/{GH_USERNAME}/{repo_name}.git"
         
     print(f"\nProcessing {repo_name}...")
     url = "https://api.github.com/user/repos"

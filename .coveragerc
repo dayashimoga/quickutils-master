@@ -1,0 +1,6 @@
+[run]
+omit =
+    scripts/test_orchestrator.py
+    scripts/verify_links_local.py
+    scripts/build_all_local.py
+    scripts/run_global_tests.py

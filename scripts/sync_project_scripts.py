@@ -8,8 +8,6 @@ MASTER_FILES = [
     "scripts/generate_sitemap.py",
     "scripts/utils.py",
     "requirements.txt",
-    "src/_redirects",
-    "src/_headers",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

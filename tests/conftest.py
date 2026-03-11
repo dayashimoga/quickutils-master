@@ -143,12 +143,12 @@ def templates_dir(tmp_path):
         '<a href="/category/{{ cat.slug }}.html">{{ cat.name }} ({{ cat.count }})</a>'
         "{% endfor %}"
         "{% for item in featured_items %}"
-        '<a href="/api/{{ item.slug }}.html">{{ item.title }}</a>'
+        '<a href="/item/{{ item.slug }}.html">{{ item.title }}</a>'
         "{% endfor %}"
         "{% endblock %}",
         encoding="utf-8",
     )
-
+ 
     # Item template
     item = tpl_dir / "item.html"
     item.write_text(
@@ -160,7 +160,7 @@ def templates_dir(tmp_path):
         "<p>Auth: {{ item.auth }}</p>"
         '<a href="{{ item.url }}">Visit</a>'
         "{% for rel in related_items %}"
-        '<a href="/api/{{ rel.slug }}.html">{{ rel.title }}</a>'
+        '<a href="/item/{{ rel.slug }}.html">{{ rel.title }}</a>'
         "{% endfor %}"
         "{% endblock %}",
         encoding="utf-8",
@@ -174,7 +174,7 @@ def templates_dir(tmp_path):
         "<h1>{{ category_name }}</h1>"
         "<p>{{ item_count }} APIs</p>"
         "{% for item in items %}"
-        '<a href="/api/{{ item.slug }}.html">{{ item.title }}</a>'
+        '<a href="/item/{{ item.slug }}.html">{{ item.title }}</a>'
         "{% endfor %}"
         "{% for cat in all_categories %}"
         '<a href="/category/{{ cat.slug }}.html">{{ cat.name }}</a>'

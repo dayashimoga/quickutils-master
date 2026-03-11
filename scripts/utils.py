@@ -25,7 +25,13 @@ if CONFIG_PATH.exists():
         pass
 
 def get_config(key, default):
-    return os.environ.get(key, _CONFIG.get(key, default))
+    val = os.environ.get(key, _CONFIG.get(key, default))
+    # Handle boolean strings from environment
+    if isinstance(val, str) and val.lower() in ["true", "yes", "1"]:
+        return True
+    if isinstance(val, str) and val.lower() in ["false", "no", "0"]:
+        return False
+    return val
 
 # Determine default subdomain based on directory name
 # Example: "prompts-directory" -> "prompts"
@@ -33,8 +39,18 @@ project_slug = PROJECT_ROOT.name.replace("-directory", "")
 if project_slug == "boring" or project_slug == "quickutils-master": 
     project_slug = "directory" # Root/Master fallback
 
-# Allow environment variables or project_config.json to override
-# Otherwise, default to [project].quickutils.top
+# Global Configuration Constants
+GH_USERNAME = get_config("GH_USERNAME", "dayashimoga")
+GA_MEASUREMENT_ID = get_config("GA_MEASUREMENT_ID", "G-QPDP38ZCCV")
+ADSENSE_PUBLISHER_ID = get_config("ADSENSE_PUBLISHER_ID", "ca-pub-5193703345853377")
+AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-20")
+
+# Integration Flags
+ENABLE_ADSENSE = get_config("ENABLE_ADSENSE", True)
+ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
+ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
+
+# Site Identity
 SITE_URL = get_config("SITE_URL", f"https://{project_slug}.quickutils.top")
 SITE_NAME = get_config("SITE_NAME", f"QuickUtils {project_slug.capitalize()} Directory")
 SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {project_slug.capitalize()} — searchable and categorized.")
@@ -88,6 +104,18 @@ def load_database(path: Path = None) -> list:
             # Prefer 'id' if available for stable slugs, otherwise title
             slug_source = str(item.get("id", title))
             item["slug"] = slugify(slug_source)
+        
+        # Ensure critical fields have defaults for templates
+        if "description" not in item:
+            item["description"] = "No description provided."
+        if "auth" not in item:
+            item["auth"] = "None"
+        if "cors" not in item:
+            item["cors"] = "unknown"
+        if "https" not in item:
+            item["https"] = True
+        if "category" not in item:
+            item["category"] = "Uncategorized"
                 
     return data
 

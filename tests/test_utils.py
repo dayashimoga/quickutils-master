@@ -58,8 +58,8 @@ class TestLoadDatabase:
         assert items[0]["title"] == "Dog API"
 
     def test_load_missing_file(self, tmp_path):
-        with pytest.raises(FileNotFoundError):
-            load_database(tmp_path / "nonexistent.json")
+        items = load_database(tmp_path / "nonexistent.json")
+        assert items == []
 
     def test_load_invalid_json(self, tmp_path):
         bad_file = tmp_path / "bad.json"

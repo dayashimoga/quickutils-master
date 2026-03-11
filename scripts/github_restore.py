@@ -6,7 +6,8 @@ import time
 import stat
 
 # Configuration
-USERNAME = "dayashimoga"
+from scripts.utils import GH_USERNAME
+USERNAME = GH_USERNAME
 BASE_PATH = Path("h:/boring")
 PROJECTS_DIR = BASE_PATH / "projects"
 

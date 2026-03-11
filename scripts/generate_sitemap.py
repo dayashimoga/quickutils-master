@@ -174,11 +174,14 @@ def generate_sitemap(dist_dir: Path = None, site_url: str = None):
     sitemap_path.write_text(sitemap_xml, encoding="utf-8")
     print(f"  ✓ Generated sitemap.xml with {len(pages)} URLs")
 
-    # Generate robots.txt
+    # Generate robots.txt if it doesn't exist
     robots_path = dist_dir / "robots.txt"
-    robots_txt = build_robots_txt(site_url)
-    robots_path.write_text(robots_txt, encoding="utf-8")
-    print("  ✓ Generated robots.txt")
+    if not robots_path.exists():
+        robots_txt = build_robots_txt(site_url)
+        robots_path.write_text(robots_txt, encoding="utf-8")
+        print("  ✓ Generated robots.txt")
+    else:
+        print("  ℹ robots.txt already exists, skipping.")
 
     print("✅ Sitemap generation complete.")
 
