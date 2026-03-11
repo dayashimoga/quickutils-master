@@ -52,7 +52,6 @@ jobs:
           # Smart Adoption Logic
           echo "Checking for existing Cloudflare Pages projects to import..."
           jq -r 'to_entries[] | "\(.key) \(.value.repo_name)"' projects.json | while read -r key repo; do
-            if [ "$repo" == "quickutils-master" ]; then continue; fi
             
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
               -H "Authorization: Bearer $CF_API_TOKEN" \

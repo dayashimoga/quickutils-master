@@ -13,7 +13,9 @@
     },
     "dailyfacts": {
         "directory": "projects/dailyfacts",
-        "repo_name": "dailyfacts"
+        "repo_name": "dailyfacts",
+        "build_command": "npm install && npm run build",
+        "destination_dir": "dist"
     },
     "datasets": {
         "directory": "projects/datasets-directory",
@@ -37,7 +39,9 @@
     },
     "boringwebsite": {
         "directory": "projects/boringwebsite",
-        "repo_name": "boringwebsite"
+        "repo_name": "boringwebsite",
+        "build_command": "npm install && npm run build",
+        "destination_dir": "dist"
     },
     "master": {
         "directory": ".",
