@@ -279,6 +279,69 @@ class TestFetchAndSave:
         assert result is False
 
 
+class TestProjectTypeBranching:
+    """Test data fetching branching for different project types."""
+
+    @responses.activate
+    @patch("scripts.utils.get_config")
+    def test_datasets_project_filtering(self, mock_get_config, tmp_path):
+        mock_get_config.side_effect = lambda k, d: "datasets" if k == "PROJECT_TYPE" else d
+        
+        # Datasets project should filter alternative source for science/gov etc.
+        alt_data = [
+            {"name": "Science API", "Category": "Science", "Description": "A test"},
+            {"name": "Random API", "Category": "Games", "Description": "Not a dataset"},
+        ]
+        responses.add(responses.GET, ALT_URL, json=alt_data, status=200)
+
+        with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+             patch("scripts.utils.DATA_DIR", tmp_path):
+            result = fetch_and_save()
+
+        assert result is True
+        db_path = tmp_path / "database.json"
+        items = json.loads(db_path.read_text(encoding="utf-8"))
+        assert len(items) == 1
+        assert items[0]["title"] == "Science API"
+
+    @responses.activate
+    @patch("scripts.utils.get_config")
+    def test_prompts_project_filtering(self, mock_get_config, tmp_path):
+        mock_get_config.side_effect = lambda k, d: "prompts" if k == "PROJECT_TYPE" else d
+        
+        alt_data = [
+            {"name": "Master AI", "Category": "Other", "Description": "An AI tool"},
+            {"name": "ML Model", "Category": "Machine Learning", "Description": "Desc"},
+            {"name": "Normal API", "Category": "Games", "Description": "None"},
+        ]
+        responses.add(responses.GET, ALT_URL, json=alt_data, status=200)
+
+        with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+             patch("scripts.utils.DATA_DIR", tmp_path):
+            result = fetch_and_save()
+
+        assert result is True
+        items = json.loads((tmp_path / "database.json").read_text(encoding="utf-8"))
+        assert len(items) == 2
+
+    @responses.activate
+    @patch("scripts.utils.get_config")
+    def test_item_limit_for_non_master(self, mock_get_config, tmp_path):
+        mock_get_config.side_effect = lambda k, d: "cheatsheets" if k == "PROJECT_TYPE" else d
+        
+        # Generate 250 entries
+        alt_data = [{"API": f"API {i}", "Category": "Education", "Description": "Desc", "Link": "x"} for i in range(250)]
+        responses.add(responses.GET, ALT_URL, json=alt_data, status=200)
+
+        with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+             patch("scripts.utils.DATA_DIR", tmp_path):
+            result = fetch_and_save()
+
+        assert result is True
+        items = json.loads((tmp_path / "database.json").read_text(encoding="utf-8"))
+        assert len(items) == 200 # Limited in fetch_data.py
+
+
 class TestMain:
     """Test the main CLI entry point."""
 

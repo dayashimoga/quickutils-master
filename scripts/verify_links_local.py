@@ -58,9 +58,7 @@ def main():
     root_dir = Path("h:/boring/projects")
     projects = [d for d in root_dir.iterdir() if d.is_dir() and d.name.endswith("-directory")]
     
-    # Also include the master site if it has a dist
-    master_dist = Path("h:/boring/dist")
-    all_projects = [{"name": "QuickUtils Master", "path": master_dist}]
+    all_projects = []
     
     for p in projects:
         all_projects.append({"name": p.name, "path": p / "dist"})

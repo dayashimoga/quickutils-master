@@ -8,18 +8,32 @@ def run_cmd(args, cwd):
 
 def main():
     root_dir = Path("h:/boring/projects")
-    projects = [d for d in root_dir.iterdir() if d.is_dir() and d.name.endswith("-directory")]
+    projects = [d for d in root_dir.iterdir() if d.is_dir()]
     
-    # Master Site is no longer built directly from root (src/data purged)
-
-    # 2. Build Sub-Projects
+    # 2. Build All Projects
     for proj in projects:
-        print(f"\n--- Building Project: {proj.name} ---")
-        if not (proj / "data" / "database.json").exists():
-            run_cmd(["python", "scripts/fetch_data.py"], proj)
+        # Determine Project Type
+        ptype = proj.name.replace("-directory", "")
+        if ptype == "quickutils-master":
+            ptype = "master"
+            
+        print(f"\n--- Building Project: {proj.name} ({ptype}) ---")
         
-        run_cmd(["python", "scripts/build_directory.py"], proj)
-        run_cmd(["python", "scripts/generate_sitemap.py"], proj)
+        # Set PROJECT_TYPE and other env vars
+        env_vars = {
+            "PROJECT_TYPE": ptype,
+            "PYTHONPATH": ".",
+            "SRC_DIR": str(proj / "src"),
+            "DATA_DIR": str(proj / "data"),
+            "DIST_DIR": str(proj / "dist")
+        }
+        os.environ.update(env_vars)
+
+        if not (proj / "data" / "database.json").exists():
+            run_cmd(["python", "../../scripts/fetch_data.py"], proj)
+        
+        run_cmd(["python", "../../scripts/build_directory.py"], proj)
+        run_cmd(["python", "../../scripts/generate_sitemap.py"], proj)
 
 if __name__ == "__main__":
     main()

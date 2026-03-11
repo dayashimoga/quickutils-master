@@ -45,6 +45,10 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         ENABLE_AMAZON        = "true"
         ENABLE_PINTEREST     = "true"
         PYTHON_VERSION       = "3.11"
+        SRC_DIR              = lookup(each.value, "src_dir", "${each.value.directory}/src")
+        DATA_DIR             = lookup(each.value, "data_dir", "${each.value.directory}/data")
+        DIST_DIR             = lookup(each.value, "dist_dir", "${each.value.directory}/dist")
+        PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
       }
     }
     preview {
@@ -57,6 +61,10 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         ENABLE_AMAZON        = "true"
         ENABLE_PINTEREST     = "true"
         PYTHON_VERSION       = "3.11"
+        SRC_DIR              = lookup(each.value, "src_dir", "${each.value.directory}/src")
+        DATA_DIR             = lookup(each.value, "data_dir", "${each.value.directory}/data")
+        DIST_DIR             = lookup(each.value, "dist_dir", "${each.value.directory}/dist")
+        PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
       }
     }
   }

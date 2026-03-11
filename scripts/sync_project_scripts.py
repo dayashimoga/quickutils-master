@@ -16,6 +16,7 @@ MASTER_FILES = [
     "src/templates/item.html",
     "src/templates/category.html",
     "src/templates/404.html",
+    ".gitignore",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

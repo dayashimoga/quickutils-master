@@ -115,27 +115,49 @@ def deduplicate(items: list) -> list:
 
 
 def fetch_and_save() -> bool:
-    """Main entry point: fetch data, normalize, deduplicate, and save.
+    """Main entry point: fetch data, normalize, deduplicate, and save."""
+    from scripts.utils import get_config
+    project_type = get_config("PROJECT_TYPE", "master")
+    
+    print(f"📡 Fetching data for project type: {project_type}...")
 
-    Returns:
-        True if data was successfully fetched and saved, False otherwise.
-    """
-    print("📡 Fetching API directory data...")
-
-    # Try primary source
-    print("  → Trying primary source (api.publicapis.org)...")
-    raw_entries = fetch_from_primary()
-
-    # Fallback to alternative
-    if not raw_entries:
-        print("  → Primary failed. Trying alternative source (GitHub)...")
+    raw_entries = []
+    
+    # Branch based on project type
+    if project_type == "datasets":
+        print("  → Fetching public datasets...")
+        # For now, we'll use a curated mock or a specific category if primary fails
         raw_entries = fetch_from_alternative()
+        if raw_entries:
+            # Filter for dataset-like categories
+            raw_entries = [e for e in raw_entries if e.get("Category", "").lower() in ["science", "government", "environment", "open data"]]
+    elif project_type == "prompts":
+        print("  → Fetching AI prompts/tools...")
+        raw_entries = fetch_from_alternative()
+        if raw_entries:
+            raw_entries = [e for e in raw_entries if "AI" in (e.get("API", "") + e.get("Description", "")) or e.get("Category") == "Machine Learning"]
+    elif project_type == "boilerplates" or project_type == "opensource":
+        print("  → Fetching open source projects/boilerplates...")
+        raw_entries = fetch_from_alternative()
+        if raw_entries:
+            raw_entries = [e for e in raw_entries if e.get("Category", "").lower() in ["development", "cloud & devops", "security"]]
+    elif project_type == "cheatsheets":
+        print("  → Fetching cheatsheets...")
+        raw_entries = fetch_from_alternative()
+        if raw_entries:
+            raw_entries = [e for e in raw_entries if e.get("Category", "").lower() in ["education", "utilities", "productivity"]]
+    else:
+        # Default/Master/Apistatus/Jobs/etc.
+        print("  → Fetching standard directory entries...")
+        raw_entries = fetch_from_primary()
+        if not raw_entries:
+            raw_entries = fetch_from_alternative()
 
     if not raw_entries:
-        print("  ✗ All sources failed. Skipping update.")
+        print(f"  ✗ Failed to fetch data for {project_type}. Skipping update.")
         return False
 
-    print(f"  ✓ Fetched {len(raw_entries)} raw entries.")
+    print(f"  ✓ Fetched {len(raw_entries)} potential entries.")
 
     # Normalize
     normalized = []
@@ -148,6 +170,11 @@ def fetch_and_save() -> bool:
 
     # Deduplicate
     unique = deduplicate(normalized)
+    
+    # Project-specific limit/trimming if needed
+    if project_type != "master":
+        unique = unique[:200] # Target high-quality subset for smaller sites
+
     print(f"  ✓ {len(unique)} unique entries after deduplication.")
 
     if not unique:
@@ -157,7 +184,7 @@ def fetch_and_save() -> bool:
     # Save
     ensure_dir(DATA_DIR)
     save_database(unique)
-    print(f"  ✓ Saved to data/database.json")
+    print(f"  ✓ Saved to {DATA_DIR}/database.json")
 
     return True
 
