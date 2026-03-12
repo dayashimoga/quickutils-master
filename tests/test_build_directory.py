@@ -34,6 +34,11 @@ class TestCreateJinjaEnv:
         assert "site_url" in env.globals
         assert "build_date" in env.globals
         assert "current_year" in env.globals
+        assert "ga_measurement_id" in env.globals
+        assert "adsense_publisher_id" in env.globals
+        assert "amazon_affiliate_tag" in env.globals
+        assert "enable_adsense" in env.globals
+        assert "google_site_verification" in env.globals
 
 
 class TestBuildItemPages:

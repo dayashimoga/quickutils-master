@@ -193,4 +193,17 @@ def templates_dir(tmp_path):
         encoding="utf-8",
     )
 
+    # Listicle template
+    listicle = tpl_dir / "listicle.html"
+    listicle.write_text(
+        '{% extends "base.html" %}'
+        "{% block content %}"
+        "<h1>{{ category_name }}</h1>"
+        "{% for item in items %}"
+        "<div>{{ item.title }}</div>"
+        "{% endfor %}"
+        "{% endblock %}",
+        encoding="utf-8",
+    )
+
     return tpl_dir
