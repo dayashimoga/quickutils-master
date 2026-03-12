@@ -83,6 +83,10 @@ def normalize_entry(raw: dict) -> dict | None:
     https_support = raw.get("HTTPS") if raw.get("HTTPS") is not None else raw.get("https", True)
     cors = raw.get("Cors") or raw.get("cors", "unknown")
 
+    slug = slugify(title)
+    if not slug:
+        return None
+
     return {
         "title": title.strip(),
         "description": description.strip(),
@@ -91,7 +95,7 @@ def normalize_entry(raw: dict) -> dict | None:
         "auth": auth.strip() if auth else "None",
         "https": bool(https_support),
         "cors": cors.strip() if isinstance(cors, str) else "unknown",
-        "slug": slugify(title),
+        "slug": slug,
     }
 
 

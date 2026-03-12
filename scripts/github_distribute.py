@@ -70,26 +70,63 @@ def create_github_repo(repo_name):
     return None
 
 def sync_repo(local_path, remote_url):
-    print(f"  Syncing to {remote_url}...")
+    print(f"  Syncing {local_path} to {remote_url}...")
     auth_url = remote_url
     if PAT:
         auth_url = remote_url.replace("https://", f"https://{PAT}@")
     
-    commands = [
-        ["git", "init"],
-        ["git", "remote", "remove", "origin"],
-        ["git", "remote", "add", "origin", auth_url],
-        ["git", "branch", "-M", "main"],
-        ["git", "add", "."],
-        ["git", "commit", "-m", "chore: sync cleaned repositories and optimized tests"],
-        ["git", "push", "-u", "origin", "main", "--force"]
-    ]
-    
-    for cmd in commands:
-        try:
-            subprocess.run(cmd, cwd=local_path, check=False, capture_output=True)
-        except Exception as e:
-            print(f"  Warning on command {cmd}: {e}")
+    import tempfile
+    import shutil
+    import stat
+
+    # Helper function to handle read-only files on Windows
+    def remove_readonly(func, path, excinfo):
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Clone existing repo
+        clone_cmd = ["git", "clone", auth_url, temp_dir]
+        res = subprocess.run(clone_cmd, capture_output=True)
+        if res.returncode != 0:
+            print(f"  Warning: Could not clone, initializing new repo instead.")
+            subprocess.run(["git", "init"], cwd=temp_dir, check=False)
+            subprocess.run(["git", "checkout", "-b", "main"], cwd=temp_dir, check=False)
+            subprocess.run(["git", "remote", "add", "origin", auth_url], cwd=temp_dir, check=False)
+
+        # Remove everything except .git
+        for item in os.listdir(temp_dir):
+            if item == ".git":
+                continue
+            item_path = os.path.join(temp_dir, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path, onerror=remove_readonly)
+            else:
+                os.remove(item_path)
+
+        # Copy new files
+        for item in os.listdir(local_path):
+            if item == ".git": # Don't copy local .git if it inadvertently exists
+                continue
+            s = os.path.join(local_path, item)
+            d = os.path.join(temp_dir, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d)
+            else:
+                shutil.copy2(s, d)
+
+        # Add and check changes
+        subprocess.run(["git", "add", "."], cwd=temp_dir, check=False)
+        status_res = subprocess.run(["git", "status", "--porcelain"], cwd=temp_dir, capture_output=True, text=True)
+        
+        if status_res.stdout.strip():
+            print(f"  Changes detected. Committing and pushing...")
+            subprocess.run(["git", "commit", "-m", "Automation: Sync from Master Repository"], cwd=temp_dir, check=False)
+            push_res = subprocess.run(["git", "push", "-u", "origin", "main"], cwd=temp_dir, capture_output=True, text=True)
+            if push_res.returncode != 0:
+                 print(f"  Push output: {push_res.stderr}")
+        else:
+            print(f"  No changes to sync for {local_path}.")
 
 def main():
     # Main execution

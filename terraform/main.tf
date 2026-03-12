@@ -49,6 +49,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
+        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
       }
     }
     preview {
@@ -65,6 +66,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
+        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
       }
     }
   }

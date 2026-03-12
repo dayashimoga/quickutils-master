@@ -168,6 +168,16 @@ root_dir = r"h:\boring"
 for name, items in data.items():
     db_path = os.path.join(root_dir, "projects", name, "data", "database.json")
     if os.path.exists(db_path):
+        # Inject generic URLs if missing
+        for item in items:
+            if "url" not in item:
+                if name == "boilerplates-directory":
+                    item["url"] = f"https://github.com/search?q={item.get('id', item.get('slug', ''))}"
+                elif name == "cheatsheets-directory":
+                    item["url"] = f"https://devdocs.io/#q={item.get('id', item.get('slug', ''))}"
+                else:
+                    item["url"] = f"https://google.com/search?q={item.get('id', item.get('slug', ''))}"
+
         with open(db_path, "w", encoding="utf-8") as f:
             json.dump(items, f, indent=2, ensure_ascii=False)
         print(f"Updated {db_path} with {len(items)} items.")

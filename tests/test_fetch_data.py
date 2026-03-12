@@ -360,3 +360,66 @@ class TestMain:
             from scripts.fetch_data import main
             main()
             mock_exit.assert_called_once_with(0)
+
+
+class TestExtendedCoverage:
+    """Additional tests to reach >90% coverage."""
+
+    @responses.activate
+    @patch("scripts.utils.get_config")
+    @pytest.mark.parametrize("project_type, category_filter", [
+        ("boilerplates", "development"),
+        ("opensource", "cloud & devops"),
+        ("cheatsheets", "education")
+    ])
+    def test_project_type_category_filtering(self, mock_get_config, project_type, category_filter, tmp_path):
+        mock_get_config.side_effect = lambda k, d: project_type if k == "PROJECT_TYPE" else d
+        
+        alt_data = [
+            {"API": "Match", "Category": category_filter, "Description": "Desc", "Link": "x"},
+            {"API": "No Match", "Category": "Random", "Description": "Desc", "Link": "x"},
+        ]
+        responses.add(responses.GET, ALT_URL, json=alt_data, status=200)
+
+        with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+             patch("scripts.utils.DATA_DIR", tmp_path):
+            result = fetch_and_save()
+
+        assert result is True
+        items = json.loads((tmp_path / "database.json").read_text(encoding="utf-8"))
+        assert len(items) == 1
+        assert items[0]["title"] == "Match"
+
+    @patch("scripts.fetch_data.fetch_from_primary")
+    @patch("scripts.fetch_data.fetch_from_alternative")
+    @patch("scripts.utils.get_config")
+    def test_data_preservation_on_failure(self, mock_get_config, mock_alt, mock_primary, tmp_path):
+        """Verify we keep existing database.json if remote fetch fails."""
+        mock_get_config.side_effect = lambda k, d: "master" if k == "PROJECT_TYPE" else d
+        mock_primary.return_value = None
+        mock_alt.return_value = None
+        
+        # Create existing database.json with 10 items
+        db_path = tmp_path / "database.json"
+        existing_data = [{"title": f"Item {i}", "description": "xxx", "slug": f"item-{i}"} for i in range(10)]
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        db_path.write_text(json.dumps(existing_data), encoding="utf-8")
+
+        with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+             patch("scripts.utils.DATA_DIR", tmp_path):
+            result = fetch_and_save()
+
+        # result should be True (skipped update but kept data)
+        assert result is True
+        # Verify file wasn't overwritten by seed/empty
+        current_data = json.loads(db_path.read_text(encoding="utf-8"))
+        assert len(current_data) == 10
+
+    def test_normalize_entry_invalid_data(self):
+        """Cover lines where normalization returns None."""
+        assert normalize_entry({}) is None
+        assert normalize_entry({"API": "No Desc"}) is None
+        assert normalize_entry({"Description": "No Title"}) is None
+        # slugify returning None
+        with patch("scripts.fetch_data.slugify", return_value=""):
+            assert normalize_entry({"API": "T", "Description": "D"}) is None

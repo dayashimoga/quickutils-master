@@ -89,28 +89,35 @@ jobs:
             echo "Syncing code for $project..."
             TEMP_DIR="/tmp/sync_$project"
             rm -rf $TEMP_DIR
-            mkdir -p $TEMP_DIR
+            
+            # Clone the existing repository
+            git clone "https://$GH_PAT@github.com/$OWNER/$project.git" $TEMP_DIR || {
+              mkdir -p $TEMP_DIR
+              cd $TEMP_DIR
+              git init
+              git checkout -b main
+            }
             
             # Find the directory mapping for this repo
-            PROJ_DIR=$(cat terraform/projects.json | jq -r ".[] | select(.repo_name==\"$project\") | .directory")
-            
-            # Copy content from source directory to temp
-            cp -r $PROJ_DIR/. $TEMP_DIR/
-            
-            # CRITICAL: Remove any existing .git from project folder to ensure a clean sync
-            rm -rf $TEMP_DIR/.git
+            PROJ_DIR=$(cat ${GITHUB_WORKSPACE}/terraform/projects.json | jq -r ".[] | select(.repo_name==\"$project\") | .directory")
             
             cd $TEMP_DIR
-            git init
-            git checkout -b main
+            
+            # Remove all files except .git to handle deletions
+            find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
+            
+            # Copy content from source directory to temp
+            cp -r ${GITHUB_WORKSPACE}/$PROJ_DIR/. ./
+            
             git add .
             
             # Only commit and push if there are actual changes
-            if git commit -m "Automation: Sync from Master Repository"; then
+            if [ -n "$(git status --porcelain)" ]; then
+              git commit -m "Automation: Sync from Master Repository"
               echo "Pushing changes for $project..."
-              git push "https://$GH_PAT@github.com/$OWNER/$project.git" main --force
+              git push "https://$GH_PAT@github.com/$OWNER/$project.git" main
             else
               echo "No changes to sync for $project"
             fi
-            cd -
+            cd ${GITHUB_WORKSPACE}
           done
