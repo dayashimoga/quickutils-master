@@ -55,7 +55,7 @@ def verify_links_in_dist(dist_path):
         return False, errors
 
 def main():
-    root_dir = Path("h:/boring/projects")
+    root_dir = Path(__file__).parent.parent / "projects"
     projects = [d for d in root_dir.iterdir() if d.is_dir() and d.name.endswith("-directory")]
     
     all_projects = []

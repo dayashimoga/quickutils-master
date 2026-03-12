@@ -1,11 +1,16 @@
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 
 @patch("subprocess.run")
 def test_build_all_local(mock_run):
     import scripts.build_all_local
-    scripts.build_all_local.main()
+    mock_p = MagicMock()
+    mock_p.name = "test-directory"
+    (mock_p / "data" / "database.json").exists.return_value = True
+    
+    with patch("scripts.build_all_local.get_projects", return_value=[mock_p]):
+        scripts.build_all_local.main()
     assert mock_run.called
 
 @patch("shutil.rmtree")
@@ -63,12 +68,17 @@ def test_verify_links_coverage(mock_verify):
 
 def test_test_orchestrator():
     import scripts.test_orchestrator
-    with patch("unittest.TextTestRunner") as mock_runner:
-        with patch("subprocess.run") as mock_subrun:
-            mock_res = MagicMock()
-            mock_res.wasSuccessful.return_value = True
-            mock_runner.return_value.run.return_value = mock_res
-            mock_subrun.return_value.returncode = 0
-            with patch("sys.exit") as mock_exit:
-                scripts.test_orchestrator.main()
-                mock_exit.assert_not_called()
+    import json
+    mock_cov = json.dumps({"totals": {"percent_covered": 95.0}})
+    
+    with patch("pathlib.Path.exists", return_value=True), \
+         patch("pathlib.Path.iterdir", return_value=[]), \
+         patch("builtins.open", mock_open(read_data=mock_cov)), \
+         patch("subprocess.run") as mock_subrun:
+        
+        mock_subrun.return_value.returncode = 0
+        mock_subrun.return_value.stdout = "PASSED"
+        
+        with patch("sys.exit") as mock_exit:
+            scripts.test_orchestrator.main()
+            mock_exit.assert_not_called()

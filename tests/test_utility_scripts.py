@@ -2,6 +2,7 @@
 import os
 import json
 import pytest
+from pathlib import Path
 from unittest.mock import patch, MagicMock, mock_open, PropertyMock
 
 # fix_slugs.py logic covered in test_fix_slugs_logic below
@@ -17,14 +18,15 @@ def test_fix_slugs_logic():
     mock_content = """def load_database(path: Path = None) -> list:
     data = []
     return data"""
-    with patch("os.path.exists", return_value=True), \
+    with patch("os.path.exists", side_effect=[True, False, False, False, False, False, False, False, False]), \
          patch("builtins.open", mock_open(read_data=mock_content)) as m_open, \
          patch("builtins.print"):
         
         importlib.reload(scripts.fix_slugs)
         
     # Check if write was called
-    assert m_open().write.called
+    handle = m_open()
+    assert handle.write.called
 
 # Test expand_data.py logic
 def test_expand_data_logic():
@@ -103,24 +105,67 @@ def test_github_distribute_deep():
          patch.dict("os.environ", {"GH_PAT": "fake_pat"}), \
          patch("builtins.print"):
         
-        # Test auth success
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"login": "test-user"}
-        mock_post.return_value.status_code = 201
+        from scripts.github_distribute import main, get_username, create_github_repo, get_projects
+        import scripts.github_distribute
         
-        from scripts.github_distribute import main, get_username, create_github_repo
         main()
         
         # Test auth failures
         mock_get.return_value.status_code = 401
-        import scripts.github_distribute
         scripts.github_distribute._username_cache = None # Clear cache
         get_username()
         
         # Test creation with no username
         scripts.github_distribute.PAT = None
         create_github_repo("test")
+        
+        # Test get_projects mapping
+        get_projects()
     assert True
+
+def test_github_distribute_sync_repo():
+    from scripts.github_distribute import sync_repo
+    with patch("subprocess.run") as mock_run, \
+         patch("shutil.rmtree"), \
+         patch("shutil.copytree"), \
+         patch("shutil.copy2"), \
+         patch("os.listdir", return_value=["file1"]), \
+         patch("os.path.isdir", return_value=False), \
+         patch("os.remove"), \
+         patch("tempfile.TemporaryDirectory") as mock_temp:
+        
+        mock_temp.return_value.__enter__.return_value = "/fake/temp"
+        
+        # Test change detected
+        mock_run.side_effect = [
+            MagicMock(returncode=0), # clone
+            MagicMock(returncode=0), # add
+            MagicMock(stdout=" M file1"), # status
+            MagicMock(returncode=0), # commit
+            MagicMock(returncode=0)  # push
+        ]
+        sync_repo("/local/path", "https://github.com/user/repo.git")
+        
+        # Test no changes
+        mock_run.side_effect = [
+            MagicMock(returncode=0), # clone
+            MagicMock(returncode=0), # add
+            MagicMock(stdout=""),    # status
+        ]
+        sync_repo("/local/path", "https://github.com/user/repo.git")
+
+        # Test clone failure -> init
+        mock_run.side_effect = [
+            MagicMock(returncode=1), # clone fail
+            MagicMock(returncode=0), # init
+            MagicMock(returncode=0), # checkout
+            MagicMock(returncode=0), # remote add
+            MagicMock(returncode=0), # add
+            MagicMock(stdout="A file1"), # status
+            MagicMock(returncode=0), # commit
+            MagicMock(returncode=0)  # push
+        ]
+        sync_repo("/local/path", "https://github.com/user/repo.git")
 
 # Test github_restore.py logic (deep)
 def test_github_restore_deep():
@@ -153,6 +198,11 @@ def test_github_restore_deep():
         mock_run.side_effect = Exception("Clone failed")
         restore_project("fail-repo")
         
+        # Test restore_project success cleanup
+        mock_run.side_effect = None
+        with patch("pathlib.Path.exists", side_effect=[False, False, False, True]): # incomplete, then clone, then .git exists
+             restore_project("restore-me")
+
         main()
     assert True
 

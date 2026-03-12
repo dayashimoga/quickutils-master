@@ -6,9 +6,15 @@ def run_cmd(args, cwd):
     env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
     subprocess.run(args, cwd=str(cwd), env=env)
 
+def get_projects_root():
+    return Path(__file__).parent.parent / "projects"
+
+def get_projects():
+    root = get_projects_root()
+    return [d for d in root.iterdir() if d.is_dir()]
+
 def main():
-    root_dir = Path("h:/boring/projects")
-    projects = [d for d in root_dir.iterdir() if d.is_dir()]
+    projects = get_projects()
     
     # 2. Build All Projects
     for proj in projects:

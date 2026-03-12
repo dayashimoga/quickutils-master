@@ -1,5 +1,6 @@
 import os
 import json
+from pathlib import Path
 
 data = {
     "prompts-directory": [
@@ -164,10 +165,10 @@ data = {
     ]
 }
 
-root_dir = r"h:\boring"
+root_dir = Path(__file__).parent.parent
 for name, items in data.items():
-    db_path = os.path.join(root_dir, "projects", name, "data", "database.json")
-    if os.path.exists(db_path):
+    db_path = root_dir / "projects" / name / "data" / "database.json"
+    if db_path.exists():
         # Inject generic URLs if missing
         for item in items:
             if "url" not in item:
