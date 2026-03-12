@@ -8,7 +8,7 @@ import stat
 # Configuration
 from scripts.utils import GH_USERNAME
 USERNAME = GH_USERNAME
-BASE_PATH = Path("h:/boring")
+BASE_PATH = Path(__file__).parent.parent
 PROJECTS_DIR = BASE_PATH / "projects"
 
 def get_projects():

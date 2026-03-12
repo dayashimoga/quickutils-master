@@ -33,17 +33,18 @@ def get_username():
     return ""
 
 def get_projects():
-    root = Path("h:/boring/projects")
+    BASE_PATH = Path(__file__).parent.parent
+    PROJECTS_DIR = BASE_PATH / "projects"
     projects = {}
     
     # 1. Add directories
-    for d in root.iterdir():
+    for d in PROJECTS_DIR.iterdir():
         if d.is_dir() and d.name.endswith("-directory"):
             projects[d.name] = str(d.absolute())
             
     # 2. Add special projects
-    if (root / "boringwebsite").exists():
-        projects["boringwebsite"] = str((root / "boringwebsite").absolute())
+    if (PROJECTS_DIR / "boringwebsite").exists():
+        projects["boringwebsite"] = str((PROJECTS_DIR / "boringwebsite").absolute())
         
     return projects
 
@@ -129,7 +130,6 @@ def sync_repo(local_path, remote_url):
             print(f"  No changes to sync for {local_path}.")
 
 def main():
-    # Main execution
     projects = get_projects()
     for repo_name, local_path in projects.items():
         clone_url = create_github_repo(repo_name)
