@@ -27,6 +27,10 @@ def real_env():
         "current_year": 2025,
         "ga_measurement_id": "G-TEST",
         "adsense_publisher_id": "ca-pub-TEST",
+        "amazon_affiliate_tag": "test-20",
+        "enable_adsense": True,
+        "enable_amazon": True,
+        "enable_pinterest": True,
     })
     return env
 
@@ -43,8 +47,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "<title>Test Title</title>" in html
 
@@ -57,8 +61,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert 'content="My description"' in html
 
@@ -71,8 +75,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "G-TEST" in html
 
@@ -85,8 +89,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "ca-pub-TEST" in html
 
@@ -99,8 +103,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com/og",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert 'property="og:title"' in html
         assert 'property="og:description"' in html
@@ -114,8 +118,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert 'name="p:domain_verify"' in html
         assert 'content="c816c2b41079835efd234cb5afef59bf"' in html
@@ -148,6 +152,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "application/ld+json" in html
         assert "SoftwareApplication" in html
@@ -162,6 +167,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "breadcrumb" in html.lower()
 
@@ -175,6 +181,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "adsbygoogle" in html
 
@@ -187,6 +194,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert sample_items[1]["title"] in html
 
@@ -223,6 +231,7 @@ class TestCategoryTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "category-search" in html
 
@@ -258,6 +267,7 @@ class TestAmazonAffiliateBooks:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "Test Book" in html
         assert "Test Author" in html
@@ -276,6 +286,7 @@ class TestAmazonAffiliateBooks:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "Amazon Associate" in html
 
@@ -289,6 +300,7 @@ class TestAmazonAffiliateBooks:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "sidebar-books" not in html
 
@@ -360,8 +372,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "world-clock" in html
         assert "clock-time" in html
@@ -375,8 +387,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         for city in ["New York", "London", "Dubai", "Mumbai", "Singapore",
                       "Tokyo", "Sydney"]:
@@ -391,8 +403,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "time-converter" in html
         assert "converter-datetime" in html
@@ -411,8 +423,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         # Check that both From and To selectors have timezone options
         assert "My Local Time" in html  # LOCAL option in from-tz

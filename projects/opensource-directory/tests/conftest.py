@@ -19,49 +19,59 @@ def sample_items():
     """A small sample dataset for testing."""
     return [
         {
-            "title": "Mattermost",
-            "alternative_to": "Slack",
-            "description": "Open-source, self-hostable Slack-alternative",
-            "category": "Communication",
-            "url": "https://mattermost.com/",
-            "github_repo": "https://github.com/mattermost/mattermost",
-            "slug": "mattermost-alternative-to-slack",
+            "title": "Dog API",
+            "description": "Dog facts and images",
+            "category": "Animals",
+            "url": "https://dog.ceo/dog-api/",
+            "auth": "None",
+            "https": True,
+            "cors": "yes",
+            "slug": "dog-api",
+            "pricing": "Free",
         },
         {
-            "title": "Supabase",
-            "alternative_to": "Firebase",
-            "description": "The open source Firebase alternative",
-            "category": "Database",
-            "url": "https://supabase.com/",
-            "github_repo": "https://github.com/supabase/supabase",
-            "slug": "supabase-alternative-to-firebase",
+            "title": "Cat Facts",
+            "description": "Random cat facts",
+            "category": "Animals",
+            "url": "https://catfact.ninja/",
+            "auth": "None",
+            "https": True,
+            "cors": "yes",
+            "slug": "cat-facts",
+            "pricing": "Free",
         },
         {
-            "title": "Plausible Analytics",
-            "alternative_to": "Google Analytics",
-            "description": "A privacy-friendly Google Analytics alternative",
-            "category": "Analytics",
-            "url": "https://plausible.io/",
-            "github_repo": "https://github.com/plausible/analytics",
-            "slug": "plausible-analytics-alternative-to-google-analytics",
+            "title": "OpenWeatherMap",
+            "description": "Current and forecast weather data with global coverage",
+            "category": "Weather",
+            "url": "https://openweathermap.org/api",
+            "auth": "apiKey",
+            "https": True,
+            "cors": "yes",
+            "slug": "openweathermap",
+            "pricing": "Freemium",
         },
         {
-            "title": "PostHog",
-            "alternative_to": "Mixpanel",
-            "description": "Open source product analytics",
-            "category": "Analytics",
-            "url": "https://posthog.com/",
-            "github_repo": "https://github.com/posthog/posthog",
-            "slug": "posthog-alternative-to-mixpanel",
+            "title": "Alpha Vantage",
+            "description": "Real-time and historical stock market data",
+            "category": "Finance",
+            "url": "https://www.alphavantage.co/",
+            "auth": "apiKey",
+            "https": True,
+            "cors": "unknown",
+            "slug": "alpha-vantage",
+            "pricing": "Free",
         },
         {
-            "title": "Nextcloud",
-            "alternative_to": "Google Drive",
-            "description": "Safe home for all your data",
-            "category": "Storage",
-            "url": "https://nextcloud.com/",
-            "github_repo": "https://github.com/nextcloud/server",
-            "slug": "nextcloud-alternative-to-google-drive",
+            "title": "Spotify",
+            "description": "Music metadata, streaming, and playlist management",
+            "category": "Music",
+            "url": "https://developer.spotify.com/",
+            "auth": "OAuth",
+            "https": True,
+            "cors": "unknown",
+            "slug": "spotify",
+            "pricing": "Free",
         },
     ]
 
@@ -79,28 +89,31 @@ def sample_raw_api_entries():
     """Raw API entries as returned by the public-apis API."""
     return [
         {
-            "name": "Mattermost",
-            "alternative_to": "Slack",
-            "description": "Open-source Slack alternative",
-            "category": "Communication",
-            "url": "https://mattermost.com/",
-            "github_repo": "https://github.com/mattermost/mattermost"
+            "API": "Dog API",
+            "Description": "Dog facts and images",
+            "Auth": "",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://dog.ceo/dog-api/",
+            "Category": "Animals",
         },
         {
-            "name": "Supabase",
-            "alternative_to": "Firebase",
-            "description": "Firebase alternative",
-            "category": "Database",
-            "url": "https://supabase.com/",
-            "github_repo": "https://github.com/supabase/supabase"
+            "API": "Cat Facts",
+            "Description": "Random cat facts",
+            "Auth": "",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://catfact.ninja/",
+            "Category": "Animals",
         },
         {
-            "name": "Plausible Analytics",
-            "alternative_to": "Google Analytics",
-            "description": "Google Analytics alternative",
-            "category": "Analytics",
-            "url": "https://plausible.io/",
-            "github_repo": "https://github.com/plausible/analytics"
+            "API": "OpenWeatherMap",
+            "Description": "Weather data",
+            "Auth": "apiKey",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://openweathermap.org/api",
+            "Category": "Weather",
         },
     ]
 
@@ -140,7 +153,7 @@ def templates_dir(tmp_path):
         "{% endblock %}",
         encoding="utf-8",
     )
-
+ 
     # Item template
     item = tpl_dir / "item.html"
     item.write_text(
@@ -149,7 +162,7 @@ def templates_dir(tmp_path):
         "<h1>{{ item.title }}</h1>"
         "<p>{{ item.description }}</p>"
         "<p>Category: {{ item.category }}</p>"
-        "<p>Alternative to: {{ item.alternative_to }}</p>"
+        "<p>Auth: {{ item.auth }}</p>"
         '<a href="{{ item.url }}">Visit</a>'
         "{% for rel in related_items %}"
         '<a href="/item/{{ rel.slug }}.html">{{ rel.title }}</a>'
@@ -181,6 +194,19 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>404</h1><p>Not Found</p>"
+        "{% endblock %}",
+        encoding="utf-8",
+    )
+
+    # Listicle template
+    listicle = tpl_dir / "listicle.html"
+    listicle.write_text(
+        '{% extends "base.html" %}'
+        "{% block content %}"
+        "<h1>{{ category_name }}</h1>"
+        "{% for item in items %}"
+        "<div>{{ item.title }}</div>"
+        "{% endfor %}"
         "{% endblock %}",
         encoding="utf-8",
     )

@@ -241,3 +241,105 @@ def test_run_global_tests_branches():
         # Test Exception (fallback to local)
         mock_run.side_effect = [Exception("Docker failed"), MagicMock(returncode=0)]
         assert run_tests_in_dir("/fake/path") is True
+
+
+# --- New tests to close coverage gaps ---
+
+def test_github_distribute_auth_success():
+    """Cover the successful authentication path (lines 22-24)."""
+    import scripts.github_distribute
+    scripts.github_distribute._username_cache = None
+    
+    with patch.dict("os.environ", {"GH_PAT": "test_token"}), \
+         patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"login": "testuser"}
+        scripts.github_distribute.PAT = "test_token"
+        result = scripts.github_distribute.get_username()
+        assert result == "testuser"
+    
+    scripts.github_distribute._username_cache = None
+
+
+def test_github_distribute_auth_exception():
+    """Cover the authentication exception path (lines 27-28)."""
+    import scripts.github_distribute
+    scripts.github_distribute._username_cache = None
+    
+    with patch.dict("os.environ", {"GH_PAT": "test_token"}), \
+         patch("requests.get", side_effect=Exception("Connection failed")):
+        scripts.github_distribute.PAT = "test_token"
+        result = scripts.github_distribute.get_username()
+        assert result == ""
+    
+    scripts.github_distribute._username_cache = None
+
+
+def test_github_distribute_get_projects_with_boringwebsite():
+    """Cover the boringwebsite special project path (lines 46-48)."""
+    from scripts.github_distribute import get_projects
+    mock_dir = MagicMock()
+    mock_dir.is_dir.return_value = True
+    type(mock_dir).name = PropertyMock(return_value="tools-directory")
+    mock_dir.absolute.return_value = "/fake/tools"
+    
+    mock_bw = MagicMock()
+    mock_bw.is_dir.return_value = True
+    type(mock_bw).name = PropertyMock(return_value="boringwebsite")
+    mock_bw.absolute.return_value = "/fake/boringwebsite"
+    
+    with patch("pathlib.Path.iterdir", return_value=[mock_dir, mock_bw]), \
+         patch("pathlib.Path.exists", return_value=True):
+        projects = get_projects()
+    assert "tools-directory" in projects
+
+
+def test_github_restore_cleanup_tmp():
+    """Cover cleanup_tmp with both glob patterns (lines 54-60)."""
+    from scripts.github_restore import cleanup_tmp
+    
+    mock_temp = MagicMock()
+    mock_temp.is_dir.return_value = True
+    
+    mock_temp2 = MagicMock()
+    mock_temp2.is_dir.return_value = True
+    
+    with patch("pathlib.Path.glob", side_effect=[[mock_temp], [mock_temp2]]), \
+         patch("shutil.rmtree"), \
+         patch("os.path.exists", return_value=True), \
+         patch("builtins.print"):
+        cleanup_tmp()
+
+
+def test_github_restore_complete_project_skip():
+    """Cover project skip when both data/ and src/ exist (lines 79-81)."""
+    from scripts.github_restore import restore_project
+    
+    with patch("pathlib.Path.exists", return_value=True), \
+         patch("builtins.print"):
+        restore_project("complete-project")  # Should print skip and return
+
+
+def test_github_restore_successful_clone_with_git_removal():
+    """Cover successful clone + .git removal path (lines 93-96)."""
+    from scripts.github_restore import restore_project
+    
+    # restore_project calls:
+    # 1. local_path.exists() -> False to trigger clone
+    # 2. (in clone block) local_path via subprocess
+    # 3. dot_git.exists() -> True to trigger .git removal
+    call_count = {"n": 0}
+    def exists_side_effect(self=None):
+        call_count["n"] += 1
+        if call_count["n"] <= 1:
+            return False  # local_path.exists() = False
+        return True  # dot_git.exists() = True
+    
+    with patch("pathlib.Path.exists", side_effect=exists_side_effect), \
+         patch("subprocess.run") as mock_run, \
+         patch("shutil.rmtree"), \
+         patch("os.path.exists", return_value=True), \
+         patch("builtins.print"):
+        mock_run.return_value.returncode = 0
+        restore_project("new-project")
+

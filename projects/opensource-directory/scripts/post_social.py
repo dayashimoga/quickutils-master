@@ -42,7 +42,7 @@ def pick_random_item(items: list) -> dict:
     return rng.choice(items)
 
 
-def format_post(item: dict) -> str:
+def platform_post(item: dict) -> str:
     """Format a promotional post for the given item.
 
     Args:
@@ -52,23 +52,26 @@ def format_post(item: dict) -> str:
         Formatted post string within Mastodon's 500-char limit.
     """
     item_url = f"{SITE_URL}/item/{item['slug']}.html"
-    category = item.get("category", "Tool")
-    alternative_to = item.get("alternative_to", "SaaS")
+    category = item.get("category", "API")
+    auth = item.get("auth", "None")
+    pricing = item.get("pricing", "Free")
 
     # Build hashtags from category
     hashtag = f"#{slugify(category).replace('-', '')}"
 
     lines = [
-        f"🔗 {item['title']} - Alternative to {alternative_to}",
+        f"🔗 {item['title']}",
         f"",
         f"{item['description']}",
         f"",
         f"🏷️ Category: {category}",
-        f"✅ Free & Open Source",
+        f"💰 Pricing: {pricing}",
+        f"🔐 Auth: {auth}",
+        f"🌐 {'HTTPS ✅' if item.get('https') else 'HTTP only'}",
         f"",
         f"Check it out → {item_url}",
         f"",
-        f"#OpenSource #SelfHosted #FreeDev {hashtag} #WebDev",
+        f"#API #OpenSource #FreeDev {hashtag} #WebDev #WebTools #DeveloperTools",
     ]
 
     post = "\n".join(lines)
@@ -131,7 +134,7 @@ def main():
     item = pick_random_item(items)
     print(f"  → Selected: {item['title']} ({item['category']})")
 
-    message = format_post(item)
+    message = platform_post(item)
     print(f"  → Post preview ({len(message)} chars):")
     print(f"    {message[:100]}...")
 

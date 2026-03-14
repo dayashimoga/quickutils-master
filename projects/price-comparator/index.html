@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Comparator - Find the Lowest Prices Instantly</title>
+    <meta name="description" content="Compare prices across top Indian e-commerce sites like Flipkart, Amazon, Myntra, Meesho, Blinkit, Zepto, and Swiggy Instamart. Find the best deals in real-time.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Price Comparator - Find the Lowest Prices Instantly">
+    <meta property="og:description" content="Compare prices across top Indian e-commerce sites and find the best deals in real-time.">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Price Comparator">
+    <meta name="twitter:description" content="Compare prices across top e-commerce sites.">
+    
+    <!-- Pinterest Verification Placeholder -->
+    <meta name="p:domain_verify" content="YOUR_PINTEREST_VERIFICATION_CODE_HERE">
+    
+    <!-- Google Analytics 4 Placeholder -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google AdSense Placeholder -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">Price<span class="highlight">Comparator</span></h1>
+            <nav>
+                <a href="#search">Search</a>
+                <a href="#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="search" class="search-section">
+            <h2>Find the Best Deals Instantly</h2>
+            <p>Compare prices across Amazon, Flipkart, Myntra, Meesho, and quick commerce platforms.</p>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search for a product (e.g., iPhone 15, AirPods Pro)...">
+                <button id="searchBtn">Search Prices</button>
+                <div id="autocomplete-results" class="autocomplete-dropdown hidden"></div>
+            </div>
+            
+            <div id="loading" class="hidden">
+                 <div class="spinner"></div><p>Fetching real-time prices...</p>
+            </div>
+        </section>
+
+        <section id="results" class="results-section hidden">
+            <div class="highlight-boxes">
+                <div class="highlight-box lowest-box">
+                    <h3>Lowest Price</h3>
+                    <p id="lowest-price-text">₹-- on --</p>
+                </div>
+                <div class="highlight-box fastest-box">
+                    <h3>Fastest Delivery</h3>
+                    <p id="fastest-delivery-text">-- mins on --</p>
+                </div>
+            </div>
+
+            <div class="comparison-container">
+                <div class="table-wrapper">
+                    <table id="priceTable">
+                        <thead>
+                            <tr>
+                                <th>Store</th>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Discount</th>
+                                <th>Delivery</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priceTableBody">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="charts-wrapper">
+                    <div class="chart-container">
+                        <canvas id="priceBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="ads-section">
+            <!-- AdSense Ad Unit Placeholder -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Price Comparator. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

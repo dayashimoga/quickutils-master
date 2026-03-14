@@ -8,6 +8,15 @@ MASTER_FILES = [
     "scripts/generate_sitemap.py",
     "scripts/utils.py",
     "scripts/__init__.py",
+    "scripts/generate_social_images.py",
+    "scripts/check_links.py",
+    "scripts/fetch_data.py",
+    "scripts/generate_pins.py",
+    "scripts/indexnow_submit.py",
+    "scripts/post_pinterest.py",
+    "scripts/post_social.py",
+    "scripts/cleanup.py",
+    "scripts/fix_slugs.py",
     "requirements.txt",
     "src/_redirects",
     "src/_headers",
@@ -16,7 +25,18 @@ MASTER_FILES = [
     "src/templates/item.html",
     "src/templates/category.html",
     "src/templates/404.html",
+    "src/templates/listicle.html",
     ".gitignore",
+    "tests/conftest.py",
+    "tests/test_templates.py",
+    "tests/test_build_directory.py",
+    "tests/test_generate_sitemap.py",
+    "tests/test_utils.py",
+    "tests/test_check_links.py",
+    "tests/test_post_social.py",
+    "tests/test_post_pinterest.py",
+    "tests/test_core_optimized.py",
+    "tests/test_fetch_data.py",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -46,7 +66,7 @@ def sync_scripts():
 
         print(f"  → Syncing to {project.name}...")
         for file_rel_path in MASTER_FILES:
-            if file_rel_path.startswith("scripts/") or file_rel_path == "requirements.txt" or file_rel_path == ".gitignore":
+            if file_rel_path.startswith("scripts/") or file_rel_path.startswith("tests/") or file_rel_path in ["requirements.txt", ".gitignore"]:
                 src = ROOT_DIR / file_rel_path
             else:
                 src = MASTER_PROJECT_DIR / file_rel_path

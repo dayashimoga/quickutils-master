@@ -48,12 +48,12 @@ class TestBuildItemPages:
             categories = get_categories(sample_items)
             build_item_pages(env, sample_items, categories)
 
-        api_dir = dist_dir / "api"
-        assert api_dir.exists()
+        item_dir = dist_dir / "item"
+        assert item_dir.exists()
 
         # Check each item has a page
         for item in sample_items:
-            page = api_dir / f"{item['slug']}.html"
+            page = item_dir / f"{item['slug']}.html"
             assert page.exists(), f"Missing page: {page}"
             content = page.read_text(encoding="utf-8")
             assert item["title"] in content
@@ -67,7 +67,7 @@ class TestBuildItemPages:
             categories = get_categories(sample_items)
             build_item_pages(env, sample_items, categories)
 
-        page = dist_dir / "api" / "dog-api.html"
+        page = dist_dir / "item" / "dog-api.html"
         content = page.read_text(encoding="utf-8")
         assert "<title>" in content
         # htmlmin may strip attribute quotes, so check for both forms
@@ -83,10 +83,10 @@ class TestBuildItemPages:
             categories = get_categories(sample_items)
             build_item_pages(env, sample_items, categories)
 
-        # Dog API is in Animals category, Cat Facts is also in Animals
-        page = dist_dir / "api" / "dog-api.html"
+        # Dog API and Cat Facts are both Animals
+        page = dist_dir / "item" / "cat-facts.html"
         content = page.read_text(encoding="utf-8")
-        assert "Cat Facts" in content
+        assert "Dog API" in content
 
 
 class TestBuildCategoryPages:
@@ -147,7 +147,7 @@ class TestBuildIndexPage:
             build_index_page(env, sample_items, categories)
 
         content = (dist_dir / "index.html").read_text(encoding="utf-8")
-        assert "5" in content  # total_apis
+        assert "4" in content  # total_apis
         assert str(len(categories)) in content
 
     def test_index_contains_categories(self, tmp_path, templates_dir, sample_items):
@@ -244,7 +244,7 @@ class TestBuildSite:
         assert (dist_dir / "404.html").exists()
         assert (dist_dir / "feed.xml").exists(), "RSS feed missing"
         assert (dist_dir / "search.json").exists(), "Search index missing"
-        assert (dist_dir / "api").is_dir()
+        assert (dist_dir / "item").is_dir()
         assert (dist_dir / "category").is_dir()
 
     def test_empty_database(self, tmp_path, templates_dir):

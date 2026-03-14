@@ -19,42 +19,37 @@ class TestNormalizeEntry:
 
     def test_valid_entry(self):
         raw = {
-            "name": "Supabase",
-            "alternative_to": "Firebase",
-            "description": "Open source Firebase alternative",
-            "category": "Database",
-            "url": "https://supabase.com/",
-            "github_repo": "https://github.com/supabase/supabase"
+            "name": "NYC Taxi Data",
+            "description": "Public taxi trips",
+            "category": "Transportation",
+            "url": "https://nyc.gov/",
+            "platform": "Parquet",
+            "tool_type": "50GB",
+            "pricing": "Public Domain"
         }
         result = normalize_entry(raw)
         assert result is not None
-        assert result["title"] == "Supabase"
-        assert result["alternative_to"] == "Firebase"
-        assert result["category"] == "Database"
-        assert result["slug"] == "supabase-alternative-to-firebase"
+        assert result["title"] == "NYC Taxi Data"
+        assert result["pricing"] == "Public Domain"
+        assert result["category"] == "Transportation"
+        assert result["slug"] == "nyc-taxi-data"
 
     def test_missing_name_returns_none(self):
-        raw = {"alternative_to": "Firebase", "category": "Database"}
-        result = normalize_entry(raw)
-        assert result is None
-
-    def test_missing_alternative_to_returns_none(self):
-        raw = {"name": "Supabase", "category": "Database"}
+        raw = {"pricing": "Public Domain", "category": "Database"}
         result = normalize_entry(raw)
         assert result is None
 
     def test_whitespace_trimming(self):
         raw = {
             "name": "  Trimmed  ",
-            "alternative_to": "  TrimmedAlt  ",
             "description": "  Desc  ",
             "category": "  Test  ",
             "url": "  https://test.com  ",
-            "github_repo": "  https://github.com/test/test  ",
+            "pricing": "  MIT  ",
         }
         result = normalize_entry(raw)
         assert result["title"] == "Trimmed"
-        assert result["alternative_to"] == "TrimmedAlt"
+        assert result["pricing"] == "MIT"
         assert result["description"] == "Desc"
         assert result["category"] == "Test"
 
@@ -97,10 +92,10 @@ class TestFetchAndSave:
             SEED_DATA_URL,
             json=[
                 {
-                    "name": "Mattermost",
-                    "alternative_to": "Slack",
-                    "description": "Slack alternative",
-                    "category": "Communication",
+                    "name": "Wikipedia Dumps",
+                    "description": "XML text dumps",
+                    "category": "Web & Text",
+                    "pricing": "CC-BY-SA",
                 }
             ],
             status=200,
@@ -116,7 +111,7 @@ class TestFetchAndSave:
 
         items = json.loads(db_path.read_text(encoding="utf-8"))
         assert len(items) == 1
-        assert items[0]["title"] == "Mattermost"
+        assert items[0]["title"] == "Wikipedia Dumps"
 
     @responses.activate
     def test_fallback_to_seed_data(self, tmp_path):

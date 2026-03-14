@@ -75,7 +75,7 @@ class TestGetPriority:
     def test_category_high(self):
         assert get_priority("category/animals.html") == "0.8"
 
-    def test_item_medium(self):
+    def test_api_medium(self):
         assert get_priority("item/dog-api.html") == "0.6"
 
     def test_other_low(self):
@@ -91,7 +91,7 @@ class TestGetChangefreq:
     def test_category_weekly(self):
         assert get_changefreq("category/animals.html") == "weekly"
 
-    def test_item_monthly(self):
+    def test_api_monthly(self):
         assert get_changefreq("item/dog-api.html") == "monthly"
 
 
@@ -155,15 +155,15 @@ class TestGenerateSitemap:
         generate_sitemap(mock_dist, "https://test.com")
         assert (mock_dist / "robots.txt").exists()
 
-    def test_overwrites_robots(self, mock_dist):
+    def test_does_not_overwrite_robots(self, mock_dist):
         # Pre-create robots.txt
         robots = mock_dist / "robots.txt"
         robots.write_text("custom robots", encoding="utf-8")
 
         generate_sitemap(mock_dist, "https://test.com")
 
-        # Now it SHOULD overwrite to ensure the sitemap URL is correct
-        assert "Sitemap: https://test.com/sitemap.xml" in robots.read_text(encoding="utf-8")
+        # Should not overwrite existing robots.txt
+        assert robots.read_text(encoding="utf-8") == "custom robots"
 
     def test_empty_dist_skips(self, tmp_path):
         empty_dist = tmp_path / "empty_dist"
