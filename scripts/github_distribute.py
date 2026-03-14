@@ -14,48 +14,49 @@ def get_username():
     global _username_cache
     if _username_cache is not None:
         return _username_cache
+    
+    # Priority: 1. GITHUB_ACTOR (CI), 2. Explicit OWNER env, 3. GH_USERNAME from config
+    username = os.environ.get("GITHUB_ACTOR") or os.environ.get("OWNER") or GH_USERNAME
+    
     if PAT:
-        # Get GitHub Username
+        # Get/Verify GitHub Username via API
         try:
             user_res = requests.get("https://api.github.com/user", headers={"Authorization": f"token {PAT}"})
             if user_res.status_code == 200:
-                _username_cache = user_res.json().get("login")
-                print(f"Authenticated as: {_username_cache}")
-                return _username_cache
+                username = user_res.json().get("login")
+                print(f"Authenticated as: {username}")
             else:
-                print(f"Warning: Failed to authenticate with token ({user_res.status_code}).")
+                print(f"Warning: Failed to verify token ({user_res.status_code}). Using {username}")
         except Exception as e:
-            print(f"Warning: Error during authentication: {e}")
+            print(f"Warning: Error during authentication: {e}. Using {username}")
     else:
-        print("Warning: GH_PAT not found. API features (repo creation) will be disabled.")
+        print(f"Warning: GH_PAT not found. API features (repo creation) will be disabled. Using {username}")
     
-    _username_cache = ""
-    return ""
+    _username_cache = username
+    return username
 
 def get_projects():
     BASE_PATH = Path(__file__).parent.parent
     PROJECTS_DIR = BASE_PATH / "projects"
     projects = {}
     
-    # 1. Add directories
-    for d in PROJECTS_DIR.iterdir():
-        if d.is_dir() and d.name.endswith("-directory"):
-            projects[d.name] = str(d.absolute())
+    # Dynamically discover all project directories
+    if PROJECTS_DIR.exists():
+        for d in PROJECTS_DIR.iterdir():
+            if d.is_dir() and not d.name.startswith(".") and d.name != "quickutils-master":
+                projects[d.name] = str(d.absolute())
             
-    # 2. Add special projects
-    if (PROJECTS_DIR / "boringwebsite").exists():
-        projects["boringwebsite"] = str((PROJECTS_DIR / "boringwebsite").absolute())
-        
     return projects
 
 def create_github_repo(repo_name):
-    username = get_username() or GH_USERNAME
-    if not PAT or not username:
-        # Fallback to existing git remote if we can find it
-        return f"https://github.com/{GH_USERNAME}/{repo_name}.git"
-        
+    username = get_username()
     print(f"\nProcessing {repo_name}...")
+    
+    if not PAT:
+        return f"https://github.com/{username}/{repo_name}.git"
+        
     url = "https://api.github.com/user/repos"
+
     data = {
         "name": repo_name,
         "description": f"QuickUtils Component: {repo_name}",

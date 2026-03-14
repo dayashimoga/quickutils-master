@@ -276,7 +276,7 @@ def test_github_distribute_auth_exception():
 
 
 def test_github_distribute_get_projects_with_boringwebsite():
-    """Cover the boringwebsite special project path (lines 46-48)."""
+    """Cover the project discovery path (all dirs except .github and master)."""
     from scripts.github_distribute import get_projects
     mock_dir = MagicMock()
     mock_dir.is_dir.return_value = True
@@ -292,6 +292,7 @@ def test_github_distribute_get_projects_with_boringwebsite():
          patch("pathlib.Path.exists", return_value=True):
         projects = get_projects()
     assert "tools-directory" in projects
+    assert "boringwebsite" in projects
 
 
 def test_github_restore_cleanup_tmp():

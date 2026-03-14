@@ -12,21 +12,14 @@ BASE_PATH = Path(__file__).parent.parent
 PROJECTS_DIR = BASE_PATH / "projects"
 
 def get_projects():
-    return [
-        "apistatus-directory",
-        "boilerplates-directory",
-        "cheatsheets-directory",
-        "dailyfacts",
-        "datasets-directory",
-        "jobs-directory",
-        "opensource-directory",
-        "prompts-directory",
-        "quotes-directory",
-        "tools-directory",
-        "travellogs-directory",
-        "boringwebsite",
-        "quickutils-master"
-    ]
+    # Dynamically discover all projects in the projects directory
+    # (excluding .github and quickutils-master)
+    if PROJECTS_DIR.exists():
+        return [
+            d.name for d in PROJECTS_DIR.iterdir() 
+            if d.is_dir() and not d.name.startswith(".") and d.name != "quickutils-master"
+        ]
+    return []
 
 def remove_readonly(func, path, excinfo):
     os.chmod(path, stat.S_IWRITE)
