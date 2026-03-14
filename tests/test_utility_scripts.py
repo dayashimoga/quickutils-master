@@ -268,9 +268,10 @@ def test_github_distribute_auth_exception():
     
     with patch.dict("os.environ", {"GH_PAT": "test_token"}), \
          patch("requests.get", side_effect=Exception("Connection failed")):
+        from scripts.utils import GH_USERNAME
         scripts.github_distribute.PAT = "test_token"
         result = scripts.github_distribute.get_username()
-        assert result == ""
+        assert result == GH_USERNAME
     
     scripts.github_distribute._username_cache = None
 

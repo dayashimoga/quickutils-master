@@ -64,8 +64,16 @@ def sync_scripts():
         if project.name.startswith("."):
             continue
 
+        # Skip dashboard projects for template sync (they have their own designs)
+        DASHBOARD_PROJECTS = ["market-digest", "price-comparator", "boringwebsite", "dailyfacts"]
+        
         print(f"  → Syncing to {project.name}...")
         for file_rel_path in MASTER_FILES:
+            # Determine if this file should be synced to this project
+            is_template = file_rel_path.startswith("src/")
+            if is_template and project.name in DASHBOARD_PROJECTS:
+                continue
+
             if file_rel_path.startswith("scripts/") or file_rel_path.startswith("tests/") or file_rel_path in ["requirements.txt", ".gitignore"]:
                 src = ROOT_DIR / file_rel_path
             else:
