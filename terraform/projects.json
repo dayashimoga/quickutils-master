@@ -1,47 +1,57 @@
 {
     "apistatus": {
         "directory": "projects/apistatus-directory",
-        "repo_name": "apistatus-directory"
+        "repo_name": "apistatus-directory",
+        "custom_domain": "apistatus.quickutils.top"
     },
     "boilerplates": {
         "directory": "projects/boilerplates-directory",
-        "repo_name": "boilerplates-directory"
+        "repo_name": "boilerplates-directory",
+        "custom_domain": "boilerplates.quickutils.top"
     },
     "cheatsheets": {
         "directory": "projects/cheatsheets-directory",
-        "repo_name": "cheatsheets-directory"
+        "repo_name": "cheatsheets-directory",
+        "custom_domain": "cheatsheets.quickutils.top"
     },
     "dailyfacts": {
         "directory": "projects/dailyfacts",
         "repo_name": "dailyfacts",
         "build_command": "npm install && npm run build",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "facts.quickutils.top"
     },
     "datasets": {
         "directory": "projects/datasets-directory",
-        "repo_name": "datasets-directory"
+        "repo_name": "datasets-directory",
+        "custom_domain": "datasets.quickutils.top"
     },
     "jobs": {
         "directory": "projects/jobs-directory",
-        "repo_name": "jobs-directory"
+        "repo_name": "jobs-directory",
+        "custom_domain": "jobs.quickutils.top"
     },
     "opensource": {
         "directory": "projects/opensource-directory",
-        "repo_name": "opensource-directory"
+        "repo_name": "opensource-directory",
+        "custom_domain": "opensource.quickutils.top"
     },
     "prompts": {
         "directory": "projects/prompts-directory",
-        "repo_name": "prompts-directory"
+        "repo_name": "prompts-directory",
+        "custom_domain": "prompts.quickutils.top"
     },
     "tools": {
         "directory": "projects/tools-directory",
-        "repo_name": "tools-directory"
+        "repo_name": "tools-directory",
+        "custom_domain": "tools.quickutils.top"
     },
     "boringwebsite": {
         "directory": "projects/boringwebsite",
         "repo_name": "boringwebsite",
         "build_command": "npm install && npm run build",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "quickutils.top"
     },
     "master": {
         "directory": "projects/quickutils-master",
@@ -49,6 +59,17 @@
         "src_dir": "projects/quickutils-master/src",
         "data_dir": "projects/quickutils-master/data",
         "dist_dir": "dist",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "directory.quickutils.top"
+    },
+    "market-digest": {
+        "directory": "projects/market-digest",
+        "repo_name": "market-digest",
+        "custom_domain": "market.quickutils.top"
+    },
+    "price-comparator": {
+        "directory": "projects/price-comparator",
+        "repo_name": "price-comparator",
+        "custom_domain": "prices.quickutils.top"
     }
 }

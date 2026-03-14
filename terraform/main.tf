@@ -49,7 +49,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
-        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
+        SITE_URL             = "https://${each.value.custom_domain}"
       }
     }
     preview {
@@ -66,15 +66,16 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
-        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
+        SITE_URL             = "https://${each.value.custom_domain}"
       }
     }
   }
 }
 
-# Optional: Custom Domains (Example for one project)
-# resource "cloudflare_pages_domain" "example" {
-#   account_id   = var.cloudflare_account_id
-#   project_name = cloudflare_pages_project.quickutils_projects["opensource"].name
-#   domain       = "opensource.quickutils.top"
-# }
+resource "cloudflare_pages_domain" "quickutils_domains" {
+  for_each     = local.projects
+  account_id   = var.cloudflare_account_id
+  project_name = cloudflare_pages_project.quickutils_projects[each.key].name
+  domain       = each.value.custom_domain
+}
+
