@@ -44,7 +44,7 @@ jobs:
           terraform_version: "latest"
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform Init & Adoption
+      - name: Terraform Init & adoption
         working-directory: terraform
         env:
           TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -57,26 +57,38 @@ jobs:
           echo "Checking for existing Cloudflare projects and domains to import..."
           jq -r 'to_entries[] | "\(.key) \(.value.repo_name) \(.value.custom_domain)"' projects.json | while read -r key repo domain; do
             
+            echo "Processing $key ($repo)..."
+            
             # 1. Adopt Pages Project
             STATUS_PROJ=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
               -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
               
             if [ "$STATUS_PROJ" == "200" ]; then
               if ! terraform state show "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1; then
-                echo "Adopting project: $repo (key: $key)"
-                terraform import -ignore-remote-version "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || true
+                echo "Adopting project: $repo"
+                terraform import -input=false "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || echo "Import failed for project $repo"
+              else
+                echo "Project $repo already in state."
               fi
               
               # 2. Adopt Custom Domain (if it exists)
-              STATUS_DOM=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo/domains/$domain" \
-                -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
-                
-              if [ "$STATUS_DOM" == "200" ]; then
-                if ! terraform state show "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1; then
-                  echo "Adopting domain: $domain for $repo"
-                  terraform import -ignore-remote-version "cloudflare_pages_domain.quickutils_domains[\"$key\"]" "$ACCOUNT_ID/$repo/$domain" || true
+              if [ "$domain" != "null" ] && [ -n "$domain" ]; then
+                STATUS_DOM=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo/domains/$domain" \
+                  -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+                  
+                if [ "$STATUS_DOM" == "200" ]; then
+                  if ! terraform state show "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1; then
+                    echo "Adopting domain: $domain for $repo"
+                    terraform import -input=false "cloudflare_pages_domain.quickutils_domains[\"$key\"]" "$ACCOUNT_ID/$repo/$domain" || echo "Import failed for domain $domain"
+                  else
+                    echo "Domain $domain already in state."
+                  fi
+                else
+                  echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Terraform will create it."
                 fi
               fi
+            else
+              echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Terraform will create it."
             fi
           done
           
