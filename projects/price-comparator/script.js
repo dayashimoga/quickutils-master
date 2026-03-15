@@ -262,11 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function simulateApiFetch(query) {
         let results = [];
         const USD_TO_INR = 83.5;
+        const lowerQuery = query.toLowerCase();
         
         // Base mock price generator based on query length/hash
         const strHash = query.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-        const basePrice = Math.abs(strHash) % 50000 + 1000;
+        let basePrice = Math.abs(strHash) % 50000 + 1000;
         
+        // Adjust price for known premium products
+        if (lowerQuery.includes('s24 ultra')) basePrice = 129999;
+        else if (lowerQuery.includes('iphone 15 pro')) basePrice = 134900;
+        else if (lowerQuery.includes('ps5')) basePrice = 54990;
+        else if (lowerQuery.includes('macbook')) basePrice = 99900;
+
         // 1. Fetch from Global Products API (DummyJSON to simulate Amazon/eBay/BestBuy/Banggood/AliExpress)
         try {
             const djRes = await fetch(`https://dummyjson.com/products/search?q=${encodeURIComponent(query)}`);
@@ -274,7 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const djData = await djRes.json();
                 if (djData.products && djData.products.length > 0) {
                     const p = djData.products[0]; // Use the best match
-                    const usdPrice = p.price;
+                    let usdPrice = p.price;
+                    
+                    // If we have a corrected basePrice, sync USD price
+                    if (basePrice > 10000) usdPrice = (basePrice / USD_TO_INR).toFixed(2);
+                    
                     const inrPrice = Math.round(usdPrice * USD_TO_INR);
                     const qEnc = encodeURIComponent(query);
                     
@@ -285,36 +296,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     results.push({
                         store: 'Amazon Global', region: 'Global', productName: p.title,
                         price: inrPrice, originalCurrencyStr: `($${usdPrice})`,
-                        discount: `${Math.round(p.discountPercentage)}%`, deliveryMins: 10080, 
+                        discount: `${Math.round(p.discountPercentage || 10)}%`, deliveryMins: 10080, 
                         url: `https://www.amazon.com/s?k=${qEnc}&tag=${affTag}`
                     });
                     
                     results.push({
                         store: 'eBay Global', region: 'Global', productName: p.title,
-                        price: Math.round(inrPrice * 0.95), originalCurrencyStr: `($${(usdPrice*0.95).toFixed(2)})`, // Slightly cheaper
-                        discount: '15%', deliveryMins: 14400, // 10 days
+                        price: Math.round(inrPrice * 0.95), originalCurrencyStr: `($${(usdPrice*0.95).toFixed(2)})`,
+                        discount: '15%', deliveryMins: 14400,
                         url: `https://www.ebay.com/sch/i.html?_nkw=${qEnc}&mkcid=1&mkrid=711-53200-19255-0&siteid=0&campid=111`
                     });
 
                     results.push({
                         store: 'BestBuy US', region: 'Global', productName: p.title,
                         price: Math.round(inrPrice * 1.05), originalCurrencyStr: `($${(usdPrice*1.05).toFixed(2)})`,
-                        discount: '5%', deliveryMins: 8640, // 6 days
+                        discount: '5%', deliveryMins: 8640,
                         url: `https://www.bestbuy.com/site/searchpage.jsp?st=${qEnc}`
                     });
                     
                     results.push({
                         store: 'AliExpress', region: 'Global', productName: p.title,
                         price: Math.round(inrPrice * 0.60), originalCurrencyStr: `($${(usdPrice*0.60).toFixed(2)})`,
-                        discount: '40%', deliveryMins: 28800, // 20 days
+                        discount: '40%', deliveryMins: 28800,
                         url: `https://www.aliexpress.com/wholesale?SearchText=${qEnc}`
-                    });
-                    
-                    results.push({
-                        store: 'Banggood', region: 'Global', productName: p.title,
-                        price: Math.round(inrPrice * 0.75), originalCurrencyStr: `($${(usdPrice*0.75).toFixed(2)})`,
-                        discount: '25%', deliveryMins: 21600, // 15 days
-                        url: `https://www.banggood.com/search/${qEnc.replace(/%20/g, '-')}.html`
                     });
                 }
             }

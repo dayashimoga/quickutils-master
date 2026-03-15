@@ -23,10 +23,10 @@
     <div class="hero-bg"></div>
     <div class="container hero-content">
         <h1 class="hero-title">
-            Discover <span class="gradient-text">Free &amp; Open APIs</span>
+            Discover <span class="gradient-text">Free &amp; Open {{ site_type }}</span>
         </h1>
         <p class="hero-subtitle">
-            Browse <strong>{{ total_apis }}+</strong> curated APIs across
+            Browse <strong>{{ total_apis }}+</strong> curated {{ site_type }} across
             <strong>{{ total_categories }}</strong> categories.
             Always free. Always up-to-date.
         </p>
@@ -36,8 +36,8 @@
             <div class="search-bar">
                 <span class="search-icon">🔍</span>
                 <input type="search" id="hero-search" class="search-input"
-                    placeholder="Search APIs... (e.g. weather, music, finance)" autocomplete="off"
-                    aria-label="Search APIs">
+                    placeholder="Search {{ site_type }}... (e.g. weather, music, finance)" autocomplete="off"
+                    aria-label="Search {{ site_type }}">
             </div>
         </div>
 
@@ -45,7 +45,7 @@
         <div class="stats-row">
             <div class="stat-item">
                 <span class="stat-number" id="stat-apis">{{ total_apis }}</span>
-                <span class="stat-label">Free APIs</span>
+                <span class="stat-label">Free {{ site_type }}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-number" id="stat-categories">{{ total_categories }}</span>
@@ -63,14 +63,14 @@
 <section class="categories-section" id="categories">
     <div class="container">
         <h2 class="section-title">Browse by Category</h2>
-        <p class="section-subtitle">Find the perfect API for your next project</p>
+        <p class="section-subtitle">Find the perfect {{ site_type | lower | replace('pages', 'page') | replace('s', '') if site_type.endswith('s') else site_type }} for your next project</p>
 
         <div class="category-grid" id="category-grid">
             {% for cat in categories %}
             <a href="/category/{{ cat.slug }}.html" class="category-card" id="cat-{{ cat.slug }}">
                 <div class="category-card-inner">
                     <h3 class="category-name">{{ cat.name }}</h3>
-                    <span class="category-count">{{ cat.count }} API{{ 's' if cat.count != 1 }}</span>
+                    <span class="category-count">{{ cat.count }} {{ site_type | lower | replace('pages', 'page') | replace('s', '') if site_type.endswith('s') else site_type }}{{ 's' if cat.count != 1 }}</span>
                 </div>
                 <span class="category-arrow">→</span>
             </a>
@@ -82,8 +82,8 @@
 <!-- Featured APIs -->
 <section class="featured-section" id="featured">
     <div class="container">
-        <h2 class="section-title">Featured APIs</h2>
-        <p class="section-subtitle">Popular and trending APIs to get you started</p>
+        <h2 class="section-title">Featured {{ site_type }}</h2>
+        <p class="section-subtitle">Popular and trending {{ site_type }} to get you started</p>
 
         <div class="items-grid" id="featured-grid">
             {% for item in featured_items %}

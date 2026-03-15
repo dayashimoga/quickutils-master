@@ -227,6 +227,7 @@ def test_update_docs_extended():
 # Test run_global_tests.py branches
 def test_run_global_tests_branches():
     with patch("subprocess.run") as mock_run, \
+         patch("pathlib.Path.exists", return_value=False), \
          patch("builtins.print"):
         
         from scripts.run_global_tests import run_tests_in_dir
@@ -239,9 +240,9 @@ def test_run_global_tests_branches():
         mock_run.return_value.returncode = 1
         assert run_tests_in_dir("/fake/path") is False
         
-        # Test Exception (fallback to local)
-        mock_run.side_effect = [Exception("Docker failed"), MagicMock(returncode=0)]
-        assert run_tests_in_dir("/fake/path") is True
+        # Test Exception (no fallback as of new version, but we test the error handling)
+        mock_run.side_effect = Exception("error")
+        assert run_tests_in_dir("/fake/path") is False
 
 
 # --- New tests to close coverage gaps ---

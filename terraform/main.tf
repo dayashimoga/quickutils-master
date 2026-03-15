@@ -72,6 +72,21 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   }
 }
 
+data "cloudflare_zone" "quickutils_top" {
+  name = "quickutils.top"
+}
+
+resource "cloudflare_record" "quickutils_cnames" {
+  for_each = local.projects
+  zone_id  = data.cloudflare_zone.quickutils_top.id
+  name     = split(".", each.value.custom_domain)[0]
+  value    = "${each.value.repo_name}.pages.dev"
+  type     = "CNAME"
+  proxied  = true
+  # Handle existing records by allowing overwrite or manual import
+  # Cloudflare provider v4 allows overwriting if configured, otherwise terraform plan will show conflict
+}
+
 resource "cloudflare_pages_domain" "quickutils_domains" {
   for_each     = local.projects
   account_id   = var.cloudflare_account_id
