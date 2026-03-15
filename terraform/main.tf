@@ -83,8 +83,8 @@ resource "cloudflare_record" "quickutils_cnames" {
   value    = "${each.value.repo_name}.pages.dev"
   type     = "CNAME"
   proxied  = true
-  # Handle existing records by allowing overwrite or manual import
-  # Cloudflare provider v4 allows overwriting if configured, otherwise terraform plan will show conflict
+  # Handle existing records by allowing overwrite
+  allow_overwrite = true
 }
 
 resource "cloudflare_pages_domain" "quickutils_domains" {

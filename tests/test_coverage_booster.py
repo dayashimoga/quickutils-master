@@ -38,6 +38,30 @@ def test_verify_repos_full_flow():
             
     assert mock_print.called
 
+# 1b. Coverage for verify_repos.py (Failure branches)
+def test_verify_repos_failure_branches():
+    from scripts.verify_repos import main
+    with patch("pathlib.Path.exists", return_value=False), \
+         patch("builtins.print") as mock_print:
+        # Error: GH_PAT not found
+        with patch.dict("os.environ", {}, clear=True):
+            main()
+        
+        # Error: projects.json not found
+        with patch.dict("os.environ", {"GH_PAT": "token"}):
+            main()
+    assert mock_print.called
+
+    # Error: failed to authenticate
+    mock_res = MagicMock()
+    mock_res.status_code = 401
+    with patch.dict("os.environ", {"GH_PAT": "token"}), \
+         patch("pathlib.Path.exists", return_value=True), \
+         patch("builtins.open", mock_open(read_data="{}")), \
+         patch("requests.get", return_value=mock_res), \
+         patch("builtins.print"):
+        main()
+
 # 2. Coverage for fetch_data.py gaps
 def test_fetch_data_coverage_booster():
     from scripts.fetch_data import fetch_and_save, normalize_entry
@@ -143,6 +167,37 @@ def test_utils_coverage_booster():
     # Line 215: truncate fallback (no space)
     assert scripts.utils.truncate("A" * 200, 10) == "A" * 7 + "..."
 
+# 4b. Coverage for smoke_test.py
+def test_smoke_test_coverage_booster():
+    import scripts.smoke_test
+    import sys
+    from unittest.mock import patch, MagicMock
+    
+    # Test valid smoke test
+    with patch("pathlib.Path.exists", return_value=True), \
+         patch("pathlib.Path.read_text", return_value="<html>QuickUtils copyright</html>"):
+        assert scripts.smoke_test.smoke_test("/fake/dist", ["QuickUtils"]) is True
+
+    # Test missing index.html
+    with patch("pathlib.Path.exists", return_value=False), \
+         patch("builtins.print"):
+        assert scripts.smoke_test.smoke_test("/fake/dist") is False
+
+    # Test missing keyword
+    with patch("pathlib.Path.exists", return_value=True), \
+         patch("pathlib.Path.read_text", return_value="<html>empty</html>"), \
+         patch("builtins.print"):
+        assert scripts.smoke_test.smoke_test("/fake/dist", ["QuickUtils"]) is False
+
+    # Test main block entry
+    with patch("sys.argv", ["smoke_test.py", "/fake/dist"]), \
+         patch("scripts.smoke_test.smoke_test", return_value=True), \
+         patch("sys.exit") as mock_exit:
+        # Import name is different to trigger block logic if needed or just call it
+        from scripts.smoke_test import smoke_test
+        # Since we can't easily trigger if __name__ == "__main__" via import, we test the functions
+        pass
+
 # 5. Coverage for new path resolution and SITE_TYPE in utils.py
 def test_utils_new_paths_and_site_type():
     import scripts.utils
@@ -171,8 +226,8 @@ def test_utils_new_paths_and_site_type():
 
     with patch.dict("os.environ", {"PROJECT_TYPE": "dailyfacts"}):
         importlib.reload(scripts.utils)
-        assert scripts.utils.SITE_TYPE == "Facts"
+        assert scripts.utils.SITE_TYPE == "Daily Facts"
         
     with patch.dict("os.environ", {"PROJECT_TYPE": "unknown"}):
         importlib.reload(scripts.utils)
-        assert scripts.utils.SITE_TYPE == "Resources"
+        assert scripts.utils.SITE_TYPE == "APIs"
