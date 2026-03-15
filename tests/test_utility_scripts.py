@@ -102,6 +102,7 @@ def test_github_distribute_deep():
          patch("requests.get") as mock_get, \
          patch("requests.post") as mock_post, \
          patch("pathlib.Path.iterdir", return_value=[mock_project]), \
+         patch("os.listdir", return_value=[]), \
          patch.dict("os.environ", {"GH_PAT": "fake_pat"}), \
          patch("builtins.print"):
         
@@ -201,7 +202,7 @@ def test_github_restore_deep():
         # Test restore_project success cleanup
         mock_run.side_effect = None
         with patch("pathlib.Path.exists", side_effect=[False, False, False, True]): # incomplete, then clone, then .git exists
-             restore_project("restore-me")
+            restore_project("restore-me")
 
         main()
     assert True

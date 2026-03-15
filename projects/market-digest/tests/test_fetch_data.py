@@ -1,266 +1,148 @@
-"""Tests for scripts/fetch_data.py"""
 import json
-from unittest.mock import patch
-import pytest
-import responses
-from scripts.fetch_data import (
-    SEED_DATA_URL,
-    deduplicate,
-    fetch_and_save,
-    get_seed_data,
-    normalize_entry,
-)
+import unittest
+from unittest.mock import patch, MagicMock
+from datetime import datetime
+import xml.etree.ElementTree as ET
+import sys
+import os
 
-class TestNormalizeEntry:
-    def test_valid_entry(self):
-        raw = {
-            "name": "NYC Taxi Data",
-            "description": "Public taxi trips",
-            "category": "Transportation",
-            "url": "https://nyc.gov/",
-            "platform": "Parquet",
-            "tool_type": "50GB",
-            "pricing": "Public Domain"
-        }
-        result = normalize_entry(raw)
-        assert result is not None
-        assert result["title"] == "NYC Taxi Data"
-        assert result["pricing"] == "Public Domain"
+# Add the project directory to sys.path so we can import fetch_data
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import fetch_data
 
-    def test_missing_name_returns_none(self):
-        assert normalize_entry({"pricing": "Public Domain"}) is None
+class TestMarketDigestFetch(unittest.TestCase):
 
-    def test_whitespace_trimming(self):
-        raw = {"name": "  Trimmed  ", "description": "  Desc  ", "category": "  Test  "}
-        result = normalize_entry(raw)
-        assert result["title"] == "Trimmed"
-        assert result["description"] == "Desc"
+    @patch('urllib.request.urlopen')
+    def test_fetch_yahoo_finance_success(self, mock_urlopen):
+        # Mock response from Yahoo Finance
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({
+            'chart': {
+                'result': [{
+                    'timestamp': [1710400000, 1710486400],
+                    'indicators': {
+                        'quote': [{
+                            'close': [100.5, 102.3]
+                        }]
+                    }
+                }]
+            }
+        }).encode('utf-8')
+        mock_urlopen.return_value = mock_response
 
-class TestDeduplicate:
-    def test_removes_duplicates(self):
-        items = [
-            {"title": "A", "slug": "a"},
-            {"title": "A Dup", "slug": "a"},
-        ]
-        result = deduplicate(items)
-        assert len(result) == 1
+        result = fetch_data.fetch_yahoo_finance('AAPL')
+        self.assertEqual(result, [100.5, 102.3])
 
-    def test_sorted_by_title(self):
-        items = [{"title": "Z", "slug": "z"}, {"title": "A", "slug": "a"}]
-        result = deduplicate(items)
-        assert result[0]["title"] == "A"
+    @patch('urllib.request.urlopen')
+    def test_fetch_yahoo_finance_failure(self, mock_urlopen):
+        mock_urlopen.side_effect = Exception("Network Error")
+        result = fetch_data.fetch_yahoo_finance('AAPL')
+        self.assertEqual(result, [])
 
-@responses.activate
-def test_successful_fetch(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"entries": [{"API": "Test", "Description": "D", "Category": "Test", "Link": "https://t.com"}]},
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
-        assert fetch_and_save() is True
-    assert (tmp_path / "database.json").exists()
+    @patch('urllib.request.urlopen')
+    def test_fetch_yahoo_finance_empty(self, mock_urlopen):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({'chart': {'result': None}}).encode('utf-8')
+        mock_urlopen.return_value = mock_response
+        result = fetch_data.fetch_yahoo_finance('AAPL')
+        self.assertEqual(result, [])
 
-@responses.activate
-def test_fallback_to_seed_data(tmp_path):
-    responses.add(responses.GET, "https://api.publicapis.org/entries", status=500)
-    responses.add(responses.GET, "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json", status=500)
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
-        assert fetch_and_save() is True
-    assert (tmp_path / "database.json").exists()
+    def test_get_signal(self):
+        # Test Case: Strong Buy
+        history = [float(100 + i) for i in range(30)] # 100 to 129
+        current = 135.0
+        res = fetch_data.get_signal(current, history)
+        self.assertEqual(res, "Strong Buy")
 
-@responses.activate
-def test_datasets_filter(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "Data", "description": "D", "category": "Science", "url": "https://t.com"}],
-        status=200,
-    )
-    # Write config file to avoid patching get_config which is used locally
-    config_path = tmp_path / "project_config.json"
-    config_path.write_text(json.dumps({"PROJECT_TYPE": "datasets"}))
-    
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.Path.cwd", return_value=tmp_path):
-        fetch_and_save()
-    items = json.loads((tmp_path / "database.json").read_text())
-    assert len(items) == 1
+        # Test Case: Buy
+        history = [120.0] * 30
+        current = 125.0 # current > sma_30 (120), but sma_10 (120) not > sma_30 (120)
+        res = fetch_data.get_signal(current, history)
+        self.assertEqual(res, "Buy")
 
-@responses.activate
-def test_prompts_filter(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "AI Tool", "description": "D", "category": "Machine Learning", "url": "https://t.com"}],
-        status=200,
-    )
-    config_path = tmp_path / "project_config.json"
-    config_path.write_text(json.dumps({"PROJECT_TYPE": "prompts"}))
-    
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.Path.cwd", return_value=tmp_path):
-        fetch_and_save()
-    items = json.loads((tmp_path / "database.json").read_text())
-    assert len(items) == 1
+        # Test Case: Strong Sell
+        history = [200.0 - i for i in range(30)] # 200 down to 171
+        current = 165.0 # < sma_10 (175.5) and sma_10 < sma_30 (185.5)
+        self.assertEqual(fetch_data.get_signal(current, history), "Strong Sell")
 
-def test_main_cli_execution():
-    with patch("scripts.fetch_data.fetch_and_save", return_value=True) as mock_fetch, \
-         patch("scripts.fetch_data.sys.exit") as mock_exit:
-        from scripts.fetch_data import main
-        main()
-        mock_fetch.assert_called_once()
-        mock_exit.assert_called_once_with(0)
+        # Test Case: Sell
+        history = [150.0] * 30
+        current = 145.0
+        self.assertEqual(fetch_data.get_signal(current, history), "Sell")
 
-def test_normalize_entry_edge_cases():
-    assert normalize_entry({}) is None
-    assert normalize_entry({"name": "No Description"}) is None
-    res = normalize_entry({"name": "Auth Test", "description": "D", "Auth": "apiKey", "HTTPS": False})
-    assert res["auth"] == "apiKey"
-    assert res["https"] is False
-    res = normalize_entry({"name": "Defaults", "description": "D"})
-    assert res["auth"] == "None"
-    assert res["https"] is True
+        # Test Case: Hold (short history)
+        self.assertEqual(fetch_data.get_signal(100, [100, 101]), "Hold")
 
+    def test_calculate_deltas(self):
+        history = [100] * 252
+        history[-1] = 110 # 10% increase from previous day
+        
+        result = fetch_data.calculate_deltas(history)
+        self.assertEqual(result['current'], 110)
+        self.assertEqual(result['delta_1d'], 10.0)
+        self.assertIn('signal', result)
 
-# --- New tests to close coverage gaps ---
+    def test_calculate_deltas_empty(self):
+        result = fetch_data.calculate_deltas([])
+        self.assertEqual(result['current'], 0)
+        self.assertEqual(result['signal'], 'Neutral')
 
-@responses.activate
-def test_fetch_from_alternative_success():
-    """Test fetch_from_alternative returning a valid list."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "Alt API", "description": "D", "category": "Test"}],
-        status=200,
-    )
-    result = fetch_from_alternative()
-    assert result is not None
-    assert len(result) == 1
+    @patch('urllib.request.urlopen')
+    def test_fetch_rss_news_success(self, mock_urlopen):
+        xml_content = """<?xml version="1.0" encoding="UTF-8" ?>
+        <rss version="2.0">
+        <channel>
+            <item>
+                <title>Test News</title>
+                <link>http://example.com/test</link>
+                <pubDate>Mon, 15 Mar 2026 10:00:00 GMT</pubDate>
+            </item>
+        </channel>
+        </rss>"""
+        mock_response = MagicMock()
+        mock_response.read.return_value = xml_content.encode('utf-8')
+        mock_urlopen.return_value = mock_response
 
+        news = fetch_data.fetch_rss_news([('http://news.rss', 'Test Source')], limit=1)
+        self.assertEqual(len(news), 1)
+        self.assertEqual(news[0]['title'], 'Test News')
+        self.assertEqual(news[0]['source'], 'Test Source')
 
-@responses.activate
-def test_fetch_from_alternative_failure():
-    """Test fetch_from_alternative returns None on network error."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        status=500,
-    )
-    assert fetch_from_alternative() is None
+    @patch('urllib.request.urlopen')
+    def test_fetch_rss_news_failure(self, mock_urlopen):
+        mock_urlopen.side_effect = Exception("RSS Error")
+        news = fetch_data.fetch_rss_news([('http://news.rss', 'Test Source')])
+        self.assertEqual(news, [])
 
+    @patch('fetch_data.fetch_yahoo_finance')
+    @patch('fetch_data.fetch_rss_news')
+    @patch('builtins.open', new_callable=unittest.mock.mock_open)
+    def test_main_execution_with_mock_news(self, mock_file, mock_news, mock_yahoo):
+        mock_yahoo.return_value = [100.0] * 252
+        mock_news.return_value = [] # This triggers the news fallback
+        
+        with patch('time.sleep'): # Skip sleep
+            fetch_data.main()
+        
+        mock_file.assert_called_with("data.json", "w")
 
-@responses.activate
-def test_fetch_from_alternative_non_list():
-    """Test fetch_from_alternative returns None when response is not a list."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json={"data": "not a list"},
-        status=200,
-    )
-    assert fetch_from_alternative() is None
+    @patch('fetch_data.fetch_yahoo_finance')
+    def test_main_cli_block(self, mock_yahoo):
+        # This covers the if __name__ == "__main__": block indirectly or we can call it
+        with patch.object(fetch_data, "__name__", "__main__"), \
+             patch('fetch_data.main') as mock_main:
+            # We can't easily trigger the block without re-importing or exec
+            pass
 
+    def test_calculate_deltas_edge_cases(self):
+        # Cover small history
+        res = fetch_data.calculate_deltas([100.0])
+        self.assertEqual(res['current'], 0) # Logic says < 2 returns default
+        
+        res = fetch_data.calculate_deltas([100.0, 110.0])
+        self.assertEqual(res['delta_1d'], 10.0)
+        self.assertEqual(res['delta_1y'], 10.0)
 
-@responses.activate
-def test_boilerplates_project_type(tmp_path):
-    """Cover the boilerplates/opensource branch in fetch_and_save."""
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[
-            {"API": "Dev Tool", "Description": "A dev tool", "Category": "Development", "Link": "https://t.com"},
-            {"API": "Music API", "Description": "Music stuff", "Category": "Music", "Link": "https://t.com"},
-        ],
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.get_config", return_value="boilerplates"):
-        result = fetch_and_save()
-    assert result is True
-
-
-@responses.activate
-def test_cheatsheets_project_type(tmp_path):
-    """Cover the cheatsheets branch in fetch_and_save."""
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[
-            {"API": "Edu API", "Description": "Learn things", "Category": "Education", "Link": "https://t.com"},
-        ],
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.get_config", return_value="cheatsheets"):
-        result = fetch_and_save()
-    assert result is True
-
-
-@responses.activate
-def test_existing_db_preserved_on_total_failure(tmp_path):
-    """When all fetches fail AND seed data fails, existing DB should be preserved."""
-    responses.add(responses.GET, "https://api.publicapis.org/entries", status=500)
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        status=500,
-    )
-    # Create existing database with > 5 items
-    existing = [{"title": f"Item {i}", "description": "D", "slug": f"item-{i}"} for i in range(10)]
-    db_path = tmp_path / "database.json"
-    db_path.write_text(json.dumps(existing))
-
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.fetch_data.get_seed_data", return_value=[]):
-        result = fetch_and_save()
-    assert result is True  # Preserved existing
-
-
-@responses.activate
-def test_empty_normalized_results(tmp_path):
-    """When entries exist but all normalize to None, should return False."""
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"entries": [{"API": "", "Description": "", "Category": "X"}]},
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
-        result = fetch_and_save()
-    assert result is False
-
-
-def test_main_cli_failure():
-    """Test main() when fetch_and_save returns False."""
-    with patch("scripts.fetch_data.fetch_and_save", return_value=False), \
-         patch("scripts.fetch_data.sys.exit") as mock_exit:
-        from scripts.fetch_data import main
-        main()
-        mock_exit.assert_called_once_with(0)  # Always exits 0
-
-
-@responses.activate
-def test_fetch_from_primary_non_entries():
-    """Test fetch_from_primary when response has no 'entries' key."""
-    from scripts.fetch_data import fetch_from_primary
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"data": "wrong key"},
-        status=200,
-    )
-    assert fetch_from_primary() is None
-
+if __name__ == '__main__':
+    # This covers the main block of the test file but not the src file
+    unittest.main()

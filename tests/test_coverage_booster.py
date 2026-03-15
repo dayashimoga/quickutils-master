@@ -6,12 +6,10 @@ from pathlib import Path
 
 # 1. Coverage for verify_repos.py
 def test_verify_repos_full_flow():
-    import scripts.verify_repos
-    
     # Mock data
     mock_projects = {
-        "proj1": {"repo_name": "repo1", "custom_domain": "dom1"},
-        "proj2": {"repo_name": "repo2", "custom_domain": "dom2"}
+        "proj1": {"repo_name": "repo1"},
+        "proj2": {"repo_name": "repo2"}
     }
     
     # Mock responses
@@ -35,24 +33,12 @@ def test_verify_repos_full_flow():
          patch("requests.post", return_value=mock_create_success), \
          patch("builtins.print") as mock_print:
         
-        # Test main logic
-        # We need to re-run the logic since it's at module level or inside main
-        # But verify_repos has its logic in the main block or functions?
-        # Let's check verify_repos.py structure again.
-        # It has everything in if __name__ == "__main__": but also some top level imports.
-        # We can trigger it by importing or calling its main if it has one.
-        # Looking at previous view_file, it has logic at the top level and in main().
-        
         from scripts.verify_repos import main
-        try:
-            main()
-        except SystemExit:
-            pass
+        main()
             
     assert mock_print.called
 
 # 2. Coverage for fetch_data.py gaps
-# Lines: 98, 143-148, 150-153, 181-184
 def test_fetch_data_coverage_booster():
     from scripts.fetch_data import fetch_and_save, normalize_entry
     
@@ -84,7 +70,6 @@ def test_fetch_data_coverage_booster():
         assert fetch_and_save() is False
 
 # 3. Coverage for github_distribute.py gaps
-# Lines: 71, 78, 86-87, 102, 116, 129
 def test_github_distribute_coverage_booster():
     from scripts.github_distribute import create_github_repo, sync_repo
     
@@ -96,15 +81,14 @@ def test_github_distribute_coverage_booster():
          patch("requests.post", return_value=mock_res):
         assert create_github_repo("fail-repo") is None
 
-    # Line 78: PAT auth URL replacement verification and sync logic
-    # Line 86-87: remove_readonly path
-    mock_path = MagicMock()
-    mock_path.exists.return_value = True
-    
+    # Sync repo coverage
     with patch("subprocess.run") as mock_run, \
          patch("tempfile.TemporaryDirectory") as mock_temp, \
          patch("os.listdir", return_value=["file1"]), \
          patch("os.path.isdir", return_value=False), \
+         patch("os.chmod"), \
+         patch("os.remove"), \
+         patch("shutil.rmtree"), \
          patch("shutil.copy2"), \
          patch("builtins.print"):
         
@@ -126,7 +110,7 @@ def test_github_distribute_coverage_booster():
         ]
         sync_repo("/local/path", "https://github.com/user/repo.git")
 
-    # __main__ coverage for all scripts
+    # __main__ coverage booster
     with patch("scripts.fetch_data.fetch_and_save"), patch("sys.exit"):
         from scripts.fetch_data import main as fetch_main
         fetch_main()
@@ -146,6 +130,9 @@ def test_utils_coverage_booster():
     # Line 33-34: get_config JSON error
     with patch("builtins.open", mock_open(read_data="invalid json")), \
          patch("builtins.print"):
+        # We need to trigger the reload to hit line 33-34
+        import importlib
+        importlib.reload(scripts.utils)
         assert scripts.utils.get_config("ANY", "default") == "default"
         
     # Line 79-80: save_database error
@@ -153,6 +140,5 @@ def test_utils_coverage_booster():
          patch("builtins.print"):
         assert scripts.utils.save_database([]) is False
         
-    # Line 207: main
-    with patch("builtins.print"):
-        scripts.utils.main()
+    # Line 215: truncate fallback (no space)
+    assert scripts.utils.truncate("A" * 200, 10) == "A" * 7 + "..."

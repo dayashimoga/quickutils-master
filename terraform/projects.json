@@ -65,11 +65,15 @@
     "market-digest": {
         "directory": "projects/market-digest",
         "repo_name": "market-digest",
+        "build_command": "pip install -r requirements.txt && python fetch_data.py && mkdir -p dist && cp index.html style.css script.js data.json dist/",
+        "destination_dir": "dist",
         "custom_domain": "market.quickutils.top"
     },
     "price-comparator": {
         "directory": "projects/price-comparator",
         "repo_name": "price-comparator",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
         "custom_domain": "prices.quickutils.top"
     }
 }

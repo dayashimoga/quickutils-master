@@ -32,16 +32,17 @@ def fetch_yahoo_finance(symbol):
 def get_signal(current, history):
     if len(history) < 30:
         return "Hold"
-    sma_30 = sum(history[-30:]) / 30
-    sma_10 = sum(history[-10:]) / 10 if len(history) >= 10 else current
+    
+    sma_30 = float(sum(history[-30:]) / 30)
+    sma_10 = float(sum(history[-10:]) / 10) if len(history) >= 10 else float(current)
     
     if current > sma_10 and sma_10 > sma_30:
         return "Strong Buy"
-    elif current > sma_30:
+    if current > sma_30:
         return "Buy"
-    elif current < sma_10 and sma_10 < sma_30:
+    if current < sma_10 and sma_10 < sma_30:
         return "Strong Sell"
-    elif current < sma_30:
+    if current < sma_30:
         return "Sell"
     return "Hold"
 
