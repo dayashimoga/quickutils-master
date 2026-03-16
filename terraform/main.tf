@@ -80,9 +80,9 @@ resource "cloudflare_record" "quickutils_cnames" {
   for_each = local.projects
   zone_id  = data.cloudflare_zone.quickutils_top.id
   name     = each.value.custom_domain == "quickutils.top" ? "@" : split(".", each.value.custom_domain)[0]
-  value    = "${each.value.repo_name}.pages.dev"
-  type     = "CNAME"
-  proxied  = true
+  content         = "${each.value.repo_name}.pages.dev"
+  type            = "CNAME"
+  proxied         = true
   # Handle existing records by allowing overwrite
   allow_overwrite = true
 }
