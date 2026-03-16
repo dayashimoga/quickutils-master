@@ -12,18 +12,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Resolve base directories, prioritizing environment variables, then falling back to local paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
-if not DATA_DIR.exists() and (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
-    DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
 
-DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
-
+# SRC_DIR resolution
 SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
-if not SRC_DIR.exists() and (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
-    SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
 
-TEMPLATES_DIR = SRC_DIR / "templates"
-
-# Dynamic Configuration
+# Project identification logic (moved up for path resolution)
 CONFIG_PATH = PROJECT_ROOT / "project_config.json"
 _CONFIG = {}
 if CONFIG_PATH.exists():
@@ -33,8 +26,44 @@ if CONFIG_PATH.exists():
     except Exception:
         pass
 
-# Project Identification
-PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master")) or "master")
+if not isinstance(_CONFIG, dict):
+    _CONFIG = {}
+PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master") or "master")
+
+# Intelligent Path Resolution for Mono-repo structure
+# If we are in the root directory (boring) and a PROJECT_TYPE is specified (not master)
+if PROJECT_TYPE != "master" and not "projects" in str(PROJECT_ROOT):
+    # Check if this project exists in the projects/ subdirectory
+    project_sub_dir = PROJECT_ROOT / "projects" / PROJECT_TYPE
+    # Support both 'name' and 'name-directory' folder naming
+    if not project_sub_dir.exists():
+        project_sub_dir = PROJECT_ROOT / "projects" / f"{PROJECT_TYPE}-directory"
+        
+    if project_sub_dir.exists():
+        # Override DATA_DIR and SRC_DIR if they point to root defaults and project overrides exist
+        if DATA_DIR == PROJECT_ROOT / "data" or not DATA_DIR.exists():
+            if (project_sub_dir / "data").exists():
+                DATA_DIR = project_sub_dir / "data"
+        if SRC_DIR == PROJECT_ROOT / "src" or not SRC_DIR.exists():
+            if (project_sub_dir / "src").exists():
+                SRC_DIR = project_sub_dir / "src"
+            elif (project_sub_dir / "templates").exists():
+                # Fallback if src is missing but templates exist directly
+                SRC_DIR = project_sub_dir
+
+# Final fallbacks for pure master builds
+if not DATA_DIR.exists():
+    if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
+        DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
+
+if not SRC_DIR.exists():
+    if (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
+        SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
+
+DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
+TEMPLATES_DIR = SRC_DIR / "templates"
+if not TEMPLATES_DIR.exists() and (SRC_DIR / "src" / "templates").exists():
+    TEMPLATES_DIR = SRC_DIR / "src" / "templates"
 
 def get_config(key, default):
     # 1. Check environment variable
@@ -42,7 +71,9 @@ def get_config(key, default):
     
     # 2. Check project-specific config overrides
     if val is None:
-        project_overrides = _CONFIG.get("projects", {}).get(PROJECT_TYPE, {})
+        projects_cfg = _CONFIG.get("projects", {})
+        # Try both the abbreviated name and the full directory name
+        project_overrides = projects_cfg.get(PROJECT_TYPE) or projects_cfg.get(f"{PROJECT_TYPE}-directory") or {}
         if key in project_overrides:
             val = project_overrides[key]
             
@@ -62,7 +93,7 @@ def get_config(key, default):
 GH_USERNAME = get_config("GH_USERNAME", "dayashimoga")
 GA_MEASUREMENT_ID = get_config("GA_MEASUREMENT_ID", "G-QPDP38ZCCV")
 ADSENSE_PUBLISHER_ID = get_config("ADSENSE_PUBLISHER_ID", "ca-pub-5193703345853377")
-AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-20")
+AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-21")
 GOOGLE_SITE_VERIFICATION = get_config("GOOGLE_SITE_VERIFICATION", "")
 PINTEREST_DOMAIN_VERIFY = get_config("PINTEREST_DOMAIN_VERIFY", "c816c2b41079835efd234cb5afef59bf")
 
@@ -72,22 +103,40 @@ ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
 
 # Site Identity
-if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory":
+SITE_TYPE_MAP = {
+    "apistatus": "Status Pages",
+    "boilerplates": "Boilerplates",
+    "cheatsheets": "Cheatsheets",
+    "datasets": "Datasets",
+    "jobs": "Jobs",
+    "opensource": "Open Source",
+    "prompts": "Prompts",
+    "tools": "Tools",
+    "dailyfacts": "Daily Facts",
+}
+
+SITE_TYPE = SITE_TYPE_MAP.get(PROJECT_TYPE, "APIs")
+
+if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory" or PROJECT_TYPE == "boringwebsite":
     DEFAULT_SITE_URL = "https://quickutils.top"
     DEFAULT_SITE_NAME = "QuickUtils Directory"
+    SITE_TYPE = "Directory"
 else:
     DEFAULT_SITE_URL = f"https://{PROJECT_TYPE}.quickutils.top"
-    DEFAULT_SITE_NAME = f"QuickUtils {PROJECT_TYPE.capitalize()} Directory"
+    DEFAULT_SITE_NAME = f"QuickUtils {SITE_TYPE} Directory"
 
 SITE_URL = get_config("SITE_URL", DEFAULT_SITE_URL)
 SITE_NAME = get_config("SITE_NAME", DEFAULT_SITE_NAME)
-SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {PROJECT_TYPE.capitalize()} — searchable and categorized.")
+SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {SITE_TYPE} — searchable and categorized.")
 
 
 _SLUG_CACHE = {}
 
-def slugify(text: str) -> str:
+def slugify(text: Any) -> str:
     """Convert text to a URL-safe slug with caching for performance."""
+    if text is None:
+        return ""
+    text = str(text).strip()
     if not text:
         return ""
     if text in _SLUG_CACHE:
@@ -150,21 +199,29 @@ def load_database(path: Optional[Path] = None) -> list:
     return data
 
 
-def save_database(items: list, path: Optional[Path] = None) -> None:
+def save_database(items: list, path: Optional[Path] = None) -> bool:
     """Save items to the database JSON file with deterministic sorting.
 
     Args:
         items: List of item dictionaries.
         path: Optional path. Defaults to data/database.json.
+    
+    Returns:
+        True if saved successfully, False otherwise.
     """
     if path is None:
         path = DATA_DIR / "database.json"
 
-    ensure_dir(path.parent)
+    try:
+        ensure_dir(path.parent)
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(items, f, indent=2, sort_keys=True, ensure_ascii=False)
-        f.write("\n")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(items, f, indent=2, sort_keys=True, ensure_ascii=False)
+            f.write("\n")
+        return True
+    except Exception as e:
+        print(f"  ✗ Error saving database: {e}")
+        return False
 
 
 def ensure_dir(path: Path) -> None:
@@ -199,9 +256,46 @@ def truncate(text: str, max_length: int = 160) -> str:
 
     # Ensure we have at least 3 characters room for ellipsis
     limit = int(max(0, max_length - 3))
-    trimmed = text[:limit]
+    content = str(text)
+    trimmed = content[:limit]
 
     # Try to break at a space to avoid cutting words
     if " " in trimmed:
         return trimmed.rsplit(" ", 1)[0] + "..."
     return trimmed + "..."
+
+
+def load_network_links() -> list:
+    """Return a list of network sites for dynamic cross-linking from project_config.json."""
+    projects_cfg = _CONFIG.get("projects", {})
+    links = []
+    
+    # Always include the main directory/portal
+    links.append({
+        "name": "Main Site",
+        "url": "https://quickutils.top"
+    })
+    
+    # Add actual projects from config
+    for p_id, p_config in projects_cfg.items():
+        if p_id in ["master", "directory", "boringwebsite"]:
+            continue
+            
+        url = p_config.get("SITE_URL", "")
+        # Fallback if somehow missing
+        if not url:
+            subdomain = p_id.replace('-directory', '')
+            url = f"https://{subdomain}.quickutils.top"
+            
+        # Clean name
+        name = p_config.get("SITE_NAME", p_id.replace('-directory', '').replace('-', ' ').title())
+        # Make name shorter for footer (e.g. 'Boilerplates Directory' -> 'Boilerplates')
+        if name.endswith(" Directory") and name != "Open Source Directory":
+            name = name[:-10]
+            
+        links.append({
+            "name": name,
+            "url": url
+        })
+        
+    return sorted(links, key=lambda x: x["name"])

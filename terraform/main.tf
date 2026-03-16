@@ -79,7 +79,7 @@ data "cloudflare_zone" "quickutils_top" {
 resource "cloudflare_record" "quickutils_cnames" {
   for_each = local.projects
   zone_id  = data.cloudflare_zone.quickutils_top.id
-  name     = split(".", each.value.custom_domain)[0]
+  name     = each.value.custom_domain == "quickutils.top" ? "@" : split(".", each.value.custom_domain)[0]
   value    = "${each.value.repo_name}.pages.dev"
   type     = "CNAME"
   proxied  = true
@@ -94,3 +94,28 @@ resource "cloudflare_pages_domain" "quickutils_domains" {
   domain       = each.value.custom_domain
 }
 
+# --- Email Routing for contact@quickutils.top ---
+
+# 1. Add destination email (requires verification click by user)
+resource "cloudflare_email_routing_address" "admin_email" {
+  account_id = var.cloudflare_account_id
+  email      = var.email_destination
+}
+
+# 2. Add routing rule
+resource "cloudflare_email_routing_rule" "contact_forwarding" {
+  zone_id = data.cloudflare_zone.quickutils_top.id
+  name    = "contact-email-forwarding"
+  enabled = true
+
+  matchers {
+    type  = "literal"
+    field = "to"
+    value = "contact@quickutils.top"
+  }
+
+  actions {
+    type  = "forward"
+    value = [cloudflare_email_routing_address.admin_email.email]
+  }
+}

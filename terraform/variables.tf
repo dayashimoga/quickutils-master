@@ -45,3 +45,9 @@ variable "amazon_affiliate_tag" {
   type        = string
   default     = "quickutils-20"
 }
+
+variable "email_destination" {
+  description = "Destination email address for Cloudflare Email Routing"
+  type        = string
+  default     = "dayatin@gmail.com"
+}
