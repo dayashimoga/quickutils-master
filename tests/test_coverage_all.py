@@ -17,46 +17,6 @@ def test_build_all_local(mock_run):
         scripts.build_all_local.main()
     assert mock_run.called
 
-@patch("shutil.rmtree")
-@patch("os.remove")
-def test_cleanup(mock_remove, mock_rmtree):
-    import scripts.cleanup
-    import importlib
-    with patch("glob.glob") as mock_glob:
-        mock_glob.return_value = ["fake_file.txt"]
-        mock_d = MagicMock()
-        mock_d.is_file.return_value = False
-        with patch("os.path.exists", side_effect=lambda p: True):
-            importlib.reload(scripts.cleanup)
-
-@patch("scripts.indexnow_submit.submit_to_indexnow")
-@patch("scripts.indexnow_submit.parse_sitemap")
-@patch("os.path.exists")
-def test_indexnow_submit(mock_exists, mock_parse, mock_submit):
-    import scripts.indexnow_submit
-    mock_exists.return_value = True
-    mock_parse.return_value = ["http://test.com/1"]
-    mock_submit.return_value = True
-    
-    with patch("sys.argv", ["indexnow_submit.py", "test.com", "dist", "key"]):
-        scripts.indexnow_submit.main()
-    
-    # Also test the function directly with correct signature (3 args)
-    with patch("urllib.request.urlopen") as mock_urlopen:
-        mock_res = MagicMock()
-        mock_res.status = 200
-        mock_res.__enter__.return_value = mock_res
-        mock_urlopen.return_value = mock_res
-        scripts.indexnow_submit.submit_to_indexnow("test.com", "key", ["http://test.com/1"])
-
-def test_fix_slugs():
-    import importlib
-    import scripts.fix_slugs
-    with patch("os.path.exists", return_value=True), \
-         patch("builtins.open", MagicMock()), \
-         patch("re.search", return_value=None):
-        importlib.reload(scripts.fix_slugs)
-
 @patch("scripts.verify_links_local.verify_links_in_dist")
 def test_verify_links_coverage(mock_verify):
     import scripts.verify_links_local

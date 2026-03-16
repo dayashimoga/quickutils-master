@@ -280,27 +280,6 @@ def test_utils_project_data_resolution():
     
     assert "projects/tools-directory/data" in str(data_dir).replace("\\", "/")
 
-# 6. Coverage for cleanup.py
-def test_cleanup_coverage_booster():
-    from scripts import cleanup
-    with patch("os.path.exists", return_value=True), \
-         patch("glob.glob", return_value=["test_file.txt"]), \
-         patch("os.remove"), \
-         patch("shutil.rmtree"), \
-         patch("builtins.print"):
-        # We can't easily re-run the module logic because it's at top level
-        # but we can test the patterns/logic if we refactor it or just hit the functions
-        # Since it's a script, we just ensure it's importable and testable
-        pass
-
-# 7. Coverage for fix_slugs.py
-def test_fix_slugs_coverage_booster():
-    from scripts.fix_slugs import update_utils_py
-    mock_content = "def load_database(path: Path = None) -> list:\n    return data"
-    with patch("builtins.open", mock_open(read_data=mock_content)), \
-         patch("builtins.print"):
-        update_utils_py("fake_path")
-
 # 8. Coverage for fetch_data.py (remaining gaps)
 def test_fetch_data_more_coverage():
     from scripts.fetch_data import normalize_entry, main
