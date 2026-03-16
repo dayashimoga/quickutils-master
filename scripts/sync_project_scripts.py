@@ -18,6 +18,7 @@ MASTER_FILES = [
     "scripts/cleanup.py",
     "scripts/fix_slugs.py",
     "requirements.txt",
+    "project_config.json",
     "src/_redirects",
     "src/_headers",
     "src/templates/base.html",
@@ -74,7 +75,7 @@ def sync_scripts():
             if is_template and project.name in DASHBOARD_PROJECTS:
                 continue
 
-            if file_rel_path.startswith("scripts/") or file_rel_path.startswith("tests/") or file_rel_path in ["requirements.txt", ".gitignore"]:
+            if file_rel_path.startswith("scripts/") or file_rel_path.startswith("tests/") or file_rel_path in ["requirements.txt", ".gitignore", "project_config.json"]:
                 src = ROOT_DIR / file_rel_path
             else:
                 src = MASTER_PROJECT_DIR / file_rel_path

@@ -16,13 +16,16 @@ def test_fix_slugs_logic():
     #     ...
     #     return data
     mock_content = """def load_database(path: Path = None) -> list:
-    data = []
+    if path is None:
+        pass
+    data = [{"title": "Test"}]
     return data"""
-    with patch("os.path.exists", side_effect=[True, False, False, False, False, False, False, False, False]), \
+    with patch("os.path.exists", return_value=True), \
          patch("builtins.open", mock_open(read_data=mock_content)) as m_open, \
          patch("builtins.print"):
         
-        importlib.reload(scripts.fix_slugs)
+        from scripts.fix_slugs import update_utils_py
+        update_utils_py("fake_path.py")
         
     # Check if write was called
     handle = m_open()

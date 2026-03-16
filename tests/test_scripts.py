@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from scripts.cleanup import directories, patterns, dirs_to_remove as cleanup_dirs
+from scripts.cleanup import get_directories, patterns, dirs_to_remove as cleanup_dirs
 from scripts.fix_slugs import update_utils_py
 
 @pytest.fixture
@@ -56,6 +56,11 @@ def test_cleanup_logic(temp_repo):
     
     # 2. Verify directory removal logic
     assert ".pytest_cache" in cleanup_dirs
+    
+    # 3. Verify get_directories returns a list
+    dirs = get_directories()
+    assert isinstance(dirs, list)
+    assert len(dirs) > 0
 
 def test_fix_slugs_replacement(temp_repo):
     """Test that fix_slugs correctly replaces the load_database function."""
