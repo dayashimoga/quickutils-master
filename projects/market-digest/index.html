@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Digest - Daily Financial Dashboard</title>
+    <meta name="description" content="Daily refreshed market data, signals, and news. Track Nifty, Sensex, Crude Oil, FII flows, and macroeconomic indicators.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Market Digest - Daily Financial Dashboard">
+    <meta property="og:description" content="Get daily market data, trading signals, and financial news in one clean dashboard.">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Market Digest">
+    <meta name="twitter:description" content="Daily financial market metrics and signals.">
+    
+    <!-- Pinterest Verification Placeholder -->
+    <meta name="p:domain_verify" content="YOUR_PINTEREST_VERIFICATION_CODE_HERE">
+    
+    <!-- Google Analytics 4 Placeholder -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google AdSense Placeholder -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Config Variables (injected by build/cloudflare pages) -->
+    <script src="config.js"></script>
+</head>
+<body class="dark-theme">
+    <header>
+        <div class="container header-container" style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 class="logo">Market<span class="highlight">Digest</span></h1>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
+                <div class="last-updated">
+                    Last updated: <span id="updateTime">--</span>
+                </div>
+                <button id="refreshBtn" class="refresh-btn" style="background:var(--accent-blue); color:white; border:none; padding:4px 12px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
+                    ♻️ Refresh Live Data
+                </button>
+                <div id="rateLimitMsg" style="font-size:0.75rem; color:var(--text-muted); display:none;">
+                    Rate Limit: Please wait <span id="timeRemaining">60</span>s
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="dashboard-grid-modern">
+            
+            <!-- Left Column: Insights & Context -->
+            <div class="dashboard-column insights-col">
+                <!-- Entry Watch -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>🟢 Entry Watch</h2>
+                    </div>
+                    <ul class="bullet-list" id="entryWatchList">
+                        <li>Loading...</li>
+                    </ul>
+                </section>
+
+                <!-- Exit Watch -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>🔑 Exit Watch</h2>
+                    </div>
+                    <ul class="bullet-list" id="exitWatchList">
+                        <li>Loading...</li>
+                    </ul>
+                </section>
+
+                <!-- Economic Context -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>🌍 Economic Context</h2>
+                    </div>
+                    <ul class="bullet-list" id="economicContextList">
+                        <li>Loading...</li>
+                    </ul>
+                </section>
+                
+                <!-- Sector Insights -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>🏭 Sector Insights</h2>
+                    </div>
+                    <ul class="bullet-list" id="sectorInsightsList">
+                        <li>Loading...</li>
+                    </ul>
+                </section>
+            </div>
+
+            <!-- Right Column: Charts & News -->
+            <div class="dashboard-column charts-col">
+                
+                <!-- Comparison Bar (1D, 1W, 1M) -->
+                <section class="info-card">
+                     <div class="card-header">
+                        <h2>Historical Comparison</h2>
+                    </div>
+                    <div class="comparison-grid" id="comparisonGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Charts -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>📊 Charts</h2>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <h3>Regional vs Global Indices (30 Days)</h3>
+                        <div class="canvas-container">
+                            <canvas id="niftyVixChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper mt-4">
+                        <h3>Crypto Momentum (30 Days)</h3>
+                        <div class="canvas-container">
+                            <canvas id="flowsChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- News -->
+                <section class="info-card">
+                    <div class="card-header">
+                        <h2>📰 News & Geopolitical Insights</h2>
+                    </div>
+                    <div class="news-list" id="newsContainer">
+                        <div class="loading-text">Loading latest headlines...</div>
+                    </div>
+                </section>
+
+                <!-- Ads Section -->
+                <section class="ads-banner mt-4">
+                     <ins class="adsbygoogle"
+                          style="display:block"
+                          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                          data-ad-slot="XXXXXXXXXX"
+                          data-ad-format="auto"
+                          data-full-width-responsive="true"></ins>
+                     <script>
+                          (adsbygoogle = window.adsbygoogle || []).push({});
+                     </script>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> The data provided on Market Digest is for informational purposes only and does not constitute financial advice. Always consult with a certified financial planner before making investment decisions.
+            </div>
+            <div class="footer-links">
+                &copy; 2026 Market Digest
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -34,6 +34,11 @@ class TestCreateJinjaEnv:
         assert "site_url" in env.globals
         assert "build_date" in env.globals
         assert "current_year" in env.globals
+        assert "ga_measurement_id" in env.globals
+        assert "adsense_publisher_id" in env.globals
+        assert "amazon_affiliate_tag" in env.globals
+        assert "enable_adsense" in env.globals
+        assert "google_site_verification" in env.globals
 
 
 class TestBuildItemPages:
@@ -236,7 +241,9 @@ class TestBuildSite:
 
         with patch("scripts.build_directory.TEMPLATES_DIR", templates_dir), \
              patch("scripts.build_directory.DIST_DIR", dist_dir), \
-             patch("scripts.build_directory.SRC_DIR", templates_dir.parent):
+             patch("scripts.build_directory.SRC_DIR", templates_dir.parent), \
+             patch("scripts.generate_social_images.main"), \
+             patch("scripts.build_directory.optimize_images"):
             build_site(sample_database_path)
 
         assert dist_dir.exists()
@@ -271,7 +278,9 @@ class TestBuildSite:
 
         with patch("scripts.build_directory.TEMPLATES_DIR", templates_dir), \
              patch("scripts.build_directory.DIST_DIR", dist_dir), \
-             patch("scripts.build_directory.SRC_DIR", templates_dir.parent):
+             patch("scripts.build_directory.SRC_DIR", templates_dir.parent), \
+             patch("scripts.generate_social_images.main"), \
+             patch("scripts.build_directory.optimize_images"):
             build_site(sample_database_path)
 
         assert not old_file.exists()
@@ -315,9 +324,13 @@ class TestMinifyHtml:
 
     def test_minify_failure_returns_original(self):
         from scripts.build_directory import minify_html
-        with patch("scripts.build_directory.htmlmin.minify", side_effect=Exception("Minify error")):
-            result = minify_html("<html></html>")
-            assert result == "<html></html>"
+        try:
+            import htmlmin
+            with patch("scripts.build_directory.htmlmin.minify", side_effect=Exception("Minify error")):
+                result = minify_html("<html></html>")
+                assert result == "<html></html>"
+        except ImportError:
+            pytest.skip("htmlmin not installed")
 
 class TestCopyStaticAssetsExtended:
     """Extended tests for static asset copying."""

@@ -1,93 +1,27 @@
-# Technical Requirements & Architecture
+# Technical Requirements
 
-This document details the technical specifications, architecture, and dependency requirements for the QuickUtils API Directory.
+## Executive Summary
+This document outlines the core technical requirements, constraints, integrations, and operational standards for the Programmatic SEO Directory platform and its child projects.
 
----
+## Core Environment & Tech Stack
+- **Python 3.11+**: Primary scripting and build language.
+- **Docker**: For isolated environment builds, testing, and dependency management.
+- **Jinja2**: HTML templating engine used for generating static sites.
+- **Fuse.js**: Client-side library used for full-text search capabilities across generated items.
+- **pytest**: Test automation framework ensuring code quality and coverage.
+- **Terraform 1.5+**: Infrastructure as Code (IaC) tool for provisioning Cloudflare Pages.
 
-## 1. System Requirements
+## Component Integrations & Parameters
+Each project supports configurable integrations defined via environment variables or Terraform configs:
+- **Google Analytics**: Requires `GA_MEASUREMENT_ID` (Default: `G-QPDP38ZCCV`).
+- **Google AdSense**: Controlled by `ENABLE_ADSENSE` (Default: `True`) and `ADSENSE_PUBLISHER_ID` (Default: `ca-pub-5193703345853377`).
+- **Amazon Affiliate**: Controlled by `ENABLE_AMAZON` (Default: `True`) and `AMAZON_AFFILIATE_TAG` (Default: `quickutils-20`).
+- **Pinterest Automation**: Controlled by `ENABLE_PINTEREST` (Default: `True`).
+- **Custom Domains**: Configured via Terraform (e.g., `[project-name].quickutils.top`).
 
-| Component | Requirement |
-|---|---|
-| **Operating System** | Linux, Windows, or macOS |
-| **Python Version** | **3.11.x** (Required for compatibility with `htmlmin`) |
-| **Internet Access** | Required for data syncing and social media posting |
-| **Disk Space** | < 100 MB |
-
-## 2. Dependencies & Libraries
-
-The project is built with a minimal dependency footprint to ensure fast builds and long-term stability.
-
-### Core Frameworks
-- **Jinja2**: Templating engine for generating thousands of static HTML pages.
-- **Python-Slugify**: Ensures consistent and clean URLs for API entities.
-- **Requests**: Handles API communication for data fetching and social media posting.
-
-### Build Tools
-- **htmlmin**: Minifies output HTML to reduce page load times.
-- **Sitemap-Generator**: Dynamically generates `sitemap.xml` for SEO.
-
-## 3. Project Architecture
-
-The project follows a **Jamstack** (JavaScript, APIs, and Markup) approach.
-
-```mermaid
-graph TD
-    A[data/database.json] --> B[scripts/build_directory.py]
-    C[src/templates/*.html] --> B
-    D[src/css/src/js] --> B
-    B --> E[dist/ - Final Website]
-    B --> F[scripts/generate_sitemap.py]
-    F --> E
-    G[.github/workflows/] --> H[GitHub Actions]
-    H --> B
-    H --> I[scripts/post_social.py]
-    I --> J[Mastodon API]
-```
-
-### Key Components
-
-1.  **Static Data Storage**: `data/database.json` serves as the primary "source of truth".
-2.  **Build System**: `scripts/build_directory.py` processes the database, renders templates, and enforces minification.
-3.  **Deployment Pipeline**: GitHub Actions manages the build environment and pushes the `dist/` folder to Cloudflare Pages.
-4.  **Automation Layer**: Independent workflows handle daily social media posts and periodic data synchronization.
-
-## 4. Monetization Integration Logic
-
-### Google AdSense
-- **Implementation**: Injected via `base.html` using the `ADSENSE_PUBLISHER_ID` environment variable.
-- **Safety**: Conditional rendering ensures that if no ID is present, only a placeholder is shown during development.
-- **Compliance**: `src/ads.txt` is automatically served at the domain root.
-
-### Amazon Associates
-- **Implementation**: The build script (`build_directory.py`) automatically appends the `AMAZON_AFFILIATE_TAG` to curated book ASINs stored in the recommendations dictionary.
-- **Legal**: FTC-compliant disclosures are hardcoded into the item templates.
-
-## 5. Deployment Specs (Cloudflare Pages)
-
-- **Build Command**: `python -m scripts.build_directory && python -m scripts.generate_sitemap`
-- **Root Directory**: Project Root (`/`)
-- **Output Directory**: `dist`
-- **Environment Variables**:
-    - `PYTHON_VERSION`: `3.11`
-    - `SITE_URL`: `https://directory.quickutils.top`
-    - `GA_MEASUREMENT_ID`: Google Analytics (G-XXXX)
-    - `ADSENSE_PUBLISHER_ID`: AdSense (ca-pub-XXXX)
-    - `AMAZON_AFFILIATE_TAG`: Amazon Tag (tag-20)
-
-## 6. Development Workflow
-
-1.  **Environment Setup**:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # or .venv\Scripts\activate
-    pip install -r requirements.txt
-    ```
-2.  **Local Testing**:
-    ```bash
-    # Build the site
-    python -m scripts.build_directory
-    # Serve locally
-    python -m http.server --directory dist 8000
-    ```
-3.  **Verification**:
-    Run `pytest` to ensure templates render correctly and build scripts handle data edge cases.
+## Operational Standards & CI/CD
+1. **Test Coverage**: All code changes to core scripts or project-specific logics must maintain >90% code coverage.
+2. **Test Checks**: A 100% test pass rate across all projects (including master and child repositories) is mandatory before deployment.
+3. **Zero-Cost Infrastructure**: The platform relies on Cloudflare Pages and Terraform Cloud (for state management) to preserve a strict $0 hosting and infrastructure footprint.
+4. **Intelligent Deployments**: CI/CD pipelines must selectively deploy updated projects instead of the entire suite to conserve build minutes.
+5. **Programmatic SEO (pSEO)**: Rendered pages must strictly include valid HTML5 metadata, JSON-LD structured data, Open Graph (OG), and Twitter card configurations.

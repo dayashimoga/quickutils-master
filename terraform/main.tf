@@ -49,7 +49,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
-        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
+        SITE_URL             = "https://${each.value.custom_domain}"
       }
     }
     preview {
@@ -66,15 +66,56 @@ resource "cloudflare_pages_project" "quickutils_projects" {
         DATA_DIR             = lookup(each.value, "data_dir", "data")
         DIST_DIR             = lookup(each.value, "dist_dir", "dist")
         PROJECT_TYPE         = lookup(each.value, "project_type", each.key)
-        SITE_URL             = each.key == "master" ? "https://quickutils.top" : "https://${lookup(each.value, "project_type", each.key)}.quickutils.top"
+        SITE_URL             = "https://${each.value.custom_domain}"
       }
     }
   }
 }
 
-# Optional: Custom Domains (Example for one project)
-# resource "cloudflare_pages_domain" "example" {
-#   account_id   = var.cloudflare_account_id
-#   project_name = cloudflare_pages_project.quickutils_projects["opensource"].name
-#   domain       = "opensource.quickutils.top"
-# }
+data "cloudflare_zone" "quickutils_top" {
+  name = "quickutils.top"
+}
+
+resource "cloudflare_record" "quickutils_cnames" {
+  for_each = local.projects
+  zone_id  = data.cloudflare_zone.quickutils_top.id
+  name     = each.value.custom_domain == "quickutils.top" ? "@" : split(".", each.value.custom_domain)[0]
+  content         = "${each.value.repo_name}.pages.dev"
+  type            = "CNAME"
+  proxied         = true
+  # Handle existing records by allowing overwrite
+  allow_overwrite = true
+}
+
+resource "cloudflare_pages_domain" "quickutils_domains" {
+  for_each     = local.projects
+  account_id   = var.cloudflare_account_id
+  project_name = cloudflare_pages_project.quickutils_projects[each.key].name
+  domain       = each.value.custom_domain
+}
+
+# --- Email Routing for contact@quickutils.top ---
+
+# 1. Add destination email (requires verification click by user)
+resource "cloudflare_email_routing_address" "admin_email" {
+  account_id = var.cloudflare_account_id
+  email      = var.email_destination
+}
+
+# 2. Add routing rule
+resource "cloudflare_email_routing_rule" "contact_forwarding" {
+  zone_id = data.cloudflare_zone.quickutils_top.id
+  name    = "contact-email-forwarding"
+  enabled = true
+
+  matcher {
+    type  = "literal"
+    field = "to"
+    value = "contact@quickutils.top"
+  }
+
+  action {
+    type  = "forward"
+    value = [cloudflare_email_routing_address.admin_email.email]
+  }
+}

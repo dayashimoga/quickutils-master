@@ -1,22 +1,11 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
+{% if item_schema %}
 <script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "{{ item.title }}",
-    "description": "{{ item.description }}",
-    "url": "{{ item.url }}",
-    "applicationCategory": "{{ item.category }}",
-    "operatingSystem": "Web",
-    "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-    }
-}
+{{ item_schema | tojson | safe }}
 </script>
+{% endif %}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -79,11 +68,15 @@
             </div>
 
             <!-- CTA Button -->
-            <div class="item-actions" id="item-actions">
+            <div class="item-actions" id="item-actions" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
                 <a href="{{ item.url }}" class="btn btn-primary btn-lg" target="_blank" rel="noopener nofollow"
                     id="visit-api-btn">
-                    🌐 Visit API Documentation →
+                    🌐 Visit Documentation →
                 </a>
+                <div class="share-buttons" style="display: flex; gap: 0.5rem;">
+                    <button onclick="navigator.clipboard.writeText(window.location.href); this.textContent='✅ Copied!'; setTimeout(()=>this.textContent='🔗 Copy Link', 2000)" class="btn btn-secondary btn-sm" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">🔗 Copy Link</button>
+                    <a href="https://pinterest.com/pin/create/button/?url={{ site_url }}/item/{{ item.slug }}.html&description={{ item.title | urlencode }} - {{ item.description | truncate(60) | urlencode }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">📌 Pin It</a>
+                </div>
             </div>
 
             <!-- Ad Unit -->

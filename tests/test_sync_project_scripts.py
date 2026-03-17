@@ -18,7 +18,7 @@ def test_sync_scripts_basic(tmp_path, monkeypatch):
     
     # Create master files
     for f_rel in MASTER_FILES:
-        if f_rel.startswith("scripts/") or f_rel == "requirements.txt" or f_rel == ".gitignore":
+        if f_rel.startswith("scripts/") or f_rel.startswith("tests/") or f_rel in ["requirements.txt", ".gitignore", "project_config.json"]:
             f_path = root / f_rel
         else:
             f_path = master_proj / f_rel

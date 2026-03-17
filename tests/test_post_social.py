@@ -5,7 +5,7 @@ import pytest
 import responses
 
 from scripts.post_social import (
-    format_post,
+    platform_post,
     get_daily_seed,
     pick_random_item,
     post_to_mastodon,
@@ -52,38 +52,38 @@ class TestPickRandomItem:
         assert item["title"] == "Only One"
 
 
-class TestFormatPost:
-    """Test post formatting."""
+class TestPlatformPost:
+    """Test post platformting."""
 
     def test_contains_title(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "Dog API" in post
+        post = platform_post(sample_items[0])
+        assert sample_items[0]["title"] in post
 
     def test_contains_description(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "Dog facts and images" in post
+        post = platform_post(sample_items[0])
+        assert sample_items[0]["description"][:20] in post
 
     def test_contains_url(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "/api/dog-api.html" in post
+        post = platform_post(sample_items[0])
+        assert f"/item/{sample_items[0]['slug']}.html" in post
 
     def test_contains_hashtags(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "#API" in post
-        assert "#WebDev" in post
+        post = platform_post(sample_items[0])
+        assert "#WebTools" in post
+        assert "#DeveloperTools" in post
 
     def test_within_500_chars(self, sample_items):
         for item in sample_items:
-            post = format_post(item)
+            post = platform_post(item)
             assert len(post) <= 500, f"Post for {item['title']} is {len(post)} chars"
 
     def test_contains_auth_info(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "Auth:" in post
+        post = platform_post(sample_items[0])
+        assert "Category:" in post
 
-    def test_contains_https_info(self, sample_items):
-        post = format_post(sample_items[0])
-        assert "HTTPS" in post
+    def test_contains_pricing_info(self, sample_items):
+        post = platform_post(sample_items[0])
+        assert f"Pricing: {sample_items[0].get('pricing', 'Free')}" in post
 
     def test_long_description_truncated(self):
         item = {
@@ -95,7 +95,7 @@ class TestFormatPost:
             "https": True,
             "slug": "long-api",
         }
-        post = format_post(item)
+        post = platform_post(item)
         assert len(post) <= 500
 
 

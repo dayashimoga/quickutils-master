@@ -5,14 +5,25 @@ from unittest.mock import patch
 import pytest
 from jinja2 import Environment, FileSystemLoader
 
-from scripts.utils import TEMPLATES_DIR, slugify, truncate
+from scripts.utils import slugify, truncate
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 @pytest.fixture
 def real_env():
     """Create Jinja2 env from the actual project templates."""
+    # Always use quickutils-master templates — other projects (price-comparator,
+    # market-digest) are standalone HTML/JS apps without Jinja2 templates.
+    master_templates = ROOT_DIR / "projects" / "quickutils-master" / "src" / "templates"
+    if not master_templates.exists():
+        # CI fallback: if running inside a distributed repo, try src/templates
+        master_templates = ROOT_DIR / "src" / "templates"
+    if not master_templates.exists():
+        pytest.skip(f"Templates directory not found at {master_templates}. "
+                    "Skipping template tests (likely a pure HTML/JS project).")
+
     env = Environment(
-        loader=FileSystemLoader(str(TEMPLATES_DIR)),
+        loader=FileSystemLoader(str(master_templates)),
         autoescape=True,
         trim_blocks=True,
         lstrip_blocks=True,
@@ -31,6 +42,11 @@ def real_env():
         "enable_adsense": True,
         "enable_amazon": True,
         "enable_pinterest": True,
+        "google_site_verification": "google-test",
+        "pinterest_domain_verify": "c816c2b41079835efd234cb5afef59bf",
+        "project_type": "master",
+        "site_type": "Tools",
+        "social_image_url": "https://test.com/social.png",
     })
     return env
 
@@ -155,7 +171,7 @@ class TestItemTemplate:
             enable_amazon=True,
         )
         assert "application/ld+json" in html
-        assert "SoftwareApplication" in html
+        assert "BreadcrumbList" in html
 
     def test_contains_breadcrumb(self, real_env, sample_items):
         tpl = real_env.get_template("item.html")

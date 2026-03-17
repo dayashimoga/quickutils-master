@@ -1,54 +1,104 @@
 {
     "apistatus": {
         "directory": "projects/apistatus-directory",
-        "repo_name": "apistatus-directory"
+        "repo_name": "apistatus-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "apistatus-directory",
+        "custom_domain": "apistatus.quickutils.top"
     },
     "boilerplates": {
         "directory": "projects/boilerplates-directory",
-        "repo_name": "boilerplates-directory"
+        "repo_name": "boilerplates-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "boilerplates-directory",
+        "custom_domain": "boilerplates.quickutils.top"
     },
     "cheatsheets": {
         "directory": "projects/cheatsheets-directory",
-        "repo_name": "cheatsheets-directory"
+        "repo_name": "cheatsheets-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "cheatsheets-directory",
+        "custom_domain": "cheatsheets.quickutils.top"
     },
     "dailyfacts": {
         "directory": "projects/dailyfacts",
         "repo_name": "dailyfacts",
         "build_command": "npm install && npm run build",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "facts.quickutils.top"
     },
     "datasets": {
         "directory": "projects/datasets-directory",
-        "repo_name": "datasets-directory"
+        "repo_name": "datasets-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "datasets-directory",
+        "custom_domain": "datasets.quickutils.top"
     },
     "jobs": {
         "directory": "projects/jobs-directory",
-        "repo_name": "jobs-directory"
+        "repo_name": "jobs-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "jobs-directory",
+        "custom_domain": "jobs.quickutils.top"
     },
     "opensource": {
         "directory": "projects/opensource-directory",
-        "repo_name": "opensource-directory"
+        "repo_name": "opensource-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "opensource-directory",
+        "custom_domain": "opensource.quickutils.top"
     },
     "prompts": {
         "directory": "projects/prompts-directory",
-        "repo_name": "prompts-directory"
+        "repo_name": "prompts-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "prompts-directory",
+        "custom_domain": "prompts.quickutils.top"
     },
     "tools": {
         "directory": "projects/tools-directory",
-        "repo_name": "tools-directory"
+        "repo_name": "tools-directory",
+        "src_dir": "src",
+        "data_dir": "data",
+        "project_type": "tools-directory",
+        "custom_domain": "tools.quickutils.top"
     },
     "boringwebsite": {
         "directory": "projects/boringwebsite",
         "repo_name": "boringwebsite",
         "build_command": "npm install && npm run build",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "quickutils.top"
     },
     "master": {
         "directory": "projects/quickutils-master",
         "repo_name": "quickutils-master",
         "src_dir": "projects/quickutils-master/src",
         "data_dir": "projects/quickutils-master/data",
+        "project_type": "quickutils-master",
         "dist_dir": "dist",
-        "destination_dir": "dist"
+        "destination_dir": "dist",
+        "custom_domain": "directory.quickutils.top"
+    },
+    "market-digest": {
+        "directory": "projects/market-digest",
+        "repo_name": "market-digest",
+        "build_command": "pip install -r requirements.txt && python fetch_data.py && mkdir -p dist && cp index.html style.css script.js data.json dist/",
+        "destination_dir": "dist",
+        "custom_domain": "market.quickutils.top"
+    },
+    "price-comparator": {
+        "directory": "projects/price-comparator",
+        "repo_name": "price-comparator",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "prices.quickutils.top"
     }
 }

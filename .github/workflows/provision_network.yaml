@@ -14,24 +14,29 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
 
-      - name: Provision GitHub Repositories
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Create or Update GitHub Repositories & Sync Code
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
+          PYTHONPATH: "."
         run: |
-          # Read the generated JSON to get project names
-          PROJECTS=$(cat terraform/projects.json | jq -r '.[] | .repo_name')
+          # Step 1: Prep project files locally
+          python scripts/sync_project_scripts.py
           
-          for project in $PROJECTS; do
-            if [ "$project" == "quickutils-master" ]; then continue; fi
-            echo "Checking repository: $project"
-            if ! gh repo view "$OWNER/$project" > /dev/null 2>&1; then
-              echo "Creating new repository: $project"
-              gh repo create "$OWNER/$project" --public --description "Part of the QuickUtils Network"
-            else
-              echo "Repository $project already exists."
-            fi
-          done
+          # Configure Git for syncing
+          git config --global user.email "bot@quickutils.top"
+          git config --global user.name "QuickUtils Bot"
+          
+          # Step 2: Use github_distribute.py to create repos and push code
+          python scripts/github_distribute.py
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -39,7 +44,7 @@ jobs:
           terraform_version: "latest"
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform Init & Apply
+      - name: Terraform Init & adoption
         working-directory: terraform
         env:
           TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -49,75 +54,43 @@ jobs:
         run: |
           terraform init
           
-          # Smart Adoption Logic
-          echo "Checking for existing Cloudflare Pages projects to import..."
-          jq -r 'to_entries[] | "\(.key) \(.value.repo_name)"' projects.json | while read -r key repo; do
+          echo "Checking for existing Cloudflare projects and domains to import..."
+          jq -r 'to_entries[] | "\(.key) \(.value.repo_name) \(.value.custom_domain)"' projects.json | while read -r key repo domain; do
             
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
-              -H "Authorization: Bearer $CF_API_TOKEN" \
-              -H "Content-Type: application/json")
+            echo "Processing $key ($repo)..."
+            
+            # 1. Adopt Pages Project
+            STATUS_PROJ=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
+              -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
               
-            if [ "$STATUS" == "200" ]; then
+            if [ "$STATUS_PROJ" == "200" ]; then
               if ! terraform state show "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1; then
-                echo "Adopting existing project: $repo (key: $key)"
-                terraform import -ignore-remote-version "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || echo "Import failed, might already be tracked."
+                echo "Adopting project: $repo"
+                terraform import -input=false "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || echo "Import failed for project $repo"
+              else
+                echo "Project $repo already in state."
               fi
+              
+              # 2. Adopt Custom Domain (if it exists)
+              if [ "$domain" != "null" ] && [ -n "$domain" ]; then
+                STATUS_DOM=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo/domains/$domain" \
+                  -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+                  
+                if [ "$STATUS_DOM" == "200" ]; then
+                  if ! terraform state show "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1; then
+                    echo "Adopting domain: $domain for $repo"
+                    terraform import -input=false "cloudflare_pages_domain.quickutils_domains[\"$key\"]" "$ACCOUNT_ID/$repo/$domain" || echo "Import failed for domain $domain"
+                  else
+                    echo "Domain $domain already in state."
+                  fi
+                else
+                  echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Terraform will create it."
+                fi
+              fi
+            else
+              echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Terraform will create it."
             fi
           done
           
           # Final Apply
           terraform apply -auto-approve
-
-      - name: Sync Code to Child Repos
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          OWNER: "dayashimoga"
-        run: |
-          # Ensure root templates and scripts are distributed to child project directories first
-          # This intelligently handles dependency changes: if root scripts/templates are updated,
-          # this script modifies all project folders, causing them all to be pushed to Cloudflare.
-          python scripts/sync_project_scripts.py
-          
-          git config --global user.email "bot@quickutils.top"
-          git config --global user.name "QuickUtils Bot"
-          
-          PROJECTS=$(cat terraform/projects.json | jq -r '.[] | .repo_name')
-          
-          for project in $PROJECTS; do
-            if [ "$project" == "quickutils-master" ]; then continue; fi
-            
-            echo "Syncing code for $project..."
-            TEMP_DIR="/tmp/sync_$project"
-            rm -rf $TEMP_DIR
-            
-            # Clone the existing repository
-            git clone "https://$GH_PAT@github.com/$OWNER/$project.git" $TEMP_DIR || {
-              mkdir -p $TEMP_DIR
-              cd $TEMP_DIR
-              git init
-              git checkout -b main
-            }
-            
-            # Find the directory mapping for this repo
-            PROJ_DIR=$(cat ${GITHUB_WORKSPACE}/terraform/projects.json | jq -r ".[] | select(.repo_name==\"$project\") | .directory")
-            
-            cd $TEMP_DIR
-            
-            # Remove all files except .git to handle deletions
-            find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
-            
-            # Copy content from source directory to temp
-            cp -r ${GITHUB_WORKSPACE}/$PROJ_DIR/. ./
-            
-            git add .
-            
-            # Only commit and push if there are actual changes
-            if [ -n "$(git status --porcelain)" ]; then
-              git commit -m "Automation: Sync from Master Repository"
-              echo "Pushing changes for $project..."
-              git push "https://$GH_PAT@github.com/$OWNER/$project.git" main
-            else
-              echo "No changes to sync for $project"
-            fi
-            cd ${GITHUB_WORKSPACE}
-          done

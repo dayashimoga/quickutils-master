@@ -13,6 +13,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+# Set PROJECT_TYPE for tests — ensures utils.py resolves to quickutils-master
+# in all environments (local, CI, GitHub Actions) instead of detecting wrong project
+if "PROJECT_TYPE" not in os.environ:
+    os.environ["PROJECT_TYPE"] = "quickutils-master"
+
 
 @pytest.fixture
 def sample_items():
@@ -27,6 +32,7 @@ def sample_items():
             "https": True,
             "cors": "yes",
             "slug": "dog-api",
+            "pricing": "Free",
         },
         {
             "title": "Cat Facts",
@@ -37,6 +43,7 @@ def sample_items():
             "https": True,
             "cors": "yes",
             "slug": "cat-facts",
+            "pricing": "Free",
         },
         {
             "title": "OpenWeatherMap",
@@ -47,6 +54,7 @@ def sample_items():
             "https": True,
             "cors": "yes",
             "slug": "openweathermap",
+            "pricing": "Freemium",
         },
         {
             "title": "Alpha Vantage",
@@ -57,6 +65,7 @@ def sample_items():
             "https": True,
             "cors": "unknown",
             "slug": "alpha-vantage",
+            "pricing": "Free",
         },
         {
             "title": "Spotify",
@@ -67,6 +76,7 @@ def sample_items():
             "https": True,
             "cors": "unknown",
             "slug": "spotify",
+            "pricing": "Free",
         },
     ]
 
@@ -189,6 +199,19 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>404</h1><p>Not Found</p>"
+        "{% endblock %}",
+        encoding="utf-8",
+    )
+
+    # Listicle template
+    listicle = tpl_dir / "listicle.html"
+    listicle.write_text(
+        '{% extends "base.html" %}'
+        "{% block content %}"
+        "<h1>{{ category_name }}</h1>"
+        "{% for item in items %}"
+        "<div>{{ item.title }}</div>"
+        "{% endfor %}"
         "{% endblock %}",
         encoding="utf-8",
     )

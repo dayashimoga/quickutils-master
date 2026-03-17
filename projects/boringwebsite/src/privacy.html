@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy & Terms of Service — DailyLift</title>
-    <meta name="description" content="Privacy Policy and Terms of Service for DailyLift and QuickUtils.">
+    <title>Privacy Policy — QuickUtils</title>
+    <meta name="description" content="Privacy Policy for the QuickUtils network of directories, tools, and resources. Learn how we protect your data.">
     <link rel="stylesheet" href="css/style.css">
     <style>
         .legal-content {
@@ -16,27 +16,24 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-color);
         }
-
-        .legal-content h1 {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            color: var(--text-primary);
-        }
-
-        .legal-content h2 {
-            font-size: 1.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: var(--text-secondary);
-        }
-
-        .legal-content p,
-        .legal-content li {
-            line-height: 1.6;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
+        .legal-content h1 { font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary); }
+        .legal-content h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: var(--text-secondary); }
+        .legal-content h3 { font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-secondary); }
+        .legal-content p, .legal-content li { line-height: 1.8; color: var(--text-secondary); margin-bottom: 1rem; }
     </style>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377"
+        crossorigin="anonymous"></script>
+
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QPDP38ZCCV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-QPDP38ZCCV');
+    </script>
 </head>
 
 <body>
@@ -44,50 +41,180 @@
         <div class="container">
             <a href="index.html" class="nav-brand">
                 <span class="brand-icon">⚡</span>
-                DailyLift
+                QuickUtils
             </a>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html">Home</a>
+                <a href="tools.html">Tools</a>
+                <a href="blog.html">Blog</a>
+                <a href="about.html">About</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
     <div class="container">
         <div class="legal-content">
-            <h1>Privacy Policy & Terms of Service</h1>
+            <h1>Privacy Policy</h1>
             <p><strong>Last Updated:</strong> March 2026</p>
+            <p><strong>Website:</strong> <a href="https://quickutils.top">quickutils.top</a> and all subdomains</p>
 
             <h2>1. Introduction</h2>
-            <p>Welcome to QuickUtils / DailyLift. By using our website and automated tools, you agree to these terms.
-            </p>
+            <p>Welcome to QuickUtils. We are committed to protecting your privacy. This Privacy Policy explains
+                how we collect, use, and safeguard information when you visit our website and associated subdomains
+                (collectively, the "Service"). By using the Service, you agree to the practices described herein.</p>
 
-            <h2>2. Data Collection (Privacy Policy)</h2>
-            <p>We believe in privacy by design. Our core tools (calculators, formatters, utilities) run entirely in your
-                local browser instance via JavaScript. We do <strong>not</strong> collect, process, or store any
-                personal data entered into our client-side tools.</p>
+            <h2>2. Information We Collect</h2>
+
+            <h3>2.1 Data We Do NOT Collect</h3>
+            <p>Our core tools (calculators, formatters, converters, unit tools) run <strong>entirely in your
+                    local browser</strong> via JavaScript. We do <strong>not</strong> collect, process, transmit,
+                or store any personal data you enter into our client-side tools. No data is sent to our servers.</p>
+
+            <h3>2.2 Automatically Collected Data</h3>
+            <p>We use the following third-party services that may collect anonymized data:</p>
             <ul>
-                <li><strong>Analytics:</strong> We use Google Analytics (GA4) with IP anonymization enabled to
-                    understand generic website traffic patterns.</li>
-                <li><strong>Cookies:</strong> Third-party vendors, including Google, use cookies to serve ads based on a
-                    user's prior visits to our website.</li>
-                <li><strong>APIs:</strong> Our automated social media bots (such as Pinterest integrations) do not read
-                    or collect user data; they only transmit publicly available directory links outwardly.</li>
+                <li><strong>Google Analytics (GA4):</strong> Collects anonymized usage data including page views,
+                    session duration, approximate geographic location (country/city level), device type, and browser type.
+                    IP anonymization is enabled. No personally identifiable information (PII) is collected.</li>
+                <li><strong>Cloudflare Web Analytics:</strong> Privacy-first analytics that does not use cookies
+                    or collect personal data. Provides aggregate page view and performance metrics.</li>
             </ul>
 
-            <h2>3. Disclaimer of Warranties</h2>
-            <p>All data, datasets, and calculations provided on QuickUtils subdomains are for informational and
-                educational purposes only. The tools are provided "as is" without warranty of any kind.</p>
+            <h3>2.3 Cookies</h3>
+            <p>We use cookies and similar technologies for:</p>
+            <ul>
+                <li><strong>Essential Cookies:</strong> Theme preferences (dark/light mode) stored in localStorage.</li>
+                <li><strong>Analytics Cookies:</strong> Google Analytics uses cookies (_ga, _gid) to distinguish
+                    unique visitors. You can opt out via <a href="https://tools.google.com/dlpage/gaoptout"
+                        target="_blank" rel="noopener">Google's opt-out browser add-on</a>.</li>
+                <li><strong>Advertising Cookies:</strong> Google AdSense uses cookies to serve relevant ads.
+                    Third-party vendors, including Google, use cookies to serve ads based on your prior visits.
+                    You can opt out of personalized advertising at
+                    <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ad Settings</a>
+                    or <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">AboutAds.info</a>.</li>
+            </ul>
 
-            <h2>4. API & Third-Party Integrations</h2>
-            <p>When interacting with our social media profiles or API bots, standard platform terms apply (e.g.,
-                Pinterest, Twitter/X, Mastodon). We do not control the data collection policies of those third-party
-                networks.</p>
+            <h2>3. How We Use Information</h2>
+            <p>The anonymized data we collect is used exclusively to:</p>
+            <ul>
+                <li>Understand traffic patterns and improve site content</li>
+                <li>Monitor site performance and uptime</li>
+                <li>Display relevant advertisements via Google AdSense</li>
+                <li>Improve user experience across our network of directories</li>
+            </ul>
 
-            <h2>5. Contact</h2>
-            <p>For any privacy concerns or data requests, please contact the repository maintainer.</p>
+            <h2>4. Third-Party Services</h2>
+            <p>Our Service integrates with the following third-party services:</p>
+            <ul>
+                <li><strong>Google AdSense:</strong> Displays advertisements. Google may collect data as described in
+                    the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.</li>
+                <li><strong>Google Analytics:</strong> Web analytics service. See
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+                <li><strong>Amazon Associates:</strong> We participate in the Amazon Associates Program. Affiliate links
+                    use cookies to track referrals. See
+                    <a href="https://www.amazon.in/gp/help/customer/display.html?nodeId=200534380" target="_blank"
+                        rel="noopener">Amazon's Privacy Notice</a>.</li>
+                <li><strong>Pinterest:</strong> Our automated social media integrations transmit publicly available
+                    directory links. We do not collect user data through Pinterest.</li>
+                <li><strong>Cloudflare:</strong> Our CDN and hosting provider. See
+                    <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's Privacy Policy</a>.</li>
+            </ul>
+
+            <h2>5. Affiliate Links Disclosure</h2>
+            <p>Some links on our site are affiliate links. When you click on an affiliate link and make a purchase,
+                we may earn a commission at no additional cost to you. This helps fund the free services we provide.
+                For full details, see our <a href="affiliate-disclosure.html">Affiliate Disclosure</a> page.</p>
+
+            <h2>6. Your Rights (GDPR / CCPA)</h2>
+            <p>Depending on your location, you may have the following rights:</p>
+            <ul>
+                <li><strong>Right to Access:</strong> Request information about what data we hold about you.</li>
+                <li><strong>Right to Deletion:</strong> Request deletion of your personal data.</li>
+                <li><strong>Right to Opt-Out:</strong> Opt out of data collection via Google's opt-out tools.</li>
+                <li><strong>Right to Rectification:</strong> Request correction of inaccurate data.</li>
+                <li><strong>Right to Data Portability:</strong> Request a copy of your data in a portable format.</li>
+            </ul>
+            <p>Since we do not collect PII through our tools, these rights primarily apply to analytics and
+                advertising data collected by third-party services listed above. To exercise these rights,
+                contact us at <strong>contact@quickutils.top</strong>.</p>
+
+            <h2>7. Data Retention</h2>
+            <p>We do not directly store user data. Third-party analytics data (Google Analytics) is retained
+                for 14 months per Google's default retention policy. Advertising cookies expire according to
+                each ad network's policies.</p>
+
+            <h2>8. Children's Privacy</h2>
+            <p>Our Service is not directed at children under 13. We do not knowingly collect personal information
+                from children under 13. If you believe a child has provided us with personal information,
+                please contact us at <strong>contact@quickutils.top</strong> and we will delete such information.</p>
+
+            <h2>9. Data Security</h2>
+            <p>We use industry-standard security measures including:</p>
+            <ul>
+                <li>HTTPS/TLS encryption on all pages</li>
+                <li>Cloudflare DDoS protection and WAF</li>
+                <li>No server-side data storage of user information</li>
+                <li>Regular security reviews and updates</li>
+            </ul>
+
+            <h2>10. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with
+                an updated "Last Updated" date. We encourage you to review this policy periodically.</p>
+
+            <h2>11. Contact Us</h2>
+            <p>For any privacy concerns, data requests, or questions about this policy, please contact:</p>
+            <p><strong>Email:</strong> contact@quickutils.top</p>
+            <p><strong>Website:</strong> <a href="https://quickutils.top/about.html">quickutils.top/about.html</a></p>
 
             <div style="margin-top: 3rem; text-align: center;">
                 <a href="index.html" class="btn btn-primary">Return to Homepage</a>
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-brand"><span class="brand-icon">⚡</span> QuickUtils</a>
+                    <p>Your ultimate destination for daily motivation, free tools, and specialized resource directories. Always free.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Pages</h4>
+                    <a href="index.html">Home</a>
+                    <a href="tools.html">Tools</a>
+                    <a href="blog.html">Blog</a>
+                    <a href="about.html">About</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Network</h4>
+                    <a href="https://apistatus.quickutils.top">API Status</a>
+                    <a href="https://tools.quickutils.top">Tools</a>
+                    <a href="https://boilerplates.quickutils.top">Boilerplates</a>
+                    <a href="https://cheatsheets.quickutils.top">Cheatsheets</a>
+                    <a href="https://facts.quickutils.top">Facts</a>
+                    <a href="https://prompts.quickutils.top">Prompts</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal &amp; Social</h4>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Use</a>
+                    <a href="affiliate-disclosure.html">Affiliate Disclosure</a>
+                    <a href="https://pinterest.com/quickutils" target="_blank" rel="noopener">Pinterest</a>
+                    <a href="https://github.com/dayashimoga" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 QuickUtils. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script src="js/cookie-consent.js"></script>
 </body>
 
 </html>

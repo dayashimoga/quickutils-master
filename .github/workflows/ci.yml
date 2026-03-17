@@ -37,5 +37,11 @@ jobs:
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
           echo "Core scripts coverage: $COVERAGE"
           python -c "import sys; print('Coverage OK') if float('$COVERAGE') >= 0.90 else (print('Coverage below 90%'), sys.exit(1))"
-      - name: Run Global Site Orchestrator Tests
-        run: python scripts/test_orchestrator.py
+      - name: Run Node.js Tests
+        run: |
+          if [ -d "projects/boringwebsite" ]; then
+            cd projects/boringwebsite && npm test -- --passWithNoTests && cd ../..
+          fi
+          if [ -d "projects/dailyfacts" ]; then
+            cd projects/dailyfacts && npm install && npm test -- --passWithNoTests && cd ../..
+          fi

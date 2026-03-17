@@ -1,0 +1,31 @@
+name: Refresh Market Digest Data
+
+on:
+  schedule:
+    # Run at 12:30 PM UTC every weekday (Monday to Friday)
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  fetch_and_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Run Market Data Fetcher
+        run: |
+          python fetch_data.py
+          
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data.json
+          git commit -m "chore: Refresh daily market data" || exit 0
+          git push

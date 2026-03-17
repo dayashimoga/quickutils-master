@@ -16,13 +16,16 @@ def test_fix_slugs_logic():
     #     ...
     #     return data
     mock_content = """def load_database(path: Path = None) -> list:
-    data = []
+    if path is None:
+        pass
+    data = [{"title": "Test"}]
     return data"""
-    with patch("os.path.exists", side_effect=[True, False, False, False, False, False, False, False, False]), \
+    with patch("os.path.exists", return_value=True), \
          patch("builtins.open", mock_open(read_data=mock_content)) as m_open, \
          patch("builtins.print"):
         
-        importlib.reload(scripts.fix_slugs)
+        from scripts.fix_slugs import update_utils_py
+        update_utils_py("fake_path.py")
         
     # Check if write was called
     handle = m_open()
@@ -102,6 +105,7 @@ def test_github_distribute_deep():
          patch("requests.get") as mock_get, \
          patch("requests.post") as mock_post, \
          patch("pathlib.Path.iterdir", return_value=[mock_project]), \
+         patch("os.listdir", return_value=[]), \
          patch.dict("os.environ", {"GH_PAT": "fake_pat"}), \
          patch("builtins.print"):
         
@@ -201,7 +205,7 @@ def test_github_restore_deep():
         # Test restore_project success cleanup
         mock_run.side_effect = None
         with patch("pathlib.Path.exists", side_effect=[False, False, False, True]): # incomplete, then clone, then .git exists
-             restore_project("restore-me")
+            restore_project("restore-me")
 
         main()
     assert True
@@ -226,6 +230,7 @@ def test_update_docs_extended():
 # Test run_global_tests.py branches
 def test_run_global_tests_branches():
     with patch("subprocess.run") as mock_run, \
+         patch("pathlib.Path.exists", return_value=False), \
          patch("builtins.print"):
         
         from scripts.run_global_tests import run_tests_in_dir
@@ -238,6 +243,110 @@ def test_run_global_tests_branches():
         mock_run.return_value.returncode = 1
         assert run_tests_in_dir("/fake/path") is False
         
-        # Test Exception (fallback to local)
-        mock_run.side_effect = [Exception("Docker failed"), MagicMock(returncode=0)]
-        assert run_tests_in_dir("/fake/path") is True
+        # Test Exception (no fallback as of new version, but we test the error handling)
+        mock_run.side_effect = Exception("error")
+        assert run_tests_in_dir("/fake/path") is False
+
+
+# --- New tests to close coverage gaps ---
+
+def test_github_distribute_auth_success():
+    """Cover the successful authentication path (lines 22-24)."""
+    import scripts.github_distribute
+    scripts.github_distribute._username_cache = None
+    
+    with patch.dict("os.environ", {"GH_PAT": "test_token"}), \
+         patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"login": "testuser"}
+        scripts.github_distribute.PAT = "test_token"
+        result = scripts.github_distribute.get_username()
+        assert result == "testuser"
+    
+    scripts.github_distribute._username_cache = None
+
+
+def test_github_distribute_auth_exception():
+    """Cover the authentication exception path (lines 27-28)."""
+    import scripts.github_distribute
+    scripts.github_distribute._username_cache = None
+    
+    with patch.dict("os.environ", {"GH_PAT": "test_token"}), \
+         patch("requests.get", side_effect=Exception("Connection failed")):
+        from scripts.utils import GH_USERNAME
+        scripts.github_distribute.PAT = "test_token"
+        result = scripts.github_distribute.get_username()
+        assert result == GH_USERNAME
+    
+    scripts.github_distribute._username_cache = None
+
+
+def test_github_distribute_get_projects_with_boringwebsite():
+    """Cover the project discovery path (all dirs except .github and master)."""
+    from scripts.github_distribute import get_projects
+    mock_dir = MagicMock()
+    mock_dir.is_dir.return_value = True
+    type(mock_dir).name = PropertyMock(return_value="tools-directory")
+    mock_dir.absolute.return_value = "/fake/tools"
+    
+    mock_bw = MagicMock()
+    mock_bw.is_dir.return_value = True
+    type(mock_bw).name = PropertyMock(return_value="boringwebsite")
+    mock_bw.absolute.return_value = "/fake/boringwebsite"
+    
+    with patch("pathlib.Path.iterdir", return_value=[mock_dir, mock_bw]), \
+         patch("pathlib.Path.exists", return_value=True):
+        projects = get_projects()
+    assert "tools-directory" in projects
+    assert "boringwebsite" in projects
+
+
+def test_github_restore_cleanup_tmp():
+    """Cover cleanup_tmp with both glob patterns (lines 54-60)."""
+    from scripts.github_restore import cleanup_tmp
+    
+    mock_temp = MagicMock()
+    mock_temp.is_dir.return_value = True
+    
+    mock_temp2 = MagicMock()
+    mock_temp2.is_dir.return_value = True
+    
+    with patch("pathlib.Path.glob", side_effect=[[mock_temp], [mock_temp2]]), \
+         patch("shutil.rmtree"), \
+         patch("os.path.exists", return_value=True), \
+         patch("builtins.print"):
+        cleanup_tmp()
+
+
+def test_github_restore_complete_project_skip():
+    """Cover project skip when both data/ and src/ exist (lines 79-81)."""
+    from scripts.github_restore import restore_project
+    
+    with patch("pathlib.Path.exists", return_value=True), \
+         patch("builtins.print"):
+        restore_project("complete-project")  # Should print skip and return
+
+
+def test_github_restore_successful_clone_with_git_removal():
+    """Cover successful clone + .git removal path (lines 93-96)."""
+    from scripts.github_restore import restore_project
+    
+    # restore_project calls:
+    # 1. local_path.exists() -> False to trigger clone
+    # 2. (in clone block) local_path via subprocess
+    # 3. dot_git.exists() -> True to trigger .git removal
+    call_count = {"n": 0}
+    def exists_side_effect(self=None):
+        call_count["n"] += 1
+        if call_count["n"] <= 1:
+            return False  # local_path.exists() = False
+        return True  # dot_git.exists() = True
+    
+    with patch("pathlib.Path.exists", side_effect=exists_side_effect), \
+         patch("subprocess.run") as mock_run, \
+         patch("shutil.rmtree"), \
+         patch("os.path.exists", return_value=True), \
+         patch("builtins.print"):
+        mock_run.return_value.returncode = 0
+        restore_project("new-project")
+

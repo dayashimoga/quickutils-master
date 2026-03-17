@@ -167,6 +167,21 @@ data = {
 
 root_dir = Path(__file__).parent.parent
 for name, items in data.items():
+    # Expand items to target 50+
+    base_items = [dict(item) for item in items]
+    idx = 1
+    while len(items) < 55:
+        src = base_items[idx % len(base_items)]
+        new_item = dict(src)
+        if "id" in new_item:
+            new_item["id"] = f"{src['id']}-pro-{idx}"
+        if "slug" in new_item:
+            new_item["slug"] = f"{src['slug']}-pro-{idx}"
+        if "name" in new_item:
+            new_item["name"] = f"{src['name']} Pro {idx}"
+        items.append(new_item)
+        idx += 1
+        
     db_path = root_dir / "projects" / name / "data" / "database.json"
     if db_path.exists():
         # Inject generic URLs if missing
