@@ -77,7 +77,7 @@ def main():
             continue
         
         # quickutils-master as a child is a duplicate of the parent
-        if proj.name in ["quickutils-master", "boringwebsite"]:
+        if proj.name in ["quickutils-master", "boringwebsite", "dailyfacts"]:
             continue
 
         if not (proj / "tests").exists():
@@ -94,23 +94,24 @@ def main():
             "full_err": err
         })
 
-    # 3. Process Node.js Project (boringwebsite)
-    node_proj = projects_root / "boringwebsite"
-    if node_proj.exists():
-        print("\n--- 📦 Testing Node.js Project ---")
-        try:
-            subprocess.run(["npm", "--version"], capture_output=True, check=True)
-            code, out, err = run_command(["npm", "test", "--", "--passWithNoTests"], node_proj, base_dir)
-            results.append({
-                "name": "boringwebsite", 
-                "coverage": "N/A", 
-                "status": "PASS" if code == 0 else "FAIL",
-                "full_out": out,
-                "full_err": err
-            })
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            print("  ⚠️ Warning: npm not found. Skipping Node.js tests for boringwebsite.")
-            results.append({"name": "boringwebsite", "coverage": "N/A", "status": "SKIPPED (npm not found)"})
+    # 3. Process Node.js Projects
+    for node_proj_name in ["boringwebsite", "dailyfacts"]:
+        node_proj = projects_root / node_proj_name
+        if node_proj.exists():
+            print(f"\n--- 📦 Testing Node.js Project: {node_proj_name} ---")
+            try:
+                subprocess.run(["npm", "--version"], capture_output=True, check=True)
+                code, out, err = run_command(["npm", "test", "--", "--passWithNoTests"], node_proj, base_dir)
+                results.append({
+                    "name": node_proj_name, 
+                    "coverage": "N/A", 
+                    "status": "PASS" if code == 0 else "FAIL",
+                    "full_out": out,
+                    "full_err": err
+                })
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                print(f"  ⚠️ Warning: npm not found. Skipping Node.js tests for {node_proj_name}.")
+                results.append({"name": node_proj_name, "coverage": "N/A", "status": "SKIPPED (npm not found)"})
 
     # 4. Global Report
     print("\n" + "="*70)

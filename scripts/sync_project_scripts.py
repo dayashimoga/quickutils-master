@@ -72,7 +72,8 @@ def sync_scripts():
         for file_rel_path in MASTER_FILES:
             # Determine if this file should be synced to this project
             is_template = file_rel_path.startswith("src/")
-            if is_template and project.name in DASHBOARD_PROJECTS:
+            is_test = file_rel_path.startswith("tests/")
+            if (is_template or is_test) and project.name in DASHBOARD_PROJECTS:
                 continue
 
             if file_rel_path.startswith("scripts/") or file_rel_path.startswith("tests/") or file_rel_path in ["requirements.txt", ".gitignore", "project_config.json"]:
