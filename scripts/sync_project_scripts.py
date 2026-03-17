@@ -38,6 +38,7 @@ MASTER_FILES = [
     "tests/test_post_pinterest.py",
     "tests/test_core_optimized.py",
     "tests/test_fetch_data.py",
+    "tests/test_coverage_all.py",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
