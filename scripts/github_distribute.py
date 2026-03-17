@@ -122,7 +122,9 @@ def sync_repo(local_path, remote_url):
         status_res = subprocess.run(["git", "status", "--porcelain"], cwd=temp_dir, capture_output=True, text=True)
         
         if status_res.stdout.strip():
-            print(f"  Changes detected. Committing and pushing...")
+            print(f"  Changes detected. Files:")
+            print(status_res.stdout)
+            print(f"  Committing and pushing...")
             subprocess.run(["git", "commit", "-m", "Automation: Sync from Master Repository"], cwd=temp_dir, check=False)
             push_res = subprocess.run(["git", "push", "-u", "origin", "main"], cwd=temp_dir, capture_output=True, text=True)
             if push_res.returncode != 0:
