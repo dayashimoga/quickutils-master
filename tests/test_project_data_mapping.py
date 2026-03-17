@@ -40,14 +40,14 @@ class TestProjectTypeDetection:
             assert result == "cheatsheets-directory"
 
     def test_default_is_master(self):
-        """Without env var or CWD match, should default to master."""
+        """Without env var or CWD match, should default to quickutils-master."""
         with patch.dict(os.environ, {}, clear=False):
             if "PROJECT_TYPE" in os.environ:
                 del os.environ["PROJECT_TYPE"]
             from scripts.utils import _detect_project_type
             result = _detect_project_type()
-            # Should be master or similar when CWD is root
-            assert result in ("master", "boring", ROOT_DIR.name)
+            # Should be quickutils-master or the root dir name when CWD is root
+            assert result in ("master", "quickutils-master", "boring", ROOT_DIR.name)
 
     def test_cwd_detection_for_project(self):
         """When CWD is inside a project dir, should detect it."""

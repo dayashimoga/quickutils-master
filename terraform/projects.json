@@ -2,16 +2,25 @@
     "apistatus": {
         "directory": "projects/apistatus-directory",
         "repo_name": "apistatus-directory",
+        "src_dir": "projects/apistatus-directory/src",
+        "data_dir": "projects/apistatus-directory/data",
+        "project_type": "apistatus-directory",
         "custom_domain": "apistatus.quickutils.top"
     },
     "boilerplates": {
         "directory": "projects/boilerplates-directory",
         "repo_name": "boilerplates-directory",
+        "src_dir": "projects/boilerplates-directory/src",
+        "data_dir": "projects/boilerplates-directory/data",
+        "project_type": "boilerplates-directory",
         "custom_domain": "boilerplates.quickutils.top"
     },
     "cheatsheets": {
         "directory": "projects/cheatsheets-directory",
         "repo_name": "cheatsheets-directory",
+        "src_dir": "projects/cheatsheets-directory/src",
+        "data_dir": "projects/cheatsheets-directory/data",
+        "project_type": "cheatsheets-directory",
         "custom_domain": "cheatsheets.quickutils.top"
     },
     "dailyfacts": {
@@ -24,26 +33,41 @@
     "datasets": {
         "directory": "projects/datasets-directory",
         "repo_name": "datasets-directory",
+        "src_dir": "projects/datasets-directory/src",
+        "data_dir": "projects/datasets-directory/data",
+        "project_type": "datasets-directory",
         "custom_domain": "datasets.quickutils.top"
     },
     "jobs": {
         "directory": "projects/jobs-directory",
         "repo_name": "jobs-directory",
+        "src_dir": "projects/jobs-directory/src",
+        "data_dir": "projects/jobs-directory/data",
+        "project_type": "jobs-directory",
         "custom_domain": "jobs.quickutils.top"
     },
     "opensource": {
         "directory": "projects/opensource-directory",
         "repo_name": "opensource-directory",
+        "src_dir": "projects/opensource-directory/src",
+        "data_dir": "projects/opensource-directory/data",
+        "project_type": "opensource-directory",
         "custom_domain": "opensource.quickutils.top"
     },
     "prompts": {
         "directory": "projects/prompts-directory",
         "repo_name": "prompts-directory",
+        "src_dir": "projects/prompts-directory/src",
+        "data_dir": "projects/prompts-directory/data",
+        "project_type": "prompts-directory",
         "custom_domain": "prompts.quickutils.top"
     },
     "tools": {
         "directory": "projects/tools-directory",
         "repo_name": "tools-directory",
+        "src_dir": "projects/tools-directory/src",
+        "data_dir": "projects/tools-directory/data",
+        "project_type": "tools-directory",
         "custom_domain": "tools.quickutils.top"
     },
     "boringwebsite": {
@@ -58,6 +82,7 @@
         "repo_name": "quickutils-master",
         "src_dir": "projects/quickutils-master/src",
         "data_dir": "projects/quickutils-master/data",
+        "project_type": "quickutils-master",
         "dist_dir": "dist",
         "destination_dir": "dist",
         "custom_domain": "directory.quickutils.top"
