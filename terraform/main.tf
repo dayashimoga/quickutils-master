@@ -92,6 +92,7 @@ resource "cloudflare_pages_domain" "quickutils_domains" {
   account_id   = var.cloudflare_account_id
   project_name = cloudflare_pages_project.quickutils_projects[each.key].name
   domain       = each.value.custom_domain
+  depends_on   = [cloudflare_record.quickutils_cnames]
 }
 
 # --- Email Routing for contact@quickutils.top ---
