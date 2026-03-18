@@ -82,7 +82,7 @@ resource "cloudflare_record" "quickutils_cnames" {
   name     = each.value.custom_domain == "quickutils.top" ? "@" : split(".", each.value.custom_domain)[0]
   content         = "${each.value.repo_name}.pages.dev"
   type            = "CNAME"
-  proxied         = true
+  proxied         = false
   # Handle existing records by allowing overwrite
   allow_overwrite = true
 }
