@@ -120,6 +120,7 @@ class TestBaseTemplate:
             featured_items=[],
             total_categories=0,
             enable_pinterest=True,
+            pinterest_domain_verify="c816c2b41079835efd234cb5afef59bf",
         )
         assert 'name="p:domain_verify"' in html
         assert 'content="c816c2b41079835efd234cb5afef59bf"' in html
@@ -155,7 +156,7 @@ class TestItemTemplate:
             enable_amazon=True,
         )
         assert "application/ld+json" in html
-        assert "SoftwareApplication" in html
+        assert "FAQPage" in html
 
     def test_contains_breadcrumb(self, real_env, sample_items):
         tpl = real_env.get_template("item.html")

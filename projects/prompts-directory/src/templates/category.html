@@ -67,6 +67,11 @@
                     </div>
                     <p class="item-desc">{{ item.description | truncate_text }}</p>
                     <div class="item-meta">
+                        {% if item.status %}
+                        <span class="meta-badge {% if item.status == 'Up' %}badge-free{% else %}badge-warn{% endif %}">
+                            {{ '🟢 Up' if item.status == 'Up' else '🔴 Down' }}
+                        </span>
+                        {% endif %}
                         <span class="meta-badge {% if item.auth == 'None' %}badge-free{% else %}badge-auth{% endif %}">
                             {{ '🔓 No Auth' if item.auth == 'None' else '🔐 ' + item.auth }}
                         </span>

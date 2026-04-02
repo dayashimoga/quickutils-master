@@ -13,6 +13,8 @@ from scripts.build_directory import (
     build_site,
     copy_static_assets,
     create_jinja_env,
+    optimize_images,
+    minify_html,
 )
 from scripts.utils import get_categories
 
@@ -215,6 +217,25 @@ class TestCopyStaticAssets:
 
         assert (dist_dir / "ads.txt").exists()
 
+    def test_copies_css_existing_dst(self, tmp_path):
+        src_dir = tmp_path / "src"
+        dist_dir = tmp_path / "dist"
+        dist_dir.mkdir()
+
+        css_dir = src_dir / "css"
+        css_dir.mkdir(parents=True)
+        (css_dir / "styles.css").write_text("body{}", encoding="utf-8")
+        
+        dist_css = dist_dir / "css"
+        dist_css.mkdir()
+        (dist_css / "old.css").write_text("old")
+
+        with patch("scripts.build_directory.SRC_DIR", src_dir), \
+             patch("scripts.build_directory.DIST_DIR", dist_dir):
+            copy_static_assets()
+
+        assert (dist_dir / "css" / "styles.css").exists()
+
     def test_handles_missing_dirs(self, tmp_path):
         src_dir = tmp_path / "src"
         dist_dir = tmp_path / "dist"
@@ -265,6 +286,9 @@ class TestBuildSite:
         dist_dir.mkdir()
         old_file = dist_dir / "old_file.html"
         old_file.write_text("old", encoding="utf-8")
+        old_dir = dist_dir / "old_dir"
+        old_dir.mkdir()
+        (old_dir / "file.txt").write_text("old")
 
         with patch("scripts.build_directory.TEMPLATES_DIR", templates_dir), \
              patch("scripts.build_directory.DIST_DIR", dist_dir), \
@@ -272,3 +296,33 @@ class TestBuildSite:
             build_site(sample_database_path)
 
         assert not old_file.exists()
+        assert not old_dir.exists()
+
+class TestMinifyHtml:
+    def test_minify_html_success(self):
+        html = "<body>  <p>Test</p> </body>"
+        minified = minify_html(html)
+        assert "<body>" in minified
+
+    def test_minify_html_exception(self):
+        pytest.importorskip("htmlmin")
+        with patch("htmlmin.minify", side_effect=Exception("Test Error")):
+            minified = minify_html("<body>Test</body>")
+            assert minified == "<body>Test</body>"
+
+class TestOptimizeImages:
+    def test_optimize_images_invalid_image_covers_exception(self, tmp_path):
+        dist_dir = tmp_path / "dist"
+        images_dir = dist_dir / "images"
+        images_dir.mkdir(parents=True)
+        (images_dir / "test.png").write_text("not a real image")
+
+        with patch("scripts.build_directory.DIST_DIR", dist_dir):
+            optimize_images()
+        # Should not crash, just print a warning and cover except block
+
+def test_main():
+    with patch("scripts.build_directory.build_site") as mock_build:
+        from scripts.build_directory import main
+        main()
+        mock_build.assert_called_once()

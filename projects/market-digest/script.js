@@ -179,10 +179,10 @@ function renderComparisonGrid(marketData, macroData) {
                     <th>Price</th>
                     <th>1D</th>
                     <th>1W</th>
-                    <th>1M</th>
-                    <th class="hidden-mobile">3M</th>
-                    <th class="hidden-mobile">6M</th>
-                    <th class="hidden-mobile">1Y</th>
+                    <th class="hidden-mobile">1M</th>
+                    <th>RSI</th>
+                    <th>MACD</th>
+                    <th class="hidden-mobile">Pattern</th>
                     <th>Signal</th>
                 </tr>
             </thead>
@@ -192,16 +192,31 @@ function renderComparisonGrid(marketData, macroData) {
     groups.forEach(group => {
         html += `<tr class="group-header"><td colspan="9"><strong>${group.title}</strong></td></tr>`;
         group.data.forEach(row => {
+            let rsiText = '-';
+            let macdText = '-';
+            let patternText = '-';
+            if (row.obj.rsi !== undefined) {
+                rsiText = `<span class="${row.obj.rsi > 70 ? 'text-red-500' : (row.obj.rsi < 30 ? 'text-green-500' : 'text-gray-400')}">${row.obj.rsi}</span>`;
+            }
+            if (row.obj.macd && row.obj.macd.hist !== undefined) {
+                macdText = `<span class="${row.obj.macd.hist > 0 ? 'text-green-500' : 'text-red-500'}">${row.obj.macd.hist}</span>`;
+            }
+            if (row.obj.pattern) {
+                patternText = row.obj.pattern.pattern !== 'None' ? row.obj.pattern.pattern : '-';
+                if(patternText !== '-' && patternText !== 'Consolidation') {
+                    patternText = `<span title="Target: ${row.obj.pattern.target}, Stop: ${row.obj.pattern.stop_loss}" style="border-bottom: 1px dotted #888; cursor:help;">${patternText}</span>`;
+                }
+            }
             html += `
                 <tr>
                     <td>${row.name}</td>
                     <td>${row.prefix}${row.obj.current.toFixed(2)}</td>
                     <td>${formatDelta(row.obj.delta_1d)}</td>
                     <td>${formatDelta(row.obj.delta_1w)}</td>
-                    <td>${formatDelta(row.obj.delta_1m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_3m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_6m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1y)}</td>
+                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
+                    <td>${rsiText}</td>
+                    <td>${macdText}</td>
+                    <td class="hidden-mobile">${patternText}</td>
                     <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
                 </tr>
             `;
