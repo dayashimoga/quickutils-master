@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Gradient Studio — Create Beautiful UI Gradients | QuickUtils</title>
+    <meta name="description" content="Free online CSS gradient generator. Create stunning linear and radial gradients, customize color stops, and export instantly to CSS or Tailwind.">
+    <link rel="canonical" href="https://gradients.quickutils.top">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <meta property="og:title" content="CSS Gradient Studio">
+    <meta property="og:description" content="Design beautiful CSS gradients and copy the code instantly.">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GRADIENT001"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-GRADIENT001');</script>
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="/" class="brand">🎨 <span>GradientStudio</span></a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+            <a href="https://quickutils.top" target="_blank" rel="noopener">QuickUtils</a>
+        </div>
+        <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
+    </div></nav>
+
+    <div class="preview-area" id="previewArea">
+        <!-- Background changes based on gradient -->
+    </div>
+
+    <main class="container tools-container">
+        <div class="glass-card controls-card">
+            <div class="color-stops-section">
+                <h3>Color Stops</h3>
+                <div class="stops-track-wrapper">
+                    <div class="stops-track" id="stopsTrack" title="Click anywhere to add a color stop">
+                        <div class="gradient-preview" id="stopsPreview"></div>
+                        <!-- Thumbs inserted by JS -->
+                    </div>
+                </div>
+                
+                <div class="active-stop-controls mt-4" id="activeStopArea">
+                    <div class="color-inputs">
+                        <input type="color" id="stopColor" class="color-picker-input">
+                        <input type="text" id="stopHex" class="hex-input" placeholder="#FFFFFF">
+                        <div class="flex-bw">
+                            <label>Position %</label>
+                            <input type="number" id="stopPos" class="pos-input" min="0" max="100">
+                        </div>
+                        <button class="btn btn-secondary btn-sm" id="removeStop" title="Remove stop">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section mt-4">
+                <div class="flex-bw mb-2">
+                    <h3>Type</h3>
+                    <div class="toggle-group">
+                        <label class="radio-label"><input type="radio" name="gType" value="linear" checked><span>Linear</span></label>
+                        <label class="radio-label"><input type="radio" name="gType" value="radial"><span>Radial</span></label>
+                    </div>
+                </div>
+                
+                <div id="linearControls">
+                    <div class="flex-bw">
+                        <label>Angle</label>
+                        <span id="angleReadout">90°</span>
+                    </div>
+                    <input type="range" id="angleSlider" min="0" max="360" value="90" class="slider-full">
+                </div>
+
+                <div id="radialControls" style="display:none">
+                    <div class="flex-bw mb-2">
+                        <label>Shape</label>
+                        <select id="radialShape" class="select-input">
+                            <option value="circle">Circle</option>
+                            <option value="ellipse">Ellipse</option>
+                        </select>
+                    </div>
+                    <div class="flex-bw">
+                        <label>Position</label>
+                        <select id="radialPos" class="select-input">
+                            <option value="center" selected>Center</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                            <option value="top left">Top Left</option>
+                            <option value="top right">Top Right</option>
+                            <option value="bottom left">Bottom Left</option>
+                            <option value="bottom right">Bottom Right</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-section mt-4">
+                <h3>CSS Output</h3>
+                <div class="code-box">
+                    <textarea id="cssOutput" class="code-output" readonly></textarea>
+                    <button class="btn btn-primary w-100 mt-2" id="copyCss">📋 Copy CSS</button>
+                </div>
+                
+                <h3 class="mt-4">Tailwind Config (Optional)</h3>
+                <div class="code-box">
+                    <textarea id="twOutput" class="code-output tw-output" readonly></textarea>
+                    <button class="btn btn-secondary w-100 mt-2" id="copyTw">📋 Copy Tailwind</button>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary w-100 mt-4" id="randomizeBtn">🎲 Randomize</button>
+        </div>
+    </main>
+
+    <footer class="footer"><div class="container footer-inner">
+        <div class="footer-brand"><span>🎨 Gradient Studio</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>
+        <p class="copyright">© 2026 QuickUtils.</p>
+    </div></footer>
+
+    <script src="script.js"></script>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>kofiWidgetOverlay.draw('dayatin',{'type':'floating-chat','floating-chat.donateButton.text':'Support Us','floating-chat.donateButton.background-color':'#ff5e5b','floating-chat.donateButton.text-color':'#fff'});</script>
+</body>
+</html>

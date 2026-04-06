@@ -22,6 +22,7 @@ MASTER_FILES = [
     "src/_redirects",
     "src/_headers",
     "src/templates/base.html",
+    "src/templates/kofi_widget.html",
     "src/templates/index.html",
     "src/templates/item.html",
     "src/templates/category.html",

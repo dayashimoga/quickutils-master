@@ -178,3 +178,211 @@
     }
 
 })();
+
+// BOOKMARKS SYSTEM
+document.addEventListener('DOMContentLoaded', () => {
+    // Render bookmarks link in nav
+    const nav = document.getElementById('main-nav');
+    if (nav) {
+        const bookmarksLink = document.createElement('a');
+        bookmarksLink.href = '#';
+        bookmarksLink.className = 'nav-link';
+        bookmarksLink.innerHTML = '?? Bookmarks <span id="bookmark-count" style="background:var(--accent, #6366f1);color:white;border-radius:10px;padding:2px 6px;font-size:0.8em;vertical-align:top;margin-left:4px;">0</span>';
+        bookmarksLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleBookmarkModal();
+        });
+        nav.insertBefore(bookmarksLink, nav.lastElementChild);
+    }
+
+    updateBookmarkCount();
+
+    // Add bookmark button to items
+    const h1 = document.querySelector('main h1');
+    if (h1 && window.location.pathname.includes('/item/')) {
+        const btn = document.createElement('button');
+        const slug = window.location.pathname.split('/').pop().replace('.html', '');
+        btn.className = 'btn btn-ghost';
+        btn.style.marginLeft = '15px';
+        btn.style.padding = '4px 10px';
+        btn.style.fontSize = '0.6em';
+        btn.style.verticalAlign = 'middle';
+        btn.dataset.slug = slug;
+        btn.dataset.title = h1.innerText.trim();
+        
+        checkIsBookmarked(slug, btn);
+        
+        btn.addEventListener('click', () => {
+            toggleBookmark(slug, btn.dataset.title);
+            checkIsBookmarked(slug, btn);
+        });
+        h1.appendChild(btn);
+    }
+});
+
+function getBookmarks() {
+    return JSON.parse(localStorage.getItem('qu_bookmarks') || '[]');
+}
+
+function saveBookmarks(b) {
+    localStorage.setItem('qu_bookmarks', JSON.stringify(b));
+    updateBookmarkCount();
+    renderBookmarkList();
+}
+
+function toggleBookmark(slug, title) {
+    let b = getBookmarks();
+    const idx = b.findIndex(x => x.slug === slug);
+    if (idx !== -1) {
+        b.splice(idx, 1);
+    } else {
+        b.push({ slug, title, url: window.location.href });
+    }
+    saveBookmarks(b);
+}
+
+function checkIsBookmarked(slug, btn) {
+    const b = getBookmarks();
+    if (b.find(x => x.slug === slug)) {
+        btn.innerHTML = '?? Saved';
+        btn.style.background = 'var(--accent, #6366f1)';
+        btn.style.color = '#fff';
+    } else {
+        btn.innerHTML = '?? Save';
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-base)';
+    }
+}
+
+function updateBookmarkCount() {
+    const b = getBookmarks();
+    const el = document.getElementById('bookmark-count');
+    if (el) el.innerText = b.length;
+}
+
+function toggleBookmarkModal() {
+    let modal = document.getElementById('bookmark-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'bookmark-modal';
+        Object.assign(modal.style, {
+            position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
+            background: 'rgba(0,0,0,0.7)', zIndex: '10001', display: 'flex',
+            alignItems: 'center', justifyContent: 'center'
+        });
+        
+        modal.innerHTML = `
+            <div style="background: var(--bg-card, #1e1e1e); padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; max-height:80vh; overflow-y:auto; position: relative; color: var(--text-base, #eaeaea);">
+                <button onclick="document.getElementById('bookmark-modal').style.display='none'" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <h2 style="margin-top: 0">My Bookmarks</h2>
+                <div id="bookmark-list" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+    } else {
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    if (modal.style.display === 'flex') {
+        renderBookmarkList();
+    }
+}
+
+function renderBookmarkList() {
+    const list = document.getElementById('bookmark-list');
+    if (!list) return;
+    
+    const b = getBookmarks();
+    if (b.length === 0) {
+        list.innerHTML = '<p>No bookmarks yet. Start browsing and save your favorites!</p>';
+        return;
+    }
+    
+    list.innerHTML = b.map(x => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; background:var(--bg-body, #121212); border-radius:4px;">
+            <a href="${x.url}" style="color:var(--accent, #6366f1); text-decoration:none;">${x.title}</a>
+            <button onclick="toggleBookmark('${x.slug}', '${x.title}')" class="btn btn-ghost" style="padding:2px 8px; font-size:0.8em; color:#ff5e5b;">Remove</button>
+        </div>
+    `).join('');
+}
+
+// QUIZ WIDGET SYSTEM
+document.addEventListener('DOMContentLoaded', () => {
+    const quizContainers = document.querySelectorAll('.quiz-container');
+    if (quizContainers.length === 0) return;
+    
+    // Sample questions pool
+    const questions = {
+        "Development": [
+            { q: "What does API stand for?", o: ["Application Programming Interface", "Advanced Program Integration", "Automated Process Interaction"], a: 0 },
+            { q: "Which HTTP method is typically used to create a resource?", o: ["GET", "POST", "PUT", "DELETE"], a: 1 }
+        ],
+        "Science": [
+            { q: "What is the speed of light?", o: ["300,000 km/s", "150,000 km/s", "1,000,000 km/s"], a: 0 },
+            { q: "Which planet is known as the Red Planet?", o: ["Venus", "Mars", "Jupiter"], a: 1 }
+        ],
+        "Finance": [
+            { q: "What does ROI stand for?", o: ["Return On Investment", "Rate Of Inflation", "Revenue Over Income"], a: 0 }
+        ],
+        "Default": [
+            { q: "What is the primary function of a web browser?", o: ["Process data", "Render HTML", "Store databases"], a: 1 },
+            { q: "What does URL stand for?", o: ["Uniform Resource Locator", "Universal Reference Link", "Unified Resource Label"], a: 0 }
+        ]
+    };
+    
+    quizContainers.forEach(container => {
+        let category = container.dataset.category || "Default";
+        let pool = questions[category] || questions["Default"];
+        let qIndex = Math.floor(Math.random() * pool.length);
+        
+        const qElem = container.querySelector('.quiz-question');
+        const optsElem = container.querySelector('.quiz-options');
+        const feedback = container.querySelector('.quiz-feedback');
+        const nextBtn = container.querySelector('.quiz-next-btn');
+        
+        function renderQuiz() {
+            let currentQ = pool[qIndex];
+            qElem.innerText = currentQ.q;
+            optsElem.innerHTML = '';
+            feedback.style.display = 'none';
+            nextBtn.style.display = 'none';
+            
+            currentQ.o.forEach((opt, i) => {
+                let btn = document.createElement('button');
+                btn.className = 'btn btn-ghost';
+                btn.style.border = '1px solid #444';
+                btn.innerText = opt;
+                btn.addEventListener('click', () => {
+                    Array.from(optsElem.children).forEach(c => c.disabled = true);
+                    if (i === currentQ.a) {
+                        btn.style.background = '#10b981';
+                        btn.style.color = '#fff';
+                        feedback.innerText = "? Correct!";
+                        feedback.style.color = '#10b981';
+                    } else {
+                        btn.style.background = '#ef4444';
+                        btn.style.color = '#fff';
+                        optsElem.children[currentQ.a].style.background = '#10b981';
+                        optsElem.children[currentQ.a].style.color = '#fff';
+                        feedback.innerText = "? Incorrect!";
+                        feedback.style.color = '#ef4444';
+                    }
+                    feedback.style.display = 'block';
+                    if (pool.length > 1) nextBtn.style.display = 'inline-block';
+                });
+                optsElem.appendChild(btn);
+            });
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            qIndex = (qIndex + 1) % pool.length;
+            renderQuiz();
+        });
+        
+        renderQuiz();
+    });
+});

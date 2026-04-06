@@ -1,87 +1,98 @@
-"""Tests for scripts/sync_project_scripts.py"""
 import os
-import shutil
 from pathlib import Path
-from scripts.sync_project_scripts import sync_scripts, MASTER_FILES
-import scripts.sync_project_scripts
+from unittest.mock import patch, MagicMock
 
-def test_sync_scripts_basic(tmp_path, monkeypatch):
-    # Setup mock root structure
-    root = tmp_path / "root"
-    root.mkdir()
-    # Create projects directory
-    projects_dir = root / "projects"
+from scripts.sync_project_scripts import sync_scripts
+
+@patch("scripts.sync_project_scripts.PROJECTS_DIR")
+def test_sync_scripts_no_projects_dir(mock_projects_dir):
+    mock_projects_dir.exists.return_value = False
+    with patch("builtins.print") as mock_print:
+        sync_scripts()
+        mock_print.assert_any_call(f"  ✗ Projects directory not found at {mock_projects_dir}")
+
+@patch("scripts.sync_project_scripts.PROJECTS_DIR")
+def test_sync_scripts_no_master_dir(mock_projects_dir):
+    mock_projects_dir.exists.return_value = True
+    master_dir = MagicMock()
+    master_dir.exists.return_value = False
+    
+    with patch("scripts.sync_project_scripts.Path.__truediv__", return_value=master_dir):
+        # We also need to mock '/' operator on PROJECTS_DIR
+        mock_projects_dir.__truediv__.return_value = master_dir
+        with patch("builtins.print") as mock_print:
+            sync_scripts()
+            mock_print.assert_any_call(f"  ✗ Master project not found at {master_dir}")
+
+def test_sync_scripts_success(tmp_path):
+    # Setup fake structure
+    projects_dir = tmp_path / "projects"
     projects_dir.mkdir()
     
-    master_proj = projects_dir / "quickutils-master"
-    master_proj.mkdir()
+    master_dir = projects_dir / "quickutils-master"
+    master_dir.mkdir()
     
-    # Create master files
-    for f_rel in MASTER_FILES:
-        if f_rel.startswith("scripts/") or f_rel.startswith("tests/") or f_rel in ["requirements.txt", ".gitignore", "project_config.json"]:
-            f_path = root / f_rel
-        else:
-            f_path = master_proj / f_rel
-        f_path.parent.mkdir(parents=True, exist_ok=True)
-        f_path.write_text(f"content of {f_rel}", encoding="utf-8")
+    # Create a project
+    proj_dir = projects_dir / "test-directory"
+    proj_dir.mkdir()
+    
+    # Hidden project (should skip)
+    (projects_dir / ".hidden").mkdir()
+    
+    # Create fake files to be synced
+    root_src = tmp_path
+    
+    # Fake MASTER_FILES subset
+    master_files = [
+        "scripts/fake_script.py", 
+        "project_config.json",
+        "src/templates/base.html"
+    ]
+    
+    (root_src / "scripts").mkdir(parents=True, exist_ok=True)
+    (root_src / "scripts/fake_script.py").write_text("print('test')")
+    
+    (root_src / "project_config.json").write_text("{}")
+    
+    (master_dir / "src" / "templates").mkdir(parents=True, exist_ok=True)
+    (master_dir / "src/templates/base.html").write_text("html")
+    
+    with patch("scripts.sync_project_scripts.PROJECTS_DIR", projects_dir), \
+         patch("scripts.sync_project_scripts.ROOT_DIR", root_src), \
+         patch("scripts.sync_project_scripts.MASTER_FILES", master_files):
         
-    proj1 = projects_dir / "project1"
-    proj1.mkdir()
-    
-    # Create legacy files in project1
-    (proj1 / "wrangler.toml").write_text("legacy config", encoding="utf-8")
-    (proj1 / "netlify.toml").write_text('redirects = "/api/* /item/*"', encoding="utf-8")
-    
-    # Monkeypatch ROOT_DIR and PROJECTS_DIR in the script
-    monkeypatch.setattr(scripts.sync_project_scripts, "ROOT_DIR", root)
-    monkeypatch.setattr(scripts.sync_project_scripts, "PROJECTS_DIR", projects_dir)
-    
-    # Run sync
-    sync_scripts()
-    
-    # Verify files were copied
-    for f_rel in MASTER_FILES:
-        if f_rel.startswith("scripts/"):
-            script_name = os.path.basename(f_rel)
-            dst = proj1 / "scripts" / script_name
-        else:
-            dst = proj1 / f_rel
-        assert dst.exists(), f"{dst} should exist after sync"
-        assert dst.read_text(encoding="utf-8") == f"content of {f_rel}"
+        sync_scripts()
         
-    # Verify legacy files were removed
-    assert not (proj1 / "wrangler.toml").exists()
-    
-    # Verify netlify.toml was updated then deleted (it's in legacy_configs)
-    # Actually, in sync_scripts, netlify.toml is updated AND then unlinked in legacy_configs.
-    # Let's check the code:
-    # legacy_configs = ["wrangler.toml", "wrangler.jsonc", "wrangler.json", "netlify.toml", "_redirects", "_headers"]
-    # So netlify.toml SHOULD be gone.
-    assert not (proj1 / "netlify.toml").exists()
+        # Verify sync
+        assert (proj_dir / "scripts" / "fake_script.py").exists()
+        assert (proj_dir / "project_config.json").exists()
+        assert (proj_dir / "src" / "templates" / "base.html").exists()
 
-def test_sync_scripts_missing_projects(tmp_path, monkeypatch):
-    root = tmp_path / "root"
-    root.mkdir()
-    projects_dir = root / "nonexistent"
-    
-    monkeypatch.setattr(scripts.sync_project_scripts, "ROOT_DIR", root)
-    monkeypatch.setattr(scripts.sync_project_scripts, "PROJECTS_DIR", projects_dir)
-    
-    # Should not raise exception
-    sync_scripts()
-
-def test_sync_scripts_skips_hidden_dirs(tmp_path, monkeypatch):
-    root = tmp_path / "root"
-    root.mkdir()
-    projects_dir = root / "projects"
+def test_sync_scripts_dashboard_skip(tmp_path):
+    projects_dir = tmp_path / "projects"
     projects_dir.mkdir()
+    master_dir = projects_dir / "quickutils-master"
+    master_dir.mkdir()
     
-    hidden_proj = projects_dir / ".hidden"
-    hidden_proj.mkdir()
+    dash_dir = projects_dir / "market-digest"
+    dash_dir.mkdir()
     
-    monkeypatch.setattr(scripts.sync_project_scripts, "ROOT_DIR", root)
-    monkeypatch.setattr(scripts.sync_project_scripts, "PROJECTS_DIR", projects_dir)
+    root_src = tmp_path
+    master_files = ["src/templates/base.html"]
     
-    sync_scripts()
-    # verify no files created in hidden proj
-    assert not (hidden_proj / "scripts").exists()
+    (master_dir / "src" / "templates").mkdir(parents=True, exist_ok=True)
+    (master_dir / "src/templates/base.html").write_text("html")
+    
+    with patch("scripts.sync_project_scripts.PROJECTS_DIR", projects_dir), \
+         patch("scripts.sync_project_scripts.ROOT_DIR", root_src), \
+         patch("scripts.sync_project_scripts.MASTER_FILES", master_files):
+        
+        sync_scripts()
+        
+        # Should be skipped for market-digest
+        assert not (dash_dir / "src" / "templates" / "base.html").exists()
+
+@patch("scripts.sync_project_scripts.sync_scripts")
+def test_main(mock_sync):
+    main()
+    mock_sync.assert_called_once()

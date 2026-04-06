@@ -100,5 +100,75 @@
         "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
         "destination_dir": "dist",
         "custom_domain": "prices.quickutils.top"
+    },
+    "typing-test": {
+        "directory": "projects/typing-test",
+        "repo_name": "typing-test",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "typing.quickutils.top"
+    },
+    "regex-playground": {
+        "directory": "projects/regex-playground",
+        "repo_name": "regex-playground",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "regex.quickutils.top"
+    },
+    "pomodoro-timer": {
+        "directory": "projects/pomodoro-timer",
+        "repo_name": "pomodoro-timer",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "focus.quickutils.top"
+    },
+    "data-converter": {
+        "directory": "projects/data-converter",
+        "repo_name": "data-converter",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "convert.quickutils.top"
+    },
+    "budget-tracker": {
+        "directory": "projects/budget-tracker",
+        "repo_name": "budget-tracker",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "budget.quickutils.top"
+    },
+    "habit-tracker": {
+        "directory": "projects/habit-tracker",
+        "repo_name": "habit-tracker",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "habits.quickutils.top"
+    },
+    "gradient-studio": {
+        "directory": "projects/gradient-studio",
+        "repo_name": "gradient-studio",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "gradients.quickutils.top"
+    },
+    "ambient-mixer": {
+        "directory": "projects/ambient-mixer",
+        "repo_name": "ambient-mixer",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "ambient.quickutils.top"
+    },
+    "periodic-table": {
+        "directory": "projects/periodic-table",
+        "repo_name": "periodic-table",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "elements.quickutils.top"
+    },
+    "pixel-art": {
+        "directory": "projects/pixel-art",
+        "repo_name": "pixel-art",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "pixelart.quickutils.top"
     }
 }

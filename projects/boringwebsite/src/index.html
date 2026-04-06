@@ -135,6 +135,7 @@
       </div>
       <!-- Share Buttons -->
       <div style="text-align:center; margin-top: var(--space-lg); display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap;">
+        <button id="shareQuoteImage" class="btn btn-primary" style="font-size: 0.9rem;">📸 Save as Image</button>
         <a href="https://pinterest.com/pin/create/button/?url=https%3A%2F%2Fquickutils.top&description=Daily+Quotes+and+Free+Tools" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size: 0.9rem;">📌 Pin It</a>
         <a href="https://api.whatsapp.com/send?text=Check%20out%20QuickUtils%20-%20Daily%20Quotes%20%26%20Free%20Tools%20https%3A%2F%2Fquickutils.top" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size: 0.9rem;">💬 WhatsApp</a>
         <button class="btn btn-ghost" style="font-size: 0.9rem;" onclick="navigator.clipboard.writeText('https://quickutils.top');this.textContent='✅ Copied!';setTimeout(()=>this.textContent='🔗 Copy Link',2000)">🔗 Copy Link</button>
@@ -209,7 +210,69 @@
           <span class="btn btn-ghost">Visit Site →</span>
         </a>
       </div>
-    </div>
+      <!-- Newly Added 10 Websites -->
+      <div class="tools-grid" style="margin-top:2rem">
+        <a href="https://typing.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">⌨️</div>
+          <h3>Typing Test</h3>
+          <p>Measure your typing speed and accuracy with real-time feedback and daily challenges.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://regex.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🔍</div>
+          <h3>Regex Playground</h3>
+          <p>Test, debug, and learn regular expressions with instant visual feedback and cheat sheets.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://focus.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🍅</div>
+          <h3>Focus Timer</h3>
+          <p>Boost your productivity with a Pomodoro timer and built-in ambient sounds.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://convert.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🔄</div>
+          <h3>Data Converter</h3>
+          <p>Securely convert JSON, YAML, and CSV formats entirely inside your browser.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://budget.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">💰</div>
+          <h3>Budget Tracker</h3>
+          <p>Track your personal finances and visualize expenses locally offline.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://habits.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">📅</div>
+          <h3>Habit Tracker</h3>
+          <p>Build better habits with streak tracking and visual heatmaps.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://gradients.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🎨</div>
+          <h3>Gradient Studio</h3>
+          <p>Design stunning CSS and Tailwind gradients and copy the code instantly.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://ambient.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🎧</div>
+          <h3>Ambient Mixer</h3>
+          <p>Mix relaxing nature sounds and white noise for study, sleep, or focus.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://elements.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🧪</div>
+          <h3>Periodic Table</h3>
+          <p>Interactive table of elements with detailed properties and electron configurations.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+        <a href="https://pixelart.quickutils.top" class="glass-card tool-card animate-on-scroll" target="_blank">
+          <div class="tool-icon">🖌️</div>
+          <h3>Pixel Art</h3>
+          <p>Create pixel art directly in your browser with our fast and simple editor.</p>
+          <span class="btn btn-ghost">Visit Site →</span>
+        </a>
+      </div>
   </section>
 
   <!-- Blog Section -->
@@ -376,6 +439,17 @@
           <a href="https://prompts.quickutils.top">Prompts</a>
           <a href="https://prices.quickutils.top">Price Compare</a>
           <a href="https://market.quickutils.top">Market Digest</a>
+          <!-- Added New Network Links -->
+          <a href="https://typing.quickutils.top">Typing</a>
+          <a href="https://regex.quickutils.top">Regex</a>
+          <a href="https://focus.quickutils.top">Focus</a>
+          <a href="https://convert.quickutils.top">Convert</a>
+          <a href="https://budget.quickutils.top">Budget</a>
+          <a href="https://habits.quickutils.top">Habits</a>
+          <a href="https://gradients.quickutils.top">Gradients</a>
+          <a href="https://ambient.quickutils.top">Ambient</a>
+          <a href="https://elements.quickutils.top">Elements</a>
+          <a href="https://pixelart.quickutils.top">Pixel Art</a>
         </div>
         <div class="footer-col">
           <h4>Legal & Social</h4>
@@ -399,6 +473,35 @@
   <!-- Scripts -->
   <script src="js/app.js"></script>
   <script src="js/cookie-consent.js"></script>
+  <!-- Ko-fi Widget -->
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('dayatin', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support Us',
+      'floating-chat.donateButton.background-color': '#ff5e5b',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        document.getElementById('shareQuoteImage')?.addEventListener('click', function() {
+            const card = document.querySelector('.quote-card');
+            const originalBg = card.style.background;
+            // Force solid background for capture in case it's transparent/glassmorphism
+            card.style.background = '#1a1a1a'; 
+            card.style.padding = '3rem';
+            html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
+                let a = document.createElement('a');
+                a.download = 'quote.png';
+                a.href = canvas.toDataURL('image/png');
+                a.click();
+                // Restore styles
+                card.style.background = originalBg;
+                card.style.padding = '';
+            });
+        });
+    </script>
 </body>
 
 </html>

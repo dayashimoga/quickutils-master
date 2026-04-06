@@ -20,17 +20,17 @@
     <!-- Pinterest Verification Placeholder -->
     <meta name="p:domain_verify" content="YOUR_PINTEREST_VERIFICATION_CODE_HERE">
     
-    <!-- Google Analytics 4 Placeholder -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MARKET001"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
+      gtag('config', 'G-MARKET001');
     </script>
 
-    <!-- Google AdSense Placeholder -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -112,6 +112,16 @@
             <!-- Right Column: Charts & News -->
             <div class="dashboard-column charts-col">
                 
+                <!-- Watchlist -->
+                <section class="info-card" id="watchlist-section" style="display: none;">
+                     <div class="card-header">
+                        <h2>⭐ My Watchlist</h2>
+                    </div>
+                    <div class="comparison-grid" id="watchlistGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+
                 <!-- Comparison Bar (1D, 1W, 1M) -->
                 <section class="info-card">
                      <div class="card-header">
@@ -156,8 +166,8 @@
                 <section class="ads-banner mt-4">
                      <ins class="adsbygoogle"
                           style="display:block"
-                          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                          data-ad-slot="XXXXXXXXXX"
+                          data-ad-client="ca-pub-5193703345853377"
+                          data-ad-slot="2246027256"
                           data-ad-format="auto"
                           data-full-width-responsive="true"></ins>
                      <script>
@@ -176,12 +186,23 @@
             </div>
             <div class="footer-links">
                 &copy; 2026 Market Digest
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
             </div>
         </div>
     </footer>
 
     <script src="script.js"></script>
+    <script src="cookie-consent.js"></script>
+  <!-- Ko-fi Widget -->
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('dayatin', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support Us',
+      'floating-chat.donateButton.background-color': '#ff5e5b',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
 </body>
 </html>
