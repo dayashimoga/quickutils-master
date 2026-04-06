@@ -85,11 +85,14 @@ jobs:
                     echo "Domain $domain already in state."
                   fi
                 else
-                  echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Terraform will create it."
+                  echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Removing from state if it exists."
+                  terraform state rm "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1 || true
                 fi
               fi
             else
-              echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Terraform will create it."
+              echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Removing from state if it exists to force recreate."
+              terraform state rm "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1 || true
+              terraform state rm "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1 || true
             fi
           done
           
