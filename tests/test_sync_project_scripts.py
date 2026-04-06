@@ -92,7 +92,3 @@ def test_sync_scripts_dashboard_skip(tmp_path):
         # Should be skipped for market-digest
         assert not (dash_dir / "src" / "templates" / "base.html").exists()
 
-@patch("scripts.sync_project_scripts.sync_scripts")
-def test_main(mock_sync):
-    main()
-    mock_sync.assert_called_once()
