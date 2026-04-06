@@ -17,7 +17,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
     type = "github"
     config {
       owner                         = var.github_username
-      repo_name                     = lookup(each.value, "repo_name", "quickutils-master")
+      repo_name                     = "quickutils-master"
       production_branch             = "main"
       pr_comments_enabled           = true
       deployments_enabled           = true
