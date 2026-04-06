@@ -17,7 +17,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
     type = "github"
     config {
       owner                         = var.github_username
-      repo_name                     = each.value.repo_name
+      repo_name                     = lookup(each.value, "repo_name", "quickutils-master")
       production_branch             = "main"
       pr_comments_enabled           = true
       deployments_enabled           = true
@@ -31,7 +31,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   build_config {
     build_command       = lookup(each.value, "build_command", "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py")
     destination_dir     = lookup(each.value, "destination_dir", "dist")
-    root_dir            = "" # This might need adjustment depending on mono-repo setup vs individual repos
+    root_dir            = lookup(each.value, "root_dir", "")
   }
 
   deployment_configs {
