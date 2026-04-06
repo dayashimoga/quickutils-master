@@ -1,0 +1,26 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\daya\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: J:\quickutils\quickutils-master
+configfile: pytest.ini
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 1 item
+
+tests/test_coverage_all.py::test_generate_pins_main_block FAILED         [100%]
+
+================================== FAILURES ===================================
+________________________ test_generate_pins_main_block ________________________
+
+    def test_generate_pins_main_block():
+        import sys
+        import subprocess
+        result = subprocess.run([sys.executable, "scripts/generate_pins.py"], capture_output=True)
+>       assert result.returncode == 0
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\daya\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\python.exe', 'scripts/generate_pins.py'], returncode=1, stdout=b'', stderr=b'Traceback (most recent call last):\r\n  File "J:\\quickutils\\quickutils-master\\scripts\\generate_pins.py", line 16, in <module>\r\n    generate_pinterest_images()\r\n  File "J:\\quickutils\\quickutils-master\\scripts\\generate_pins.py", line 12, in generate_pinterest_images\r\n    print("\\U0001f3a8 Generating Pinterest optimized images (placeholder)...")\r\n  File "C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\encodings\\cp1252.py", line 19, in encode\r\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\r\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nUnicodeEncodeError: \'charmap\' codec can\'t encode character \'\\U0001f3a8\' in position 0: character maps to <undefined>\r\n').returncode
+
+tests\test_coverage_all.py:279: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_coverage_all.py::test_generate_pins_main_block - assert 1 == 0
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 0.24s ==============================

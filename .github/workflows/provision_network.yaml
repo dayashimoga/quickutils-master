@@ -30,6 +30,7 @@ jobs:
         run: |
           # Step 1: Prep project files locally
           python scripts/sync_project_scripts.py
+          python scripts/generate_projects_json.py
           
           # Configure Git for syncing
           git config --global user.email "bot@quickutils.top"

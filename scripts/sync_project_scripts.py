@@ -70,8 +70,13 @@ def sync_scripts():
         if project.name.startswith("."):
             continue
 
-        # Skip dashboard projects for template sync (they have their own designs)
-        DASHBOARD_PROJECTS = ["market-digest", "price-comparator", "boringwebsite", "dailyfacts"]
+        # Skip projects with custom HTML designs (not using Jinja2 template system)
+        DASHBOARD_PROJECTS = [
+            "market-digest", "price-comparator", "boringwebsite", "dailyfacts",
+            "typing-test", "regex-playground", "pomodoro-timer", "data-converter",
+            "budget-tracker", "habit-tracker", "gradient-studio", "ambient-mixer",
+            "periodic-table", "pixel-art", "music-maker",
+        ]
         
         print(f"  → Syncing to {project.name}...")
         for file_rel_path in MASTER_FILES:

@@ -1,101 +1,75 @@
 {
-    "apistatus": {
+    "apistatus-directory": {
         "directory": "projects/apistatus-directory",
         "repo_name": "apistatus-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "apistatus-directory",
-        "custom_domain": "apistatus.quickutils.top"
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "apistatus.quickutils.top",
+        "root_dir": "projects/apistatus-directory"
     },
-    "boilerplates": {
+    "boilerplates-directory": {
         "directory": "projects/boilerplates-directory",
         "repo_name": "boilerplates-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "boilerplates-directory",
-        "custom_domain": "boilerplates.quickutils.top"
-    },
-    "cheatsheets": {
-        "directory": "projects/cheatsheets-directory",
-        "repo_name": "cheatsheets-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "cheatsheets-directory",
-        "custom_domain": "cheatsheets.quickutils.top"
-    },
-    "dailyfacts": {
-        "directory": "projects/dailyfacts",
-        "repo_name": "dailyfacts",
-        "build_command": "npm install && npm run build",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
         "destination_dir": "dist",
-        "custom_domain": "facts.quickutils.top",
-        "root_dir": "projects/dailyfacts"
-    },
-    "datasets": {
-        "directory": "projects/datasets-directory",
-        "repo_name": "datasets-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "datasets-directory",
-        "custom_domain": "datasets.quickutils.top"
-    },
-    "jobs": {
-        "directory": "projects/jobs-directory",
-        "repo_name": "jobs-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "jobs-directory",
-        "custom_domain": "jobs.quickutils.top"
-    },
-    "opensource": {
-        "directory": "projects/opensource-directory",
-        "repo_name": "opensource-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "opensource-directory",
-        "custom_domain": "opensource.quickutils.top"
-    },
-    "prompts": {
-        "directory": "projects/prompts-directory",
-        "repo_name": "prompts-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "prompts-directory",
-        "custom_domain": "prompts.quickutils.top"
-    },
-    "tools": {
-        "directory": "projects/tools-directory",
-        "repo_name": "tools-directory",
-        "src_dir": "src",
-        "data_dir": "data",
-        "project_type": "tools-directory",
-        "custom_domain": "tools.quickutils.top"
+        "custom_domain": "boilerplates.quickutils.top",
+        "root_dir": "projects/boilerplates-directory"
     },
     "boringwebsite": {
         "directory": "projects/boringwebsite",
         "repo_name": "boringwebsite",
-        "build_command": "npm install && npm run build",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
         "destination_dir": "dist",
         "custom_domain": "quickutils.top",
         "root_dir": "projects/boringwebsite"
     },
-    "master": {
-        "directory": "projects/quickutils-master",
-        "repo_name": "quickutils-master",
-        "src_dir": "projects/quickutils-master/src",
-        "data_dir": "projects/quickutils-master/data",
-        "project_type": "quickutils-master",
-        "dist_dir": "dist",
+    "cheatsheets-directory": {
+        "directory": "projects/cheatsheets-directory",
+        "repo_name": "cheatsheets-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
         "destination_dir": "dist",
-        "custom_domain": "directory.quickutils.top"
+        "custom_domain": "cheatsheets.quickutils.top",
+        "root_dir": "projects/cheatsheets-directory"
+    },
+    "dailyfacts": {
+        "directory": "projects/dailyfacts",
+        "repo_name": "dailyfacts",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "facts.quickutils.top",
+        "root_dir": "projects/dailyfacts"
+    },
+    "datasets-directory": {
+        "directory": "projects/datasets-directory",
+        "repo_name": "datasets-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "datasets.quickutils.top",
+        "root_dir": "projects/datasets-directory"
+    },
+    "jobs-directory": {
+        "directory": "projects/jobs-directory",
+        "repo_name": "jobs-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "jobs.quickutils.top",
+        "root_dir": "projects/jobs-directory"
     },
     "market-digest": {
         "directory": "projects/market-digest",
         "repo_name": "market-digest",
-        "build_command": "pip install -r requirements.txt && python fetch_data.py && mkdir -p dist && cp index.html style.css script.js data.json dist/",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
         "destination_dir": "dist",
         "custom_domain": "market.quickutils.top",
         "root_dir": "projects/market-digest"
+    },
+    "opensource-directory": {
+        "directory": "projects/opensource-directory",
+        "repo_name": "opensource-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "opensource.quickutils.top",
+        "root_dir": "projects/opensource-directory"
     },
     "price-comparator": {
         "directory": "projects/price-comparator",
@@ -104,6 +78,30 @@
         "destination_dir": "dist",
         "custom_domain": "prices.quickutils.top",
         "root_dir": "projects/price-comparator"
+    },
+    "prompts-directory": {
+        "directory": "projects/prompts-directory",
+        "repo_name": "prompts-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "prompts.quickutils.top",
+        "root_dir": "projects/prompts-directory"
+    },
+    "quickutils-master": {
+        "directory": "projects/quickutils-master",
+        "repo_name": "quickutils-master",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "directory.quickutils.top",
+        "root_dir": "projects/quickutils-master"
+    },
+    "tools-directory": {
+        "directory": "projects/tools-directory",
+        "repo_name": "tools-directory",
+        "build_command": "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py",
+        "destination_dir": "dist",
+        "custom_domain": "tools.quickutils.top",
+        "root_dir": "projects/tools-directory"
     },
     "typing-test": {
         "directory": "projects/typing-test",
@@ -184,5 +182,13 @@
         "destination_dir": "dist",
         "custom_domain": "pixelart.quickutils.top",
         "root_dir": "projects/pixel-art"
+    },
+    "music-maker": {
+        "directory": "projects/music-maker",
+        "repo_name": "music-maker",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "music.quickutils.top",
+        "root_dir": "projects/music-maker"
     }
 }

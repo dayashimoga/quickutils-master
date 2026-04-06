@@ -13,6 +13,10 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   name              = each.value.repo_name
   production_branch = "main"
 
+  lifecycle {
+    ignore_changes = [source]
+  }
+
   source {
     type = "github"
     config {

@@ -78,6 +78,11 @@
 </head>
 
 <body>
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: transparent; z-index: 10000;">
+        <div class="reading-progress-bar" id="reading-progress-bar" style="height: 100%; background: var(--accent, #6366f1); width: 0%; transition: width 0.1s;"></div>
+    </div>
+
     <!-- Skip Link for Accessibility -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -99,6 +104,7 @@
                 <a href="/" class="nav-link">Home</a>
                 <a href="/#categories" class="nav-link">Categories</a>
                 <a href="https://quickutils.top" class="nav-link" target="_blank" rel="noopener">QuickUtils</a>
+                <a href="https://ko-fi.com/dayatin" class="nav-link" target="_blank" rel="noopener" style="color: #ff5e5b; font-weight: 600;">☕ Support Us</a>
                 <a href="https://yourname.gumroad.com/l/submit" class="nav-link nav-cta" id="submit-tool-link">
                     Submit a Tool
                 </a>
@@ -140,6 +146,7 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/#categories">All Categories</a></li>
                         <li><a href="/sitemap.xml">Sitemap</a></li>
+                        <li><a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener">☕ Support Our Work</a></li>
                     </ul>
                 </div>
 
@@ -284,6 +291,9 @@
     </div>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
+    <!-- Ko-fi Widget -->
+    {% include 'kofi_widget.html' ignore missing %}
+
     <script src="/js/main.js"></script>
     {% block scripts_extra %}{% endblock %}
     <script>
@@ -318,6 +328,15 @@
                     backToTop.style.display = 'flex';
                 } else {
                     backToTop.style.display = 'none';
+                }
+                
+                // Reading progress bar logic
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+                const progressBar = document.getElementById('reading-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = scrolled + '%';
                 }
             });
 

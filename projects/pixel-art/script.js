@@ -97,9 +97,12 @@ function fill(startX, startY, targetColor, replacementColor) {
 }
 
 // Mouse events
+let lastPos = null;
+
 canvas.addEventListener('mousedown', (e) => {
     isDrawing = true;
     const { x, y } = getCoords(e);
+    lastPos = { x, y };
     draw(x, y);
 });
 
@@ -107,10 +110,37 @@ canvas.addEventListener('mousemove', (e) => {
     if (!isDrawing) return;
     if (currentTool === 'fill') return; // Don't continuously fill on drag
     const { x, y } = getCoords(e);
-    draw(x, y);
+    if (lastPos && (lastPos.x !== x || lastPos.y !== y)) {
+        drawLine(lastPos.x, lastPos.y, x, y);
+    }
+    lastPos = { x, y };
 });
 
-window.addEventListener('mouseup', () => isDrawing = false);
+window.addEventListener('mouseup', () => {
+    isDrawing = false;
+    lastPos = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+    isDrawing = false;
+    lastPos = null;
+});
+
+function drawLine(x0, y0, x1, y1) {
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+        draw(x0, y0);
+        if (x0 === x1 && y0 === y1) break;
+        const e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+    }
+}
 
 // Tools
 $$('.tool-btn').forEach(btn => {

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Maker — Create Beats & Melodies Online | QuickUtils</title>
+    <meta name="description" content="Free professional online music maker. Create beats with drum machine, play virtual piano, design synth sounds, add effects, and export your tracks.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://music.quickutils.top">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <meta property="og:title" content="Music Maker — Create Beats & Melodies Online">
+    <meta property="og:description" content="Free browser-based music creation studio with drum machine, synth, piano, effects, and recording.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://music.quickutils.top">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-inner">
+            <a href="/" class="brand">🎵 <span>MusicMaker</span></a>
+            <div class="nav-links">
+                <button class="btn btn-sm btn-record" id="recordBtn" title="Record">⏺ Rec</button>
+                <button class="btn btn-sm btn-export" id="exportBtn" title="Export WAV">💾 Export</button>
+                <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+                <a href="https://quickutils.top" target="_blank" rel="noopener">QuickUtils</a>
+            </div>
+            <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
+        </div>
+    </nav>
+
+    <main class="studio-layout">
+        <!-- Transport Bar -->
+        <section class="transport-bar glass-panel">
+            <div class="transport-controls">
+                <button class="transport-btn" id="playBtn" title="Play (Space)">▶</button>
+                <button class="transport-btn" id="stopBtn" title="Stop">⏹</button>
+            </div>
+            <div class="tempo-control">
+                <label>BPM</label>
+                <input type="range" id="tempoSlider" min="40" max="240" value="120" class="slider">
+                <input type="number" id="tempoInput" min="40" max="240" value="120" class="tempo-num">
+            </div>
+            <div class="master-volume">
+                <label>🔊 Master</label>
+                <input type="range" id="masterVolume" min="0" max="100" value="75" class="slider">
+            </div>
+            <div class="swing-control">
+                <label>Swing</label>
+                <input type="range" id="swingSlider" min="0" max="100" value="0" class="slider">
+                <span id="swingReadout">0%</span>
+            </div>
+            <div class="transport-info">
+                <span class="beat-display" id="beatDisplay">1.1</span>
+                <span class="time-display" id="timeDisplay">0:00</span>
+            </div>
+        </section>
+
+        <!-- Main Workspace -->
+        <div class="workspace">
+            <!-- Step Sequencer -->
+            <section class="sequencer-panel glass-panel" id="sequencerPanel">
+                <div class="panel-header">
+                    <h2>🥁 Drum Machine</h2>
+                    <div class="panel-actions">
+                        <select id="drumPresetSelect" class="select-sm" title="Load Preset">
+                            <option value="" disabled selected>Load Preset...</option>
+                            <option value="house">House</option>
+                            <option value="hiphop">Hip Hop</option>
+                            <option value="techno">Techno</option>
+                        </select>
+                        <select id="patternSelect" class="select-sm">
+                            <option value="0">Pattern 1</option>
+                            <option value="1">Pattern 2</option>
+                            <option value="2">Pattern 3</option>
+                            <option value="3">Pattern 4</option>
+                        </select>
+                        <button class="btn btn-sm" id="clearPattern" title="Clear Pattern">🗑️</button>
+                        <button class="btn btn-sm" id="randomPattern" title="Random Pattern">🎲</button>
+                    </div>
+                </div>
+                <div class="sequencer-grid" id="sequencerGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- Piano + Synth -->
+            <section class="synth-panel glass-panel" id="synthPanel">
+                <div class="panel-header">
+                    <h2>🎹 Synthesizer</h2>
+                    <div class="panel-actions">
+                        <select id="synthPresetSelect" class="select-sm" title="Load Synth Patch">
+                            <option value="" disabled selected>Preset...</option>
+                            <option value="default">Default</option>
+                            <option value="fatbass">Fat Bass</option>
+                            <option value="leady">Lead</option>
+                            <option value="pad">Pad</option>
+                            <option value="pluck">Pluck</option>
+                        </select>
+                        <select id="octaveSelect" class="select-sm">
+                            <option value="2">Octave 2</option>
+                            <option value="3">Octave 3</option>
+                            <option value="4" selected>Octave 4</option>
+                            <option value="5">Octave 5</option>
+                            <option value="6">Octave 6</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="synth-controls">
+                    <div class="control-group">
+                        <label>Waveform</label>
+                        <div class="wave-select" id="waveSelect">
+                            <button class="wave-btn active" data-wave="sine" title="Sine">∿</button>
+                            <button class="wave-btn" data-wave="square" title="Square">⊓</button>
+                            <button class="wave-btn" data-wave="sawtooth" title="Saw">⩘</button>
+                            <button class="wave-btn" data-wave="triangle" title="Triangle">△</button>
+                        </div>
+                    </div>
+                    <div class="knob-row">
+                        <div class="knob-group">
+                            <label>Attack</label>
+                            <input type="range" id="attackKnob" min="0" max="2000" value="10" class="knob-slider">
+                            <span class="knob-val" id="attackVal">10ms</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Decay</label>
+                            <input type="range" id="decayKnob" min="0" max="2000" value="200" class="knob-slider">
+                            <span class="knob-val" id="decayVal">200ms</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Sustain</label>
+                            <input type="range" id="sustainKnob" min="0" max="100" value="60" class="knob-slider">
+                            <span class="knob-val" id="sustainVal">60%</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Release</label>
+                            <input type="range" id="releaseKnob" min="0" max="3000" value="300" class="knob-slider">
+                            <span class="knob-val" id="releaseVal">300ms</span>
+                        </div>
+                    </div>
+                    <div class="knob-row">
+                        <div class="knob-group">
+                            <label>Filter</label>
+                            <input type="range" id="filterKnob" min="100" max="10000" value="5000" class="knob-slider">
+                            <span class="knob-val" id="filterVal">5kHz</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Resonance</label>
+                            <input type="range" id="resonanceKnob" min="0" max="30" value="1" class="knob-slider">
+                            <span class="knob-val" id="resonanceVal">1</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Detune</label>
+                            <input type="range" id="detuneKnob" min="-100" max="100" value="0" class="knob-slider">
+                            <span class="knob-val" id="detuneVal">0¢</span>
+                        </div>
+                        <div class="knob-group">
+                            <label>Volume</label>
+                            <input type="range" id="synthVolume" min="0" max="100" value="70" class="knob-slider">
+                            <span class="knob-val" id="synthVolVal">70%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="piano-container" id="pianoContainer">
+                    <div class="piano-keyboard" id="pianoKeyboard">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Effects Rack -->
+            <section class="effects-panel glass-panel" id="effectsPanel">
+                <div class="panel-header">
+                    <h2>🎛️ Effects</h2>
+                </div>
+                <div class="effects-rack">
+                    <div class="effect-unit">
+                        <div class="effect-header">
+                            <span>Reverb</span>
+                            <label class="toggle-switch"><input type="checkbox" id="reverbToggle"><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="effect-controls">
+                            <div class="knob-group-sm">
+                                <label>Decay</label>
+                                <input type="range" id="reverbDecay" min="1" max="80" value="20" class="knob-slider">
+                            </div>
+                            <div class="knob-group-sm">
+                                <label>Mix</label>
+                                <input type="range" id="reverbMix" min="0" max="100" value="30" class="knob-slider">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="effect-unit">
+                        <div class="effect-header">
+                            <span>Delay</span>
+                            <label class="toggle-switch"><input type="checkbox" id="delayToggle"><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="effect-controls">
+                            <div class="knob-group-sm">
+                                <label>Time</label>
+                                <input type="range" id="delayTime" min="50" max="1000" value="300" class="knob-slider">
+                            </div>
+                            <div class="knob-group-sm">
+                                <label>Feedback</label>
+                                <input type="range" id="delayFeedback" min="0" max="90" value="40" class="knob-slider">
+                            </div>
+                            <div class="knob-group-sm">
+                                <label>Mix</label>
+                                <input type="range" id="delayMix" min="0" max="100" value="25" class="knob-slider">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="effect-unit">
+                        <div class="effect-header">
+                            <span>Distortion</span>
+                            <label class="toggle-switch"><input type="checkbox" id="distortionToggle"><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="effect-controls">
+                            <div class="knob-group-sm">
+                                <label>Drive</label>
+                                <input type="range" id="distortionDrive" min="0" max="100" value="20" class="knob-slider">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="effect-unit">
+                        <div class="effect-header">
+                            <span>Compressor</span>
+                            <label class="toggle-switch"><input type="checkbox" id="compressorToggle" checked><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="effect-controls">
+                            <div class="knob-group-sm">
+                                <label>Thresh</label>
+                                <input type="range" id="compThreshold" min="-60" max="0" value="-24" class="knob-slider">
+                            </div>
+                            <div class="knob-group-sm">
+                                <label>Ratio</label>
+                                <input type="range" id="compRatio" min="1" max="20" value="4" class="knob-slider">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visualizer -->
+            <section class="visualizer-panel glass-panel">
+                <div class="panel-header">
+                    <h2>📊 Visualizer</h2>
+                    <div class="panel-actions">
+                        <select id="vizMode" class="select-sm">
+                            <option value="waveform">Waveform</option>
+                            <option value="frequency">Spectrum</option>
+                            <option value="circular">Circular</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="visualizer" width="800" height="200"></canvas>
+            </section>
+        </div>
+    </main>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal" style="display:none">
+        <div class="modal glass-panel">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcut-grid">
+                <div><kbd>Space</kbd> Play / Pause</div>
+                <div><kbd>Esc</kbd> Stop</div>
+                <div><kbd>A-L</kbd> Piano keys (white)</div>
+                <div><kbd>W,E,T,Y,U</kbd> Piano keys (black)</div>
+                <div><kbd>Z / X</kbd> Octave down / up</div>
+                <div><kbd>R</kbd> Toggle recording</div>
+                <div><kbd>?</kbd> This help</div>
+            </div>
+            <button class="btn btn-primary" onclick="document.getElementById('shortcutsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-brand"><span>🎵 Music Maker</span><p>Part of the <a href="https://quickutils.top">QuickUtils</a> network.</p></div>
+            <div class="footer-links-grid">
+                <div><h4>QuickUtils Network</h4>
+                    <a href="https://quickutils.top">Home</a>
+                    <a href="https://tools.quickutils.top">Tools</a>
+                    <a href="https://facts.quickutils.top">Daily Facts</a>
+                    <a href="https://typing.quickutils.top">Typing Test</a>
+                    <a href="https://focus.quickutils.top">Pomodoro</a>
+                </div>
+                <div><h4>Legal</h4>
+                    <a href="https://quickutils.top/privacy.html">Privacy</a>
+                    <a href="https://quickutils.top/terms.html">Terms</a>
+                    <a href="https://ko-fi.com/dayatin" target="_blank">☕ Support Us</a>
+                </div>
+            </div>
+            <p class="copyright">© 2026 QuickUtils. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>kofiWidgetOverlay.draw('dayatin',{'type':'floating-chat','floating-chat.donateButton.text':'Support Us','floating-chat.donateButton.background-color':'#ff5e5b','floating-chat.donateButton.text-color':'#fff'});</script>
+</body>
+</html>
