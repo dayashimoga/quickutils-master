@@ -192,5 +192,85 @@
         "destination_dir": "dist",
         "custom_domain": "music.quickutils.top",
         "root_dir": "projects/music-maker"
+    },
+    "circuit-designer": {
+        "directory": "projects/circuit-designer",
+        "repo_name": "circuit-designer",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "circuits.quickutils.top",
+        "root_dir": "projects/circuit-designer"
+    },
+    "color-palette": {
+        "directory": "projects/color-palette",
+        "repo_name": "color-palette",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "colors.quickutils.top",
+        "root_dir": "projects/color-palette"
+    },
+    "markdown-editor": {
+        "directory": "projects/markdown-editor",
+        "repo_name": "markdown-editor",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "markdown.quickutils.top",
+        "root_dir": "projects/markdown-editor"
+    },
+    "physics-sandbox": {
+        "directory": "projects/physics-sandbox",
+        "repo_name": "physics-sandbox",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "physics.quickutils.top",
+        "root_dir": "projects/physics-sandbox"
+    },
+    "math-grapher": {
+        "directory": "projects/math-grapher",
+        "repo_name": "math-grapher",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "grapher.quickutils.top",
+        "root_dir": "projects/math-grapher"
+    },
+    "json-explorer": {
+        "directory": "projects/json-explorer",
+        "repo_name": "json-explorer",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "json.quickutils.top",
+        "root_dir": "projects/json-explorer"
+    },
+    "cron-builder": {
+        "directory": "projects/cron-builder",
+        "repo_name": "cron-builder",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "cron.quickutils.top",
+        "root_dir": "projects/cron-builder"
+    },
+    "emoji-kitchen": {
+        "directory": "projects/emoji-kitchen",
+        "repo_name": "emoji-kitchen",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "emoji.quickutils.top",
+        "root_dir": "projects/emoji-kitchen"
+    },
+    "ascii-art-studio": {
+        "directory": "projects/ascii-art-studio",
+        "repo_name": "ascii-art-studio",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "ascii.quickutils.top",
+        "root_dir": "projects/ascii-art-studio"
+    },
+    "password-fortress": {
+        "directory": "projects/password-fortress",
+        "repo_name": "password-fortress",
+        "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+        "destination_dir": "dist",
+        "custom_domain": "passwords.quickutils.top",
+        "root_dir": "projects/password-fortress"
     }
 }

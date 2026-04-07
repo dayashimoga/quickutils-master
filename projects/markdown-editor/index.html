@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor — Live Preview | QuickUtils</title>
+    <meta name="description" content="Write Markdown with instant live preview, GFM support, templates, export to HTML/PDF, word count, and auto-save drafts.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="https://quickutils.top" class="brand">📝 Markdown Editor</a>
+    <div class="nav-links">
+        <select id="templateSelect"><option value="">📄 Templates</option><option value="readme">README</option><option value="blog">Blog Post</option><option value="meeting">Meeting Notes</option><option value="resume">Resume</option></select>
+        <button id="exportHtmlBtn" class="btn btn-sm btn-secondary">📥 HTML</button>
+        <button id="exportMdBtn" class="btn btn-sm btn-secondary">📥 .md</button>
+        <button id="printBtn" class="btn btn-sm btn-secondary">🖨 PDF</button>
+        <button id="themeBtn" class="theme-btn">🌙</button>
+    </div>
+</div></nav>
+<main class="editor-layout">
+    <div class="toolbar" id="toolbar">
+        <button data-action="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button data-action="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button data-action="strike" title="Strikethrough"><s>S</s></button>
+        <span class="sep">|</span>
+        <button data-action="h1" title="Heading 1">H1</button>
+        <button data-action="h2" title="Heading 2">H2</button>
+        <button data-action="h3" title="Heading 3">H3</button>
+        <span class="sep">|</span>
+        <button data-action="ul" title="Bullet List">• List</button>
+        <button data-action="ol" title="Numbered List">1. List</button>
+        <button data-action="task" title="Task List">☑ Task</button>
+        <span class="sep">|</span>
+        <button data-action="code" title="Inline Code">`code`</button>
+        <button data-action="codeblock" title="Code Block">```</button>
+        <button data-action="link" title="Link">🔗</button>
+        <button data-action="image" title="Image">🖼</button>
+        <button data-action="table" title="Table">📊</button>
+        <button data-action="hr" title="Horizontal Rule">─</button>
+        <button data-action="quote" title="Blockquote">❝</button>
+    </div>
+    <div class="panes">
+        <div class="pane editor-pane">
+            <div class="pane-header"><span>✏️ Editor</span><span id="wordCount" class="text-muted">0 words · 0 chars</span></div>
+            <textarea id="editor" spellcheck="true" placeholder="Start writing Markdown here..."></textarea>
+        </div>
+        <div class="pane preview-pane">
+            <div class="pane-header"><span>👁 Preview</span><span id="readTime" class="text-muted">0 min read</span></div>
+            <div id="preview" class="preview-content"></div>
+        </div>
+    </div>
+    <div class="status-bar">
+        <span id="autoSaveStatus">💾 Auto-saved</span>
+        <span id="outlineToggle" class="outline-toggle">📑 Outline</span>
+    </div>
+    <div class="outline-panel hidden" id="outlinePanel">
+        <h4>Document Outline</h4>
+        <div id="outlineList"></div>
+    </div>
+</main>
+<script src="script.js"></script>
+</body></html>

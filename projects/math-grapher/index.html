@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Grapher — Function Plotter | QuickUtils</title>
+<meta name="description" content="Plot mathematical functions, parametric equations, explore derivatives, and visualize with interactive sliders.">
+<link rel="stylesheet" href="style.css"></head>
+<body><nav class="navbar"><div class="container nav-inner"><a href="https://quickutils.top" class="brand">📊 Math Grapher</a><div class="nav-links"><button id="exportBtn" class="btn btn-sm btn-secondary">📥 PNG</button><button id="themeBtn" class="theme-btn">🌙</button></div></div></nav>
+<main class="app-layout container" style="margin-top:1rem">
+    <aside class="glass-card sidebar">
+        <h3>📝 Functions</h3>
+        <div id="funcList"></div>
+        <button class="btn btn-primary btn-sm w-full" id="addFuncBtn">+ Add Function</button>
+        <hr style="border-color:var(--border);margin:.75rem 0">
+        <h3>🎛 View</h3>
+        <label>X Range<div class="range-row"><input type="number" id="xMin" value="-10" step="1"><span>to</span><input type="number" id="xMax" value="10" step="1"></div></label>
+        <label>Y Range<div class="range-row"><input type="number" id="yMin" value="-10" step="1"><span>to</span><input type="number" id="yMax" value="10" step="1"></div></label>
+        <label><input type="checkbox" id="showGrid" checked> Grid</label>
+        <label><input type="checkbox" id="showAxes" checked> Axes</label>
+        <button class="btn btn-secondary btn-sm w-full" id="resetView">🔄 Reset View</button>
+        <hr style="border-color:var(--border);margin:.75rem 0">
+        <h3>🎮 Sliders</h3>
+        <label>a = <span id="aVal">1</span><input type="range" id="paramA" min="-10" max="10" step="0.1" value="1"></label>
+        <label>b = <span id="bVal">0</span><input type="range" id="paramB" min="-10" max="10" step="0.1" value="0"></label>
+        <label>c = <span id="cVal">0</span><input type="range" id="paramC" min="-10" max="10" step="0.1" value="0"></label>
+        <hr style="border-color:var(--border);margin:.75rem 0">
+        <h3>📚 Presets</h3>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="sin(x)">sin(x)</button>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="a*x^2+b*x+c">ax²+bx+c</button>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="tan(x)">tan(x)</button>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="1/x">1/x</button>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="sqrt(x)">√x</button>
+        <button class="btn btn-sm btn-secondary w-full" data-preset="log(x)">ln(x)</button>
+    </aside>
+    <div class="canvas-wrap">
+        <canvas id="graphCanvas" width="800" height="600"></canvas>
+        <div id="traceInfo" class="trace-info"></div>
+    </div>
+</main>
+<script src="script.js"></script></body></html>

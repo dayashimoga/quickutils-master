@@ -165,6 +165,16 @@ const QU = (() => {
     { emoji: '🖌️', name: 'Whiteboard', url: 'https://whiteboard.quickutils.top' },
     { emoji: '🎯', name: 'CSS Battle', url: 'https://cssbattle.quickutils.top' },
     { emoji: '📈', name: 'Algorithm Viz', url: 'https://algorithms.quickutils.top' },
+    { emoji: '⚡', name: 'Circuit Designer', url: 'https://circuits.quickutils.top' },
+    { emoji: '🎨', name: 'Color Palette', url: 'https://colors.quickutils.top' },
+    { emoji: '📝', name: 'Markdown Editor', url: 'https://markdown.quickutils.top' },
+    { emoji: '🔬', name: 'Physics Sandbox', url: 'https://physics.quickutils.top' },
+    { emoji: '📉', name: 'Math Grapher', url: 'https://grapher.quickutils.top' },
+    { emoji: '🔍', name: 'JSON Explorer', url: 'https://json.quickutils.top' },
+    { emoji: '🕐', name: 'Cron Builder', url: 'https://cron.quickutils.top' },
+    { emoji: '😄', name: 'Emoji Kitchen', url: 'https://emoji.quickutils.top' },
+    { emoji: '✏️', name: 'ASCII Art', url: 'https://ascii.quickutils.top' },
+    { emoji: '🔐', name: 'Password Fortress', url: 'https://passwords.quickutils.top' },
   ];
 
   function initDiscoverBar(currentUrl) {

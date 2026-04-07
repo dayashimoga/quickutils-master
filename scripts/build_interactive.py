@@ -16,10 +16,14 @@ INTERACTIVE_PROJECTS = [
     "typing-test", "regex-playground", "pomodoro-timer", "data-converter",
     "budget-tracker", "habit-tracker", "gradient-studio", "ambient-mixer",
     "periodic-table", "pixel-art", "music-maker",
-    # New sites
+    # Phase 1 sites
     "chemistry-lab", "algorithm-visualizer", "code-arena", "quiz-master",
     "life-simulator", "whiteboard", "chart-maker", "css-battle",
     "retro-games", "unit-converter",
+    # Phase 3 sites (v3)
+    "circuit-designer", "color-palette", "markdown-editor", "physics-sandbox",
+    "math-grapher", "json-explorer", "cron-builder", "emoji-kitchen",
+    "ascii-art-studio", "password-fortress",
 ]
 
 # Files to always copy from project root
