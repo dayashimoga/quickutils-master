@@ -262,6 +262,83 @@ const QU = (() => {
     canRedo() { return this.pointer < this.stack.length - 1; }
   }
 
+  // ── Session Timer ──
+  let sessionStart = Date.now();
+  function initSessionTimer() {
+    const badge = document.createElement('div');
+    badge.className = 'qu-session-badge';
+    badge.style.cssText = 'position:fixed;bottom:70px;right:16px;background:var(--glass-bg,rgba(30,30,40,0.8));backdrop-filter:blur(8px);border:1px solid var(--glass-border,rgba(255,255,255,0.08));padding:4px 10px;border-radius:999px;font-size:0.7rem;color:var(--text-muted,#6b6b80);z-index:100;opacity:0;transition:opacity 0.5s;font-family:var(--font-mono,monospace);';
+    document.body.appendChild(badge);
+    // Show after 30 seconds
+    setTimeout(() => { badge.style.opacity = '1'; }, 30000);
+    setInterval(() => {
+      const secs = Math.floor((Date.now() - sessionStart) / 1000);
+      const mins = Math.floor(secs / 60);
+      badge.textContent = mins > 0 ? `⏱ ${mins}m ${secs%60}s` : `⏱ ${secs}s`;
+    }, 1000);
+  }
+
+  // ── Streak Counter ──
+  function initStreak() {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem('qu_last_visit');
+    let streak = parseInt(localStorage.getItem('qu_streak') || '0');
+    if (lastVisit !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      streak = (lastVisit === yesterday) ? streak + 1 : 1;
+      localStorage.setItem('qu_streak', streak);
+      localStorage.setItem('qu_last_visit', today);
+      if (streak > 1) {
+        setTimeout(() => showToast(`🔥 ${streak}-day streak! Keep it up!`, 'info', 4000), 2000);
+      }
+    }
+    return streak;
+  }
+
+  // ── Achievement System ──
+  const ACHIEVEMENTS = {
+    first_visit: { icon: '🌟', name: 'First Steps', desc: 'Visit for the first time' },
+    explorer: { icon: '🧭', name: 'Explorer', desc: 'Visit 5 different tools' },
+    dedicated: { icon: '💪', name: 'Dedicated', desc: 'Spend 5 minutes on a tool' },
+    streak_3: { icon: '🔥', name: 'On Fire', desc: '3-day visit streak' },
+    streak_7: { icon: '⚡', name: 'Unstoppable', desc: '7-day visit streak' },
+    night_owl: { icon: '🦉', name: 'Night Owl', desc: 'Use a tool after midnight' },
+  };
+
+  function unlockAchievement(key) {
+    const unlocked = JSON.parse(localStorage.getItem('qu_achievements') || '{}');
+    if (unlocked[key]) return;
+    const ach = ACHIEVEMENTS[key];
+    if (!ach) return;
+    unlocked[key] = Date.now();
+    localStorage.setItem('qu_achievements', JSON.stringify(unlocked));
+    showToast(`${ach.icon} Achievement: ${ach.name}!`, 'success', 5000);
+  }
+
+  function checkAchievements() {
+    // First visit
+    if (!localStorage.getItem('qu_first_visit')) {
+      localStorage.setItem('qu_first_visit', '1');
+      unlockAchievement('first_visit');
+    }
+    // Explorer
+    const visited = JSON.parse(localStorage.getItem('qu_visited_sites') || '[]');
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (host && !visited.includes(host)) {
+      visited.push(host);
+      localStorage.setItem('qu_visited_sites', JSON.stringify(visited));
+    }
+    if (visited.length >= 5) unlockAchievement('explorer');
+    // Streak
+    const streak = parseInt(localStorage.getItem('qu_streak') || '0');
+    if (streak >= 3) unlockAchievement('streak_3');
+    if (streak >= 7) unlockAchievement('streak_7');
+    // Night owl
+    if (new Date().getHours() >= 0 && new Date().getHours() < 5) unlockAchievement('night_owl');
+    // Dedicated (5 min timer)
+    setTimeout(() => unlockAchievement('dedicated'), 300000);
+  }
+
   // ── Init Everything ──
   function init(opts = {}) {
     initTheme(opts.themeBtn || '#themeBtn');
@@ -270,6 +347,9 @@ const QU = (() => {
     if (opts.discover !== false) initDiscoverBar(window.location.href);
     initKeyboardShortcuts();
     registerShortcuts({ '?': 'Show keyboard shortcuts' });
+    initSessionTimer();
+    initStreak();
+    checkAchievements();
   }
 
   return {
@@ -279,7 +359,8 @@ const QU = (() => {
     initTheme, showToast, copyToClipboard,
     initAnalytics, initKofi, initDiscoverBar,
     registerShortcuts, initKeyboardShortcuts,
-    UndoStack, init, NETWORK_SITES
+    UndoStack, init, NETWORK_SITES,
+    unlockAchievement, initSessionTimer, initStreak, checkAchievements
   };
 })();
 
