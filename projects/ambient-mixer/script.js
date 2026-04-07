@@ -30,6 +30,7 @@ SOUNDS.forEach(s => {
     const audio = new Audio();
     audio.src = s.url;
     audio.loop = true;
+    audio.crossOrigin = "anonymous";
     audio.volume = 0;
     document.body.appendChild(audio);
     
@@ -113,6 +114,9 @@ const masterPlayBtn = $('#masterPlayBtn');
 const masterVol = $('#masterVol');
 
 function toggleMasterPlay() {
+    if(!audioCtx) initAudioContext();
+    if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+
     state.isPlaying = !state.isPlaying;
     masterPlayBtn.textContent = state.isPlaying ? '⏸' : '▶';
     masterPlayBtn.classList.toggle('playing', state.isPlaying);
@@ -286,3 +290,71 @@ function escapeHtml(s) { return s.replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 renderUserPresets();
 
 })();
+
+
+const canvas = document.getElementById('audioVisualizer');
+const canvasCtx = canvas ? canvas.getContext('2d') : null;
+let audioCtx = null;
+let analyser = null;
+
+function initAudioContext() {
+    if (audioCtx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.connect(audioCtx.destination);
+    
+    // Connect all audio elements
+    Object.keys(state.sounds).forEach(id => {
+        const s = state.sounds[id];
+        const source = audioCtx.createMediaElementSource(s.audio);
+        // We use a gain node for master volume instead of element.volume, else we don't get the combined mix correctly into the analyser if we wanted pre-fader vs post-fader.
+        // But since we just want to visualize, we can connect the source directly.
+        source.connect(analyser);
+    });
+    
+    drawVisualizer();
+}
+
+function drawVisualizer() {
+    if (!analyser || !canvasCtx) return;
+    requestAnimationFrame(drawVisualizer);
+    
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
+    
+    canvasCtx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-input');
+    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const barWidth = (canvas.width / bufferLength) * 2.5;
+    let barHeight;
+    let x = 0;
+    
+    const accent = getComputedStyle(document.body).getPropertyValue('--accent');
+    
+    for(let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i] / 2.5;
+        canvasCtx.fillStyle = accent;
+        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        x += barWidth + 1;
+    }
+}
+
+// Background Changer
+const bgBlur = document.getElementById('bgBlur');
+const bgSelect = document.getElementById('bgSelect');
+if (bgSelect) {
+    bgSelect.addEventListener('change', (e) => {
+        const url = e.target.value;
+        if (url === 'none') {
+            document.body.style.backgroundImage = 'none';
+        } else {
+            document.body.style.backgroundImage = `url('${url}')`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+        }
+    });
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Maker — Data Visualization Builder | QuickUtils</title>
+    <meta name="description" content="Create beautiful charts from your data. Bar, line, pie, doughnut, and radar charts with customization.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">📊 <span>ChartMaker</span></a>
+    <div class="nav-links">
+        <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+        <a href="https://quickutils.top" target="_blank">QuickUtils</a>
+    </div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+</div></nav>
+<main class="container">
+
+    <section class="hero">
+        <h1><span class="gradient-text">Chart Maker</span></h1>
+        <p class="hero-sub">Turn your data into beautiful, interactive charts in seconds</p>
+    </section>
+    <div class="chart-layout">
+        <aside class="glass-card">
+            <h3 style="margin-bottom:0.75rem">📋 Data Input</h3>
+            <div class="chart-type-grid" id="chartTypeGrid">
+                <div class="chart-type-btn active" data-type="bar"><span class="emoji">📊</span>Bar</div>
+                <div class="chart-type-btn" data-type="line"><span class="emoji">📈</span>Line</div>
+                <div class="chart-type-btn" data-type="pie"><span class="emoji">🥧</span>Pie</div>
+                <div class="chart-type-btn" data-type="doughnut"><span class="emoji">🍩</span>Donut</div>
+                <div class="chart-type-btn" data-type="radar"><span class="emoji">🕸️</span>Radar</div>
+                <div class="chart-type-btn" data-type="polarArea"><span class="emoji">🎯</span>Polar</div>
+            </div>
+            <label class="text-muted" style="font-size:0.75rem">Chart Title</label>
+            <input type="text" id="chartTitle" value="My Chart" style="margin-bottom:0.75rem">
+            <label class="text-muted" style="font-size:0.75rem">Labels (comma separated)</label>
+            <input type="text" id="chartLabels" value="Jan, Feb, Mar, Apr, May, Jun" style="margin-bottom:0.75rem">
+            <label class="text-muted" style="font-size:0.75rem">Values (comma separated)</label>
+            <input type="text" id="chartValues" value="12, 19, 3, 5, 2, 8" style="margin-bottom:0.75rem">
+            <label class="text-muted" style="font-size:0.75rem">Color Palette</label>
+            <div class="color-presets" id="colorPresets"></div>
+            <div style="display:flex;gap:0.5rem;margin-top:1rem">
+                <button class="btn btn-primary" id="generateBtn" style="flex:1">🎨 Generate</button>
+                <button class="btn btn-secondary" id="downloadChartBtn">💾</button>
+            </div>
+        </aside>
+        <section class="glass-card chart-preview">
+            <canvas id="chartCanvas"></canvas>
+        </section>
+    </div>
+</main>
+<footer class="footer"><div class="container footer-inner">
+    <div class="footer-brand"><span>📊 ChartMaker</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>
+    <p class="copyright">© 2026 QuickUtils. All rights reserved.</p>
+</div></footer>
+<script src="script.js"></script>
+</body>
+</html>

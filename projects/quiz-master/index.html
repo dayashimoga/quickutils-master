@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master — Dynamic Trivia | QuickUtils</title>
+    <meta name="description" content="Test your knowledge across science, tech, history, geography, and pop culture. 200+ questions with scoring.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">🏆 <span>QuizMaster</span></a>
+    <div class="nav-links">
+        <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+        <a href="https://quickutils.top" target="_blank">QuickUtils</a>
+    </div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+</div></nav>
+<main class="container">
+
+    <section class="hero">
+        <h1><span class="gradient-text">Quiz Master</span></h1>
+        <p class="hero-sub">200+ questions across 6 categories. How high can you score?</p>
+    </section>
+    <div class="quiz-container">
+        <div class="score-display">
+            <div class="score-item"><div class="num" id="scoreNum">0</div><div class="lbl">Score</div></div>
+            <div class="score-item"><div class="num" id="streakNum">0🔥</div><div class="lbl">Streak</div></div>
+            <div class="score-item"><div class="num" id="questionNum">0/10</div><div class="lbl">Question</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="quizProgress" style="width:0%"></div></div>
+        <section class="glass-card" id="categorySelect">
+            <h2 style="text-align:center;margin-bottom:1rem">Choose a Category</h2>
+            <div class="category-grid" id="categoryGrid"></div>
+            <div style="text-align:center;margin-top:0.5rem">
+                <button class="btn btn-primary" id="startQuizBtn">🚀 Start Quiz</button>
+            </div>
+        </section>
+        <section class="glass-card question-card" id="questionCard" style="display:none">
+            <div class="question-number" id="qNumber">Question 1 of 10</div>
+            <div class="question-text" id="qText"></div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <button class="btn btn-primary mt-3" id="nextBtn" style="display:none">Next →</button>
+        </section>
+        <section class="glass-card result-card" id="resultCard" style="display:none">
+            <h2>Quiz Complete!</h2>
+            <div class="big-score" id="finalScore">0</div>
+            <p class="text-muted mt-2" id="resultMsg"></p>
+            <div class="streak-badge" id="resultStreak"></div>
+            <button class="btn btn-primary mt-3" id="retryBtn">🔄 Play Again</button>
+        </section>
+    </div>
+</main>
+<footer class="footer"><div class="container footer-inner">
+    <div class="footer-brand"><span>🏆 QuizMaster</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>
+    <p class="copyright">© 2026 QuickUtils. All rights reserved.</p>
+</div></footer>
+<script src="script.js"></script>
+</body>
+</html>

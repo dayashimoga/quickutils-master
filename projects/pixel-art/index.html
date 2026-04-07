@@ -61,17 +61,38 @@
                 </div>
                 <input type="range" class="w-100" id="gridSizeSlider" min="8" max="64" step="8" value="16">
                 
+                <div style="display:flex;gap:4px;margin-top:0.5rem">
+                    <button class="btn btn-secondary btn-sm" id="undoBtn" title="Undo (Ctrl+Z)" style="flex:1" disabled>↩ Undo</button>
+                    <button class="btn btn-secondary btn-sm" id="redoBtn" title="Redo (Ctrl+Y)" style="flex:1" disabled>↪ Redo</button>
+                </div>
+                
+                <button class="btn btn-secondary w-100 mt-2 btn-sm" id="symmetryBtn" title="Toggle mirror drawing">🪞 Off</button>
                 <button class="btn btn-secondary w-100 mt-2 btn-sm" id="clearBtn">🗑️ Clear Canvas</button>
                 <label class="btn btn-secondary w-100 mt-2 btn-sm" style="display:block;text-align:center" title="Toggle Grid Lines">
                     <input type="checkbox" id="showGridCheck" checked style="display:none">
                     <span id="gridToggleText">Show Grid</span>
                 </label>
+                <button class="btn btn-secondary w-100 mt-2 btn-sm" id="asciiBtn">🔤 ASCII Art</button>
             </div>
         </aside>
 
         <section class="canvas-container" id="canvasContainer">
             <div class="canvas-wrapper">
                 <canvas id="pixelCanvas" width="512" height="512"></canvas>
+            </div>
+            
+            <!-- Animation Timeline -->
+            <div class="glass-card timeline-panel mt-3" style="padding:1rem">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+                    <h3 style="font-size:0.9rem">🎬 Animation Timeline</h3>
+                    <div style="display:flex;gap:6px;align-items:center">
+                        <span id="frameCount" style="font-size:0.75rem;color:var(--text-muted,#888)">1/1</span>
+                        <button class="btn btn-sm btn-secondary" id="addFrameBtn" title="Add frame">+ Frame</button>
+                        <button class="btn btn-sm btn-primary" id="playAnimBtn" title="Play animation">▶ Play</button>
+                        <button class="btn btn-sm btn-secondary" id="exportSpriteBtn" title="Export spritesheet">📦 Sprite</button>
+                    </div>
+                </div>
+                <div id="timelineFrames" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0"></div>
             </div>
         </section>
     </main>

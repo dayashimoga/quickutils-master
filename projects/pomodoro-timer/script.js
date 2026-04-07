@@ -21,7 +21,10 @@ let s = {
         pomodoros: parseInt(localStorage.getItem('focus_pomodoros') || '0'),
         focusTimeSecs: parseInt(localStorage.getItem('focus_time') || '0'),
         streak: parseInt(localStorage.getItem('focus_streak') || '0'),
-        lastDate: localStorage.getItem('focus_last_date') || ''
+        lastDate: localStorage.getItem('focus_last_date') || '',
+        dailyPomos: parseInt(localStorage.getItem('focus_daily_pomos') || '0'),
+        history: JSON.parse(localStorage.getItem('focus_history') || '{}'),
+        achievements: JSON.parse(localStorage.getItem('focus_achievements') || '[]')
     },
     tasks: JSON.parse(localStorage.getItem('focus_tasks') || '[]'),
     activeTaskId: null,
@@ -79,6 +82,16 @@ function completeSession() {
     if (s.mode === 'pomodoro') {
         s.pomodoroCount++;
         s.stats.pomodoros++;
+
+    // Update Gamification & History
+    const today = new Date().toISOString().split('T')[0];
+    if (s.stats.lastDate !== today) {
+        s.stats.dailyPomos = 0; // Reset daily
+    }
+    s.stats.dailyPomos++;
+    if (!s.stats.history[today]) s.stats.history[today] = 0;
+    s.stats.history[today]++;
+
         s.stats.focusTimeSecs += s.settings.pomodoro * 60;
         updateStats();
         
@@ -219,8 +232,100 @@ function checkStreak() {
     }
 }
 
+
+// ── Achievements & Gamification ──
+const ACH_DEFS = [
+    { id: 'first_blood', icon: '🍅', title: 'First Tomato', desc: 'Complete 1 Pomodoro', check: (c) => c.pomodoros >= 1 },
+    { id: 'marathon', icon: '🏃', title: 'Marathon', desc: 'Complete 4 Pomodoros in a day', check: (c) => c.dailyPomos >= 4 },
+    { id: 'streak_3', icon: '🔥', title: 'On Fire', desc: '3 day streak', check: (c) => c.streak >= 3 },
+    { id: 'streak_7', icon: '🚀', title: 'Unstoppable', desc: '7 day streak', check: (c) => c.streak >= 7 },
+    { id: 'hours_10', icon: '⏳', title: 'Dedicated', desc: '10 hours total focus', check: (c) => c.focusTimeSecs >= 36000 },
+    { id: 'hours_50', icon: '👑', title: 'Master', desc: '50 hours total focus', check: (c) => c.focusTimeSecs >= 180000 },
+];
+
+function evaluateAchievements() {
+    let newAch = false;
+    ACH_DEFS.forEach(a => {
+        if (!s.stats.achievements.includes(a.id) && a.check(s.stats)) {
+            s.stats.achievements.push(a.id);
+            newAch = true;
+            // Optionally could trigger a toast here
+        }
+    });
+    if (newAch) {
+        localStorage.setItem('focus_achievements', JSON.stringify(s.stats.achievements));
+    }
+}
+
+function renderGamification() {
+    // Render progress bar
+    const goal = 4; // Hardcoded daily goal for now
+    const pct = Math.min(100, (s.stats.dailyPomos / goal) * 100);
+    $('#dailyGoalProgress').style.width = pct + '%';
+    
+    // Render chart
+    const chart = $('#weeklyChart');
+    const labels = $('#weeklyLabels');
+    chart.innerHTML = ''; labels.innerHTML = '';
+    
+    // Last 7 days
+    let maxVal = 1;
+    const historyData = [];
+    for (let i=6; i>=0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dStr = d.toISOString().split('T')[0];
+        const val = s.stats.history[dStr] || 0;
+        historyData.push({ day: d.toLocaleDateString('en-US',{weekday:'short'}).substring(0,1), val });
+        if (val > maxVal) maxVal = val;
+    }
+    
+    historyData.forEach(hd => {
+        const hPct = (hd.val / maxVal) * 100;
+        chart.innerHTML += `<div style="width:12%; background:var(--accent); height:${hPct}%; border-radius:2px 2px 0 0; min-height:4px;" title="${hd.val} pomodoros"></div>`;
+        labels.innerHTML += `<span>${hd.day}</span>`;
+    });
+    
+    // Render achievements
+    const achGrid = $('#achGrid');
+    achGrid.innerHTML = '';
+    ACH_DEFS.forEach(a => {
+        const unlocked = s.stats.achievements.includes(a.id);
+        achGrid.innerHTML += `
+            <div style="background:var(--bg-elevated); padding:0.5rem; border-radius:6px; display:flex; align-items:center; gap:0.5rem; opacity:${unlocked?1:0.4}">
+                <div style="font-size:1.5rem; filter:${unlocked?'none':'grayscale(1)'}">${a.icon}</div>
+                <div>
+                    <div style="font-size:0.8rem; font-weight:600;">${a.title}</div>
+                    <div style="font-size:0.6rem; color:var(--text-muted);">${a.desc}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    $('#statAchs').textContent = `${s.stats.achievements.length}/${ACH_DEFS.length}`;
+}
+
 function updateStats() {
-    checkStreak();
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (s.stats.lastDate !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        if (s.stats.lastDate === yesterday && s.stats.history[yesterday] > 0) {
+            s.stats.streak++;
+        } else if (s.stats.lastDate !== today && s.stats.history[today] > 0) {
+            s.stats.streak = 1;
+        } else if (s.stats.lastDate !== today) {
+            s.stats.streak = 0; // Lost streak
+        }
+    }
+    s.stats.lastDate = today;
+
+    evaluateAchievements();
+    localStorage.setItem('focus_history', JSON.stringify(s.stats.history));
+    localStorage.setItem('focus_daily_pomos', s.stats.dailyPomos);
+    
+    renderGamification();
+
     localStorage.setItem('focus_pomodoros', s.stats.pomodoros);
     localStorage.setItem('focus_time', s.stats.focusTimeSecs);
     localStorage.setItem('focus_streak', s.stats.streak);

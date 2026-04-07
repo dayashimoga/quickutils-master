@@ -26,6 +26,7 @@ function save() {
     renderHeatmap();
 }
 
+
 function renderHabits() {
     const list = $('#habitsList');
     if (habits.length === 0) {
@@ -33,44 +34,93 @@ function renderHabits() {
         return;
     }
 
-    list.innerHTML = habits.map(h => {
-        const isDone = (h.logs || []).includes(todayStr);
-        let currentStreak = 0;
-        let checkDate = new Date();
-        
-        // Calculate streak
-        while (true) {
-            const dStr = getLocalIsoDate(checkDate);
-            if ((h.logs || []).includes(dStr)) {
-                currentStreak++;
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else if (dStr === todayStr) {
-                // Today not done yet, check yesterday
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-                break;
-            }
-        }
+    // Group by category
+    const grouped = {};
+    habits.forEach(h => {
+        const cat = h.category || 'Other';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(h);
+    });
 
-        return `
-        <div class="habit-item">
-            <div class="habit-info">
-                <div class="habit-color" style="background:${h.color}"></div>
-                <div class="habit-details">
-                    <h3>${escapeHtml(h.name)}</h3>
-                    <p>Added ${new Date(h.created).toLocaleDateString()}</p>
+    let html = '';
+    
+    // Calculate last 7 days for weekly view header
+    const daysArr = [];
+    for(let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        daysArr.push(d);
+    }
+
+    // Build the grid
+    for(const cat in grouped) {
+        html += `<h4 style="margin-top:1.5rem; margin-bottom:0.5rem; color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px">${cat}</h4>`;
+        
+        grouped[cat].forEach(h => {
+            const isDoneToday = (h.logs || []).includes(todayStr);
+            let currentStreak = 0;
+            let checkDate = new Date();
+            
+            // Calculate streak
+            while (true) {
+                const dStr = getLocalIsoDate(checkDate);
+                if ((h.logs || []).includes(dStr)) {
+                    currentStreak++; checkDate.setDate(checkDate.getDate() - 1);
+                } else if (dStr === todayStr) { checkDate.setDate(checkDate.getDate() - 1); }
+                else { break; }
+            }
+
+            // Generate 7-day checkboxes
+            let weeklyHtml = '<div style="display:flex; gap:6px;">';
+            daysArr.forEach(d => {
+                const dStr = getLocalIsoDate(d);
+                const done = (h.logs || []).includes(dStr);
+                const isToday = dStr === todayStr;
+                weeklyHtml += `
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;" title="${d.toLocaleDateString()}">
+                        <span style="font-size:0.6rem; color:var(--text-muted); font-weight:${isToday?'bold':''};">${d.toLocaleDateString('en-US',{weekday:'short'})[0]}</span>
+                        <div class="check-btn sm ${done?'done':''}" style="width:24px; height:24px; min-width:24px; font-size:0.8rem; border-color:${h.color}; ${done?`background:${h.color}`:''}" onclick="toggleHabitDate('${h.id}','${dStr}')">${done?'✓':''}</div>
+                    </div>
+                `;
+            });
+            weeklyHtml += '</div>';
+
+            html += `
+            <div class="habit-item" style="display:flex; flex-direction:column; align-items:stretch;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div class="habit-info">
+                        <div class="habit-color" style="background:${h.color}"></div>
+                        <div class="habit-details">
+                            <h3 style="font-size:1rem; margin:0;">${escapeHtml(h.name)}</h3>
+                            <div class="streak-badge ${currentStreak > 0 ? 'active' : ''}" style="margin-top:4px;">🔥 ${currentStreak}</div>
+                        </div>
+                    </div>
+                    <div class="habit-actions">
+                        <button class="delete-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
+                    </div>
                 </div>
-            </div>
-            <div class="habit-actions">
-                <div class="streak-badge ${currentStreak > 0 ? 'active' : ''}">🔥 ${currentStreak}</div>
-                <button class="check-btn ${isDone ? 'done' : ''}" onclick="toggleHabit('${h.id}')" aria-label="Toggle habit">
-                    ${isDone ? '✓' : ''}
-                </button>
-                <button class="delete-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
-            </div>
-        </div>`;
-    }).join('');
+                <!-- Weekly View -->
+                <div style="display:flex; justify-content:flex-end; border-top:1px dashed var(--border); padding-top:8px;">
+                    ${weeklyHtml}
+                </div>
+            </div>`;
+        });
+    }
+    list.innerHTML = html;
 }
+
+window.toggleHabitDate = (id, dStr) => {
+    const h = habits.find(x => x.id === id);
+    if (!h) return;
+    if (!h.logs) h.logs = [];
+    const idx = h.logs.indexOf(dStr);
+    if (idx === -1) h.logs.push(dStr);
+    else h.logs.splice(idx, 1);
+    save();
+    renderHabits();
+};
+
+// Also replace toggleHabit in case it's lingering
+window.toggleHabit = (id) => window.toggleHabitDate(id, todayStr);
 
 function renderHeatmap() {
     const grid = $('#heatmapGrid');
@@ -128,7 +178,38 @@ function renderHeatmap() {
     scrollCont.scrollLeft = scrollCont.scrollWidth;
 }
 
+
+function checkMilestones() {
+    const milestoneCont = $('#milestonesRow');
+    if (!milestoneCont) return;
+    let totalLogs = 0;
+    habits.forEach(h => totalLogs += (h.logs || []).length);
+    
+    let html = '';
+    const defs = [
+        { id:'start', t:'First Step', d:'Log your first habit', c: totalLogs >= 1 },
+        { id:'ten', t:'Getting Started', d:'10 total completions', c: totalLogs >= 10 },
+        { id:'fifty', t:'Consistent', d:'50 total completions', c: totalLogs >= 50 },
+        { id:'hundred', t:'Habit Master', d:'100 completions', c: totalLogs >= 100 }
+    ];
+    
+    let unlocked = 0;
+    defs.forEach(m => {
+        if(m.c) {
+            unlocked++;
+            html += `<div style="background:var(--bg-elevated); padding:0.5rem 1rem; border-radius:20px; font-size:0.8rem; border:1px solid var(--accent); white-space:nowrap;">🌟 ${m.t}</div>`;
+        }
+    });
+
+    if (unlocked > 0) {
+        milestoneCont.style.display = 'flex';
+        milestoneCont.innerHTML = html;
+    }
+}
+
 function updateStats() {
+    checkMilestones();
+
     $('#totalHabits').textContent = habits.length;
 
     // Calc perfect days
@@ -213,6 +294,7 @@ form.addEventListener('submit', e => {
     habits.push({
         id: 'h_' + Date.now(),
         name: nameIn.value.trim(),
+        category: $("#habitCategory") ? $("#habitCategory").value : "Other",
         color: selectedColor,
         created: todayStr,
         logs: []

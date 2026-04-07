@@ -98,19 +98,46 @@
                 </div>
             </div>
 
-            <div class="export-section mt-4">
-                <h3>CSS Output</h3>
-                <div class="code-box">
-                    <textarea id="cssOutput" class="code-output" readonly></textarea>
-                    <button class="btn btn-primary w-100 mt-2" id="copyCss">📋 Copy CSS</button>
+            
+            <div class="glass-card output-card mt-4">
+                <div class="flex-bw mb-2">
+                    <h3>Export Code</h3>
+                    <div>
+                        <button class="btn btn-secondary btn-sm" id="tabCss">CSS</button>
+                        <button class="btn btn-secondary btn-sm" id="tabAnim">Animation CSS</button>
+                        <button class="btn btn-secondary btn-sm" id="tabTw">Tailwind</button>
+                    </div>
                 </div>
                 
-                <h3 class="mt-4">Tailwind Config (Optional)</h3>
-                <div class="code-box">
-                    <textarea id="twOutput" class="code-output tw-output" readonly></textarea>
-                    <button class="btn btn-secondary w-100 mt-2" id="copyTw">📋 Copy Tailwind</button>
+                <div id="outCss">
+                    <div class="code-box">
+                        <textarea id="cssOutput" readonly></textarea>
+                        <button class="btn btn-primary" id="copyCss">Copy CSS</button>
+                    </div>
+                </div>
+                
+                <div id="outAnim" style="display:none;">
+                    <div class="code-box">
+                        <textarea id="animOutput" readonly></textarea>
+                        <button class="btn btn-primary" id="copyAnim">Copy Animation CSS</button>
+                    </div>
+                </div>
+                
+                <div id="outTw" style="display:none;">
+                    <div class="code-box">
+                        <textarea id="twOutput" readonly></textarea>
+                        <button class="btn btn-primary" id="copyTw">Copy Tailwind</button>
+                    </div>
                 </div>
             </div>
+
+            <div class="glass-card mt-4">
+                <h3>Preset Gallery</h3>
+                <div class="preset-grid" id="presetGallery" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; margin-top:10px;">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
             
             <button class="btn btn-secondary w-100 mt-4" id="randomizeBtn">🎲 Randomize</button>
         </div>

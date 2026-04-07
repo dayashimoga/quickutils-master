@@ -16,11 +16,64 @@ let s = {
     activeStopId: 1
 };
 
+
+// ── Presets ──
+const PRESETS = [
+    { name:'Sunset', type:'linear', angle:45, shape:'circle', pos:'center', stops:[{id:1,color:'#f59e0b',pos:0},{id:2,color:'#ef4444',pos:100}] },
+    { name:'Ocean', type:'linear', angle:180, shape:'circle', pos:'center', stops:[{id:1,color:'#06b6d4',pos:0},{id:2,color:'#3b82f6',pos:100}] },
+    { name:'Cyberpunk', type:'linear', angle:90, shape:'circle', pos:'center', stops:[{id:1,color:'#f43f5e',pos:0},{id:2,color:'#8b5cf6',pos:100}] },
+    { name:'Forest', type:'radial', angle:90, shape:'circle', pos:'center', stops:[{id:1,color:'#10b981',pos:0},{id:2,color:'#064e3b',pos:100}] },
+    { name:'Midnight', type:'linear', angle:135, shape:'circle', pos:'center', stops:[{id:1,color:'#1e1b4b',pos:0},{id:2,color:'#312e81',pos:45},{id:3,color:'#8b5cf6',pos:100}] },
+    { name:'Peach', type:'radial', angle:90, shape:'circle', pos:'top left', stops:[{id:1,color:'#ffedd5',pos:0},{id:2,color:'#fdba74',pos:50},{id:3,color:'#f97316',pos:100}] },
+];
+
+function renderPresets() {
+    const gallery = $('#presetGallery');
+    if (!gallery) return;
+    gallery.innerHTML = '';
+    PRESETS.forEach(p => {
+        // Generate CSS background string for preset
+        const stopStr = p.stops.sort((a,b)=>a.pos-b.pos).map(st => `${st.color} ${st.pos}%`).join(', ');
+        const bg = p.type==='linear' ? `linear-gradient(${p.angle}deg, ${stopStr})` : `radial-gradient(${p.shape} at ${p.pos}, ${stopStr})`;
+        
+        const div = document.createElement('div');
+        div.style.height = '60px';
+        div.style.borderRadius = '8px';
+        div.style.background = bg;
+        div.style.cursor = 'pointer';
+        div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        div.title = p.name;
+        div.addEventListener('click', () => {
+            s.type = p.type;
+            s.angle = p.angle;
+            s.shape = p.shape;
+            s.pos = p.pos;
+            // Deep copy stops
+            s.stops = JSON.parse(JSON.stringify(p.stops));
+            s.activeStopId = s.stops[0].id;
+            
+            // Update UI elements
+            $('input[name="gType"][value="'+s.type+'"]').checked = true;
+            linearControls.style.display = s.type === 'linear' ? 'block' : 'none';
+            radialControls.style.display = s.type === 'radial' ? 'block' : 'none';
+            angleSlider.value = s.angle;
+            angleReadout.textContent = `${s.angle}°`;
+            radialShape.value = s.shape;
+            radialPos.value = s.pos;
+            
+            renderPresets();
+updateUI();
+        });
+        gallery.appendChild(div);
+    });
+}
+
 // Elements
 const previewArea = $('#previewArea');
 const stopsTrack = $('#stopsTrack');
 const stopsPreview = $('#stopsPreview');
 const cssOutput = $('#cssOutput');
+const animOutput = $('#animOutput');
 const twOutput = $('#twOutput');
 
 const typeRadios = $$('input[name="gType"]');
@@ -63,6 +116,20 @@ function updateUI() {
     // Output code
     cssOutput.value = `background: ${gradStr};`;
     
+    
+    // Animation Output
+    animOutput.value = `.animated-gradient {
+    background: ${gradStr};
+    background-size: 400% 400%;
+    animation: gradientAnim 15s ease infinite;
+}
+
+@keyframes gradientAnim {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}`;
+
     // Basic TW output (Tailwind doesn't perfectly support arbitrary complex gradients natively without arbitrary values or plugins, so we generate arbitrary values)
     if (s.type === 'linear') {
         twOutput.value = `bg-[linear-gradient(${s.angle}deg,${s.stops.map(st => `${st.color}_${st.pos}%`).join(',')})]`;
@@ -89,7 +156,8 @@ function renderThumbs() {
         thumb.addEventListener('click', (e) => {
             e.stopPropagation();
             s.activeStopId = st.id;
-            updateUI();
+            renderPresets();
+updateUI();
         });
         
         stopsTrack.appendChild(thumb);
@@ -114,7 +182,8 @@ let isDragging = false;
 function startDrag(e) {
     isDragging = true;
     s.activeStopId = parseInt(e.target.dataset.id);
-    updateUI();
+    renderPresets();
+updateUI();
     
     document.addEventListener('mousemove', onDrag);
     document.addEventListener('mouseup', stopDrag);
@@ -130,7 +199,8 @@ function onDrag(e) {
     const active = s.stops.find(st => st.id === s.activeStopId);
     if (active && active.pos !== pos) {
         active.pos = pos;
-        updateUI();
+        renderPresets();
+updateUI();
     }
 }
 
@@ -155,7 +225,8 @@ stopsTrack.addEventListener('click', (e) => {
         pos: pos
     });
     s.activeStopId = newId;
-    updateUI();
+    renderPresets();
+updateUI();
 });
 
 // Controls Events
@@ -163,21 +234,26 @@ typeRadios.forEach(r => r.addEventListener('change', (e) => {
     s.type = e.target.value;
     linearControls.style.display = s.type === 'linear' ? 'block' : 'none';
     radialControls.style.display = s.type === 'radial' ? 'block' : 'none';
-    updateUI();
+    renderPresets();
+updateUI();
 }));
 
 angleSlider.addEventListener('input', (e) => {
     s.angle = e.target.value;
     angleReadout.textContent = `${s.angle}°`;
-    updateUI();
+    renderPresets();
+updateUI();
 });
 
-radialShape.addEventListener('change', e => { s.shape = e.target.value; updateUI(); });
-radialPos.addEventListener('change', e => { s.pos = e.target.value; updateUI(); });
+radialShape.addEventListener('change', e => { s.shape = e.target.value; renderPresets();
+updateUI(); });
+radialPos.addEventListener('change', e => { s.pos = e.target.value; renderPresets();
+updateUI(); });
 
 stopColor.addEventListener('input', e => {
     const active = s.stops.find(st => st.id === s.activeStopId);
-    if (active) { active.color = e.target.value; updateUI(); }
+    if (active) { active.color = e.target.value; renderPresets();
+updateUI(); }
 });
 
 stopHex.addEventListener('change', e => {
@@ -185,7 +261,8 @@ stopHex.addEventListener('change', e => {
     let val = e.target.value;
     if (!val.startsWith('#')) val = '#' + val;
     if (/^#([0-9A-F]{3}){1,2}$/i.test(val)) {
-        if(active) { active.color = val; updateUI(); }
+        if(active) { active.color = val; renderPresets();
+updateUI(); }
     }
 });
 
@@ -194,7 +271,8 @@ stopPos.addEventListener('change', e => {
     let pos = parseInt(e.target.value);
     if (!isNaN(pos)) {
         pos = Math.max(0, Math.min(100, pos));
-        if (active) { active.pos = pos; updateUI(); }
+        if (active) { active.pos = pos; renderPresets();
+updateUI(); }
     }
 });
 
@@ -202,7 +280,8 @@ removeStopBtn.addEventListener('click', () => {
     if (s.stops.length <= 2) return;
     s.stops = s.stops.filter(st => st.id !== s.activeStopId);
     s.activeStopId = s.stops[0].id;
-    updateUI();
+    renderPresets();
+updateUI();
 });
 
 function randomHexColor() {
@@ -224,7 +303,8 @@ $('#randomizeBtn').addEventListener('click', () => {
         { id: 2, color: randomHexColor(), pos: 100 }
     ];
     s.activeStopId = 1;
-    updateUI();
+    renderPresets();
+updateUI();
 });
 
 // Copy buttons
@@ -246,6 +326,32 @@ copyTwBtn.addEventListener('click', () => {
     setTimeout(() => copyTwBtn.textContent = orig, 2000);
 });
 
+
+// ── Tabs ──
+$('#tabCss').addEventListener('click', () => { $('#outCss').style.display='block'; $('#outAnim').style.display='none'; $('#outTw').style.display='none'; });
+$('#tabAnim').addEventListener('click', () => { $('#outCss').style.display='none'; $('#outAnim').style.display='block'; $('#outTw').style.display='none'; });
+$('#tabTw').addEventListener('click', () => { $('#outCss').style.display='none'; $('#outAnim').style.display='none'; $('#outTw').style.display='block'; });
+
+const copyAnimBtn = $('#copyAnim');
+copyAnimBtn.addEventListener('click', () => {
+    animOutput.select();
+    document.execCommand('copy');
+    const orig = copyAnimBtn.textContent;
+    copyAnimBtn.textContent = '✅ Copied!';
+    setTimeout(() => copyAnimBtn.textContent = orig, 2000);
+});
+
+// Fullscreen
+$('#fullScreenBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        previewArea.requestFullscreen().catch(err => {
+            alert(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+});
+
 // Theme
 $('#themeBtn').addEventListener('click', () => {
     const html = document.documentElement;
@@ -261,6 +367,7 @@ if (localStorage.getItem('theme') === 'light') {
 }
 
 // Init
+renderPresets();
 updateUI();
 
 })();

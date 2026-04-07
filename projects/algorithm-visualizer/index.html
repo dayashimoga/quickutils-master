@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Visualizer — Sorting & Pathfinding Animations | QuickUtils</title>
+    <meta name="description" content="Watch sorting and pathfinding algorithms in real-time. Bubble sort, quicksort, merge sort, A*, BFS, DFS — all animated step by step.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">📊 <span>AlgoViz</span></a>
+    <div class="nav-links">
+        <a href="#sorting" class="active">Sorting</a>
+        <a href="#pathfinding">Pathfinding</a>
+        <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+        <a href="https://quickutils.top" target="_blank">QuickUtils</a>
+    </div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+</div></nav>
+<main class="container">
+    <section class="hero">
+        <h1>Algorithm <span class="gradient-text">Visualizer</span></h1>
+        <p class="hero-sub">Watch algorithms work step-by-step with beautiful animations</p>
+    </section>
+
+    <!-- Sorting Section -->
+    <section class="glass-card" id="sorting">
+        <div class="controls-bar">
+            <div class="control-group">
+                <label>Algorithm</label>
+                <select id="sortAlgo">
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="selection">Selection Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="merge">Merge Sort</option>
+                    <option value="quick">Quick Sort</option>
+                    <option value="heap">Heap Sort</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <input type="range" id="arraySize" min="10" max="200" value="50">
+                <span id="sizeLabel">50</span>
+            </div>
+            <div class="control-group">
+                <label>Speed</label>
+                <input type="range" id="sortSpeed" min="1" max="100" value="50">
+            </div>
+            <button class="btn btn-primary" id="startSortBtn">▶ Start</button>
+            <button class="btn btn-secondary" id="resetBtn">🔄 New Array</button>
+        </div>
+        <div class="stats-row">
+            <span>Comparisons: <strong id="compCount">0</strong></span>
+            <span>Swaps: <strong id="swapCount">0</strong></span>
+            <span>Time: <strong id="sortTime">0ms</strong></span>
+        </div>
+        <div class="sort-canvas" id="sortCanvas"></div>
+    </section>
+
+    <!-- Pathfinding Section -->
+    <section class="glass-card mt-4" id="pathfinding">
+        <h2>🗺️ Pathfinding Visualizer</h2>
+        <div class="controls-bar mt-2">
+            <div class="control-group">
+                <label>Algorithm</label>
+                <select id="pathAlgo">
+                    <option value="bfs">BFS (Breadth-First)</option>
+                    <option value="dfs">DFS (Depth-First)</option>
+                    <option value="dijkstra">Dijkstra's</option>
+                    <option value="astar">A* Search</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="startPathBtn">▶ Find Path</button>
+            <button class="btn btn-secondary" id="clearPathBtn">🗑️ Clear</button>
+            <button class="btn btn-secondary" id="mazeBtn">🏗️ Generate Maze</button>
+        </div>
+        <p class="text-muted text-sm">Click to place walls. Green = Start, Red = End. Drag them to move.</p>
+        <div class="path-grid-container">
+            <div class="path-grid" id="pathGrid"></div>
+        </div>
+        <div class="legend mt-2">
+            <span class="legend-item"><span class="legend-color" style="background:#10b981"></span>Start</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ef4444"></span>End</span>
+            <span class="legend-item"><span class="legend-color" style="background:#6366f1"></span>Visited</span>
+            <span class="legend-item"><span class="legend-color" style="background:#f59e0b"></span>Path</span>
+            <span class="legend-item"><span class="legend-color" style="background:#374151"></span>Wall</span>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <h2>📚 Algorithm Complexity</h2>
+        <div class="info-grid">
+            <div class="info-card"><h3>Bubble Sort</h3><p>O(n²) time. Repeatedly swaps adjacent elements. Simple but slow.</p></div>
+            <div class="info-card"><h3>Quick Sort</h3><p>O(n log n) avg. Divides array around a pivot. Very fast in practice.</p></div>
+            <div class="info-card"><h3>Merge Sort</h3><p>O(n log n) guaranteed. Divides and merges. Stable but uses extra memory.</p></div>
+            <div class="info-card"><h3>A* Search</h3><p>Optimal pathfinding using heuristics. Faster than Dijkstra's with admissible heuristic.</p></div>
+        </div>
+    </section>
+</main>
+<footer class="footer"><div class="container footer-inner">
+    <div class="footer-brand"><span>📊 AlgoViz</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>
+    <p class="copyright">© 2026 QuickUtils. All rights reserved.</p>
+</div></footer>
+<script src="script.js"></script>
+</body>
+</html>

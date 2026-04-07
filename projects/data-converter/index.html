@@ -14,9 +14,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
     <!-- Scripts for parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/x2js/1.2.0/xml2json.min.js"></script>
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CONVERT0001"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-CONVERT0001');</script>
@@ -41,11 +44,14 @@
         <div class="app-layout">
             <div class="pane left-pane glass-card">
                 <div class="pane-header">
+                    
                     <select id="inputType" class="format-select">
                         <option value="json" selected>JSON</option>
                         <option value="yaml">YAML</option>
                         <option value="csv">CSV</option>
+                        <option value="xml">XML</option>
                     </select>
+
                     <div class="pane-actions">
                         <label class="btn btn-secondary btn-sm" for="fileInput">📁 Load File</label>
                         <input type="file" id="fileInput" style="display:none" accept=".json,.yml,.yaml,.csv,.txt">
@@ -64,17 +70,26 @@
 
             <div class="pane right-pane glass-card">
                 <div class="pane-header">
+                    
                     <select id="outputType" class="format-select">
                         <option value="json">JSON</option>
                         <option value="yaml" selected>YAML</option>
                         <option value="csv">CSV</option>
+                        <option value="xml">XML</option>
                     </select>
+
+                    
                     <div class="pane-actions">
+                        <button class="btn btn-secondary btn-sm" id="treeViewBtn">🌳 Tree View</button>
                         <button class="btn btn-secondary btn-sm" id="copyBtn">📋 Copy</button>
                         <button class="btn btn-secondary btn-sm" id="downloadBtn">⬇️ Download</button>
                     </div>
+
                 </div>
+                
                 <textarea class="code-editor" id="outputArea" spellcheck="false" readonly placeholder="Result will appear here..."></textarea>
+                <div id="treeViewArea" class="code-editor" style="display:none; background:var(--bg-input); overflow-y:auto; overflow-x:auto;"></div>
+
                 <div class="status-bar" id="outputStatus">Waiting for input...</div>
             </div>
         </div>

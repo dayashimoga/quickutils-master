@@ -331,3 +331,11 @@ kbd { background: var(--bg-input); border: 1px solid var(--border); padding: 0.1
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Soundboard Pads */
+.pad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1rem; }
+.drum-pad { padding: 2rem 1rem; background: var(--bg-input); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.1s; }
+.drum-pad:active, .drum-pad.active { background: var(--accent); border-color: var(--accent); transform: scale(0.95); }
+.seq-row.synth-row { background: rgba(139, 92, 246, 0.1); border-radius: 8px; margin-top: 0.5rem; padding: 4px; }
+.seq-step.synth-step { border-color: #8b5cf6; color: #8b5cf6; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; }
+.seq-step.synth-step.active { background: #8b5cf6; color: #fff; }

@@ -52,6 +52,11 @@
             </div>
         </div>
 
+        
+        <div class="stats-row mb-4" id="milestonesRow" style="display:none; justify-content:flex-start; gap:10px; overflow-x:auto; padding-bottom:5px;">
+            <!-- Rendered by JS -->
+        </div>
+
         <div class="habits-container" id="habitsList">
             <!-- Rendered by JS -->
         </div>
@@ -81,6 +86,18 @@
                     <label>Habit Name</label>
                     <input type="text" id="habitName" placeholder="e.g. Read 10 pages" required autofocus>
                 </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="habitCategory" required>
+                        <option value="Health">Health 🍎</option>
+                        <option value="Productivity">Productivity 💼</option>
+                        <option value="Learning">Learning 📚</option>
+                        <option value="Mindfulness">Mindfulness 🧘</option>
+                        <option value="Other">Other ✨</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label>Color</label>
                     <div class="color-picker" id="colorPicker">

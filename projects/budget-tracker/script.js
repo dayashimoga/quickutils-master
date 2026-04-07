@@ -9,14 +9,39 @@ const CATEGORIES = {
 };
 
 let txns = JSON.parse(localStorage.getItem('budget_txns') || '[]');
+
+function processRecurring() {
+    const today = new Date();
+    let updated = false;
+    txns.forEach(t => {
+        if (t.recurring) {
+            const orgDate = new Date(t.date);
+            let d = new Date(orgDate);
+            while (d.getFullYear() < today.getFullYear() || (d.getFullYear() === today.getFullYear() && d.getMonth() < today.getMonth())) {
+                d.setMonth(d.getMonth() + 1);
+                const checkStr = d.toISOString().split('T')[0];
+                const exists = txns.some(x => x.parentId === t.id && x.date === checkStr);
+                if (!exists) {
+                    txns.push({ id: Date.now() + Math.random(), parentId: t.id, type: t.type, amount: t.amount, category: t.category, desc: t.desc + ' (Recurring)', date: checkStr, recurring: false });
+                    updated = true;
+                }
+            }
+        }
+    });
+    if (updated) localStorage.setItem('budget_txns', JSON.stringify(txns));
+}
+processRecurring();
+
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
-let chart = null;
+let chart = null; let trendChartObj = null; let monthlyBudget = parseFloat(localStorage.getItem("budget_goal") || 2000);
 
 const form = $('#txnForm'), tDate = $('#txnDate'), tAmt = $('#txnAmount'), tDesc = $('#txnDesc'), tCat = $('#txnCategory');
 const radios = $$('input[name="txnType"]');
 
 function initForm() {
+    $("#budgetInput").value = monthlyBudget;
+    $("#budgetInput").addEventListener("change", (e) => { monthlyBudget = parseFloat(e.target.value)||0; localStorage.setItem("budget_goal", monthlyBudget); updateDashboard(); });
     tDate.valueAsDate = new Date();
     updateCategories();
     radios.forEach(r => r.addEventListener('change', updateCategories));
@@ -53,7 +78,7 @@ function updateDashboard() {
         return `<tr>
             <td class="date-col">${new Date(t.date).toLocaleDateString()}</td>
             <td class="desc-col">${escape(t.desc)}</td>
-            <td><span class="cat-badge">${t.category}</span></td>
+            <td><span class="cat-badge">${t.category}</span> ${t.recurring ? '<span style="font-size:0.8rem;" title="Recurring">🔁</span>' : ''}</td>
             <td class="text-right ${isExp ? 'amt-expense' : 'amt-income'}">${isExp ? '-' : '+'}${formatMoney(amt)}</td>
             <td><button class="icon-btn" onclick="deleteTxn(${t.id})">🗑️</button></td>
         </tr>`;
@@ -69,6 +94,22 @@ function updateDashboard() {
     $('#currentMonthStr').textContent = dt.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     renderChart(catTotals);
+
+    if (monthlyBudget > 0) {
+        const pct = (exp / monthlyBudget) * 100;
+        $('#budgetStatus').textContent = `${formatMoney(exp)} / ${formatMoney(monthlyBudget)} (${pct.toFixed(1)}%)`;
+        const bar = $('#budgetBar');
+        bar.style.width = Math.min(100, pct) + '%';
+        if (pct < 50) bar.style.background = 'var(--c-success, #10b981)';
+        else if (pct < 85) bar.style.background = 'var(--c-warning, #f59e0b)';
+        else bar.style.background = 'var(--c-danger, #ef4444)';
+    } else {
+        $('#budgetStatus').textContent = 'Set a budget goal';
+        $('#budgetBar').style.width = '0%';
+    }
+    
+    renderTrendChart();
+
 }
 
 function renderChart(data) {
@@ -101,7 +142,7 @@ function escape(s) { return s.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 form.addEventListener('submit', e => {
     e.preventDefault();
     const type = $('input[name="txnType"]:checked').value;
-    txns.push({ id: Date.now(), type, amount: tAmt.value, category: tCat.value, desc: tDesc.value, date: tDate.value });
+    txns.push({ id: Date.now(), type, amount: tAmt.value, category: tCat.value, desc: tDesc.value, date: tDate.value, recurring: $("#txnRecurring").checked });
     localStorage.setItem('budget_txns', JSON.stringify(txns));
     tAmt.value = ''; tDesc.value = '';
     updateDashboard();
@@ -144,3 +185,51 @@ if (localStorage.getItem('theme') === 'light') { document.documentElement.datase
 initForm();
 updateDashboard();
 })();
+
+function renderTrendChart() {
+    const ctx = $('#trendChart');
+    if (trendChartObj) trendChartObj.destroy();
+    
+    // Calculate last 6 months
+    const labels = [];
+    const incData = [];
+    const expData = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(currentYear, currentMonth - i, 1);
+        labels.push(d.toLocaleString('default', { month: 'short' }));
+        
+        let mInc = 0, mExp = 0;
+        txns.forEach(t => {
+            const td = new Date(t.date);
+            if (td.getMonth() === d.getMonth() && td.getFullYear() === d.getFullYear()) {
+                if (t.type === 'expense') mExp += parseFloat(t.amount);
+                else mInc += parseFloat(t.amount);
+            }
+        });
+        incData.push(mInc);
+        expData.push(mExp);
+    }
+    
+    trendChartObj = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Income', data: incData, backgroundColor: '#10b981' },
+                { label: 'Expense', data: expData, backgroundColor: '#ef4444' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: getComputedStyle(document.body).getPropertyValue('--border') } },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text') } }
+            }
+        }
+    });
+}

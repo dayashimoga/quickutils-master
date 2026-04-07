@@ -54,6 +54,12 @@
                 <input type="range" id="swingSlider" min="0" max="100" value="0" class="slider">
                 <span id="swingReadout">0%</span>
             </div>
+            
+            <div class="transport-controls">
+                <button class="btn btn-sm btn-secondary" id="saveSongBtn" title="Save Song">💾 Save</button>
+                <button class="btn btn-sm btn-secondary" id="loadSongBtn" title="Load Song">📂 Load</button>
+            </div>
+
             <div class="transport-info">
                 <span class="beat-display" id="beatDisplay">1.1</span>
                 <span class="time-display" id="timeDisplay">0:00</span>
@@ -178,6 +184,8 @@
             <section class="effects-panel glass-panel" id="effectsPanel">
                 <div class="panel-header">
                     <h2>🎛️ Effects</h2>
+                    <button class="btn btn-sm btn-secondary" id="openSoundboardBtn">Soundboard Mode</button>
+                    <button class="btn btn-sm btn-secondary" id="openSoundboardBtn">Soundboard Mode</button>
                 </div>
                 <div class="effects-rack">
                     <div class="effect-unit">
@@ -244,6 +252,25 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            
+            <section class="soundboard-panel glass-panel" id="soundboardPanel" style="display:none">
+                <div class="panel-header">
+                    <h2>🎛️ Soundboard</h2>
+                    <button class="btn btn-sm btn-secondary" id="closeSoundboardBtn">Back to Effects</button>
+                </div>
+                <div class="pad-grid">
+                    <button class="drum-pad" data-drum="kick">Kick (Q)</button>
+                    <button class="drum-pad" data-drum="snare">Snare (W)</button>
+                    <button class="drum-pad" data-drum="hihat">Hi-Hat (E)</button>
+                    <button class="drum-pad" data-drum="openhat">Open Hat (R)</button>
+                    
+                    <button class="drum-pad" data-drum="clap">Clap (T)</button>
+                    <button class="drum-pad" data-drum="tom">Tom (Y)</button>
+                    <button class="drum-pad" data-drum="ride">Ride (U)</button>
+                    <button class="drum-pad" data-drum="crash">Crash (I)</button>
                 </div>
             </section>
 

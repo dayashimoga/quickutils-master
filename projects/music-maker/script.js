@@ -47,9 +47,7 @@ const DRUMS = [
 ];
 
 const STEPS = 16;
-const PATTERNS = Array.from({ length: 4 }, () =>
-    DRUMS.map(() => Array(STEPS).fill(false))
-);
+let PATTERNS = Array.from({ length: 4 }, () => ({ drums: DRUMS.map(() => Array(STEPS).fill(false)), synth: Array(STEPS).fill(null) }));
 const drumVolumes = DRUMS.map(() => 0.8);
 
 let currentPattern = 0;
@@ -59,6 +57,7 @@ let bpm = 120;
 let swing = 0;
 let stepTimer = null;
 
+let synthNoteToPlace = "C4";
 // Synth state
 let synthWave = 'sine';
 let synthOctave = 4;
@@ -87,7 +86,7 @@ const DRUM_PRESETS = {
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-        [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+        [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     ],
     hiphop: [
         [1,0,0,0, 0,0,0,1, 0,0,1,0, 0,0,0,0],
@@ -97,7 +96,7 @@ const DRUM_PRESETS = {
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
         [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-        [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+        [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     ],
     techno: [
         [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
@@ -107,7 +106,7 @@ const DRUM_PRESETS = {
         [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
         [0,0,0,1, 0,0,0,1, 0,0,0,0, 0,0,0,0],
         [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-        [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+        [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     ]
 };
 
@@ -360,8 +359,22 @@ function tick() {
     // Clear previous highlights
     document.querySelectorAll('.seq-step.current').forEach(el => el.classList.remove('current'));
 
+    
+    // Play synth
+    const synthNote = PATTERNS[currentPattern].synth[currentStep];
+    if (synthNote) {
+        const noteMatch = synthNote.match(/([A-G]#?)(\d)/);
+        if (noteMatch) {
+            playSynthNote(noteMatch[1], parseInt(noteMatch[2]));
+            // Auto release after 1 step
+            const releaseTime = (60 / bpm) * 1000 / 4;
+            setTimeout(() => stopSynthNote(noteMatch[1], parseInt(noteMatch[2])), releaseTime * 0.8);
+        }
+    }
+    
     // Play active drums
-    const pattern = PATTERNS[currentPattern];
+    const pattern = PATTERNS[currentPattern].drums;
+    
     DRUMS.forEach((drum, drumIdx) => {
         if (pattern[drumIdx][currentStep]) {
             playDrum(drum.id, drumVolumes[drumIdx]);
@@ -410,14 +423,49 @@ function buildSequencer() {
             step.className = 'seq-step';
             step.dataset.step = s;
             if (s % 4 === 0) step.classList.add('beat-marker');
-            if (PATTERNS[currentPattern][drumIdx][s]) step.classList.add('active');
+            if (PATTERNS[currentPattern].drums[drumIdx][s]) step.classList.add('active');
             step.addEventListener('click', () => {
-                PATTERNS[currentPattern][drumIdx][s] = !PATTERNS[currentPattern][drumIdx][s];
+                PATTERNS[currentPattern].drums[drumIdx][s] = !PATTERNS[currentPattern].drums[drumIdx][s];
                 step.classList.toggle('active');
             });
             row.appendChild(step);
         }
 
+        
+    // Add Synth Roll Row
+    const synthRow = document.createElement('div');
+    synthRow.className = 'seq-row synth-row';
+    const sLabel = document.createElement('div');
+    sLabel.className = 'seq-label';
+    sLabel.innerHTML = `Melody<br><small style="color:var(--text-muted)">[${synthNoteToPlace}]</small>`;
+    sLabel.title = "Click a piano key to change note, then click grid to plot";
+    synthRow.appendChild(sLabel);
+    
+    for (let s = 0; s < STEPS; s++) {
+        const step = document.createElement('div');
+        step.className = 'seq-step synth-step';
+        step.dataset.step = s;
+        if (s % 4 === 0) step.classList.add('beat-marker');
+        const note = PATTERNS[currentPattern].synth[s];
+        if (note) {
+            step.classList.add('active');
+            step.textContent = note.replace(/\d/, '');
+        }
+        step.addEventListener('click', () => {
+            if (step.classList.contains('active')) {
+                PATTERNS[currentPattern].synth[s] = null;
+                step.classList.remove('active');
+                step.textContent = '';
+            } else {
+                PATTERNS[currentPattern].synth[s] = synthNoteToPlace;
+                step.classList.add('active');
+                step.textContent = synthNoteToPlace.replace(/\d/, '');
+            }
+        });
+        synthRow.appendChild(step);
+    }
+    grid.appendChild(synthRow);
+    
         // Volume slider per row
         const vol = document.createElement('input');
         vol.type = 'range';
@@ -450,13 +498,13 @@ function buildPiano() {
 
             key.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                playSynthNote(note, oct);
+                playSynthNote(note, oct); synthNoteToPlace = note + oct; buildSequencer();
             });
             key.addEventListener('mouseup', () => stopSynthNote(note, oct));
             key.addEventListener('mouseleave', () => stopSynthNote(note, oct));
             key.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                playSynthNote(note, oct);
+                playSynthNote(note, oct); synthNoteToPlace = note + oct; buildSequencer();
             }, { passive: false });
             key.addEventListener('touchend', () => stopSynthNote(note, oct));
 
@@ -503,7 +551,7 @@ document.addEventListener('keydown', (e) => {
         const note = KEY_MAP[k];
         let oct = synthOctave;
         if (['k', 'o', 'l'].includes(k)) oct = synthOctave + 1;
-        playSynthNote(note, oct);
+        playSynthNote(note, oct); synthNoteToPlace = note + oct; buildSequencer();
     }
 });
 
@@ -678,13 +726,13 @@ function wireControls() {
 
     // Clear pattern
     document.getElementById('clearPattern').addEventListener('click', () => {
-        PATTERNS[currentPattern] = DRUMS.map(() => Array(STEPS).fill(false));
+        PATTERNS[currentPattern].drums = DRUMS.map(() => Array(STEPS).fill(false)); PATTERNS[currentPattern].synth = Array(STEPS).fill(null);
         buildSequencer();
     });
 
     // Random pattern
     document.getElementById('randomPattern').addEventListener('click', () => {
-        PATTERNS[currentPattern] = DRUMS.map((_, i) => {
+        PATTERNS[currentPattern].drums = DRUMS.map((_, i) => {
             const density = i === 0 ? 0.25 : i <= 2 ? 0.35 : 0.15;
             return Array.from({ length: STEPS }, () => Math.random() < density);
         });
@@ -706,7 +754,7 @@ function wireControls() {
         drumPresetSelect.addEventListener('change', (e) => {
             const p = DRUM_PRESETS[e.target.value];
             if (p) {
-                PATTERNS[currentPattern] = DRUMS.map((_, i) => p[i] ? p[i].map(x=>!!x) : Array(STEPS).fill(false));
+                PATTERNS[currentPattern].drums = DRUMS.map((_, i) => p[i] ? p[i].map(x=>!!x) : Array(STEPS).fill(false));
                 buildSequencer();
             }
             e.target.value = '';
@@ -755,6 +803,90 @@ function wireControls() {
     wireKnob('detuneKnob', 'detuneVal', (v) => { synthDetune = v; return v + '¢'; });
     wireKnob('synthVolume', 'synthVolVal', (v) => { synthVolume = v / 100; return v + '%'; });
 
+    
+    // Save/Load
+    document.getElementById('saveSongBtn').addEventListener('click', () => {
+        const songData = {
+            bpm, swing, PATTERNS, currentPattern,
+            synthWave, synthOctave, synthEnvelope, synthFilter, synthResonance, synthDetune, synthVolume
+        };
+        const str = btoa(JSON.stringify(songData));
+        prompt("Copy this string to save your song:", str);
+    });
+    document.getElementById('loadSongBtn').addEventListener('click', () => {
+        const str = prompt("Paste your song string here:");
+        if (!str) return;
+        try {
+            const songData = JSON.parse(atob(str));
+            bpm = songData.bpm;
+            document.getElementById('tempoSlider').value = bpm;
+            document.getElementById('tempoInput').value = bpm;
+            swing = songData.swing || 0;
+            document.getElementById('swingSlider').value = swing;
+            document.getElementById('swingReadout').textContent = swing + '%';
+            
+            PATTERNS = songData.PATTERNS;
+            currentPattern = songData.currentPattern || 0;
+            document.getElementById('patternSelect').value = currentPattern;
+            
+            synthWave = songData.synthWave || 'sine';
+            synthOctave = songData.synthOctave || 4;
+            document.getElementById('octaveSelect').value = synthOctave;
+            
+            if (songData.synthEnvelope) synthEnvelope = songData.synthEnvelope;
+            synthFilter = songData.synthFilter || 5000;
+            synthResonance = songData.synthResonance || 1;
+            synthDetune = songData.synthDetune || 0;
+            synthVolume = songData.synthVolume || 0.7;
+            
+            buildSequencer();
+            buildPiano();
+            document.querySelectorAll('.wave-btn').forEach(b => b.classList.toggle('active', b.dataset.wave === synthWave));
+        } catch (err) {
+            alert("Invalid song data!");
+        }
+    });
+
+    // Soundboard
+    document.getElementById('openSoundboardBtn').addEventListener('click', () => {
+        document.getElementById('effectsPanel').style.display = 'none';
+        document.getElementById('soundboardPanel').style.display = 'block';
+    });
+    document.getElementById('closeSoundboardBtn').addEventListener('click', () => {
+        document.getElementById('soundboardPanel').style.display = 'none';
+        document.getElementById('effectsPanel').style.display = 'block';
+    });
+    
+    document.querySelectorAll('.drum-pad').forEach(pad => {
+        const drum = pad.dataset.drum;
+        pad.addEventListener('mousedown', () => { playDrum(drum); pad.classList.add('active'); });
+        pad.addEventListener('mouseup', () => pad.classList.remove('active'));
+        pad.addEventListener('mouseleave', () => pad.classList.remove('active'));
+        pad.addEventListener('touchstart', (e) => { e.preventDefault(); playDrum(drum); pad.classList.add('active'); });
+        pad.addEventListener('touchend', () => pad.classList.remove('active'));
+    });
+    
+    // Link QWERTY keys to drum pads when soundboard is open
+    const DRUM_KEYS = { 'q':'kick', 'w':'snare', 'e':'hihat', 'r':'openhat', 't':'clap', 'y':'tom', 'u':'ride', 'i':'crash' };
+    document.addEventListener('keydown', (e) => {
+        if (e.repeat || e.target.tagName === 'INPUT') return;
+        const k = e.key.toLowerCase();
+        if (DRUM_KEYS[k] && document.getElementById('soundboardPanel').style.display !== 'none') {
+            const pad = document.querySelector(`.drum-pad[data-drum="${DRUM_KEYS[k]}"]`);
+            if (pad) {
+                playDrum(DRUM_KEYS[k]);
+                pad.classList.add('active');
+            }
+        }
+    });
+    document.addEventListener('keyup', (e) => {
+        const k = e.key.toLowerCase();
+        if (DRUM_KEYS[k]) {
+            const pad = document.querySelector(`.drum-pad[data-drum="${DRUM_KEYS[k]}"]`);
+            if (pad) pad.classList.remove('active');
+        }
+    });
+    
     // Theme toggle
     document.getElementById('themeBtn').addEventListener('click', () => {
         const html = document.documentElement;
