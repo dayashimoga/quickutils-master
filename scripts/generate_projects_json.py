@@ -1,38 +1,54 @@
 import json
-import os
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECT_CONFIG_PATH = ROOT_DIR / "project_config.json"
-TERRAFORM_PROJECTS_PATH = ROOT_DIR / "terraform" / "projects.json"
+# In-place patch
+TERRAFORM_PROJECTS_DEST = ROOT_DIR / "terraform" / "projects.json"
 
-def generate():
-    if not PROJECT_CONFIG_PATH.exists():
-        print("✗ project_config.json not found!")
-        return
-
-    config = json.loads(PROJECT_CONFIG_PATH.read_text(encoding="utf-8"))
-    projects = config.get("projects", {})
-    
-    terraform_projects = {}
-    
-    for key, data in projects.items():
-        base_cmd = "mkdir -p dist && cp index.html style.css script.js dist/"
-        # For python Jinja directories
-        if "directory" in key:
-            base_cmd = "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py"
-
-        terraform_projects[key] = {
-            "directory": f"projects/{key}",
-            "repo_name": key,
-            "build_command": base_cmd,
-            "destination_dir": "dist",
-            "custom_domain": data.get("SITE_URL", "").replace("https://", "").replace("http://", "").strip("/"),
-            "root_dir": f"projects/{key}"
-        }
+def apply():
+    # 1. Load the existing architecture from git baseline
+    with open(TERRAFORM_PROJECTS_DEST, "r", encoding="utf-8") as f:
+        arch = json.load(f)
         
-    TERRAFORM_PROJECTS_PATH.write_text(json.dumps(terraform_projects, indent=4), encoding="utf-8")
-    print(f"✅ Generated terraform/projects.json with {len(terraform_projects)} projects.")
+    # 2. Add any missing newly created projects
+    # music-maker is physically missing from the old JSON
+    if "music-maker" not in arch:
+        arch["music-maker"] = {
+            "directory": "projects/music-maker",
+            "repo_name": "music-maker",
+            "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
+            "destination_dir": "dist",
+            "custom_domain": "music.quickutils.top",
+            "root_dir": "projects/music-maker"
+        }
+    
+    # Also in project_config.json there's "quickutils-master". The old JSON used key "master" for the same repo!
+    # Let's fix that map.
+    
+    with open(PROJECT_CONFIG_PATH, "r", encoding="utf-8") as f:
+        master_config = json.load(f)
+    
+    projects = master_config.get("projects", {})
+    
+    # 3. Synchronize custom domains strictly
+    for arch_key, config in arch.items():
+        # Match repo_name to projects list from config
+        repo_name = config.get("repo_name", arch_key)
+        
+        # In project_config.json, the key exactly matches repo_name in 100% of cases
+        if repo_name in projects:
+            domain_raw = projects[repo_name].get("SITE_URL", "")
+            # clean domain
+            domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
+            if domain:
+                arch[arch_key]["custom_domain"] = domain
+                
+    # 4. Dump back to original terraform/projects.json safely
+    with open(TERRAFORM_PROJECTS_DEST, "w", encoding="utf-8") as f:
+        json.dump(arch, f, indent=4)
+        
+    print(f"Successfully merged {len(arch)} definitions safely into terraform/projects.json!")
 
 if __name__ == "__main__":
-    generate()
+    apply()
