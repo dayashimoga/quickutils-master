@@ -65,9 +65,9 @@ jobs:
               -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
               
             if [ "$STATUS_PROJ" == "200" ]; then
-              if ! terraform state show "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1; then
+              if ! terraform state show 'cloudflare_pages_project.quickutils_projects["'$key'"]' > /dev/null 2>&1; then
                 echo "Adopting project: $repo"
-                terraform import -input=false "cloudflare_pages_project.quickutils_projects[\"$key\"]" "$ACCOUNT_ID/$repo" || echo "Import failed for project $repo"
+                terraform import -input=false 'cloudflare_pages_project.quickutils_projects["'$key'"]' "$ACCOUNT_ID/$repo" || echo "Import failed for project $repo"
               else
                 echo "Project $repo already in state."
               fi
@@ -78,21 +78,21 @@ jobs:
                   -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
                   
                 if [ "$STATUS_DOM" == "200" ]; then
-                  if ! terraform state show "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1; then
+                  if ! terraform state show 'cloudflare_pages_domain.quickutils_domains["'$key'"]' > /dev/null 2>&1; then
                     echo "Adopting domain: $domain for $repo"
-                    terraform import -input=false "cloudflare_pages_domain.quickutils_domains[\"$key\"]" "$ACCOUNT_ID/$repo/$domain" || echo "Import failed for domain $domain"
+                    terraform import -input=false 'cloudflare_pages_domain.quickutils_domains["'$key'"]' "$ACCOUNT_ID/$repo/$domain" || echo "Import failed for domain $domain"
                   else
                     echo "Domain $domain already in state."
                   fi
                 else
                   echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Removing from state if it exists."
-                  terraform state rm "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1 || true
+                  terraform state rm 'cloudflare_pages_domain.quickutils_domains["'$key'"]' || true
                 fi
               fi
             else
               echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Removing from state if it exists to force recreate."
-              terraform state rm "cloudflare_pages_project.quickutils_projects[\"$key\"]" > /dev/null 2>&1 || true
-              terraform state rm "cloudflare_pages_domain.quickutils_domains[\"$key\"]" > /dev/null 2>&1 || true
+              terraform state rm 'cloudflare_pages_project.quickutils_projects["'$key'"]' || true
+              terraform state rm 'cloudflare_pages_domain.quickutils_domains["'$key'"]' || true
             fi
           done
           
