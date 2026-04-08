@@ -1,33 +1,31 @@
-# Architecture Overview
+# QuickUtils Monorepo Technical Architecture
 
-## Architecture Tree
+## Architectural Overview
+QuickUtils represents a horizontally scaled multi-application ecosystem originating from a monolithic repository configuration. It leverages automated discrete-repository sharding tied intrinsically into edge-accelerated deployments through Cloudflare Pages and Terraform workflows.
 
-```mermaid
-graph TD
-    A[Root Master Repository: quickutils-master] -->|Manages Templates & Core Scripts| B(scripts/)
-    A -->|Manages Global Infrastructure| C(terraform/)
-    
-    B -.->|Synchronized via sync_project_scripts.py| D[Child Project: boilerplates-directory]
-    B -.->|Synchronized| E[Child Project: cheatsheets-directory]
-    B -.->|Synchronized| F[Child Project: ...other directories]
-    
-    D --> D1[data/database.json]
-    D --> D2[src/]
-    D --> D3[scripts/]
-    D --> D4[tests/]
-    D --> D5[dist/ - Generated Output]
-    
-    C -->|Deploys to| G[Cloudflare Pages]
-    D5 -.->|Automated Push via GitHub Actions| G
-    
-    H[GitHub Actions Workflow] -->|Triggers on push| I{Intelligent Routing}
-    I -->|Core change| J[Build & Deploy All Projects]
-    I -->|Project change| K[Build & Deploy Specific Project]
-```
+### 1. Codebase Philosophy
+*   **Vanilla JS Priority**: Frameworkless vanilla JavaScript is utilized across 90% of the nodes (including intensive computation modules like physics simulators, game logic strings, and MNA circuit iterations). 
+*   **Zero-Dependency Constraint**: No heavy front-end packaging ecosystems (Webpack, Babel) for individual utilities, maximizing raw speed.
+*   **PWA Compliance**: All applications utilize the cached global core ecosystem script for progressive capabilities. 
 
-## System Workflow
-1. **Data Ingestion**: Specific scripts (e.g., `fetch_data.py`) aggregate or parse initial dataset into localized `data/database.json`.
-2. **Static Site Generation**: `build_directory.py` reads `database.json`, ingests Jinja templates from `src/templates`, and renders static files (HTML, JSON, XML) into the `dist/` directory.
-3. **Synchronization**: `sync_project_scripts.py` ensures all child projects have the latest master scripts and shared templates before testing or generating content.
-4. **Testing**: `pytest` traverses `tests/` directories to confirm generation boundaries, link integrity, and snippet logic.
-5. **Deployment**: GitHub Actions catches pushes, determines the changed boundaries, and invokes Cloudflare deployments automatically based on Terraform pre-provisioned projects.
+---
+
+## Core Operational Components
+
+### 1. Orchestrated Distribution Layer
+Rather than bridging the unified mono-repository directly to Cloudflare via localized route trees (which violently breaches Cloudflare parallel build constraints when scaling past 20 domains simultaneously), the distribution logic explicitly handles horizontal sharding.
+
+*   `github_distribute.py`: Interrogates local active sub-projects, auto-provisions isolated GitHub repositories specifically mapped individually to tools, and recursively syncs the file architecture utilizing dynamic temp-checkout branches. 
+*   **Selective Sync Constraints**: Utilizes automated `$CHANGED_PROJECTS` tracking derived from `git diff` payload variables to avoid deploying/resyncing unaffected sub-nodes during minor cross-network enhancements.
+
+### 2. Infrastructure as Code (IaC) - Terraform
+Cloudflare administration is fully detached from manual UI configuration via Terraform.
+
+*   **Dynamic Source Binding**: Uses dynamically injected `terraform/projects.json` payloads updated continually by `generate_projects_json.py` to keep Terraform infrastructure maps natively synced with root configuration files (`project_config.json`).
+*   **Native Domain CNAME Routing**: Overhauls standard `*.pages.dev` assignments seamlessly by provisioning mapped root `A` or `CNAME` variables dynamically alongside corresponding zone provisioning to bypass SSL validation delays. 
+
+### 3. CI/CD Unified Workflow Strategy
+A standardized GitHub Actions matrix (`ci.yml`) intercepts standard `push` protocols.
+*   Runs isolated **Vitest** verification modules for complex local JS environments alongside deep mocked JSDOM environments for GUI simulation metrics without browser overhead. 
+*   Maintains a global threshold validation requiring >90% code coverage. 
+*   Simultaneous testing layers provided via cross-compatable orchestrated **Docker** multi-environment instances (`Dockerfile.test`).
