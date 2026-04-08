@@ -11,27 +11,29 @@ def apply():
     with open(TERRAFORM_PROJECTS_DEST, "r", encoding="utf-8") as f:
         arch = json.load(f)
         
-    # 2. Add any missing newly created projects
-    # music-maker is physically missing from the old JSON
-    if "music-maker" not in arch:
-        arch["music-maker"] = {
-            "directory": "projects/music-maker",
-            "repo_name": "music-maker",
-            "build_command": "mkdir -p dist && cp index.html style.css script.js dist/",
-            "destination_dir": "dist",
-            "custom_domain": "music.quickutils.top",
-            "root_dir": "projects/music-maker"
-        }
-    
-    # Also in project_config.json there's "quickutils-master". The old JSON used key "master" for the same repo!
-    # Let's fix that map.
-    
     with open(PROJECT_CONFIG_PATH, "r", encoding="utf-8") as f:
         master_config = json.load(f)
     
     projects = master_config.get("projects", {})
     
-    # 3. Synchronize custom domains strictly
+    # 2. Add any missing newly created projects
+    for project_id, info in projects.items():
+        if project_id not in arch and project_id != "quickutils-master": # skip master to handle repo_name logic
+            # clean domain
+            domain_raw = info.get("SITE_URL", "")
+            domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
+            
+            # Simple static site build command assumption
+            arch[project_id] = {
+                "directory": f"projects/{project_id}",
+                "repo_name": project_id,
+                "build_command": "mkdir -p dist && cp index.html style.css script.js dist/ 2>/dev/null || true",
+                "destination_dir": "dist",
+                "custom_domain": domain,
+                "root_dir": f"projects/{project_id}"
+            }
+
+    # 3. Synchronize custom domains strictly for existing elements
     for arch_key, config in arch.items():
         # Match repo_name to projects list from config
         repo_name = config.get("repo_name", arch_key)
@@ -39,7 +41,6 @@ def apply():
         # In project_config.json, the key exactly matches repo_name in 100% of cases
         if repo_name in projects:
             domain_raw = projects[repo_name].get("SITE_URL", "")
-            # clean domain
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             if domain:
                 arch[arch_key]["custom_domain"] = domain
