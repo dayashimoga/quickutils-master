@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 
-def main():
+def sync_scripts():
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     projects_json_path = os.path.join(root_dir, 'terraform', 'projects.json')
     dist_css_path = os.path.join(root_dir, 'shared', 'quickutils-core.css')
@@ -38,4 +38,4 @@ def main():
     print(f"Successfully injected core assets into {success_count} project directories.")
 
 if __name__ == "__main__":
-    main()
+    sync_scripts()

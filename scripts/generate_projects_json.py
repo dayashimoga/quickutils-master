@@ -17,8 +17,9 @@ def apply():
     projects = master_config.get("projects", {})
     
     # 2. Add any missing newly created projects
+    arch_repo_names = {v.get("repo_name", k) for k, v in arch.items()}
     for project_id, info in projects.items():
-        if project_id not in arch and project_id != "quickutils-master": # skip master to handle repo_name logic
+        if project_id not in arch_repo_names and project_id not in arch and project_id != "quickutils-master": # skip master to handle repo_name logic
             # clean domain
             domain_raw = info.get("SITE_URL", "")
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
