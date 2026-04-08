@@ -29,7 +29,8 @@ def apply():
                 "repo_name": project_id,
                 "build_command": "mkdir -p dist && cp index.html style.css script.js dist/ 2>/dev/null || true",
                 "destination_dir": "dist",
-                "custom_domain": domain
+                "custom_domain": domain,
+                "root_dir": f"projects/{project_id}"
             }
 
     # 3. Synchronize custom domains strictly for existing elements
