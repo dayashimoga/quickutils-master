@@ -27,23 +27,24 @@ const TOTAL_PAGES=CATEGORIES.reduce((s,c)=>s+c.count,0);
 
 let currentPage=null,currentColor=COLORS[0],tool='fill',colorState={},undoStack=[],redoStack=[];
 const completed=JSON.parse(localStorage.getItem('qu_coloring_done')||'[]');
+let currentDifficulty = 'standard';
 
 // SVG shape helpers
-function circle(cx,cy,r){return `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;}
-function ellipse(cx,cy,rx,ry){return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`;}
-function rect(x,y,w,h,rx){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${rx?'rx="'+rx+'"':''}/>`;}
-function poly(pts){return `<polygon points="${pts}"/>`;}
-function path(d){return `<path d="${d}"/>`;}
-function tri(cx,cy,s){const h=s*0.866;return poly(`${cx},${cy-h/2} ${cx-s/2},${cy+h/2} ${cx+s/2},${cy+h/2}`);}
-function star(cx,cy,r1,r2,n){let pts=[];for(let i=0;i<n*2;i++){const a=Math.PI/n*i-Math.PI/2;const r=i%2===0?r1:r2;pts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));}return poly(pts.join(' '));}
-function heart(cx,cy,s){return path(`M${cx},${cy+s*0.4} C${cx},${cy+s*0.8} ${cx-s*0.8},${cy+s*0.5} ${cx-s*0.8},${cy} C${cx-s*0.8},${cy-s*0.5} ${cx},${cy-s*0.3} ${cx},${cy-s*0.1} C${cx},${cy-s*0.3} ${cx+s*0.8},${cy-s*0.5} ${cx+s*0.8},${cy} C${cx+s*0.8},${cy+s*0.5} ${cx},${cy+s*0.8} ${cx},${cy+s*0.4}Z`);}
-function flower(cx,cy,r,petals){let s='';const pr=r*0.6;for(let i=0;i<petals;i++){const a=2*Math.PI/petals*i;s+=ellipse(cx+r*0.5*Math.cos(a),cy+r*0.5*Math.sin(a),pr,pr*0.4).replace('<ellipse','<ellipse transform="rotate('+((a*180/Math.PI))+' '+(cx+r*0.5*Math.cos(a))+' '+(cy+r*0.5*Math.sin(a))+')"');}s+=circle(cx,cy,r*0.3);return s;}
-function house(x,y,w,h){return rect(x,y+h*0.4,w,h*0.6)+poly(`${x},${y+h*0.4} ${x+w/2},${y} ${x+w},${y+h*0.4}`)+rect(x+w*0.35,y+h*0.65,w*0.3,h*0.35)+rect(x+w*0.1,y+h*0.5,w*0.2,w*0.2)+rect(x+w*0.7,y+h*0.5,w*0.2,w*0.2);}
-function tree(x,y,w,h){return rect(x+w*0.35,y+h*0.6,w*0.3,h*0.4)+tri(x+w/2,y+h*0.15,w*0.9)+tri(x+w/2,y+h*0.05,w*0.7);}
-function car(x,y,w,h){return rect(x+w*0.05,y+h*0.4,w*0.9,h*0.35,5)+path(`M${x+w*0.2},${y+h*0.4} L${x+w*0.3},${y+h*0.1} L${x+w*0.7},${y+h*0.1} L${x+w*0.8},${y+h*0.4}`)+circle(x+w*0.25,y+h*0.8,w*0.08)+circle(x+w*0.75,y+h*0.8,w*0.08)+rect(x+w*0.35,y+h*0.18,w*0.15,h*0.18,2)+rect(x+w*0.55,y+h*0.18,w*0.15,h*0.18,2);}
-function butterfly(cx,cy,s){return ellipse(cx,cy,s*0.06,s*0.4)+ellipse(cx-s*0.35,cy-s*0.15,s*0.35,s*0.25)+ellipse(cx+s*0.35,cy-s*0.15,s*0.35,s*0.25)+ellipse(cx-s*0.25,cy+s*0.2,s*0.25,s*0.18)+ellipse(cx+s*0.25,cy+s*0.2,s*0.25,s*0.18)+circle(cx,cy-s*0.45,s*0.08);}
-function fish(cx,cy,s){return ellipse(cx,cy,s*0.5,s*0.25)+poly(`${cx+s*0.4},${cy} ${cx+s*0.7},${cy-s*0.2} ${cx+s*0.7},${cy+s*0.2}`)+circle(cx-s*0.25,cy-s*0.05,s*0.04);}
-function rocket(cx,cy,s){return ellipse(cx,cy,s*0.12,s*0.4)+poly(`${cx},${cy-s*0.45} ${cx-s*0.12},${cy-s*0.25} ${cx+s*0.12},${cy-s*0.25}`)+poly(`${cx-s*0.12},${cy+s*0.3} ${cx-s*0.25},${cy+s*0.45} ${cx},${cy+s*0.35}`)+poly(`${cx+s*0.12},${cy+s*0.3} ${cx+s*0.25},${cy+s*0.45} ${cx},${cy+s*0.35}`)+circle(cx,cy-s*0.05,s*0.06);}
+window.ColoringHelpers = window.ColoringHelpers || {};
+const circle = (cx,cy,r) => `<circle cx="${cx}" cy="${cy}" r="${r}" class="colorable"/>`;
+const ellipse = (cx,cy,rx,ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" class="colorable"/>`;
+const rect = (x,y,w,h,rx) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${rx?'rx="'+rx+'"':''} class="colorable"/>`;
+const poly = (pts) => `<polygon points="${pts}" class="colorable"/>`;
+const path = (d) => `<path d="${d}" class="colorable"/>`;
+const tri = (cx,cy,s) => {const h=s*0.866;return poly(`${cx},${cy-h/2} ${cx-s/2},${cy+h/2} ${cx+s/2},${cy+h/2}`);};
+const star = (cx,cy,r1,r2,n) => {let pts=[];for(let i=0;i<n*2;i++){const a=Math.PI/n*i-Math.PI/2;const r=i%2===0?r1:r2;pts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));}return poly(pts.join(' '));};
+const heart = (cx,cy,s) => path(`M${cx},${cy+s*0.4} C${cx},${cy+s*0.8} ${cx-s*0.8},${cy+s*0.5} ${cx-s*0.8},${cy} C${cx-s*0.8},${cy-s*0.5} ${cx},${cy-s*0.3} ${cx},${cy-s*0.1} C${cx},${cy-s*0.3} ${cx+s*0.8},${cy-s*0.5} ${cx+s*0.8},${cy} C${cx+s*0.8},${cy+s*0.5} ${cx},${cy+s*0.8} ${cx},${cy+s*0.4}Z`);
+const flower = (cx,cy,r,petals) => {let s='';const pr=r*0.6;for(let i=0;i<petals;i++){const a=2*Math.PI/petals*i;s+=ellipse(cx+r*0.5*Math.cos(a),cy+r*0.5*Math.sin(a),pr,pr*0.4).replace('<ellipse',`<ellipse transform="rotate(${(a*180/Math.PI)} ${cx+r*0.5*Math.cos(a)} ${cy+r*0.5*Math.sin(a)})"`)+'\n';}s+=circle(cx,cy,r*0.3);return s;};
+const butterfly = (cx,cy,s) => ellipse(cx,cy,s*0.06,s*0.4)+ellipse(cx-s*0.35,cy-s*0.15,s*0.35,s*0.25)+ellipse(cx+s*0.35,cy-s*0.15,s*0.35,s*0.25)+ellipse(cx-s*0.25,cy+s*0.2,s*0.25,s*0.18)+ellipse(cx+s*0.25,cy+s*0.2,s*0.25,s*0.18)+circle(cx,cy-s*0.45,s*0.08);
+
+window.ColoringHelpers.circle = circle;
+window.ColoringHelpers.path = path;
+window.ColoringHelpers.getDiff = () => currentDifficulty;
 
 // Page generators by category
 const PAGES=[];
@@ -61,29 +62,8 @@ const archNames=['Bridge','Lighthouse','Skyscraper','Temple','Windmill','Castle 
 const zenNames=['Lotus Mandala','Ocean Waves','Yin Yang','Zen Garden','Spiral Galaxy','Sacred Geometry','Dreamcatcher','Tree of Life','Infinity Flow','Peace Mandala'];
 
 function genAnimal(idx){
-  const cx=250,cy=250,s=120;
-  switch(idx%20){
-    case 0: return circle(cx,cy,s)+circle(cx-50,cy-90,35)+circle(cx+50,cy-90,35)+circle(cx-30,cy-20,8)+circle(cx+30,cy-20,8)+ellipse(cx,cy+20,20,12)+path(`M${cx},${cy+32}L${cx-5},${cy+45}L${cx+5},${cy+45}Z`); // cat
-    case 1: return circle(cx,cy,s)+ellipse(cx-80,cy-50,40,60)+ellipse(cx+80,cy-50,40,60)+circle(cx-30,cy-20,10)+circle(cx+30,cy-20,10)+ellipse(cx,cy+30,25,15); // dog
-    case 2: return circle(cx,cy,s*1.1)+circle(cx-35,cy-10,12)+circle(cx+35,cy-10,12)+ellipse(cx,cy+30,30,18)+path(`M${cx-80},${cy-60}L${cx-40},${cy-100}L${cx},${cy-60}`)+path(`M${cx+80},${cy-60}L${cx+40},${cy-100}L${cx},${cy-60}`); // lion mane
-    case 3: return ellipse(cx,cy+20,100,80)+circle(cx,cy-80,60)+ellipse(cx-80,cy-70,30,50)+ellipse(cx+80,cy-70,30,50)+circle(cx-20,cy-90,8)+circle(cx+20,cy-90,8)+path(`M${cx},${cy-50}L${cx},${cy+10}`)+ rect(cx-15,cy+95,30,60)+rect(cx+30,cy+95,30,60)+rect(cx-60,cy+95,30,60); // elephant
-    case 4: return ellipse(cx,cy+20,90,100)+circle(cx,cy-80,55)+circle(cx-35,cy-110,22)+circle(cx+35,cy-110,22)+circle(cx-18,cy-85,7)+circle(cx+18,cy-85,7)+ellipse(cx,cy-65,12,8); // bear
-    case 5: return ellipse(cx,cy+10,70,80)+circle(cx,cy-70,45)+ellipse(cx-25,cy-120,15,40)+ellipse(cx+25,cy-120,15,40)+circle(cx-12,cy-75,5)+circle(cx+12,cy-75,5); // rabbit
-    case 6: return circle(cx,cy,80)+circle(cx,cy,50)+circle(cx-15,cy-10,12)+circle(cx+15,cy-10,12)+poly(`${cx-5},${cy+5} ${cx},${cy+15} ${cx+5},${cy+5}`)+ellipse(cx-70,cy,60,25)+ellipse(cx+70,cy,60,25); // owl
-    case 7: return ellipse(cx,cy,80,60)+poly(`${cx-60},${cy-30} ${cx-40},${cy-70} ${cx-20},${cy-30}`)+poly(`${cx+60},${cy-30} ${cx+40},${cy-70} ${cx+20},${cy-30}`)+circle(cx-20,cy-10,8)+circle(cx+20,cy-10,8)+poly(`${cx},${cy+5} ${cx-8},${cy+15} ${cx+8},${cy+15}`)+path(`M${cx+80},${cy} Q${cx+120},${cy-20} ${cx+130},${cy+10} Q${cx+120},${cy+30} ${cx+100},${cy+20}`); // fox
-    case 8: return fish(cx,cy,200); // dolphin
-    case 9: return circle(cx,cy,100)+ellipse(cx,cy,120,40)+circle(cx-20,cy-20,8)+circle(cx+20,cy-20,8)+rect(cx-60,cy+80,30,40)+rect(cx+30,cy+80,30,40); // turtle
-    case 10: return ellipse(cx,cy,100,70)+circle(cx-70,cy-60,40)+ellipse(cx-90,cy-100,15,30)+ellipse(cx-50,cy-100,15,30)+circle(cx-80,cy-65,6)+rect(cx+50,cy+40,18,50)+rect(cx-10,cy+40,18,50)+rect(cx-70,cy+40,18,50); // horse
-    case 11: return ellipse(cx,cy+30,60,80)+circle(cx,cy-80,35)+circle(cx-8,cy-85,5)+circle(cx+8,cy-85,5)+rect(cx-8,cy-120,16,60,5)+rect(cx+8,cy-130,16,70,5)+rect(cx-20,cy+100,15,40)+rect(cx+5,cy+100,15,40); // giraffe
-    case 12: return ellipse(cx,cy+10,60,80)+circle(cx,cy-60,40)+circle(cx-12,cy-65,6)+circle(cx+12,cy-65,6)+poly(`${cx-5},${cy-45} ${cx},${cy-35} ${cx+5},${cy-45}`)+ellipse(cx-50,cy+20,25,15)+ellipse(cx+50,cy+20,25,15); // penguin
-    case 13: return ellipse(cx,cy,70,80)+circle(cx,cy-60,45)+circle(cx-20,cy-50,25)+circle(cx+20,cy-50,25)+circle(cx-15,cy-65,5)+circle(cx+15,cy-65,5)+ellipse(cx,cy-45,10,6); // koala
-    case 14: return circle(cx,cy,90)+circle(cx-25,cy-30,25)+circle(cx+25,cy-30,25)+circle(cx-20,cy-35,6)+circle(cx+20,cy-35,6)+ellipse(cx,cy+10,15,10); // panda
-    case 15: return ellipse(cx,cy,70,80)+circle(cx,cy-70,45)+circle(cx-35,cy-100,20)+circle(cx+35,cy-100,20)+circle(cx-12,cy-75,6)+circle(cx+12,cy-75,6)+ellipse(cx,cy-55,10,6); // monkey
-    case 16: return ellipse(cx,cy,100,80)+circle(cx,cy-70,55)+circle(cx-20,cy-75,8)+circle(cx+20,cy-75,8)+path(`M${cx-35},${cy-90}L${cx-50},${cy-110}L${cx-20},${cy-95}`)+path(`M${cx+35},${cy-90}L${cx+50},${cy-110}L${cx+20},${cy-95}`); // tiger
-    case 17: return ellipse(cx,cy,140,60)+path(`M${cx+120},${cy} L${cx+160},${cy-30} L${cx+160},${cy+30}Z`)+circle(cx-80,cy-10,8)+path(`M${cx-10},${cy-40}Q${cx},${cy-60}${cx+10},${cy-40}`); // whale
-    case 18: return circle(cx,cy-20,40)+ellipse(cx,cy+40,100,40)+path(`M${cx-100},${cy+20}L${cx-160},${cy}L${cx-100},${cy+60}`)+path(`M${cx+100},${cy+20}L${cx+160},${cy}L${cx+100},${cy+60}`)+poly(`${cx-5},${cy-30}${cx},${cy-15}${cx+5},${cy-30}`); // eagle
-    default: return circle(cx,cy,60)+ellipse(cx,cy+50,80,40)+circle(cx-15,cy-10,8)+circle(cx+15,cy-10,8)+ellipse(cx,cy+10,20,10); // frog
-  }
+  if(window.RealisticDrawings && window.RealisticDrawings.genAnimal) return window.RealisticDrawings.genAnimal(idx);
+  return "";
 }
 
 function genNature(idx){const cx=250,cy=250;
@@ -106,24 +86,9 @@ function genNature(idx){const cx=250,cy=250;
   }
 }
 
-function genVehicle(idx){const cx=250,cy=250;
-  switch(idx%15){
-    case 0: return car(80,180,340,180);
-    case 1: return rect(80,200,340,80,5)+rect(120,140,120,60,5)+rect(60,280,30,20)+circle(150,300,25)+circle(300,300,25)+circle(350,300,25)+rect(80,220,20,10)+rect(420,230,10,30);
-    case 2: return ellipse(cx,cy,180,30)+poly(`${cx-180},${cy} ${cx-120},${cy-60} ${cx+120},${cy-60} ${cx+180},${cy}`)+rect(cx-160,cy,320,15)+ellipse(cx-100,cy-30,25,20)+ellipse(cx,cy-30,25,20)+ellipse(cx+100,cy-30,25,20)+poly(`${cx+180},${cy} ${cx+200},${cy-20} ${cx+200},${cy+20}`);
-    case 3: return ellipse(cx,cy+40,120,60)+rect(cx-40,cy-40,80,80,5)+poly(`${cx-80},${cy+80} ${cx-60},${cy+100} ${cx+60},${cy+100} ${cx+80},${cy+80}`)+rect(cx-10,cy+100,20,30)+path(`M${cx},${cy-40}L${cx-30},${cy-80}L${cx+30},${cy-80}Z`);
-    case 4: return rocket(cx,cy,300);
-    case 5: return ellipse(cx,cy+20,100,40)+circle(cx+20,cy-40,30)+rect(cx-80,cy-10,60,15)+path(`M${cx+20},${cy-70}L${cx+20},${cy-120}L${cx+60},${cy-100}Z`)+path(`M${cx-100},${cy+20}L${cx-120},${cy-30}L${cx-80},${cy-30}Z`);
-    case 6: return rect(60,180,380,120,10)+rect(100,130,250,50,8)+circle(140,320,30)+circle(260,320,30)+circle(380,320,30)+rect(120,150,50,30,3)+rect(190,150,50,30,3)+rect(260,150,50,30,3)+rect(70,200,30,20);
-    case 7: return circle(cx,cy,25)+circle(cx,cy,60)+path(`M${cx},${cy-60}L${cx},${cy-90}`)+path(`M${cx},${cy+60}L${cx},${cy+90}`)+rect(cx-5,cy-90,10,5)+rect(cx-5,cy+85,10,5)+circle(cx,cy-120,10)+circle(cx,cy+120,10);
-    case 8: return ellipse(cx,cy,150,50)+ellipse(cx,cy-10,130,35)+rect(cx-40,cy-40,80,30,5)+circle(cx,cy-60,15)+path(`M${cx+130},${cy}L${cx+170},${cy-20}L${cx+170},${cy+20}Z`)+path(`M${cx-60},${cy+50}L${cx-40},${cy+80}`)+path(`M${cx+60},${cy+50}L${cx+40},${cy+80}`);
-    case 9: return circle(cx,cy-30,80)+circle(cx,cy-30,60)+rect(cx-15,cy+50,30,80)+rect(cx-60,cy+60,120,30,10)+path(`M${cx-80},${cy-30}L${cx-30},${cy-130}L${cx+30},${cy-130}L${cx+80},${cy-30}`);
-    case 10: return rect(60,160,200,140,8)+rect(260,180,180,120,8)+circle(130,320,35)+circle(370,320,35)+rect(60,200,30,30)+rect(70,140,60,25,5); // fire truck
-    case 11: return rect(100,180,300,100,8)+circle(170,300,35)+circle(330,300,35)+rect(100,150,120,30)+path(`M220,150L300,180`)+rect(80,190,30,15);
-    case 12: return ellipse(cx,cy,100,60)+poly(`${cx+80},${cy} ${cx+140},${cy-30} ${cx+160},${cy} ${cx+140},${cy+30}`)+poly(`${cx-80},${cy} ${cx-140},${cy-30} ${cx-160},${cy} ${cx-140},${cy+30}`)+circle(cx,cy-80,15)+rect(cx-5,cy-140,10,60)+ellipse(cx-20,cy,15,25)+ellipse(cx+20,cy,15,25);
-    case 13: return poly(`${cx-60},${cy+60} ${cx},${cy-60} ${cx+60},${cy+60}`)+rect(cx-40,cy+60,80,20)+path(`M${cx-60},${cy+60}Q${cx-80},${cy+100}${cx-60},${cy+120}Q${cx},${cy+100}${cx+60},${cy+120}Q${cx+80},${cy+100}${cx+60},${cy+60}`)+circle(cx,cy-5,8);
-    default: return rect(80,200,340,80,10)+circle(130,300,40)+circle(370,300,40)+circle(130,300,20)+circle(370,300,20)+rect(120,140,200,60,8)+rect(80,200,40,30);
-  }
+function genVehicle(idx){
+  if(window.RealisticDrawings && window.RealisticDrawings.genVehicle) return window.RealisticDrawings.genVehicle(idx);
+  return "";
 }
 
 function genFantasy(idx){const cx=250,cy=250;
@@ -196,20 +161,9 @@ function genPattern(idx){const cx=250,cy=250;
   }
 }
 
-// ── NEW CATEGORY GENERATORS ──
-function genDinosaur(idx){const cx=250,cy=250;
-  switch(idx%10){
-    case 0: return ellipse(cx,cy,100,70)+circle(cx-80,cy-50,45)+circle(cx-95,cy-55,8)+poly(`${cx-65},${cy-30} ${cx-55},${cy-15} ${cx-75},${cy-15}`)+path(`M${cx+80},${cy} Q${cx+130},${cy-20} ${cx+160},${cy+10}`)+rect(cx-40,cy+60,25,50)+rect(cx+20,cy+60,25,50); // t-rex
-    case 1: return ellipse(cx,cy+20,90,60)+circle(cx-70,cy-20,30)+poly(`${cx-80},${cy-50} ${cx-60},${cy-70} ${cx-40},${cy-50}`)+path(`M${cx+30},${cy-30}L${cx+20},${cy-60}L${cx+40},${cy-50}L${cx+30},${cy-80}L${cx+50},${cy-70}L${cx+40},${cy-40}`)+rect(cx-50,cy+70,20,40)+rect(cx+30,cy+70,20,40); // stego
-    case 2: return ellipse(cx,cy+10,80,60)+circle(cx-50,cy-40,40)+poly(`${cx-70},${cy-70} ${cx-20},${cy-100} ${cx-10},${cy-60}`)+poly(`${cx-80},${cy-30} ${cx-110},${cy-50} ${cx-90},${cy-20}`)+circle(cx-60,cy-45,5)+rect(cx-40,cy+60,20,45)+rect(cx+20,cy+60,20,45); // triceratops
-    case 3: return ellipse(cx,cy,40,25)+circle(cx-30,cy-20,20)+path(`M${cx-40},${cy}L${cx-120},${cy+60}L${cx-80},${cy}`)+path(`M${cx+40},${cy}L${cx+120},${cy+60}L${cx+80},${cy}`)+poly(`${cx-25},${cy-15} ${cx-35},${cy-5} ${cx-15},${cy-5}`); // pterodactyl
-    case 4: return ellipse(cx,cy+30,60,70)+circle(cx-20,cy-80,30)+path(`M${cx-20},${cy-50}L${cx-20},${cy-30}`)+circle(cx-25,cy-85,4)+path(`M${cx+50},${cy+80}Q${cx+100},${cy+60}${cx+120},${cy+80}`)+rect(cx-30,cy+90,20,40)+rect(cx+10,cy+90,20,40); // bronto
-    case 5: return ellipse(cx,cy,50,35)+circle(cx-40,cy-25,22)+circle(cx-48,cy-28,4)+poly(`${cx-30},${cy-15} ${cx-25},${cy-5} ${cx-35},${cy-5}`)+path(`M${cx+40},${cy}Q${cx+70},${cy-10}${cx+80},${cy+10}`)+rect(cx-25,cy+30,12,30)+rect(cx+10,cy+30,12,30); // raptor
-    case 6: return ellipse(cx,cy+10,100,60)+circle(cx-80,cy-20,30)+path(`M${cx-50},${cy-40}L${cx-30},${cy-60}L${cx-10},${cy-40}`)+path(`M${cx+50},${cy-30}L${cx+70},${cy-50}L${cx+90},${cy-30}`)+rect(cx-60,cy+60,25,35)+rect(cx+30,cy+60,25,35); // ankylo
-    case 7: return ellipse(cx,cy+20,80,50)+circle(cx-60,cy-30,35)+path(`M${cx-40},${cy-55}L${cx-30},${cy-90}L${cx-20},${cy-55}`)+path(`M${cx+60},${cy+60}Q${cx+100},${cy+40}${cx+120},${cy+70}`)+rect(cx-40,cy+60,20,40)+rect(cx+20,cy+60,20,40); // spino
-    case 8: return ellipse(cx,cy,70,90)+ellipse(cx,cy-30,40,30)+path(`M${cx-30},${cy-50}Q${cx},${cy-80}${cx+30},${cy-50}`); // egg
-    default: return ellipse(cx-60,cy,60,45)+circle(cx-100,cy-30,25)+ellipse(cx+60,cy+20,40,30)+circle(cx+30,cy-5,18)+circle(cx+80,cy-30,12)+rect(cx-80,cy+40,15,25)+rect(cx+50,cy+45,12,20); // family
-  }
+function genDinosaur(idx){
+  if(window.RealisticDrawings && window.RealisticDrawings.genDinosaur) return window.RealisticDrawings.genDinosaur(idx);
+  return "";
 }
 
 function genFairyTale(idx){const cx=250,cy=250;
@@ -308,13 +262,24 @@ function loadPage(id){
   currentPage=page;undoStack=[];redoStack=[];
   const svgContent=page.gen();
   $('#coloringSvg').innerHTML=svgContent;
+  // Apply difficulty styles dynamically via stroke-width
+  const svg=document.getElementById('coloringSvg');
+  const strokeW = currentDifficulty === 'simple' ? 5 : currentDifficulty === 'standard' ? 3 : 1.5;
+  if(svg) {
+      svg.querySelectorAll('.colorable').forEach(el=>{
+          el.setAttribute('stroke', '#222');
+          el.setAttribute('stroke-width', strokeW);
+          if(!el.hasAttribute('fill')) el.setAttribute('fill', '#ffffff');
+      });
+  }
+
   // Restore saved colors
   const saved=colorState[id];
   if(saved){
-    const els=$('#coloringSvg').querySelectorAll('path,circle,ellipse,rect,polygon');
+    const els=$('#coloringSvg').querySelectorAll('.colorable');
     els.forEach((el,i)=>{if(saved[i])el.setAttribute('fill',saved[i]);});
   }
-  $('#pageTitle').textContent=`#${id+1} — ${page.name}`;
+  $('#pageTitle').innerHTML=`#${id+1} — ${page.name} <span style="font-size:0.8rem;opacity:0.7">(${currentDifficulty})</span>`;
   // Add click handlers
   $('#coloringSvg').querySelectorAll('path,circle,ellipse,rect,polygon').forEach(el=>{
     el.addEventListener('click',()=>{
@@ -336,14 +301,17 @@ function saveUndo(){
 
 function saveColorState(){
   if(!currentPage)return;
-  const els=$('#coloringSvg').querySelectorAll('path,circle,ellipse,rect,polygon');
+  const els=$('#coloringSvg').querySelectorAll('.colorable');
   colorState[currentPage.id]=[...els].map(e=>e.getAttribute('fill'));
-  localStorage.setItem('qu_coloring_state',JSON.stringify(colorState));
-  // Check if completed (all colored)
-  const allColored=[...els].every(e=>e.getAttribute('fill')&&e.getAttribute('fill')!=='#fff'&&e.getAttribute('fill')!=='#ffffff'&&e.getAttribute('fill')!=='white');
+  localStorage.setItem('qu_coloring_state', JSON.stringify(colorState));
+  
+  const allColored=[...els].every(e=>{
+      const f = e.getAttribute('fill');
+      return f && f!=='#fff' && f!=='#ffffff' && f!=='white' && f!=='none';
+  });
   if(allColored&&!completed.includes(currentPage.id)){
     completed.push(currentPage.id);
-    localStorage.setItem('qu_coloring_done',JSON.stringify(completed));
+    localStorage.setItem('qu_coloring_done', JSON.stringify(completed));
     if(typeof QU!=='undefined')QU.showToast('🎉 Page completed!','success');
     renderPageGrid(document.querySelector('.cat-tab.active').dataset.cat);
   }
@@ -362,7 +330,7 @@ $('#eraserTool').addEventListener('click',()=>{tool='eraser';$('#eraserTool').cl
 
 $('#undoTool').addEventListener('click',()=>{
   if(!undoStack.length||!currentPage)return;
-  const els=$('#coloringSvg').querySelectorAll('path,circle,ellipse,rect,polygon');
+  const els=$('#coloringSvg').querySelectorAll('.colorable');
   redoStack.push([...els].map(e=>e.getAttribute('fill')));
   const prev=undoStack.pop();
   els.forEach((el,i)=>{if(prev[i])el.setAttribute('fill',prev[i]);});
@@ -371,12 +339,23 @@ $('#undoTool').addEventListener('click',()=>{
 
 $('#redoTool').addEventListener('click',()=>{
   if(!redoStack.length||!currentPage)return;
-  const els=$('#coloringSvg').querySelectorAll('path,circle,ellipse,rect,polygon');
+  const els=$('#coloringSvg').querySelectorAll('.colorable');
   undoStack.push([...els].map(e=>e.getAttribute('fill')));
   const next=redoStack.pop();
   els.forEach((el,i)=>{if(next[i])el.setAttribute('fill',next[i]);});
   saveColorState();
 });
+
+// Difficulty Selector integration
+const diffSelect = document.createElement('select');
+diffSelect.className = 'btn btn-sm btn-secondary';
+diffSelect.innerHTML = '<option value="simple">Simple (Kids)</option><option value="standard" selected>Standard</option><option value="complex">Complex (Adults)</option>';
+diffSelect.style.marginLeft = '10px';
+diffSelect.addEventListener('change', (e) => {
+    currentDifficulty = e.target.value;
+    if(currentPage) loadPage(currentPage.id);
+});
+$('.tools-row').appendChild(diffSelect);
 
 $('#resetPageBtn').addEventListener('click',()=>{
   if(!currentPage||!confirm('Reset this page?'))return;

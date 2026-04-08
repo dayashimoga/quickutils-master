@@ -1,0 +1,99 @@
+/* style.css for font-playground */
+body {
+    background: #0f172a;
+    color: var(--text);
+    min-height: 100vh;
+}
+
+.font-layout {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    height: calc(100vh - 64px);
+}
+
+.sidebar {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-y: auto;
+}
+
+.control-group label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.preview-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.main-view {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.font-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.font-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s, background 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.font-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.font-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.font-name {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.copy-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.font-card:hover .copy-btn {
+    opacity: 1;
+}
+
+.font-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

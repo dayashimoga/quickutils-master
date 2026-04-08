@@ -249,7 +249,7 @@ function renderCountries(){
     const isFav=favorites.includes(c.name);
     const cur=c.currencies.split(':');
     return `<div class="country-card" data-name="${esc(c.name)}">
-      <div class="country-flag"><img src="https://flagcdn.com/w160/${c.code}.png" alt="${esc(c.name)}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='${c.flag}'"></div>
+      <div class="country-flag"><img src="https://flagcdn.com/w160/${c.code}.png" alt="${esc(c.name)}" loading="lazy" onerror="this.outerHTML='${c.flag}'"></div>
       <div class="country-info">
         <div class="country-name">${esc(c.name)} ${isFav?'⭐':''}</div>
         <div class="country-detail-row"><span class="label">Capital</span><span class="value">${esc(c.capital)}</span></div>
@@ -270,7 +270,7 @@ function showDetail(name){
   const modal=$('#detailModal');
   $('#detailContent').innerHTML=`
     <div class="modal-header"><h2>${c.flag} ${esc(c.name)}</h2><button class="icon-btn" onclick="document.getElementById('detailModal').classList.remove('active')">✕</button></div>
-    <div class="detail-header"><div class="detail-flag"><img src="https://flagcdn.com/w320/${c.code}.png" alt="${esc(c.name)}" style="width:80px;border-radius:8px;box-shadow:var(--shadow-md)"></div><div class="detail-title"><h1>${esc(c.name)}</h1><div class="subtitle">${esc(c.official)}</div><button class="btn btn-sm ${isFav?'btn-primary':'btn-secondary'}" id="favBtn">${isFav?'⭐ Favorited':'☆ Add Favorite'}</button></div></div>
+    <div class="detail-header"><div class="detail-flag"><img src="https://flagcdn.com/w320/${c.code}.png" alt="${esc(c.name)}" style="width:80px;border-radius:8px;box-shadow:var(--shadow-md)" onerror="this.outerHTML='<span style=\\'font-size:4rem\\'>${c.flag}</span>'"></div><div class="detail-title"><h1>${esc(c.name)}</h1><div class="subtitle">${esc(c.official)}</div><button class="btn btn-sm ${isFav?'btn-primary':'btn-secondary'}" id="favBtn">${isFav?'⭐ Favorited':'☆ Add Favorite'}</button></div></div>
     <div class="detail-grid">
       <div class="detail-item"><div class="di-label">Capital</div><div class="di-value">${esc(c.capital)}</div></div>
       <div class="detail-item"><div class="di-label">Region</div><div class="di-value">${c.region} — ${c.subregion}</div></div>
@@ -381,71 +381,127 @@ if(mapBtn) mapBtn.addEventListener('click',()=>{
 const closeMap=$('#closeMap');
 if(closeMap) closeMap.addEventListener('click',()=>$('#mapModal').classList.remove('active'));
 
-// Country centroids [lat,lon]
-const GEO={"Afghanistan":[33,66],"Albania":[41,20],"Algeria":[28,3],"Argentina":[-34,-64],"Australia":[-25,134],"Austria":[47,13],"Bangladesh":[24,90],"Belgium":[50.5,4.5],"Brazil":[-10,-55],"Canada":[60,-95],"Chile":[-30,-71],"China":[35,105],"Colombia":[4,-72],"Costa Rica":[10,-84],"Croatia":[45,15.5],"Cuba":[22,-80],"Czech Republic":[50,15.5],"Denmark":[56,10],"Ecuador":[-2,-78],"Egypt":[27,30],"Ethiopia":[8,38],"Finland":[64,26],"France":[46,2],"Germany":[51,9],"Ghana":[8,-2],"Greece":[39,22],"Hungary":[47,20],"Iceland":[65,-18],"India":[22,79],"Indonesia":[-5,120],"Iran":[32,53],"Iraq":[33,44],"Ireland":[53,-8],"Israel":[31.5,35],"Italy":[43,13],"Jamaica":[18,-78],"Japan":[36,138],"Jordan":[31,36],"Kazakhstan":[48,68],"Kenya":[-1,38],"Kuwait":[29.5,48],"Lebanon":[34,36],"Malaysia":[2.5,112],"Mexico":[23,-102],"Morocco":[32,-5],"Nepal":[28,84],"Netherlands":[52,6],"New Zealand":[-42,174],"Nigeria":[10,8],"North Korea":[40,127],"Norway":[62,10],"Oman":[21,57],"Pakistan":[30,70],"Panama":[9,-80],"Peru":[-10,-76],"Philippines":[12,122],"Poland":[52,20],"Portugal":[39.5,-8],"Qatar":[25.5,51],"Romania":[46,25],"Russia":[60,100],"Saudi Arabia":[24,45],"Singapore":[1.3,104],"South Africa":[-29,24],"South Korea":[37,128],"Spain":[40,-4],"Sri Lanka":[7,81],"Sweden":[62,15],"Switzerland":[47,8],"Taiwan":[23.5,121],"Thailand":[15,100],"Turkey":[39,35],"UAE":[24,54],"Ukraine":[49,32],"United Kingdom":[54,-2],"United States":[38,-97],"Uruguay":[-33,-56],"Venezuela":[8,-66],"Vietnam":[16,106],"Zimbabwe":[-20,30],"Bolivia":[-17,-65],"Cameroon":[6,12],"Congo (DR)":[-3,22],"Czechia":[50,15.5],"Dominican Republic":[19,-71],"El Salvador":[14,-89],"Guatemala":[15.5,-90],"Honduras":[15,-87],"Libya":[27,17],"Madagascar":[-20,47],"Mozambique":[-18,35],"Myanmar":[22,96],"Nicaragua":[13,-85],"Paraguay":[-23,-58],"Senegal":[14,-14],"Serbia":[45,21],"Slovakia":[49,20],"Slovenia":[46,15],"Somalia":[6,46],"Sudan":[16,32],"Tanzania":[-6,35],"Tunisia":[34,9],"Uganda":[1,32],"Uzbekistan":[41,64],"Zambia":[-15,28],"Bulgaria":[43,25],"Lithuania":[56,24],"Latvia":[57,25],"Estonia":[59,26],"Cyprus":[35,33],"Luxembourg":[50,6],"Malta":[36,14],"Bahrain":[26,50.5],"Maldives":[3,73],"Mongolia":[47,104],"Cambodia":[12.5,105],"Laos":[18,105],"Angola":[-12.5,18.5],"Andorra":[42.5,1.5],"Antigua and Barbuda":[17,-62],"Armenia":[40,44.5],"Azerbaijan":[40.5,48],"Bahamas":[24,-76],"Barbados":[13,-60],"Belarus":[54,28],"Belize":[17,-89],"Benin":[9.5,2],"Bhutan":[27.5,90.5],"Bosnia and Herzegovina":[44,18],"Botswana":[-22,24],"Brunei":[4.5,115],"Burkina Faso":[13,-1.5],"Burundi":[-3.4,30],"Cabo Verde":[16,-24],"CAR":[7,21],"Chad":[15,19],"Comoros":[-12,44],"Congo":[0,15],"Côte d'Ivoire":[8,-5.5],"Djibouti":[11.5,43],"Dominica":[15.4,-61],"Equatorial Guinea":[2,10],"Eritrea":[15,40],"Eswatini":[-26.5,31.5],"Fiji":[-18,178],"Gabon":[-1,12],"Gambia":[13.4,-15],"Georgia":[42,44],"Grenada":[12,-62],"Guinea":[11,-10],"Guinea-Bissau":[12,-15],"Guyana":[5,-59],"Haiti":[19,-72],"Kiribati":[1.4,173],"Kosovo":[42.6,21],"Kyrgyzstan":[41.5,75],"Lesotho":[-29.5,28.5],"Liberia":[6.4,-9.4],"Liechtenstein":[47.2,9.5],"Mauritania":[20,-12],"Mauritius":[-20,57.5],"Micronesia":[7,158],"Moldova":[47,29],"Monaco":[43.7,7],"Montenegro":[42.5,19],"Namibia":[-22,17],"Nauru":[-0.5,167],"Niger":[18,8],"North Macedonia":[41.5,22],"Palau":[7.5,135],"Papua New Guinea":[-6,147],"Rwanda":[-2,30],"Saint Kitts and Nevis":[17,-63],"Saint Lucia":[14,-61],"Saint Vincent and the Grenadines":[13,-61],"Samoa":[-14,-172],"San Marino":[44,12],"São Tomé and Príncipe":[1,7],"Seychelles":[-5,55.5],"Sierra Leone":[8.5,-12],"Solomon Islands":[-8,159],"South Sudan":[7,30],"Suriname":[4,-56],"Syria":[35,38],"Tajikistan":[39,71],"Timor-Leste":[-8.5,126],"Togo":[8,1],"Tonga":[-20,-175],"Trinidad and Tobago":[10.5,-61],"Turkmenistan":[39,60],"Tuvalu":[-8,178],"Vanuatu":[-16,167],"Vatican City":[42,12.5],"Yemen":[15.5,48]};
-
-// Simplified continent outlines [lat,lon] pairs
-const CONT=[
-{c:'rgba(16,185,129,0.18)',p:[[72,-168],[74,-140],[72,-100],[62,-78],[55,-58],[48,-54],[44,-66],[40,-75],[30,-82],[28,-90],[25,-98],[20,-106],[16,-92],[15,-87],[19,-88],[22,-98],[26,-110],[32,-118],[40,-124],[49,-126],[55,-132],[58,-140],[62,-155],[65,-168]]},
-{c:'rgba(16,185,129,0.18)',p:[[12,-72],[10,-67],[7,-58],[3,-52],[0,-50],[-5,-36],[-10,-37],[-16,-40],[-23,-42],[-28,-49],[-34,-54],[-42,-63],[-48,-68],[-53,-72],[-56,-66],[-52,-70],[-46,-74],[-40,-73],[-32,-72],[-24,-70],[-17,-70],[-10,-78],[-4,-80],[2,-78],[6,-76],[10,-73]]},
-{c:'rgba(59,130,246,0.18)',p:[[36,-10],[38,-8],[43,-9],[44,-1],[48,0],[51,2],[54,-6],[58,-4],[60,5],[63,6],[65,12],[68,16],[71,28],[70,32],[68,28],[64,30],[60,30],[56,40],[52,40],[48,32],[46,22],[44,18],[42,20],[40,26],[38,24],[37,15],[36,9],[37,3]]},
-{c:'rgba(245,158,11,0.18)',p:[[37,-10],[37,10],[33,33],[30,32],[22,37],[12,44],[2,44],[-2,42],[-12,50],[-20,45],[-26,33],[-35,28],[-35,18],[-32,17],[-22,14],[-7,9],[5,-1],[5,-5],[10,-15],[15,-17],[22,-17],[28,-14],[32,-10]]},
-{c:'rgba(239,68,68,0.18)',p:[[42,28],[50,40],[55,48],[60,58],[65,78],[70,90],[72,130],[68,170],[60,165],[52,142],[42,142],[34,132],[22,120],[12,105],[8,100],[2,104],[-8,115],[4,80],[14,50],[22,44],[28,35],[35,30]]},
-{c:'rgba(139,92,246,0.18)',p:[[-14,130],[-12,142],[-18,148],[-28,154],[-38,148],[-36,138],[-33,116],[-25,114],[-19,121]]}
-];
-
 function renderWorldMap(){
   const cvs=$('#worldMapCanvas');if(!cvs)return;
-  const container=cvs.parentElement;
-  cvs.width=container.clientWidth*2;cvs.height=container.clientHeight*2;
-  const ctx=cvs.getContext('2d');
-  const W=cvs.width,H=cvs.height;
-  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
-  function toXY(lat,lon){return{x:(lon+180)/360*W,y:(90-lat)/180*H};}
-  // Graticule
-  ctx.strokeStyle='rgba(99,102,241,0.07)';ctx.lineWidth=0.5;
-  for(let lon=-180;lon<=180;lon+=30){const{x}=toXY(0,lon);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(let lat=-60;lat<=80;lat+=30){const{y}=toXY(lat,0);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-  // Continent shapes
-  CONT.forEach(ct=>{
-    ctx.fillStyle=ct.c;ctx.strokeStyle=ct.c.replace(/[\d.]+\)$/,'0.35)');ctx.lineWidth=1.5;
-    ctx.beginPath();
-    ct.p.forEach((p,i)=>{const{x,y}=toXY(p[0],p[1]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
-    ctx.closePath();ctx.fill();ctx.stroke();
-  });
-  // Country dots at real positions
-  const regionColors={Africa:'#f59e0b',Americas:'#10b981',Asia:'#ef4444',Europe:'#3b82f6',Oceania:'#8b5cf6'};
-  const dots=[];
-  countries.forEach(c=>{
-    const geo=GEO[c.name];if(!geo)return;
-    const{x,y}=toXY(geo[0],geo[1]);
-    const r=Math.max(3,Math.min(14,Math.sqrt(c.population/3000000)));
-    dots.push({x,y,r,country:c});
-    ctx.fillStyle=regionColors[c.region]||'#6366f1';ctx.globalAlpha=0.8;
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-  });
-  // Region labels
-  const rl={Africa:[5,20],Americas:[15,-80],Asia:[45,85],Europe:[52,12],Oceania:[-25,140]};
-  ctx.textAlign='center';
-  Object.entries(rl).forEach(([name,pos])=>{
-    const{x,y}=toXY(pos[0],pos[1]);
-    ctx.fillStyle=regionColors[name];ctx.globalAlpha=0.5;
-    ctx.font=`bold ${W/50}px Inter,sans-serif`;ctx.fillText(name,x,y-W/40);ctx.globalAlpha=1;
-  });
-  // Click handler
-  cvs.onclick=function(e){
-    const rect=cvs.getBoundingClientRect();
-    const sx=(e.clientX-rect.left)/rect.width*W,sy=(e.clientY-rect.top)/rect.height*H;
-    let closest=null,minD=Infinity;
-    dots.forEach(d=>{const dx=d.x-sx,dy=d.y-sy,dist=Math.sqrt(dx*dx+dy*dy);if(dist<minD){minD=dist;closest=d;}});
-    if(closest&&minD<30){
-      const cc=closest.country;
-      $('#mapInfo').innerHTML=`<img src="https://flagcdn.com/w40/${cc.code}.png" style="height:20px;vertical-align:middle"> <strong>${cc.name}</strong> — ${cc.capital} | Pop: ${fmt(cc.population)} | ${cc.currencies}`;
-      renderWorldMap();
-      ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(closest.x,closest.y,closest.r+6,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle='#fff';ctx.font=`bold ${W/55}px Inter`;ctx.textAlign='center';ctx.fillText(cc.name,closest.x,closest.y-closest.r-12);
-    }
-  };
+  const mapContainer=cvs.parentElement;
+  
+  if(mapContainer.querySelector('svg') || mapContainer.dataset.loading) return; // Already rendered or loading
+  mapContainer.dataset.loading = 'true';
+  mapContainer.innerHTML = '<div style="text-align:center;padding:50px;color:var(--text-muted);">Fetching Global Boundaries...</div><div id="mapInfo" class="map-info"></div>';
+
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    .then(r=>r.json())
+    .then(geoData=>{
+      mapContainer.innerHTML = '<div id="mapInfo" class="map-info">Select a country to view details</div>';
+      
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+      svg.setAttribute("viewBox", "0 0 1000 600");
+      svg.style.cursor = "grab";
+      
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      
+      // Simple offset Mercator projection
+      function project(lon, lat) {
+          const x = (lon + 180) * (1000 / 360);
+          const latRad = lat * Math.PI / 180;
+          const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
+          const y = (600 / 2) - (1000 * mercN / (2 * Math.PI)) + 80; 
+          return { x, y };
+      }
+      
+      function geoJsonPolygonToPath(coords) {
+          let d = "";
+          for (let ring of coords) {
+              for (let i = 0; i < ring.length; i++) {
+                  const pt = project(ring[i][0], ring[i][1]);
+                  d += (i === 0 ? "M " : "L ") + pt.x + " " + pt.y + " ";
+              }
+              d += "Z ";
+          }
+          return d;
+      }
+
+      const regionColors = { Africa:'#f59e0b', Americas:'#10b981', Asia:'#ef4444', Europe:'#3b82f6', Oceania:'#8b5cf6' };
+
+      geoData.features.forEach(feature => {
+          const countryName = feature.properties.name;
+          // Loose matching to catch minor naming differences
+          const cObj = countries.find(c => c.name === countryName || c.name.includes(countryName) || countryName.includes(c.name));
+          
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.classList.add('country-path');
+          
+          if (feature.geometry.type === "Polygon") {
+              path.setAttribute("d", geoJsonPolygonToPath(feature.geometry.coordinates));
+          } else if (feature.geometry.type === "MultiPolygon") {
+              let d = "";
+              feature.geometry.coordinates.forEach(poly => {
+                  d += geoJsonPolygonToPath(poly);
+              });
+              path.setAttribute("d", d);
+          }
+          
+          if (cObj) {
+              path.style.fill = regionColors[cObj.region] || '#444';
+              
+              path.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  $$('.country-path').forEach(p => p.classList.remove('selected'));
+                  path.classList.add('selected');
+                  
+                  $('#mapInfo').innerHTML = `<img src="https://flagcdn.com/w40/${cObj.code}.png" style="height:20px;vertical-align:middle" onerror="this.outerHTML='${cObj.flag}'"> <strong>${cObj.name}</strong> — ${cObj.capital} | Pop: ${fmt(cObj.population)} | ${cObj.currencies.split(':')[0]}`;
+                  
+                  // Double click to view full detail
+                  if(path.dataset.lastClick && (Date.now() - path.dataset.lastClick < 300)) {
+                      showDetail(cObj.name);
+                  }
+                  path.dataset.lastClick = Date.now();
+              });
+              
+              const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+              title.textContent = cObj.name;
+              path.appendChild(title);
+          } else {
+              path.style.fill = '#2a2a35'; // Unmatched/ocean
+          }
+          
+          g.appendChild(path);
+      });
+
+      svg.appendChild(g);
+      mapContainer.appendChild(svg);
+      
+      // Simple panning support
+      let isDragging = false, startX, startY;
+      let tx = 0, ty = 0;
+      
+      svg.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startX = e.clientX - tx;
+          startY = e.clientY - ty;
+          svg.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mousemove', (e) => {
+          if(!isDragging) return;
+          tx = e.clientX - startX;
+          ty = e.clientY - startY;
+          g.setAttribute('transform', `translate(${tx}, ${ty})`);
+      });
+      window.addEventListener('mouseup', () => {
+          isDragging = false;
+          svg.style.cursor = 'grab';
+      });
+      svg.addEventListener('mouseleave', () => {
+          isDragging = false;
+          svg.style.cursor = 'grab';
+      });
+      
+    }).catch(err => {
+      console.error(err);
+      mapContainer.innerHTML = '<div style="color:red;padding:20px;">Failed to load map data. Ensure you have an internet connection.</div>';
+    });
 }
 
 // ── Export Functionality ──

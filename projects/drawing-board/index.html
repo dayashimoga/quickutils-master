@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Board — Canvas Painter | QuickUtils</title>
+    <meta name="description" content="Freehand drawing canvas with multiple brush types, layers, opacity controls, and PNG export.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🎨 Drawing Board</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-secondary" id="clearBtn">🗑️ Clear</button>
+            <button class="btn btn-sm btn-primary" id="saveBtn">📥 Save</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="drawing-layout">
+        <div class="toolbar glass-card">
+            <div class="tool-section">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#6366f1">
+                <div class="preset-colors mt-2" id="colorPresets"></div>
+            </div>
+            <div class="tool-section">
+                <label>Brush Size: <span id="sizeVal">5</span>px</label>
+                <input type="range" id="sizeSlider" min="1" max="100" value="5">
+            </div>
+            <div class="tool-section">
+                <label>Opacity: <span id="opVal">100</span>%</label>
+                <input type="range" id="opSlider" min="1" max="100" value="100">
+            </div>
+            <div class="tool-section">
+                <label>Brush Type</label>
+                <select id="brushType" class="w-100">
+                    <option value="round">Round Brush</option>
+                    <option value="square">Marker</option>
+                    <option value="eraser">Eraser</option>
+                </select>
+            </div>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="drawCanvas" class="drawing-canvas"></canvas>
+        </div>
+    </main>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

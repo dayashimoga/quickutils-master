@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Maker | QuickUtils</title>
+    <meta name="description" content="Free online flashcard maker utility.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🚀 Flashcard Maker</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="flashcard-layout">
+        <div class="deck-selector">
+            <select id="deckSelect" class="btn btn-sm btn-secondary"></select>
+            <button id="newDeck" class="btn btn-sm btn-primary">+ New Deck</button>
+        </div>
+        
+        <div class="card-container">
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-front" id="cardFront">Loading...</div>
+                <div class="flashcard-back" id="cardBack">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prevCard" class="btn btn-secondary">◄ Prev</button>
+            <span id="counter" style="display:flex;align-items:center;font-weight:bold;margin:0 1rem;">0 / 0</span>
+            <button id="nextCard" class="btn btn-secondary">Next ►</button>
+        </div>
+
+        <div class="editor-section">
+            <div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
+                <h3>Deck Editor</h3>
+                <button id="addCard" class="btn btn-sm btn-primary">+ Add Card</button>
+            </div>
+            <div id="flashcardList"></div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

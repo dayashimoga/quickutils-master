@@ -61,3 +61,9 @@
     .detail-header { flex-direction: column; align-items: center; text-align: center; }
     .detail-grid { grid-template-columns: 1fr; }
 }
+
+/* SVG Map Classes */
+.country-path { stroke: rgba(255,255,255,0.2) !important; stroke-width: 0.5px !important; transition: fill 0.3s ease, transform 0.3s ease; }
+.country-path:hover { fill: #fff !important; cursor: pointer; transform: scale(1.002); transform-origin: center; stroke: #fff !important; stroke-width: 1px !important; }
+.country-path.selected { fill: var(--accent) !important; stroke: #fff !important; stroke-width: 1.5px !important; filter: drop-shadow(0 0 4px var(--accent)); z-index: 10; position: relative; }
+svg g { transition: transform 0.1s linear; }

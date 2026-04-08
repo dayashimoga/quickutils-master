@@ -504,5 +504,85 @@
         "destination_dir": "dist",
         "custom_domain": "mindmap.quickutils.top",
         "root_dir": "projects/mind-map"
+    },
+    "flashcard-maker": {
+        "directory": "projects/flashcard-maker",
+        "repo_name": "flashcard-maker",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "flashcards.quickutils.top",
+        "root_dir": "projects/flashcard-maker"
+    },
+    "font-playground": {
+        "directory": "projects/font-playground",
+        "repo_name": "font-playground",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "fonts.quickutils.top",
+        "root_dir": "projects/font-playground"
+    },
+    "ip-lookup": {
+        "directory": "projects/ip-lookup",
+        "repo_name": "ip-lookup",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "ip.quickutils.top",
+        "root_dir": "projects/ip-lookup"
+    },
+    "loan-calculator": {
+        "directory": "projects/loan-calculator",
+        "repo_name": "loan-calculator",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "loan.quickutils.top",
+        "root_dir": "projects/loan-calculator"
+    },
+    "code-diff": {
+        "directory": "projects/code-diff",
+        "repo_name": "code-diff",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "diff.quickutils.top",
+        "root_dir": "projects/code-diff"
+    },
+    "habit-streak": {
+        "directory": "projects/habit-streak",
+        "repo_name": "habit-streak",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "streak.quickutils.top",
+        "root_dir": "projects/habit-streak"
+    },
+    "solar-system": {
+        "directory": "projects/solar-system",
+        "repo_name": "solar-system",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "solar.quickutils.top",
+        "root_dir": "projects/solar-system"
+    },
+    "dna-lab": {
+        "directory": "projects/dna-lab",
+        "repo_name": "dna-lab",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "dna.quickutils.top",
+        "root_dir": "projects/dna-lab"
+    },
+    "video-studio": {
+        "directory": "projects/video-studio",
+        "repo_name": "video-studio",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "video.quickutils.top",
+        "root_dir": "projects/video-studio"
+    },
+    "image-converter": {
+        "directory": "projects/image-converter",
+        "repo_name": "image-converter",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "image.quickutils.top",
+        "root_dir": "projects/image-converter"
     }
 }
