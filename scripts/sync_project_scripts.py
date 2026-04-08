@@ -109,6 +109,16 @@ def sync_scripts():
             else:
                 print(f"    ✗ Master file {file_rel_path} not found!")
 
+        # Explicit injection of shared Core Assets directly into the project root
+        # This completely resolves Cloudflare Pages 'root_dir' dependency truncation
+        import glob
+        for asset in glob.glob(str(ROOT_DIR / "shared" / "quickutils-core.*")):
+            try:
+                shutil.copy2(asset, project / os.path.basename(asset))
+                print(f"    ✓ Injected core dependency: {os.path.basename(asset)}")
+            except Exception as e:
+                print(f"    ✗ Failed to inject core dependency: {e}")
+
         # Fix netlify.toml redirects (/api/* -> /item/*)
         netlify_toml = project / "netlify.toml"
         if netlify_toml.exists():
