@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Studio — QR Code Generator & Scanner | QuickUtils</title>
+    <meta name="description" content="Free QR code generator: create QR codes for URLs, WiFi, vCards, text, email, and phone. Customize colors, size, and download as PNG or SVG.">
+    <meta property="og:title" content="QR Studio — Free QR Code Generator">
+    <meta property="og:description" content="Create custom QR codes for URLs, WiFi, vCards, and more. Free, no signup.">
+    <meta property="og:image" content="https://qr.quickutils.top/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://qr.quickutils.top/og-image.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"QR Studio","url":"https://qr.quickutils.top","applicationCategory":"UtilitiesApplication"}</script>
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">📱 QR Studio</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div class="qr-layout">
+            <div class="qr-controls glass-card">
+                <h3>📝 Content</h3>
+                <div class="type-tabs">
+                    <button class="type-btn active" data-type="url">🔗 URL</button>
+                    <button class="type-btn" data-type="text">📝 Text</button>
+                    <button class="type-btn" data-type="wifi">📶 WiFi</button>
+                    <button class="type-btn" data-type="vcard">👤 vCard</button>
+                    <button class="type-btn" data-type="email">📧 Email</button>
+                    <button class="type-btn" data-type="phone">📞 Phone</button>
+                </div>
+                <div class="type-panel active" id="type-url"><label>URL<input type="url" id="qrUrl" placeholder="https://example.com" value="https://quickutils.top"></label></div>
+                <div class="type-panel" id="type-text"><label>Text<textarea id="qrText" rows="4" placeholder="Enter text..."></textarea></label></div>
+                <div class="type-panel" id="type-wifi">
+                    <label>SSID<input type="text" id="wifiSsid" placeholder="Network name"></label>
+                    <label>Password<input type="text" id="wifiPass" placeholder="Password"></label>
+                    <label>Encryption<select id="wifiEnc"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="">None</option></select></label>
+                </div>
+                <div class="type-panel" id="type-vcard">
+                    <label>Name<input type="text" id="vcName" placeholder="John Doe"></label>
+                    <label>Phone<input type="tel" id="vcPhone" placeholder="+1234567890"></label>
+                    <label>Email<input type="email" id="vcEmail" placeholder="john@example.com"></label>
+                    <label>Org<input type="text" id="vcOrg" placeholder="Company"></label>
+                </div>
+                <div class="type-panel" id="type-email">
+                    <label>Email<input type="email" id="emailAddr" placeholder="user@example.com"></label>
+                    <label>Subject<input type="text" id="emailSubj" placeholder="Subject"></label>
+                    <label>Body<textarea id="emailBody" rows="3" placeholder="Message..."></textarea></label>
+                </div>
+                <div class="type-panel" id="type-phone"><label>Phone Number<input type="tel" id="phoneNum" placeholder="+1234567890"></label></div>
+                <hr style="border-color:var(--border);margin:1rem 0">
+                <h3>🎨 Style</h3>
+                <div class="style-row">
+                    <label>Foreground<input type="color" id="qrFg" value="#000000"></label>
+                    <label>Background<input type="color" id="qrBg" value="#ffffff"></label>
+                    <label>Size<input type="range" id="qrSize" min="128" max="1024" value="512"><span id="qrSizeVal">512px</span></label>
+                    <label>Error Correction<select id="qrEcc"><option value="L">Low (7%)</option><option value="M" selected>Medium (15%)</option><option value="Q">Quartile (25%)</option><option value="H">High (30%)</option></select></label>
+                </div>
+                <button class="btn btn-primary w-full mt-3" id="generateBtn">⚡ Generate QR Code</button>
+            </div>
+            <div class="qr-preview glass-card">
+                <h3>Preview</h3>
+                <div class="qr-canvas-wrap"><canvas id="qrCanvas" width="512" height="512"></canvas></div>
+                <div class="qr-actions">
+                    <button class="btn btn-secondary" id="downloadPng">📥 Download PNG</button>
+                    <button class="btn btn-secondary" id="downloadSvg">📥 Download SVG</button>
+                    <button class="btn btn-secondary" id="copyQr">📋 Copy</button>
+                </div>
+                <div class="qr-data-info mt-2 text-muted" id="qrDataInfo"></div>
+            </div>
+        </div>
+        <div class="glass-card mt-3" style="padding:1.5rem">
+            <h3>📦 Bulk Generator</h3>
+            <p class="text-muted" style="font-size:0.85rem">Paste one URL/text per line to generate multiple QR codes at once.</p>
+            <textarea id="bulkInput" rows="4" placeholder="https://example.com&#10;https://another.com"></textarea>
+            <button class="btn btn-primary mt-2" id="bulkBtn">Generate All</button>
+            <div id="bulkResults" class="bulk-grid mt-2"></div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -436,10 +436,11 @@ $('#simBtn').addEventListener('click', () => {
 });
 
 function runSimulation() {
-    // Simple DC analysis: find batteries, calculate series/parallel resistance, assign voltages/currents
     const batteries = components.filter(c => c.type === 'battery');
     const resistors = components.filter(c => c.type === 'resistor');
     const leds = components.filter(c => c.type === 'led');
+    const capacitors = components.filter(c => c.type === 'capacitor');
+    const switches = components.filter(c => c.type === 'switch');
 
     const simResults = $('#simResults');
 
@@ -448,33 +449,182 @@ function runSimulation() {
         return;
     }
 
-    // Simplified: total voltage from batteries, total resistance from resistors
-    const totalV = batteries.reduce((sum, b) => sum + b.value, 0);
-    const totalR = resistors.reduce((sum, r) => sum + r.value, 0) || 1;
-    const totalI = totalV / totalR;
+    // ── MNA Node Detection ──
+    // Build adjacency: find all unique pin positions, group by wire connectivity
+    const pinMap = new Map(); // "x,y" -> nodeId
+    let nodeCount = 0;
 
-    // Assign voltages and currents
-    batteries.forEach(b => { b.simVoltage = b.value; });
-    resistors.forEach(r => { r.simVoltage = totalI * r.value; r.simCurrent = totalI; });
-    leds.forEach(l => {
-        l.simCurrent = totalI;
-        l.state = totalI > 0.001; // LED turns on above 1mA
-        l.simVoltage = l.state ? 2.0 : 0;
+    function getNodeId(x, y) {
+        const key = `${snap(x)},${snap(y)}`;
+        if (!pinMap.has(key)) pinMap.set(key, nodeCount++);
+        return pinMap.get(key);
+    }
+
+    // Merge nodes connected by wires
+    function mergeNodes(n1, n2) {
+        if (n1 === n2) return;
+        const target = Math.min(n1, n2), replace = Math.max(n1, n2);
+        pinMap.forEach((v, k) => { if (v === replace) pinMap.set(k, target); });
+    }
+
+    // Register all component pins
+    components.forEach(comp => {
+        const pins = getPinPositions(comp);
+        pins.forEach(p => getNodeId(p.x, p.y));
     });
+
+    // Register wire endpoints and merge connected nodes
+    wires.forEach(w => {
+        const n1 = getNodeId(w.x1, w.y1);
+        const n2 = getNodeId(w.x2, w.y2);
+        mergeNodes(n1, n2);
+    });
+
+    // Find ground node (node 0)
+    const grounds = components.filter(c => c.type === 'ground');
+    let groundNode = -1;
+    if (grounds.length > 0) {
+        const gPins = getPinPositions(grounds[0]);
+        groundNode = pinMap.get(`${snap(gPins[0].x)},${snap(gPins[0].y)}`);
+    }
+
+    // Remap node indices to compact range, with ground = 0
+    const uniqueNodes = [...new Set(pinMap.values())];
+    const remap = new Map();
+    if (groundNode >= 0) remap.set(groundNode, 0);
+    let idx = groundNode >= 0 ? 1 : 0;
+    uniqueNodes.forEach(n => { if (!remap.has(n)) remap.set(n, idx++); });
+    pinMap.forEach((v, k) => pinMap.set(k, remap.get(v)));
+
+    const N = remap.size; // number of nodes
+    const numVSrc = batteries.length;
+    const size = N + numVSrc;
+
+    // ── Build MNA Matrix (G*x = b) ──
+    const G = Array.from({length: size}, () => new Float64Array(size));
+    const b = new Float64Array(size);
+
+    function getCompNodes(comp) {
+        const pins = getPinPositions(comp);
+        return pins.map(p => pinMap.get(`${snap(p.x)},${snap(p.y)}`) || 0);
+    }
+
+    // Stamp resistors: G[n1][n1] += 1/R, G[n2][n2] += 1/R, G[n1][n2] -= 1/R, G[n2][n1] -= 1/R
+    resistors.forEach(r => {
+        if (r.value <= 0) return;
+        const [n1, n2] = getCompNodes(r);
+        const g = 1 / r.value;
+        G[n1][n1] += g; G[n2][n2] += g;
+        G[n1][n2] -= g; G[n2][n1] -= g;
+    });
+
+    // Stamp LEDs as resistor (forward voltage drop approximation)
+    leds.forEach(l => {
+        const [n1, n2] = getCompNodes(l);
+        const g = 1 / 200; // ~200 ohm forward resistance approximation
+        G[n1][n1] += g; G[n2][n2] += g;
+        G[n1][n2] -= g; G[n2][n1] -= g;
+    });
+
+    // Stamp closed switches as small resistance
+    switches.forEach(sw => {
+        if (!sw.state) return; // open switch = no connection
+        const [n1, n2] = getCompNodes(sw);
+        const g = 1 / 0.01; // ~0.01 ohm when closed
+        G[n1][n1] += g; G[n2][n2] += g;
+        G[n1][n2] -= g; G[n2][n1] -= g;
+    });
+
+    // Stamp voltage sources (batteries)
+    batteries.forEach((bat, i) => {
+        const [nP, nN] = getCompNodes(bat);
+        const vs = N + i; // voltage source variable index
+        G[nP][vs] += 1; G[nN][vs] -= 1;
+        G[vs][nP] += 1; G[vs][nN] -= 1;
+        b[vs] = bat.value;
+    });
+
+    // Ground node: zero row/col, set diagonal to 1
+    for (let j = 0; j < size; j++) { G[0][j] = 0; G[j][0] = 0; }
+    G[0][0] = 1; b[0] = 0;
+
+    // ── Gaussian Elimination ──
+    const x = new Float64Array(size);
+    const A = G.map(row => [...row]); // clone
+    const rhs = [...b];
+
+    for (let col = 0; col < size; col++) {
+        // Partial pivoting
+        let maxRow = col, maxVal = Math.abs(A[col][col]);
+        for (let row = col + 1; row < size; row++) {
+            if (Math.abs(A[row][col]) > maxVal) { maxVal = Math.abs(A[row][col]); maxRow = row; }
+        }
+        if (maxRow !== col) { [A[col], A[maxRow]] = [A[maxRow], A[col]]; [rhs[col], rhs[maxRow]] = [rhs[maxRow], rhs[col]]; }
+        
+        const pivot = A[col][col];
+        if (Math.abs(pivot) < 1e-12) continue;
+
+        for (let row = col + 1; row < size; row++) {
+            const factor = A[row][col] / pivot;
+            for (let j = col; j < size; j++) A[row][j] -= factor * A[col][j];
+            rhs[row] -= factor * rhs[col];
+        }
+    }
+
+    // Back substitution
+    for (let row = size - 1; row >= 0; row--) {
+        let sum = rhs[row];
+        for (let j = row + 1; j < size; j++) sum -= A[row][j] * x[j];
+        x[row] = Math.abs(A[row][row]) > 1e-12 ? sum / A[row][row] : 0;
+    }
+
+    // ── Extract Results ──
+    const nodeVoltages = Array.from({length: N}, (_, i) => x[i]);
+    const totalV = batteries.reduce((sum, bat) => sum + bat.value, 0);
+    let totalI = 0;
+
+    batteries.forEach((bat, i) => {
+        bat.simVoltage = bat.value;
+        bat.simCurrent = x[N + i];
+        totalI += Math.abs(x[N + i]);
+    });
+
+    resistors.forEach(r => {
+        const [n1, n2] = getCompNodes(r);
+        r.simVoltage = Math.abs(nodeVoltages[n1] - nodeVoltages[n2]);
+        r.simCurrent = r.value > 0 ? r.simVoltage / r.value : 0;
+    });
+
+    leds.forEach(l => {
+        const [n1, n2] = getCompNodes(l);
+        l.simVoltage = Math.abs(nodeVoltages[n1] - nodeVoltages[n2]);
+        l.simCurrent = l.simVoltage / 200;
+        l.state = l.simCurrent > 0.001;
+    });
+
     wires.forEach(w => { w.current = totalI; });
 
     // Display results
     const power = totalV * totalI;
+    const totalR = totalI > 0 ? totalV / totalI : Infinity;
+    let perCompHTML = '';
+    [...resistors, ...leds].forEach(c => {
+        const def = COMP_DEFS[c.type];
+        perCompHTML += `<div class="sim-result"><span>${def.label} #${c.id}</span><strong>${c.simVoltage.toFixed(2)}V / ${(c.simCurrent*1000).toFixed(2)}mA</strong></div>`;
+    });
+
     simResults.innerHTML = `
         <div class="sim-result"><span>Total Voltage</span><strong class="text-success">${totalV.toFixed(1)} V</strong></div>
-        <div class="sim-result"><span>Total Resistance</span><strong>${formatValue(totalR, 'Ω')}</strong></div>
+        <div class="sim-result"><span>Eq. Resistance</span><strong>${formatValue(totalR, 'Ω')}</strong></div>
         <div class="sim-result"><span>Total Current</span><strong class="text-success">${(totalI*1000).toFixed(2)} mA</strong></div>
         <div class="sim-result"><span>Power</span><strong>${(power*1000).toFixed(2)} mW</strong></div>
+        <div class="sim-result"><span>Nodes</span><strong>${N}</strong></div>
         <div class="sim-result"><span>LEDs</span><strong>${leds.filter(l=>l.state).length}/${leds.length} ON</strong></div>
+        ${perCompHTML}
     `;
 
     render();
-    $('#statusText').textContent = `Simulation running — ${totalV}V, ${(totalI*1000).toFixed(1)}mA`;
+    $('#statusText').textContent = `MNA Simulation — ${N} nodes, ${totalV}V, ${(totalI*1000).toFixed(1)}mA`;
 }
 
 // ── Ohm's Law Calculator ──

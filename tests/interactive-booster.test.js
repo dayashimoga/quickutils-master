@@ -38,6 +38,10 @@ describe('Interactive Projects Universal AST/DOM Booster', () => {
                 text: () => Promise.resolve("")
             }));
 
+            // Mock rAF to prevent runaway game loops across tests
+            global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16));
+            global.cancelAnimationFrame = vi.fn(id => clearTimeout(id));
+
             console.log("TESTING PROJECT:", project);
             // 3. Load and execute the script
             vi.resetModules();
@@ -89,11 +93,13 @@ describe('Interactive Projects Universal AST/DOM Booster', () => {
 
             // 6. Minimal fast-forward timers
             try {
-                vi.advanceTimersByTime(100);
+                vi.advanceTimersByTime(1000);
             } catch (e) {}
 
+            vi.clearAllTimers();
             EventTarget.prototype.addEventListener = originalAddEventListener;
             vi.useRealTimers();
+            document.body.innerHTML = '';
             expect(true).toBe(true);
         });
     });

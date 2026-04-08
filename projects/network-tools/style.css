@@ -1,0 +1,42 @@
+/* Network Tools Styles */
+.tabs { display: flex; gap: 0.25rem; padding: 0.5rem; overflow-x: auto; flex-wrap: wrap; }
+.tab-btn { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all var(--transition-fast); white-space: nowrap; }
+.tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tool-panel { padding: 1.5rem; margin-top: 1rem; }
+.tool-panel.hidden { display: none; }
+.tool-panel h2 { margin-bottom: 1rem; font-size: 1.3rem; }
+.input-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.input-group input, .input-group select { flex: 1; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.input-row label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.result-card { background: var(--bg-surface); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.result-card .rc-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.result-card .rc-value { font-size: 1rem; font-weight: 600; margin-top: 0.15rem; word-break: break-all; }
+.result-card .rc-value.highlight { color: var(--accent); }
+.info-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.info-section h3 { margin-bottom: 0.75rem; font-size: 1rem; }
+.subnet-visual { margin-top: 1rem; padding: 1rem; background: var(--bg-surface); border-radius: var(--radius-sm); font-family: var(--font-mono, monospace); font-size: 0.8rem; line-height: 1.6; }
+.port-filters { display: flex; gap: 0.5rem; margin: 0.75rem 0; flex-wrap: wrap; }
+.filter-btn { padding: 0.3rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all var(--transition-fast); }
+.filter-btn:hover { border-color: var(--accent); }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.port-row { display: grid; grid-template-columns: 80px 1fr 100px 1fr; gap: 0.75rem; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; align-items: center; }
+.port-row:hover { background: var(--bg-surface); }
+.port-row .port-num { font-weight: 700; color: var(--accent); font-family: var(--font-mono, monospace); }
+.port-row .port-proto { font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 700; text-align: center; }
+.port-header { font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+.dns-record { background: var(--bg-surface); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; border-left: 3px solid var(--accent); }
+.dns-record .type { font-weight: 700; color: var(--accent); font-size: 0.75rem; }
+.dns-record .value { font-family: var(--font-mono, monospace); font-size: 0.85rem; margin-top: 0.25rem; }
+.header-item { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+.header-item .h-name { font-weight: 700; color: var(--accent); font-family: var(--font-mono, monospace); }
+.header-item .h-desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; }
+.header-item .h-example { font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono, monospace); margin-top: 0.25rem; background: var(--bg-surface); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); display: inline-block; }
+@media (max-width: 768px) {
+    .input-row { grid-template-columns: 1fr; }
+    .results-grid { grid-template-columns: 1fr; }
+    .port-row { grid-template-columns: 60px 1fr; }
+    .port-row .port-proto, .port-row .port-desc { display: none; }
+}

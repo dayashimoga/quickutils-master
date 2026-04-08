@@ -1,0 +1,38 @@
+/* Meal Planner Styles */
+.week-nav { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+.week-nav h2 { font-size: 1.1rem; }
+.week-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; padding: 1rem; margin-bottom: 1rem; }
+.stat-item { text-align: center; }
+.stat-item .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+.stat-item .stat-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+.day-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; min-height: 300px; }
+.day-header { padding: 0.6rem; text-align: center; background: var(--bg-surface); border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.8rem; }
+.day-header.today { background: var(--accent); color: #fff; }
+.day-header .day-cal { font-size: 0.65rem; font-weight: 400; opacity: 0.8; }
+.day-meals { padding: 0.4rem; }
+.meal-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.5rem; margin-bottom: 0.3rem; cursor: pointer; transition: all var(--transition-fast); font-size: 0.75rem; position: relative; }
+.meal-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.meal-card .meal-cat { font-size: 0.6rem; color: var(--text-muted); }
+.meal-card .meal-title { font-weight: 600; margin: 0.1rem 0; }
+.meal-card .meal-kcal { font-size: 0.65rem; color: var(--accent); font-weight: 600; }
+.meal-card .meal-del { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; padding: 2px; opacity: 0; transition: opacity var(--transition-fast); }
+.meal-card:hover .meal-del { opacity: 1; }
+.add-meal-btn { width: 100%; padding: 0.4rem; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; margin-top: 0.2rem; transition: all var(--transition-fast); }
+.add-meal-btn:hover { border-color: var(--accent); color: var(--accent); }
+.form-group { margin-bottom: 0.75rem; }
+.form-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase; }
+.form-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.suggestions { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+.suggestions h3 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+#suggestionsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.4rem; }
+.suggest-card { padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; transition: all var(--transition-fast); }
+.suggest-card:hover { border-color: var(--accent); background: var(--bg-surface); }
+.suggest-card .s-name { font-weight: 600; }
+.suggest-card .s-cal { font-size: 0.7rem; color: var(--accent); }
+.grocery-category { margin-bottom: 1rem; }
+.grocery-category h3 { font-size: 0.9rem; margin-bottom: 0.4rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
+.grocery-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; font-size: 0.85rem; }
+.grocery-item input[type="checkbox"] { accent-color: var(--accent); }
+@media (max-width: 900px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .week-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr 1fr; } }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Tools — IP, DNS, Subnet Calculator | QuickUtils</title>
+    <meta name="description" content="Free online network tools: IP info lookup, subnet calculator, DNS lookup simulator, port reference, CIDR calculator, and HTTP header analyzer.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🌐 Network Tools</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div class="tabs glass-card" id="toolTabs">
+            <button class="tab-btn active" data-tool="ipinfo">🔍 IP Info</button>
+            <button class="tab-btn" data-tool="subnet">📐 Subnet Calc</button>
+            <button class="tab-btn" data-tool="dns">🌍 DNS Lookup</button>
+            <button class="tab-btn" data-tool="ports">🚪 Port Reference</button>
+            <button class="tab-btn" data-tool="cidr">📊 CIDR Calc</button>
+            <button class="tab-btn" data-tool="headers">📋 Headers</button>
+        </div>
+        <!-- IP Info -->
+        <div class="tool-panel glass-card" id="panel-ipinfo">
+            <h2>🔍 IP Address Information</h2>
+            <div class="input-group"><input type="text" id="ipInput" placeholder="Enter IP address (e.g. 192.168.1.1)"><button class="btn btn-primary" id="ipLookupBtn">Lookup</button></div>
+            <div id="ipResults" class="results-grid"></div>
+            <div class="info-section"><h3>Your Connection</h3><div id="myIpInfo" class="results-grid"></div></div>
+        </div>
+        <!-- Subnet -->
+        <div class="tool-panel glass-card hidden" id="panel-subnet">
+            <h2>📐 Subnet Calculator</h2>
+            <div class="input-row"><div class="input-group"><label>IP Address</label><input type="text" id="subnetIp" placeholder="192.168.1.0"></div><div class="input-group"><label>CIDR / Mask</label><select id="subnetMask"></select></div></div>
+            <button class="btn btn-primary" id="subnetCalcBtn">Calculate</button>
+            <div id="subnetResults" class="results-grid"></div>
+            <div id="subnetVisual" class="subnet-visual"></div>
+        </div>
+        <!-- DNS -->
+        <div class="tool-panel glass-card hidden" id="panel-dns">
+            <h2>🌍 DNS Lookup</h2>
+            <div class="input-group"><input type="text" id="dnsInput" placeholder="Enter domain (e.g. example.com)"><button class="btn btn-primary" id="dnsLookupBtn">Lookup</button></div>
+            <div id="dnsResults"></div>
+        </div>
+        <!-- Ports -->
+        <div class="tool-panel glass-card hidden" id="panel-ports">
+            <h2>🚪 Common Port Reference</h2>
+            <input type="search" id="portSearch" placeholder="Search ports by number or service...">
+            <div class="port-filters"><button class="filter-btn active" data-cat="all">All</button><button class="filter-btn" data-cat="web">Web</button><button class="filter-btn" data-cat="email">Email</button><button class="filter-btn" data-cat="file">File Transfer</button><button class="filter-btn" data-cat="db">Database</button><button class="filter-btn" data-cat="remote">Remote</button></div>
+            <div id="portTable"></div>
+        </div>
+        <!-- CIDR -->
+        <div class="tool-panel glass-card hidden" id="panel-cidr">
+            <h2>📊 CIDR Range Calculator</h2>
+            <div class="input-group"><input type="text" id="cidrInput" placeholder="Enter CIDR (e.g. 10.0.0.0/24)"><button class="btn btn-primary" id="cidrCalcBtn">Calculate</button></div>
+            <div id="cidrResults" class="results-grid"></div>
+        </div>
+        <!-- Headers -->
+        <div class="tool-panel glass-card hidden" id="panel-headers">
+            <h2>📋 HTTP Header Reference</h2>
+            <input type="search" id="headerSearch" placeholder="Search headers...">
+            <div id="headerList"></div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

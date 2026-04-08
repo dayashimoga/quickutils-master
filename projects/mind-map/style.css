@@ -1,0 +1,21 @@
+/* Mind Map Styles */
+.map-container { position: relative; width: 100%; height: calc(100vh - 60px); overflow: hidden; background: var(--bg-base); }
+#mapCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+#nodeLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+.mind-node { position: absolute; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: grab; pointer-events: all; user-select: none; min-width: 80px; text-align: center; transition: box-shadow 0.2s, transform 0.1s; border: 2px solid transparent; white-space: nowrap; }
+.mind-node:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.3); transform: scale(1.05); }
+.mind-node.selected { border-color: #fff; box-shadow: 0 0 0 3px #6366f1, 0 4px 20px rgba(99,102,241,0.4); }
+.mind-node.root { font-size: 1.1rem; padding: 0.75rem 1.5rem; border-radius: 16px; }
+.mind-node .node-expand { position: absolute; right: -8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; border: 2px solid #fff; }
+.mind-node:hover .node-expand { opacity: 1; }
+.zoom-controls { position: absolute; bottom: 1rem; right: 1rem; z-index: 10; display: flex; gap: 0.3rem; align-items: center; background: var(--glass-bg, rgba(30,30,40,0.8)); backdrop-filter: blur(8px); padding: 0.3rem; border-radius: var(--radius-full); border: 1px solid var(--border); }
+.zoom-controls button { width: 32px; height: 32px; border: none; background: transparent; color: var(--text); cursor: pointer; font-size: 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.zoom-controls button:hover { background: var(--bg-surface); }
+#zoomLevel { font-size: 0.7rem; min-width: 40px; text-align: center; color: var(--text-muted); }
+.node-editor { position: absolute; top: 70px; right: 1rem; z-index: 20; padding: 1rem; width: 220px; }
+.node-editor h3 { font-size: 0.85rem; margin-bottom: 0.5rem; }
+.node-editor input { margin-bottom: 0.5rem; }
+.color-row { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.color-swatch { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
+.color-swatch:hover { transform: scale(1.2); }
+.color-swatch.active { border-color: #fff; }

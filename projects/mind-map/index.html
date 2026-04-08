@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Map — Visual Mind Mapping Tool | QuickUtils</title>
+    <meta name="description" content="Create beautiful mind maps visually. Add nodes, connect ideas, customize colors. Export as PNG, SVG, or JSON. Free online mind mapping tool.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🧠 Mind Map</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-primary" id="addNodeBtn">➕ Add Node</button>
+            <button class="btn btn-sm btn-secondary" id="deleteNodeBtn">🗑️ Delete</button>
+            <button class="btn btn-sm btn-secondary" id="exportPngBtn">🖼️ PNG</button>
+            <button class="btn btn-sm btn-secondary" id="exportJsonBtn">💾 JSON</button>
+            <button class="btn btn-sm btn-secondary" id="importJsonBtn">📂 Import</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">🧹 Clear</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="map-container" id="mapContainer">
+        <canvas id="mapCanvas"></canvas>
+        <div id="nodeLayer"></div>
+        <div class="zoom-controls">
+            <button id="zoomInBtn">+</button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomOutBtn">−</button>
+            <button id="fitBtn">⊡</button>
+        </div>
+        <div class="node-editor glass-card" id="nodeEditor" style="display:none">
+            <h3>Edit Node</h3>
+            <input type="text" id="nodeText" placeholder="Node text">
+            <div class="color-row" id="colorPicker"></div>
+            <button class="btn btn-sm btn-primary" id="applyNodeBtn" style="width:100%">Apply</button>
+        </div>
+    </main>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

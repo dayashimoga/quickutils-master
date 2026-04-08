@@ -1,5 +1,16 @@
-﻿FROM python:3.11-slim
+FROM node:20-slim
+
+# Install Python
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
-RUN pip install pytest pytest-cov pytest-asyncio aiohttp jinja2 responses requests htmlmin
-CMD ["pytest", "tests/", "--cov=scripts", "--cov-report=term", "--cov-fail-under=90"]
+
+# Install Python deps
+RUN python3 -m pip install --break-system-packages pytest pytest-cov pytest-asyncio aiohttp jinja2 responses requests htmlmin
+
+# Install Node deps
+RUN npm ci --prefer-offline
+
+# Run both test suites
+CMD ["sh", "-c", "echo '=== Python Tests ===' && python3 -m pytest tests/ --cov=scripts --cov-report=term --cov-fail-under=90 && echo '=== Node.js Tests ===' && npx vitest run --coverage"]

@@ -30,13 +30,13 @@ function renderBars(highlights = {}) {
 }
 
 function updateStats() {
-  $('#compCount').textContent = comparisons;
-  $('#swapCount').textContent = swaps;
+  const compEl = $('#compCount'); if(compEl) compEl.textContent = comparisons;
+  const swapEl = $('#swapCount'); if(swapEl) swapEl.textContent = swaps;
   const elapsed = startTime ? (performance.now() - startTime).toFixed(0) : 0;
-  $('#sortTime').textContent = elapsed + 'ms';
+  const timeEl = $('#sortTime'); if(timeEl) timeEl.textContent = elapsed + 'ms';
 }
 
-function getDelay() { return Math.max(1, 101 - parseInt($('#sortSpeed').value)); }
+function getDelay() { const el = $('#sortSpeed'); return el ? Math.max(1, 101 - parseInt(el.value)) : 10; }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -184,8 +184,11 @@ $('#startSortBtn').addEventListener('click', async () => {
   await SORT_ALGOS[algo]();
   sorting = false;
   updateStats();
-  renderBars({sorted: array.map((_, i) => i)});
-  $('#startSortBtn').textContent = '▶ Start';
+  const btn = $('#startSortBtn');
+  if (btn) {
+    renderBars({sorted: array.map((_, i) => i)});
+    btn.textContent = '▶ Start';
+  }
 });
 
 $('#resetBtn').addEventListener('click', () => { sorting = false; generateArray(); });

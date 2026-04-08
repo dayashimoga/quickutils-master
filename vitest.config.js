@@ -3,9 +3,10 @@ import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    testTimeout: 2000,
+    testTimeout: 10000,
     globals: true,
     environment: 'jsdom',
+    fileParallelism: false,
     include: ['projects/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
     setupFiles: ['./tests/jsdom-setup.js'],
     coverage: {

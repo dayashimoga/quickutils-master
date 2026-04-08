@@ -135,7 +135,7 @@ describe('HTML Pages', () => {
         test('footer has copyright text', () => {
             const footerText = $('footer').text();
             expect(footerText).toContain('2026');
-            expect(footerText).toContain('DailyLift');
+            expect(footerText).toContain('QuickUtils');
         });
 
         // Stylesheet Tests
@@ -169,12 +169,12 @@ describe('HTML Pages', () => {
             expect($('.quote-card').length).toBeGreaterThan(0);
         });
 
-        test('has tools section', () => {
-            expect($('#tools-section').length).toBe(1);
+        test('has network section', () => {
+            expect($('#network-section').length).toBe(1);
         });
 
-        test('has 10 tool cards', () => {
-            expect($('.tool-card').length).toBe(10);
+        test('has 26 tool cards', () => {
+            expect($('.tool-card').length).toBe(26);
         });
 
         test('has blog section', () => {

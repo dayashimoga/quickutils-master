@@ -31,11 +31,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-terraform-
 
+      - name: Detect Changed Projects
+        id: changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+          if [ -z "$CHANGED" ]; then
+            CHANGED="ALL"
+            echo "No specific project changes detected — syncing all projects"
+          else
+            echo "Changed projects: $CHANGED"
+          fi
+          echo "projects=$CHANGED" >> $GITHUB_OUTPUT
+
       - name: Create or Update GitHub Repositories & Sync Code
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
           PYTHONPATH: "."
+          CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
           # Step 1: Prep project files locally
           python scripts/sync_project_scripts.py
@@ -45,7 +58,8 @@ jobs:
           git config --global user.email "bot@quickutils.top"
           git config --global user.name "QuickUtils Bot"
           
-          # Step 2: Use github_distribute.py to create repos and push code
+          # Step 2: Selective sync — only push changed projects for speed
+          echo "Syncing projects: $CHANGED_PROJECTS"
           python scripts/github_distribute.py
 
       - name: Set up Terraform

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Explorer — Flags, Capitals, Currencies & Population | QuickUtils</title>
+    <meta name="description" content="Explore 250+ countries with flags, capitals, currencies, population, languages, time zones, and more. Interactive map, search, filter, and compare countries.">
+    <meta property="og:title" content="Country Explorer — World Countries Database">
+    <meta property="og:description" content="Explore flags, capitals, currencies, population and facts for 250+ countries.">
+    <meta property="og:image" content="https://countries.quickutils.top/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://countries.quickutils.top/og-image.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Country Explorer","url":"https://countries.quickutils.top","applicationCategory":"EducationalApplication"}</script>
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🌍 Country Explorer</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-secondary" id="compareBtn">⚖️ Compare</button>
+            <button class="btn btn-sm btn-secondary" id="quizBtn">🎯 Quiz</button>
+            <button class="btn btn-sm btn-secondary" id="statsBtn">📊 Stats</button>
+            <button class="btn btn-sm btn-secondary" id="mapBtn">🗺️ Map</button>
+            <button class="btn btn-sm btn-primary" id="exportDataBtn">📥 Export</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div class="search-bar glass-card">
+            <input type="search" id="searchInput" placeholder="🔍 Search countries, capitals, currencies...">
+            <div class="filter-row">
+                <select id="regionFilter"><option value="">All Regions</option><option value="Africa">Africa</option><option value="Americas">Americas</option><option value="Asia">Asia</option><option value="Europe">Europe</option><option value="Oceania">Oceania</option></select>
+                <select id="sortBy"><option value="name">Sort by Name</option><option value="population">By Population</option><option value="area">By Area</option><option value="density">By Density</option></select>
+                <span class="text-muted" id="countDisplay">0 countries</span>
+            </div>
+        </div>
+        <div id="countriesGrid" class="countries-grid"></div>
+
+        <!-- Country Detail Modal -->
+        <div class="modal-overlay" id="detailModal">
+            <div class="modal-content glass-card" id="detailContent"></div>
+        </div>
+        <!-- Compare Modal -->
+        <div class="modal-overlay" id="compareModal">
+            <div class="modal-content glass-card" style="max-width:800px" id="compareContent">
+                <div class="modal-header"><h2>⚖️ Compare Countries</h2><button class="icon-btn" id="closeCompare">✕</button></div>
+                <div class="compare-selects">
+                    <select id="compare1"></select>
+                    <span class="text-muted">vs</span>
+                    <select id="compare2"></select>
+                    <button class="btn btn-primary btn-sm" id="doCompare">Compare</button>
+                </div>
+                <div id="compareResults"></div>
+            </div>
+        </div>
+        <!-- Quiz Modal -->
+        <div class="modal-overlay" id="quizModal">
+            <div class="modal-content glass-card" id="quizContent">
+                <div class="modal-header"><h2>🎯 Country Quiz</h2><button class="icon-btn" id="closeQuiz">✕</button></div>
+                <div id="quizArea"></div>
+            </div>
+        </div>
+        <!-- Stats Modal -->
+        <div class="modal-overlay" id="statsModal">
+            <div class="modal-content glass-card" style="max-width:700px" id="statsContent">
+                <div class="modal-header"><h2>📊 World Statistics</h2><button class="icon-btn" id="closeStats">✕</button></div>
+                <div id="statsArea"></div>
+            </div>
+        </div>
+        <!-- Map Modal -->
+        <div class="modal-overlay" id="mapModal">
+            <div class="modal-content glass-card" style="max-width:900px" id="mapContent">
+                <div class="modal-header"><h2>🗺️ Interactive World Map</h2><button class="icon-btn" id="closeMap">✕</button></div>
+                <div id="mapArea" style="position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;border-radius:8px;background:#1a1a2e">
+                    <canvas id="worldMapCanvas" style="width:100%;height:100%"></canvas>
+                </div>
+                <div id="mapInfo" style="margin-top:0.75rem;text-align:center;font-size:0.9rem;min-height:1.5em"></div>
+            </div>
+        </div>
+        <!-- Export Modal -->
+        <div class="modal-overlay" id="exportModal">
+            <div class="modal-content glass-card" style="max-width:600px" id="exportContent">
+                <div class="modal-header"><h2>📥 Export Country Data</h2><button class="icon-btn" id="closeExport">✕</button></div>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
+                    <button class="btn btn-primary" id="exportPrintBtn">🖨️ Print All (PDF)</button>
+                    <button class="btn btn-secondary" id="exportCSVBtn">📄 Download CSV</button>
+                    <button class="btn btn-secondary" id="exportCardBtn">🖼️ Export Card (PNG)</button>
+                </div>
+                <div id="exportPreview" style="margin-top:1rem"></div>
+            </div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

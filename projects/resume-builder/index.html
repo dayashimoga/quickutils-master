@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder — Create Professional Resumes | QuickUtils</title>
+    <meta name="description" content="Build professional resumes with multiple templates. Real-time preview, drag sections, PDF export. Free online resume builder.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">📄 Resume Builder</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-primary" id="exportPdfBtn">📄 Export PDF</button>
+            <button class="btn btn-sm btn-secondary" id="saveBtn">💾 Save</button>
+            <button class="btn btn-sm btn-secondary" id="exportJsonBtn">📦 JSON</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="builder-layout">
+        <aside class="edit-panel" id="editPanel">
+            <div class="template-selector glass-card">
+                <h3>Template</h3>
+                <div class="template-grid">
+                    <button class="tmpl-btn active" data-tmpl="modern">Modern</button>
+                    <button class="tmpl-btn" data-tmpl="classic">Classic</button>
+                    <button class="tmpl-btn" data-tmpl="creative">Creative</button>
+                    <button class="tmpl-btn" data-tmpl="minimal">Minimal</button>
+                </div>
+            </div>
+            <div class="section-editor glass-card" id="personalSection">
+                <h3>👤 Personal Info</h3>
+                <input type="text" id="fullName" placeholder="Full Name" value="John Doe">
+                <input type="text" id="jobTitle" placeholder="Job Title" value="Senior Software Engineer">
+                <input type="email" id="email" placeholder="Email" value="john@example.com">
+                <input type="tel" id="phone" placeholder="Phone" value="+1 (555) 123-4567">
+                <input type="text" id="location" placeholder="Location" value="San Francisco, CA">
+                <input type="url" id="website" placeholder="Website / LinkedIn" value="linkedin.com/in/johndoe">
+            </div>
+            <div class="section-editor glass-card" id="summarySection">
+                <h3>📝 Summary</h3>
+                <textarea id="summary" rows="3" placeholder="Professional summary...">Experienced software engineer with 8+ years building scalable web applications. Expert in React, Node.js, and cloud architecture. Passionate about clean code and mentoring teams.</textarea>
+            </div>
+            <div class="section-editor glass-card" id="experienceSection">
+                <h3>💼 Experience <button class="btn btn-sm btn-secondary add-entry" data-section="experience">+ Add</button></h3>
+                <div id="experienceEntries"></div>
+            </div>
+            <div class="section-editor glass-card" id="educationSection">
+                <h3>🎓 Education <button class="btn btn-sm btn-secondary add-entry" data-section="education">+ Add</button></h3>
+                <div id="educationEntries"></div>
+            </div>
+            <div class="section-editor glass-card" id="skillsSection">
+                <h3>🛠️ Skills</h3>
+                <textarea id="skills" rows="2" placeholder="Comma-separated skills">JavaScript, TypeScript, React, Node.js, Python, AWS, Docker, PostgreSQL, MongoDB, GraphQL, CI/CD, Agile</textarea>
+            </div>
+        </aside>
+        <div class="preview-area">
+            <div class="resume-page" id="resumePage"></div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

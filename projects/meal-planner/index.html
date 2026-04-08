@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner — Weekly Planner & Grocery Lists | QuickUtils</title>
+    <meta name="description" content="Plan your weekly meals, track calories, generate grocery lists automatically. Free meal planning tool with recipe scaling and nutritional info.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🍽️ Meal Planner</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-primary" id="groceryBtn">🛒 Grocery List</button>
+            <button class="btn btn-sm btn-secondary" id="clearWeekBtn">🗑️ Clear Week</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div class="week-nav glass-card">
+            <button class="btn btn-sm btn-secondary" id="prevWeek">← Prev</button>
+            <h2 id="weekLabel">This Week</h2>
+            <button class="btn btn-sm btn-secondary" id="nextWeek">Next →</button>
+        </div>
+        <div class="week-stats glass-card" id="weekStats"></div>
+        <div class="week-grid" id="weekGrid"></div>
+        <!-- Add Meal Modal -->
+        <div class="modal-overlay" id="mealModal">
+            <div class="modal-content glass-card">
+                <div class="modal-header"><h2 id="mealModalTitle">Add Meal</h2><button class="icon-btn" id="closeMealModal">✕</button></div>
+                <div class="meal-form">
+                    <div class="form-group"><label>Meal Name</label><input type="text" id="mealName" placeholder="e.g. Grilled Chicken Salad"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Calories</label><input type="number" id="mealCal" placeholder="500"></div>
+                        <div class="form-group"><label>Protein (g)</label><input type="number" id="mealProtein" placeholder="30"></div>
+                        <div class="form-group"><label>Carbs (g)</label><input type="number" id="mealCarbs" placeholder="45"></div>
+                        <div class="form-group"><label>Fat (g)</label><input type="number" id="mealFat" placeholder="15"></div>
+                    </div>
+                    <div class="form-group"><label>Category</label>
+                        <select id="mealCategory"><option value="breakfast">🌅 Breakfast</option><option value="lunch">☀️ Lunch</option><option value="dinner">🌙 Dinner</option><option value="snack">🍿 Snack</option></select>
+                    </div>
+                    <div class="form-group"><label>Servings</label><input type="number" id="mealServings" value="1" min="1"></div>
+                    <div class="form-group"><label>Ingredients (one per line)</label><textarea id="mealIngredients" rows="4" placeholder="2 cups lettuce&#10;200g chicken breast&#10;1 tbsp olive oil"></textarea></div>
+                    <div class="form-group"><label>Notes</label><textarea id="mealNotes" rows="2" placeholder="Optional notes..."></textarea></div>
+                    <button class="btn btn-primary" id="saveMealBtn" style="width:100%">Save Meal</button>
+                </div>
+                <div class="suggestions"><h3>Quick Add Suggestions</h3><div id="suggestionsGrid"></div></div>
+            </div>
+        </div>
+        <!-- Grocery Modal -->
+        <div class="modal-overlay" id="groceryModal">
+            <div class="modal-content glass-card">
+                <div class="modal-header"><h2>🛒 Grocery List</h2><button class="icon-btn" id="closeGrocery">✕</button></div>
+                <div id="groceryList"></div>
+                <button class="btn btn-primary" id="copyGroceryBtn" style="width:100%;margin-top:1rem">📋 Copy to Clipboard</button>
+            </div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
