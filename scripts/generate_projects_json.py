@@ -23,11 +23,11 @@ def apply():
             domain_raw = info.get("SITE_URL", "")
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             
-            # Simple static site build command assumption
+            # Resilient static site build command caching all dependencies and global core styles
             arch[project_id] = {
                 "directory": f"projects/{project_id}",
                 "repo_name": project_id,
-                "build_command": "mkdir -p dist && cp index.html style.css script.js dist/ 2>/dev/null || true",
+                "build_command": "mkdir -p dist && cp -r * dist/ 2>/dev/null || true; cp ../../shared/quickutils-core.* dist/ 2>/dev/null || true",
                 "destination_dir": "dist",
                 "custom_domain": domain,
                 "root_dir": f"projects/{project_id}"
