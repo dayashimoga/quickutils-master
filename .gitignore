@@ -106,3 +106,9 @@ desktop.ini
 # Docker
 # ══════════════════════════════════════════
 .docker/
+
+# Logs and Temp files
+*.log
+*.tmp
+*.temp
+logs/
