@@ -17,7 +17,22 @@ def get_deployment_count(account_id, api_token, project_name):
     try:
         resp = urllib.request.urlopen(req, timeout=10)
         data = json.loads(resp.read().decode("utf-8"))
-        return len(data.get("result", []))
+        deployments = data.get("result", [])
+        
+        # Performance/Queue Fix: Purge pending builds prior to queueing a new one
+        for dep in deployments:
+            if dep.get('latest_stage', {}).get('status') in ['queued', 'building', 'active', 'pending', 'idle', 'initializing']:
+                dep_id = dep.get('id')
+                cancel_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments/{dep_id}/cancel"
+                creq = urllib.request.Request(cancel_url, method="POST")
+                creq.add_header("Authorization", f"Bearer {api_token}")
+                try: 
+                    urllib.request.urlopen(creq, timeout=10)
+                    print(f"    - Purged hanging queued build for {project_name}")
+                except Exception: 
+                    pass
+        
+        return len(deployments)
     except Exception as e:
         print(f"⚠️ Could not check deployment count for {project_name}: {e}")
         return -1
