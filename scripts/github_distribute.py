@@ -2,10 +2,18 @@ import os
 import subprocess
 import requests
 import json
+import sys
 from pathlib import Path
 
-# Configuration - Renamed to match orchestrator standard
-from scripts.utils import GH_USERNAME
+# Resilient import: works both as package (CI with PYTHONPATH=.) and standalone
+try:
+    from scripts.utils import GH_USERNAME
+except ImportError:
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from scripts.utils import GH_USERNAME
+    except ImportError:
+        GH_USERNAME = "dayashimoga"
 PAT = os.environ.get("GH_PAT") or os.environ.get("GITHUB_PAT")
 
 _username_cache = None

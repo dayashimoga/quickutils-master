@@ -520,5 +520,37 @@
         "destination_dir": "dist",
         "custom_domain": "image.quickutils.top",
         "root_dir": "projects/image-converter"
+    },
+    "sound-board": {
+        "directory": "projects/sound-board",
+        "repo_name": "sound-board",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "sounds.quickutils.top",
+        "root_dir": "projects/sound-board"
+    },
+    "drawing-board": {
+        "directory": "projects/drawing-board",
+        "repo_name": "drawing-board",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "draw.quickutils.top",
+        "root_dir": "projects/drawing-board"
+    },
+    "world-clock": {
+        "directory": "projects/world-clock",
+        "repo_name": "world-clock",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "clock.quickutils.top",
+        "root_dir": "projects/world-clock"
+    },
+    "space-mission-control": {
+        "directory": "projects/space-mission-control",
+        "repo_name": "space-mission-control",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "spacemission.quickutils.top",
+        "root_dir": "projects/space-mission-control"
     }
-}
+}

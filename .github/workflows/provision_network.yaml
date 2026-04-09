@@ -4,6 +4,11 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      trigger_all:
+        description: 'Trigger deployment for ALL projects (yes/no)'
+        required: false
+        default: 'no'
 
 jobs:
   provision:
@@ -34,12 +39,18 @@ jobs:
       - name: Detect Changed Projects
         id: changes
         run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
-          if [ -z "$CHANGED" ]; then
+          # If trigger_all is set to 'yes', deploy everything
+          if [ "${{ github.event.inputs.trigger_all }}" = "yes" ]; then
             CHANGED="ALL"
-            echo "No specific project changes detected — syncing all projects"
+            echo "Manual trigger: deploying ALL projects"
           else
-            echo "Changed projects: $CHANGED"
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+            if [ -z "$CHANGED" ]; then
+              CHANGED="ALL"
+              echo "No specific project changes detected — syncing all projects"
+            else
+              echo "Changed projects: $CHANGED"
+            fi
           fi
           echo "projects=$CHANGED" >> $GITHUB_OUTPUT
 
