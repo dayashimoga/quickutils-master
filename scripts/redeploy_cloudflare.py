@@ -27,8 +27,10 @@ def trigger_deployment(account_id, api_token, project_name):
     req = urllib.request.Request(url, method="POST")
     req.add_header("Authorization", f"Bearer {api_token}")
     req.add_header("Content-Type", "application/json")
+    # Send branch explicitly so Cloudflare fetches the latest commit instead of reusing the stale known hash
+    payload = json.dumps({"branch": "main"}).encode("utf-8")
     try:
-        resp = urllib.request.urlopen(req, timeout=30)
+        resp = urllib.request.urlopen(req, data=payload, timeout=30)
         print(f"✅ Successfully queued deployment for {project_name}")
         return True
     except urllib.error.HTTPError as e:
