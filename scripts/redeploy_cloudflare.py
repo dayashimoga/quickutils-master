@@ -9,6 +9,19 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
 
+def get_deployment_count(account_id, api_token, project_name):
+    """Check how many deployments a project has to detect 522 states (0 deployments)."""
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
+    req = urllib.request.Request(url, method="GET")
+    req.add_header("Authorization", f"Bearer {api_token}")
+    try:
+        resp = urllib.request.urlopen(req, timeout=10)
+        data = json.loads(resp.read().decode("utf-8"))
+        return len(data.get("result", []))
+    except Exception as e:
+        print(f"⚠️ Could not check deployment count for {project_name}: {e}")
+        return -1
+
 def trigger_deployment(account_id, api_token, project_name):
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
     req = urllib.request.Request(url, method="POST")
@@ -19,6 +32,9 @@ def trigger_deployment(account_id, api_token, project_name):
         print(f"✅ Successfully queued deployment for {project_name}")
         return True
     except urllib.error.HTTPError as e:
+        if e.code == 304:
+            print(f"⏩ {project_name} skipped: HTTP 304 Not Modified (latest commit already deployed)")
+            return True
         print(f"❌ Failed to queue {project_name}: HTTP Error {e.code}: {e.reason}")
         return False
     except urllib.error.URLError as e:
@@ -44,33 +60,47 @@ def main():
         print("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN environment variables.")
         return
 
-    if not changed:
-        print("No CHANGED_PROJECTS set; skipping deployment trigger.")
+    all_projects = get_all_project_names()
+    if not all_projects:
+        print("Could not determine project list from projects.json; aborting.")
         return
 
-    # Determine project list
-    if changed.strip() == "ALL":
-        deploy_list = get_all_project_names()
-        if not deploy_list:
-            print("Could not determine project list from projects.json; aborting.")
-            return
-        print(f"🚀 Deploying ALL {len(deploy_list)} projects...")
-    else:
-        deploy_list = [p.strip() for p in changed.split(",") if p.strip()]
+    deploy_list = set()
 
+    # 1. Add explicitly changed projects
+    if changed:
+        if changed.strip() == "ALL":
+            deploy_list.update(all_projects)
+            print(f"🚀 Deploying ALL {len(all_projects)} projects via manual trigger...")
+        else:
+            changed_list = [p.strip() for p in changed.split(",") if p.strip()]
+            deploy_list.update(changed_list)
+            print(f"📝 Found {len(changed_list)} changed projects to deploy.")
+
+    # 2. Add any projects with 0 deployments (522 error state)
+    print("\n🔍 Checking all projects for 522 Not Deployed state (0 deployments)...")
+    for project in all_projects:
+        if project in deploy_list:
+            continue # already queued
+        
+        count = get_deployment_count(account_id, api_token, project)
+        if count == 0:
+            print(f"⚠️ Alert: {project} has 0 prior deployments! Adding to queue to fix 522 error.")
+            deploy_list.add(project)
+        time.sleep(1) # small pause to respect Cloudflare API rate limits
+        
     if not deploy_list:
-        print("No projects to deploy.")
+        print("No projects to deploy and all existing projects have >0 deployments.")
         return
 
-    print(f"Triggering sequential CF rebuilds for {len(deploy_list)} projects...")
+    print(f"\n🚀 Triggering CF rebuilds for {len(deploy_list)} projects...")
     success = 0
     for project in deploy_list:
         if trigger_deployment(account_id, api_token, project):
             success += 1
-        # Brief pause between triggers to avoid rate limiting
         time.sleep(5)
     
-    print(f"\n📊 Deployment summary: {success}/{len(deploy_list)} projects queued successfully.")
+    print(f"\n📊 Deployment summary: {success}/{len(deploy_list)} projects queued/synced successfully.")
 
 if __name__ == "__main__":
     main()
