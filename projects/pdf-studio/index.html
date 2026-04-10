@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PDF Studio - Online tools for intelligent PDF manipulation. All operations run locally in your browser.">
+    <title>PDF Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- pdf-lib -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-file-pdf"></i> PDF Studio
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active">Tools</a>
+            <a href="#">About</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero">
+            <h1>Intelligent PDF Manipulation</h1>
+            <p>100% secure, completely local. Process your sensitive documents directly in the browser.</p>
+        </header>
+
+        <section class="tools-grid">
+            <div class="tool-card" data-tool="pdf-to-image">
+                <i class="fas fa-image icon"></i>
+                <h2>PDF to Image</h2>
+                <p>Convert your PDF pages into high-quality images effortlessly.</p>
+            </div>
+            
+            <div class="tool-card" data-tool="image-to-pdf">
+                <i class="fas fa-file-image icon"></i>
+                <h2>Image to PDF</h2>
+                <p>Combine multiple images into a single, cohesive PDF document.</p>
+            </div>
+
+            <div class="tool-card" data-tool="merge-pdfs">
+                <i class="fas fa-object-group icon"></i>
+                <h2>Merge PDFs</h2>
+                <p>Combine multiple PDF files into one in your chosen order.</p>
+            </div>
+
+            <div class="tool-card" data-tool="remove-pages">
+                <i class="fas fa-scissors icon"></i>
+                <h2>Remove Pages</h2>
+                <p>Delete unwanted pages from your PDF file.</p>
+            </div>
+
+            <div class="tool-card" data-tool="extract-text">
+                <i class="fas fa-tools icon"></i>
+                <h2>Extract Text</h2>
+                <p>Pull raw text content from PDF pages.</p>
+            </div>
+        </section>
+
+        <!-- Workspace Modal / Overlay -->
+        <div id="workspace" class="workspace hidden">
+            <div class="workspace-content glass-panel">
+                <button class="close-workspace"><i class="fas fa-times"></i></button>
+                <h2 id="workspace-title">Tool Name</h2>
+                <p id="workspace-desc">Tool description here.</p>
+                
+                <div class="drop-zone" id="drop-zone">
+                    <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                    <p>Drag & Drop files here or click to browse</p>
+                    <input type="file" id="file-input" multiple hidden>
+                </div>
+
+                <div class="options-area" id="options-area"></div>
+                
+                <div class="file-list" id="file-list"></div>
+
+                <div class="action-area">
+                    <button id="process-btn" class="btn primary-btn disabled">Process</button>
+                    <div id="loader" class="loader hidden"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

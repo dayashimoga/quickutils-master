@@ -112,3 +112,10 @@ desktop.ini
 *.tmp
 *.temp
 logs/
+
+# Databases
+*.sqlite
+*.sqlite3
+
+# Notebooks
+.ipynb_checkpoints/
