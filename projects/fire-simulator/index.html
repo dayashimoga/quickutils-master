@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIRE Simulator | QuickUtils</title>
+    <meta name="description" content="Free online fire simulator utility.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">📈 FIRE Simulator</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container feature-page">
+        <div class="glass-card">
+            <h2>Welcome to FIRE Simulator</h2>
+            <div class="glass-card mb-4 p-4 text-center">
+    <h3>FIRE Projection</h3>
+    <div class="d-flex gap-2 justify-content-center mb-3">
+        <input type="number" id="netWorth" class="form-control" placeholder="Current Wealth ($)" value="100000">
+        <input type="number" id="annualSave" class="form-control" placeholder="Annual Savings ($)" value="15000">
+        <input type="number" id="roi" class="form-control" placeholder="Expected ROI (%)" value="7">
+    </div>
+    <button id="calcBtn" class="btn btn-primary glow-btn">Generate Projection</button>
+</div>
+<div class="glass-card p-4"><canvas id="fireChart" style="width:100%; height:350px;"></canvas></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

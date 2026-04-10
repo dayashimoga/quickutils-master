@@ -4,26 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Streak | QuickUtils</title>
-    <meta name="description" content="Free online habit streak utility.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+    <meta name="description" content="Free online habit streak utility with GitHub-style contribution heatmaps.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <link rel="stylesheet" href="quickutils-core.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .heatmap-container { display: flex; align-items: flex-end; gap: 4px; overflow-x: auto; padding-bottom: 1rem; }
+        .heatmap-col { display: flex; flex-direction: column; gap: 4px; }
+        .heatmap-cell { width: 14px; height: 14px; border-radius: 2px; background: #2d333b; cursor: pointer; transition: all 0.2s; }
+        .heatmap-cell[data-level="1"] { background: #0e4429; }
+        .heatmap-cell[data-level="2"] { background: #006d32; }
+        .heatmap-cell[data-level="3"] { background: #26a641; }
+        .heatmap-cell[data-level="4"] { background: #39d353; }
+        .heatmap-cell.empty { background: transparent; pointer-events: none; }
+        .heatmap-cell:hover { transform: scale(1.2); box-shadow: 0 0 8px var(--clr-primary); z-index: 10; relative; }
+        .habit-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; margin-bottom: 0.5rem; background: var(--bg-surface-2); border-radius: 8px; border-left: 4px solid var(--clr-primary); }
+        .habit-info { flex: 1; }
+        .streak-badge { background: rgba(57, 211, 83, 0.2); color: #39d353; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; }
+        .btn-check { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--clr-primary); background: transparent; color: var(--clr-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-check.checked { background: var(--clr-primary); color: #000; transform: scale(1.1); box-shadow: 0 0 15px rgba(57, 211, 83, 0.5); }
+    </style>
 </head>
-<body>
-    <nav class="navbar"><div class="container nav-inner">
-        <a href="https://quickutils.top" class="brand">🚀 Habit Streak</a>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">📅 Habit Streak</a>
         <div class="nav-links">
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
             <button id="themeBtn" class="theme-btn">🌙</button>
         </div>
     </div></nav>
-    <main class="container feature-page">
-        <div class="glass-card">
-            <h2>Welcome to Habit Streak</h2>
-            <p>Start building your amazing tool here.</p>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4">
+            <h1 class="gradient-text text-neon-green">Build Unbreakable Habits</h1>
+            <p class="text-muted">Track your daily progress and watch your streak grow.</p>
+        </div>
+
+        <div class="glass-card mb-4 p-4 text-center">
+            <h3>Yearly Activity Heatmap</h3>
+            <p class="text-xs text-muted mb-3">Your overall consistency across all habits.</p>
+            <div class="heatmap-container" id="heatmapContainer"></div>
+        </div>
+
+        <div class="glass-card mb-4 p-4">
+            <h3 class="mb-3">My Habits</h3>
+            <div class="d-flex gap-2 mb-4">
+                <input type="text" id="habitInput" class="form-control" placeholder="E.g., Read 10 pages, Meditate for 10 mins...">
+                <button class="btn btn-primary" id="addHabitBtn">Add</button>
+            </div>
+            
+            <div id="habitsList">
+                <!-- Dynamic Habits Go Here -->
+            </div>
         </div>
     </main>
-    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
 </body>

@@ -213,6 +213,16 @@ const QU = (() => {
     { category: 'Productivity', emoji: '✅', name: 'World Clock', url: 'https://clock.quickutils.top' },
     { category: 'Utilities', emoji: '🛠️', name: 'Space Mission Control', url: 'https://spacemission.quickutils.top' },
     { category: 'Creative Studio', emoji: '🎨', name: 'PDF Studio', url: 'https://pdfstudio.quickutils.top' },
+    { category: 'Productivity', emoji: '🎤', name: 'Subtitle Generator', url: 'https://subtitlegenerator.quickutils.top' },
+    { category: 'Productivity', emoji: '📈', name: 'FIRE Simulator', url: 'https://firesimulator.quickutils.top' },
+    { category: 'Creative Studio', emoji: '🏠', name: '3D Room Planner', url: 'https://roomplanner.quickutils.top' },
+    { category: 'Productivity', emoji: '🏋️', name: 'Workout Architect', url: 'https://workoutarchitect.quickutils.top' },
+    { category: 'Creative Studio', emoji: '🌍', name: 'World Builder', url: 'https://worldbuilder.quickutils.top' },
+    { category: 'Productivity', emoji: '🌱', name: 'Garden Planner', url: 'https://gardenplanner.quickutils.top' },
+    { category: 'Entertainment', emoji: '🎵', name: 'Beat Maker', url: 'https://beatmaker.quickutils.top' },
+    { category: 'Productivity', emoji: '✈️', name: 'Travel Builder', url: 'https://travelbuilder.quickutils.top' },
+    { category: 'Science & Education', emoji: '🗣️', name: 'Language Playground', url: 'https://languageplayground.quickutils.top' },
+    { category: 'Productivity', emoji: '🧘', name: 'Meditation Journey', url: 'https://meditationjourney.quickutils.top' },
   ];
 
   function initNetworkLauncher() {

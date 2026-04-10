@@ -29,6 +29,10 @@ def sync_scripts():
                         shutil.copy2(dist_css_path, os.path.join(target_dir, 'quickutils-core.css'))
                     if os.path.exists(dist_js_path):
                         shutil.copy2(dist_js_path, os.path.join(target_dir, 'quickutils-core.js'))
+                    
+                    # Ensure aggressive caching
+                    with open(os.path.join(target_dir, '_headers'), 'w') as fh:
+                        fh.write("/*\n  Cache-Control: public, max-age=31536000, immutable\n")
                     success_count += 1
                 except Exception as e:
                     print(f"Failed to copy to {target_dir}: {e}")

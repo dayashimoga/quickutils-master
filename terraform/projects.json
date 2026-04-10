@@ -40,6 +40,8 @@
         "src_dir": "src",
         "data_dir": "data",
         "project_type": "datasets-directory",
+        "build_command": "pip install -r requirements.txt && python scripts/build_directory.py",
+        "destination_dir": "dist",
         "custom_domain": "datasets.quickutils.top",
         "root_dir": "projects/datasets-directory"
     },
