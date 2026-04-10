@@ -12,7 +12,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # The host directory
-$projectRoot = "H:\boring\projects"
+$projectRoot = $PSScriptRoot
 
 Write-Host "Pulling Playwright test image (mcr.microsoft.com/playwright:v1.40.0-jammy)..."
 # Pull quietly

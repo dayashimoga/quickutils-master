@@ -1,0 +1,35 @@
+/* Coloring Books Styles */
+.coloring-layout { display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 60px); overflow: hidden; }
+.page-sidebar { border-radius: 0; padding: 0.75rem; overflow-y: auto; }
+.page-sidebar h3 { font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+.progress-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; background: var(--accent); color: #fff; border-radius: var(--radius-full); }
+.category-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
+.cat-tab { padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all var(--transition-fast); }
+.cat-tab:hover { border-color: var(--accent); }
+.cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.page-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+.page-thumb { aspect-ratio: 1; border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all var(--transition-fast); background: var(--bg-surface); position: relative; }
+.page-thumb:hover { border-color: var(--accent); transform: scale(1.05); }
+.page-thumb.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.page-thumb.completed::after { content: '✓'; position: absolute; top: 2px; right: 2px; font-size: 0.6rem; background: var(--accent); color: #fff; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; }
+.page-thumb .thumb-num { position: absolute; bottom: 1px; font-size: 0.5rem; color: var(--text-muted); }
+.canvas-area { display: flex; flex-direction: column; align-items: center; padding: 1rem; overflow-y: auto; }
+.color-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; width: 100%; max-width: 520px; }
+.palette { display: flex; flex-wrap: wrap; gap: 3px; flex: 1; }
+.color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
+.color-swatch:hover { transform: scale(1.2); }
+.color-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); transform: scale(1.15); }
+.tools-row { display: flex; gap: 0.3rem; }
+.tools-row button { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text); cursor: pointer; font-size: 1rem; transition: all var(--transition-fast); }
+.tools-row button:hover { border-color: var(--accent); }
+.tools-row button.tool-active { background: var(--accent); border-color: var(--accent); }
+.coloring-canvas { width: 100%; max-width: 500px; aspect-ratio: 1; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
+#coloringSvg { width: 100%; height: 100%; cursor: pointer; }
+#coloringSvg path, #coloringSvg circle, #coloringSvg ellipse, #coloringSvg rect, #coloringSvg polygon { stroke: #333; stroke-width: 1.5; fill: #fff; cursor: pointer; transition: fill 0.15s; }
+#coloringSvg path:hover, #coloringSvg circle:hover, #coloringSvg ellipse:hover, #coloringSvg rect:hover, #coloringSvg polygon:hover { stroke-width: 2.5; stroke: var(--accent, #6366f1); }
+.page-title { margin-top: 0.75rem; font-size: 1rem; font-weight: 700; text-align: center; }
+@media (max-width: 768px) {
+    .coloring-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .page-sidebar { max-height: 180px; }
+    .page-grid { grid-template-columns: repeat(6, 1fr); }
+}

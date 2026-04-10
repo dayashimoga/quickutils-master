@@ -50,7 +50,7 @@ describe('Lint Checks', () => {
         test('index.html has Amazon affiliate links', () => {
             const content = fs.readFileSync(path.join(SRC, 'index.html'), 'utf-8');
             expect(content).toContain('amazon.com/dp/');
-            expect(content).toContain('tag=df-quickutils-21');
+            expect(content).toContain('tag=quickutils-21');
         });
 
         test('index.html has Pinterest share button', () => {

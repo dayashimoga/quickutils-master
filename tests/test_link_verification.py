@@ -130,9 +130,13 @@ class TestProjectConfigIntegrity:
 
     def test_all_project_dirs_have_config(self, config):
         """Every project directory should have an entry in project_config.json."""
+        # Utility dirs that are not deployable projects
+        EXCLUDED = {"test-runner", "run_tests.ps1", "__pycache__"}
         projects_cfg = config["projects"]
         for project_dir in PROJECTS_DIR.iterdir():
             if not project_dir.is_dir() or project_dir.name.startswith("."):
+                continue
+            if project_dir.name in EXCLUDED:
                 continue
             name = project_dir.name
             short_name = name.replace("-directory", "")

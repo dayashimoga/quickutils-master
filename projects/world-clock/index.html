@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock — Multi-Timezone Display & Meeting Planner | QuickUtils</title>
+    <meta name="description" content="Display multiple time zones with analog and digital clocks. Plan meetings across zones.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕐</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🕐 World Clock</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-secondary" id="addClockBtn">➕ Add Clock</button>
+            <button class="btn btn-sm btn-secondary" id="meetingBtn">📅 Meeting Planner</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div id="clocksGrid" class="clocks-grid"></div>
+        <div class="modal-overlay" id="addModal"><div class="modal-content glass-card" style="max-width:400px">
+            <div class="modal-header"><h2>➕ Add Clock</h2><button class="icon-btn" id="closeAdd">✕</button></div>
+            <input type="search" id="tzSearch" placeholder="🔍 Search city or timezone...">
+            <div id="tzList" class="tz-list"></div>
+        </div></div>
+        <div class="modal-overlay" id="meetingModal"><div class="modal-content glass-card" style="max-width:700px">
+            <div class="modal-header"><h2>📅 Meeting Planner</h2><button class="icon-btn" id="closeMeeting">✕</button></div>
+            <div id="meetingGrid" class="meeting-grid"></div>
+        </div></div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils.</div></footer>
+    <script src="quickutils-core.js"></script><script src="script.js"></script>
+</body>
+</html>

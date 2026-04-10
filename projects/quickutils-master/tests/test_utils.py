@@ -7,11 +7,22 @@ import pytest
 from scripts.utils import (
     ensure_dir,
     get_categories,
+    get_config,
     load_database,
     save_database,
     slugify,
     truncate,
 )
+
+class TestGetConfig:
+    def test_get_config_bool_parsing(self):
+        import os
+        from unittest.mock import patch
+        
+        with patch.dict(os.environ, {"TEST_TRUE": "yes", "TEST_FALSE": "0", "TEST_VAL": "hello"}):
+            assert get_config("TEST_TRUE", False) is True
+            assert get_config("TEST_FALSE", True) is False
+            assert get_config("TEST_VAL", "") == "hello"
 
 
 class TestSlugify:
@@ -72,6 +83,35 @@ class TestLoadDatabase:
         bad_file.write_text('{"key": "value"}', encoding="utf-8")
         with pytest.raises(ValueError, match="must contain a JSON array"):
             load_database(bad_file)
+
+    def test_load_database_default_path(self):
+        from unittest.mock import patch
+        with patch("scripts.utils.DATA_DIR", Path("/tmp/nonexistent_data")):
+            items = load_database()
+            assert items == []
+
+    def test_load_database_missing_fields(self, tmp_path):
+        bad_file = tmp_path / "missing.json"
+        bad_file.write_text('[{"some_key": "val"}]', encoding="utf-8")
+        items = load_database(bad_file)
+        item = items[0]
+        
+        assert item["title"] == "Unknown Item"
+        assert item["slug"] == "unknown-item"
+        assert item["cors"] == "unknown"
+        assert item["auth"] == "None"
+        assert item["https"] is True
+        assert item["category"] == "Uncategorized"
+        assert item["url"] == "#"
+
+    def test_load_database_with_id_no_title(self, tmp_path):
+        bad_file = tmp_path / "missing2.json"
+        bad_file.write_text('[{"id": "Test-ID", "name": "Real Name"}]', encoding="utf-8")
+        items = load_database(bad_file)
+        item = items[0]
+        
+        assert item["title"] == "Real Name"
+        assert item["slug"] == "test-id"
 
 
 class TestSaveDatabase:
@@ -167,3 +207,9 @@ class TestTruncate:
     def test_exact_length(self):
         text = "x" * 160
         assert truncate(text, 160) == text
+
+    def test_truncate_no_spaces(self):
+        text = "a" * 200
+        res = truncate(text, max_length=50)
+        assert len(res) == 50
+        assert res.endswith("...")

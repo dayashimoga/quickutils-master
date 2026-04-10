@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -150,6 +151,39 @@ BOOK_RECOMMENDATIONS = {
     ],
 }
 
+# Dynamic Niche Titles for Index.html
+HERO_TITLES = {
+    "apistatus": "Track <span class='gradient-text'>API Status Pages</span>",
+    "boilerplates": "Launch Faster with <span class='gradient-text'>Open-Source Boilerplates</span>",
+    "cheatsheets": "Master Coding with <span class='gradient-text'>Dev Cheatsheets</span>",
+    "dailyfacts": "Learn Something New with <span class='gradient-text'>Daily Facts</span>",
+    "datasets": "Discover High-Quality <span class='gradient-text'>Open Datasets</span>",
+    "jobs": "Find the Best <span class='gradient-text'>Tech Jobs</span>",
+    "market": "Get the Latest <span class='gradient-text'>Market Digest</span>",
+    "opensource": "Explore the Best <span class='gradient-text'>Open Source Projects</span>",
+    "prices": "Compare <span class='gradient-text'>Software & Tech Prices</span>",
+    "prompts": "Optimize AI with <span class='gradient-text'>Prompt Templates</span>",
+    "master": "Discover <span class='gradient-text'>Free & Open APIs</span>",
+    "directory": "Discover <span class='gradient-text'>Free & Open APIs</span>",
+    "tools": "Boost Productivity with <span class='gradient-text'>Free Dev Tools</span>",
+}
+
+RESOURCE_NAMES = {
+    "apistatus": "API status pages",
+    "boilerplates": "boilerplates",
+    "cheatsheets": "cheatsheets",
+    "dailyfacts": "daily facts",
+    "datasets": "datasets",
+    "jobs": "job listings",
+    "market": "market updates",
+    "opensource": "open-source projects",
+    "prices": "pricing pages",
+    "prompts": "AI prompts",
+    "master": "APIs",
+    "directory": "APIs",
+    "tools": "developer tools",
+}
+
 # Default books for categories without specific recommendations
 DEFAULT_BOOKS = [
     {"title": "Designing Web APIs", "author": "Brenda Jin", "asin": "1492026921"},
@@ -175,7 +209,17 @@ except ImportError:
     def minify_html(html: str) -> str:
         return html
 
+def minify_css(css: str) -> str:
+    css = re.sub(r'/\*[\s\S]*?\*/', '', css)
+    css = re.sub(r'\s+', ' ', css)
+    css = re.sub(r'\s*([\{\}\:\;\,\>])\s*', r'\1', css)
+    return css.strip()
 
+def minify_js(js: str) -> str:
+    js = re.sub(r'//.*', '', js)
+    js = re.sub(r'/\*[\s\S]*?\*/', '', js)
+    js = re.sub(r'\s+', ' ', js)
+    return js.strip()
 def create_jinja_env() -> Environment:
     """Create and configure the Jinja2 template environment."""
     env = Environment(
@@ -266,6 +310,16 @@ def copy_static_assets():
         verify_content = f"google-site-verification: {GOOGLE_SITE_VERIFICATION}.html"
         verify_path.write_text(verify_content, encoding="utf-8")
 
+    # Optimize CSS and JS (Minification)
+    for ext, minify_fn in [('.css', minify_css), ('.js', minify_js)]:
+        for p in absolute_dist.rglob(f"*{ext}"):
+            if p.is_file():
+                try:
+                    content = p.read_text(encoding="utf-8")
+                    p.write_text(minify_fn(content), encoding="utf-8")
+                except Exception as e:
+                    print(f"  ⚠️ Failed to minify {p.name}: {e}")
+
 
 
 def optimize_images():
@@ -301,6 +355,10 @@ def optimize_images():
                     else:
                         # Other formats (WebP, etc.)
                         img.save(img_path, format=fmt, optimize=True)
+                        
+                    # Also save as WebP
+                    webp_path = img_path.with_suffix('.webp')
+                    img.save(webp_path, format="WEBP", quality=85, optimize=True)
                 
                 new_size = img_path.stat().st_size
                 saved = original_size - new_size
@@ -349,6 +407,11 @@ def build_breadcrumb_schema(crumbs: list) -> dict:
     }
 
 
+def extract_keywords(text):
+    words = re.findall(r'\w+', str(text).lower())
+    stopwords = {"and", "the", "a", "an", "is", "for", "to", "of", "in", "it", "with", "as", "on", "this", "that"}
+    return set(w for w in words if len(w) > 3 and w not in stopwords)
+
 def build_item_pages(env: Environment, items: list, categories: dict):
     """Generate individual item pages.
 
@@ -360,16 +423,42 @@ def build_item_pages(env: Environment, items: list, categories: dict):
     template = env.get_template("item.html")
     items_dir = DIST_DIR / "item"
     ensure_dir(items_dir)
+    
+    # Precompute keywords for TF-IDF cross-linking logic
+    item_keywords = {i["slug"]: extract_keywords(i.get("title", "") + " " + i.get("description", "")) for i in items}
 
     for item in items:
         if "auth" not in item:
             item["auth"] = "None"
-        # Get related items from the same category (up to 6, excluding self)
-        related = [
-            i
-            for i in categories.get(item["category"], [])
-            if i["slug"] != item["slug"]
-        ][:6]
+            
+        # Algorithmic Cross-Linking logic (TF-IDF approximation via Jaccard-like tag overlap + category boost)
+        item_kws = item_keywords[item["slug"]]
+        scored_items = []
+        for other in items:
+            if other["slug"] == item["slug"]: continue
+            score = 0
+            if other["category"] == item["category"]:
+                score += 5
+            other_kws = item_keywords[other["slug"]]
+            score += len(item_kws.intersection(other_kws))
+            if score > 0:
+                scored_items.append((score, other))
+        
+        scored_items.sort(key=lambda x: x[0], reverse=True)
+        related = [i[1] for i in scored_items[:6]]
+
+        # Incremental Builds Logic
+        item_data_str = json.dumps({"item": item, "related": [r["slug"] for r in related]}, sort_keys=True)
+        content_hash = hashlib.md5(item_data_str.encode('utf-8')).hexdigest()
+        output_path = items_dir / f"{item['slug']}.html"
+        
+        if output_path.exists():
+            try:
+                existing_html = output_path.read_text(encoding="utf-8")
+                if f"<!-- hash:{content_hash} -->" in existing_html[:100]:
+                    continue
+            except Exception:
+                pass
 
         # Get book recommendations for this category
         raw_books = BOOK_RECOMMENDATIONS.get(item["category"], DEFAULT_BOOKS)
@@ -419,7 +508,7 @@ def build_item_pages(env: Environment, items: list, categories: dict):
             }
         )
 
-        output_path = items_dir / f"{item['slug']}.html"
+        html = f"<!-- hash:{content_hash} -->\n" + html
         output_path.write_text(minify_html(html), encoding="utf-8")
 
     print(f"  ✓ Generated {len(items)} item pages → dist/item/")
@@ -524,6 +613,9 @@ def build_index_page(env: Environment, items: list, categories: dict):
     featured = items[:8]
 
     # Categories context
+    hero_title = HERO_TITLES.get(PROJECT_TYPE, "Discover <span class='gradient-text'>Free & Open APIs</span>")
+    resource_name = RESOURCE_NAMES.get(PROJECT_TYPE, "APIs")
+
     html = template.render(
         categories=category_cards,
         featured_items=featured,
@@ -533,6 +625,8 @@ def build_index_page(env: Environment, items: list, categories: dict):
         page_description=SITE_DESCRIPTION,
         page_url=SITE_URL,
         canonical_url=SITE_URL,
+        hero_title=hero_title,
+        resource_name=resource_name,
         # Social Presence Metadata
         og_image=f"{SITE_URL}/images/social/og-index.png",
         pinterest_image=f"{SITE_URL}/images/social/pin-index.png",
@@ -558,6 +652,30 @@ def build_404_page(env: Environment):
     output_path.write_text(minify_html(html), encoding="utf-8")
     print("  ✓ Generated 404 page → dist/404.html")
 
+def build_legal_pages(env: Environment):
+    """Generate static legal and info pages."""
+    pages = [
+        {"file": "privacy.html", "title": f"Privacy Policy | {SITE_NAME}", "desc": "Privacy policy and terms of data usage."},
+        {"file": "terms.html", "title": f"Terms of Service | {SITE_NAME}", "desc": "Terms of service and usage guidelines."},
+        {"file": "about.html", "title": f"About Us | {SITE_NAME}", "desc": f"About {SITE_NAME}."}
+    ]
+    
+    for page in pages:
+        try:
+            template = env.get_template(page["file"])
+            html = template.render(
+                page_title=page["title"],
+                page_description=page["desc"],
+                page_url=f"{SITE_URL}/{page['file']}",
+                canonical_url=f"{SITE_URL}/{page['file']}",
+            )
+            output_path = DIST_DIR / page["file"]
+            output_path.write_text(minify_html(html), encoding="utf-8")
+        except Exception as e:
+            print(f"  ⚠️ Could not generate {page['file']}: {e}")
+            
+    print("  ✓ Generated legal pages → dist/")
+
 
 def build_site(database_path: Path = None):
     """Main build pipeline.
@@ -577,13 +695,13 @@ def build_site(database_path: Path = None):
 
     # Clean and create dist directory
     if DIST_DIR.exists():
-        # Clear contents inside dist (but don't remove the dir itself,
-        # as it may be a Docker bind-mount)
+        # Soft-clean dist directory (leave item/ category/ best/ intact for incremental builds)
         for child in DIST_DIR.iterdir():
-            if child.is_dir():
-                shutil.rmtree(child)
-            else:
-                child.unlink()
+            if child.name not in ["item", "category", "best", "images", "css", "js", "social"]:
+                if child.is_dir():
+                    shutil.rmtree(child)
+                else:
+                    child.unlink()
     ensure_dir(DIST_DIR)
 
     # Set up Jinja2
@@ -595,6 +713,7 @@ def build_site(database_path: Path = None):
     build_listicle_pages(env, categories)
     build_index_page(env, items, categories)
     build_404_page(env)
+    build_legal_pages(env)
 
     # Copy static assets
     copy_static_assets()

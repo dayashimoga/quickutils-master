@@ -1,0 +1,46 @@
+/* Circuit Designer Styles */
+.app-layout { display: grid; grid-template-columns: 200px 1fr 240px; gap: 1rem; min-height: calc(100vh - 80px); }
+.component-panel { padding: 1rem; overflow-y: auto; max-height: calc(100vh - 80px); }
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.comp-item {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    padding: 0.5rem 0.25rem; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); cursor: grab; font-size: 0.7rem; color: var(--text-secondary);
+    transition: all var(--transition-fast); text-align: center; user-select: none;
+}
+.comp-item:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+.comp-item:active { cursor: grabbing; }
+.comp-icon { font-size: 1.3rem; }
+
+.canvas-wrapper { position: relative; background: var(--bg-surface); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); }
+#circuitCanvas { width: 100%; height: auto; display: block; cursor: crosshair; }
+.canvas-controls {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
+    background: var(--glass-bg); backdrop-filter: blur(8px); border-top: 1px solid var(--glass-border);
+}
+.canvas-controls .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.props-panel { padding: 1rem; overflow-y: auto; max-height: calc(100vh - 80px); }
+.props-panel label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.props-panel input { font-size: 0.85rem; padding: 0.4rem; }
+
+.ohm-calc label { font-size: 0.75rem; color: var(--text-secondary); }
+.ohm-calc input { margin-bottom: 0.4rem; }
+
+.template-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.template-list .btn { font-size: 0.75rem; justify-content: flex-start; }
+
+/* Simulation active glow */
+.sim-active #circuitCanvas { box-shadow: 0 0 30px rgba(16,185,129,0.3); }
+.sim-badge { position: absolute; top: 8px; right: 8px; background: var(--success); color:#fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; animation: pulse 1.5s infinite; }
+
+/* Component selection glow */
+.selected-glow { filter: drop-shadow(0 0 6px var(--accent)); }
+
+@media (max-width: 1024px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .component-panel { max-height: none; }
+    .comp-grid { grid-template-columns: repeat(6, 1fr); }
+    .props-panel { max-height: none; }
+}

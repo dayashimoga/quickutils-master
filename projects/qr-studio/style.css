@@ -1,0 +1,23 @@
+/* QR Studio Styles */
+.qr-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.type-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1rem; }
+.type-btn { padding: 0.4rem 0.8rem; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all var(--transition-fast); }
+.type-btn:hover { border-color: var(--accent); color: var(--accent); }
+.type-btn.active { background: var(--gradient-primary); color: #fff; border-color: transparent; }
+.type-panel { display: none; }
+.type-panel.active { display: block; }
+.type-panel label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.5rem; }
+.style-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.style-row label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+.style-row input[type="color"] { width: 60px; height: 32px; border: none; border-radius: var(--radius-sm); cursor: pointer; }
+
+.qr-canvas-wrap { display: flex; justify-content: center; padding: 1.5rem; background: #fff; border-radius: var(--radius-md); margin: 1rem 0; }
+#qrCanvas { max-width: 100%; height: auto; image-rendering: pixelated; }
+.qr-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.bulk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+.bulk-item { text-align: center; }
+.bulk-item canvas { max-width: 100%; background: #fff; border-radius: var(--radius-sm); padding: 0.5rem; }
+.bulk-item p { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem; word-break: break-all; }
+
+@media (max-width: 768px) { .qr-layout { grid-template-columns: 1fr; } }

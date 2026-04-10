@@ -46,6 +46,96 @@ def get_signal(current, history):
         return "Sell"
     return "Hold"
 
+def calculate_rsi(prices, period=14):
+    if len(prices) < period + 1:
+        return 50.0
+    gains = []
+    losses = []
+    for i in range(1, len(prices)):
+        change = prices[i] - prices[i-1]
+        if change > 0:
+            gains.append(change)
+            losses.append(0)
+        else:
+            gains.append(0)
+            losses.append(abs(change))
+    
+    avg_gain = sum(gains[:period]) / period
+    avg_loss = sum(losses[:period]) / period
+    
+    for i in range(period, len(prices)-1):
+        avg_gain = (avg_gain * (period - 1) + gains[i]) / period
+        avg_loss = (avg_loss * (period - 1) + losses[i]) / period
+        
+    if avg_loss == 0:
+        return 100.0
+    rs = avg_gain / avg_loss
+    return round(100 - (100 / (1 + rs)), 2)
+
+def calculate_macd(prices, slow=26, fast=12, signal=9):
+    if len(prices) < slow + signal:
+        return {"macd": 0, "signal": 0, "hist": 0}
+
+    def ema_series(data, period):
+        emas = [sum(data[:period]) / period]
+        k = 2 / (period + 1)
+        for p in data[period:]:
+            emas.append(p * k + emas[-1] * (1 - k))
+        return [0]*(period-1) + emas
+
+    fast_ema = ema_series(prices, fast)
+    slow_ema = ema_series(prices, slow)
+    
+    macd_line = [f - s for f, s in zip(fast_ema[slow-1:], slow_ema[slow-1:])]
+    signal_line = ema_series(macd_line, signal)
+    
+    current_macd = macd_line[-1]
+    current_signal = signal_line[-1]
+    hist = current_macd - current_signal
+    
+    return {
+        "macd": round(current_macd, 2),
+        "signal": round(current_signal, 2),
+        "hist": round(hist, 2)
+    }
+
+def detect_patterns(prices):
+    if len(prices) < 30:
+        return {"pattern": "None", "target": 0, "stop_loss": 0, "strength": "Neutral"}
+        
+    current = prices[-1]
+    last_30 = prices[-30:]
+    max_30 = max(last_30)
+    min_30 = min(last_30)
+    
+    jump = prices[-15] > prices[-20] * 1.05 if len(prices) >= 20 else False
+    consolidation = current < prices[-15] and current > prices[-20] if len(prices) >= 20 else False
+    if jump and consolidation:
+        return {
+            "pattern": "Bull Flag",
+            "target": round(current * 1.08, 2), 
+            "stop_loss": round(min_30 * 0.98, 2),
+            "strength": "Strong Bullish"
+        }
+        
+    if len(prices) >= 30 and prices[-30] > prices[-20] and prices[-20] < prices[-10] and prices[-5] < prices[-10] and current > prices[-5]:
+        return {
+            "pattern": "Cup & Handle",
+            "target": round(current * 1.10, 2),
+            "stop_loss": round(prices[-5] * 0.95, 2),
+            "strength": "Bullish"
+        }
+        
+    if len(prices) >= 25 and prices[-25] < prices[-20] and prices[-20] > prices[-15] and prices[-15] < prices[-10] and prices[-10] > prices[-20] and prices[-10] > prices[-5] and prices[-5] < current and current < prices[-10]:
+        return {
+            "pattern": "Head & Shoulders",
+            "target": round(current * 0.90, 2),
+            "stop_loss": round(prices[-10] * 1.02, 2),
+            "strength": "Bearish"
+        }
+        
+    return {"pattern": "Consolidation", "target": round(current*1.02, 2), "stop_loss": round(current*0.95, 2), "strength": "Neutral"}
+
 def calculate_deltas(history):
     if not history or len(history) < 2:
         return {
@@ -72,7 +162,10 @@ def calculate_deltas(history):
         "delta_3m": round(((current - month_3_ago) / month_3_ago) * 100, 2) if month_3_ago else 0,
         "delta_6m": round(((current - month_6_ago) / month_6_ago) * 100, 2) if month_6_ago else 0,
         "delta_1y": round(((current - year_ago) / year_ago) * 100, 2) if year_ago else 0,
-        "signal": get_signal(current, history)
+        "signal": get_signal(current, history),
+        "rsi": calculate_rsi(history),
+        "macd": calculate_macd(history),
+        "pattern": detect_patterns(history)
     }
 
 def fetch_rss_news(feed_urls, limit=30):

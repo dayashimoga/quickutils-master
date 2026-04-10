@@ -48,12 +48,12 @@ describe('App JS Configuration & UI Loading', () => {
         // Mock global fetch
         window.fetch = jest.fn();
 
-        // Need IntersectionObserver mock since app.js uses it on load
-        window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-            observe: jest.fn(),
-            unobserve: jest.fn(),
-            disconnect: jest.fn()
-        }));
+        window.IntersectionObserver = class IntersectionObserver {
+            constructor() {}
+            observe() {}
+            unobserve() {}
+            disconnect() {}
+        };
 
         // Expose to the app script environment
         global.document = document;
@@ -100,7 +100,7 @@ describe('App JS Configuration & UI Loading', () => {
             // Mock Date to control the deterministic outcome
             // Lets set to epoch day 10
             jest.useFakeTimers({
-                doNotFake: ['nextTick', 'setImmediate', 'setTimeout']
+                toFake: ['Date']
             }).setSystemTime(new Date(10 * 24 * 60 * 60 * 1000));
 
             // Expect index = 10 % 4 (mock size) = 2 -> Quote 3
@@ -130,7 +130,7 @@ describe('App JS Configuration & UI Loading', () => {
 
             // Mock Date to epoch day 11
             jest.useFakeTimers({
-                doNotFake: ['nextTick', 'setImmediate', 'setTimeout']
+                toFake: ['Date']
             }).setSystemTime(new Date(11 * 24 * 60 * 60 * 1000));
 
             // Expect index = 11 % 4 (mock size) = 3 -> Quote 4

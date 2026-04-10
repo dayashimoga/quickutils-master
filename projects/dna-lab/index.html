@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Lab — Interactive DNA double helix visualization & Simulation | QuickUtils</title>
+    <meta name="description" content="Interactive DNA double helix visualization. Explore base pairs, transcription, translation and protein synthesis in real-time.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🧬 DNA Lab</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+
+    <main class="app-container">
+        <!-- Visualization Area -->
+        <div class="viz-area">
+            <canvas id="dnaCanvas"></canvas>
+            
+            <!-- Controls Overlay (Top) -->
+            <div class="viz-controls glass-card top-center">
+                <div class="control-group">
+                    <label>View <select id="viewSelect">
+                        <option value="helix">3D Helix</option>
+                        <option value="flat">2D Flat</option>
+                    </select></label>
+                    <button class="btn btn-sm btn-secondary" id="autoRotateBtn">⏸️ Rotation</button>
+                    <label>Length <input type="range" id="lengthSlider" min="10" max="100" value="30"></label>
+                </div>
+            </div>
+
+            <!-- Simulation specific overlays populated by JS -->
+            <div id="simOverlay" class="sim-overlay hidden">
+                <div class="sim-status" id="simStatus">Ready</div>
+                <div class="sim-speed-control">
+                    <span>Speed:</span>
+                    <input type="range" id="simSpeedSlider" min="1" max="10" value="5">
+                </div>
+                <div class="codon-reader hidden" id="codonReader">
+                    Current Codon: <span id="currentCodon" class="font-mono">---</span> → <span id="currentAmino">---</span>
+                </div>
+            </div>
+            
+            <div id="proteinChainContainer" class="protein-chain-container hidden">
+                <h4>Synthesized Protein Chain</h4>
+                <div class="protein-chain" id="proteinChain"></div>
+            </div>
+        </div>
+
+        <!-- Working Panel (Right or Bottom) -->
+        <div class="panel-area glass-card">
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="editor">📝 Editor</button>
+                <button class="tab-btn" data-tab="transcription">✂️ Transcription</button>
+                <button class="tab-btn" data-tab="translation">🏭 Translation</button>
+                <button class="tab-btn" data-tab="mutations">☢️ Mutations</button>
+            </div>
+
+            <div class="tab-content">
+                
+                <!-- Editor Tab -->
+                <div class="tab-pane active" id="pane-editor">
+                    <h3>Sequence Editor</h3>
+                    <p class="text-muted text-small">Edit the template DNA strand (5' to 3'). The complementary strand will be generated automatically.</p>
+                    
+                    <div class="editor-wrap mt-3">
+                        <textarea id="dnaInput" class="font-mono" rows="4" spellcheck="false">ATGCGTACGTAGCTAG</textarea>
+                        <div class="editor-tools mt-2">
+                            <button class="btn btn-sm btn-secondary" id="randomizeBtn">🎲 Randomize</button>
+                            <button class="btn btn-sm btn-secondary" id="complementBtn">🔄 Generate Complement</button>
+                            <span id="seqLen" class="text-muted text-small align-right">Length: 16 bp</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid mt-4">
+                        <div class="stat-box">
+                            <span class="stat-label">GC Content</span>
+                            <span class="stat-val font-mono" id="gcContent">50%</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Melting Temp</span>
+                            <span class="stat-val font-mono" id="meltTemp">48°C</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Molecular Wt</span>
+                            <span class="stat-val font-mono" id="molWt">9.8 kDa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transcription Tab -->
+                <div class="tab-pane" id="pane-transcription">
+                    <h3>Transcription (DNA → mRNA)</h3>
+                    <p class="text-muted text-small">RNA polymerase reads the template DNA strand and synthesizes a complementary precursor mRNA strand. Note that RNA uses Uracil (U) instead of Thymine (T).</p>
+                    
+                    <div class="action-box mt-3 text-center">
+                        <button class="btn btn-primary btn-large" id="startTranscriptionBtn">▶️ Start Transcription</button>
+                        <div class="btn-group mt-3" style="justify-content: center;">
+                            <button id="pauseTxBtn" disabled>⏸️ Pause</button>
+                            <button id="resetTxBtn" disabled>🔄 Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="output-preview mt-4">
+                        <h4>Resulting mRNA</h4>
+                        <div class="strand-display font-mono" id="mRNAOutput">No mRNA synthesized yet.</div>
+                    </div>
+                </div>
+
+                <!-- Translation Tab -->
+                <div class="tab-pane" id="pane-translation">
+                    <h3>Translation (mRNA → Protein)</h3>
+                    <p class="text-muted text-small">Ribosomes read the mRNA in groups of three nucleotides (codons) to assemble amino acids into a polypeptide chain.</p>
+                    
+                    <div class="action-box mt-3 text-center">
+                        <button class="btn btn-primary btn-large" id="startTranslationBtn" disabled>▶️ Start Translation</button>
+                        <p id="translationWarn" class="text-danger text-small mt-2">Synthesize mRNA first via Transcription.</p>
+                    </div>
+
+                    <div class="codon-table-wrapper mt-3">
+                        <h4>Codon Reference</h4>
+                        <!-- Simplified table, full logic in JS -->
+                        <table class="codon-table text-small">
+                            <tr><th>Start</th><td>AUG (Met)</td></tr>
+                            <tr><th>Stop</th><td>UAA, UAG, UGA</td></tr>
+                            <tr><th>Nonpolar</th><td>Ala, Val, Leu, Ile, Pro, Phe, Met, Trp</td></tr>
+                            <tr><th>Polar</th><td>Gly, Ser, Thr, Cys, Tyr, Asn, Gln</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mutations Tab -->
+                <div class="tab-pane" id="pane-mutations">
+                    <h3>Mutation Simulator</h3>
+                    <p class="text-muted text-small">Select a mutation type and apply it to the current sequence to observe the effects.</p>
+                    
+                    <div class="mutation-controls mt-3">
+                        <label>Mutation Type
+                            <select id="mutationType">
+                                <option value="substitution">Substitution (Point Mutation)</option>
+                                <option value="insertion">Insertion (+1 bp)</option>
+                                <option value="deletion">Deletion (-1 bp)</option>
+                            </select>
+                        </label>
+                        
+                        <div class="mt-3 text-center">
+                            <button class="btn btn-danger" id="applyRandomMutationBtn">☢️ Apply Random Mutation</button>
+                        </div>
+                    </div>
+
+                    <div class="mutation-log mt-4">
+                        <h4>Mutation Log</h4>
+                        <ul id="mutationLogList" class="text-small text-muted">
+                            <li>No mutations applied yet.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

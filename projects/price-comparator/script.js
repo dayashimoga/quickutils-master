@@ -384,3 +384,126 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+// COMPARISON MODAL LOGIC
+document.addEventListener("DOMContentLoaded", () => {
+    const tableWrapper = document.querySelector('.table-wrapper');
+    if (!tableWrapper) return;
+    
+    const compareBtn = document.createElement('button');
+    compareBtn.id = 'compare-selected-btn';
+    compareBtn.textContent = 'Compare Selected';
+    compareBtn.className = 'btn hidden'; 
+    compareBtn.style.marginTop = '10px';
+    compareBtn.style.background = 'var(--accent, #6366f1)';
+    compareBtn.style.color = '#fff';
+    compareBtn.style.padding = '8px 16px';
+    compareBtn.style.border = 'none';
+    compareBtn.style.borderRadius = '4px';
+    compareBtn.style.cursor = 'pointer';
+    compareBtn.style.display = 'none';
+    
+    tableWrapper.appendChild(compareBtn);
+    
+    const modal = document.createElement('div');
+    modal.id = 'comparison-modal';
+    Object.assign(modal.style, {
+        position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
+        background: 'rgba(0,0,0,0.8)', zIndex: '10001', display: 'none',
+        alignItems: 'center', justifyContent: 'center'
+    });
+    modal.innerHTML = `
+        <div style="background: #111; padding: 2rem; border-radius: 8px; width: 90%; max-width: 600px; position: relative; color: white; border: 1px solid #333;">
+            <button id="close-compare-modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="margin-top:0;">Side-by-Side Comparison</h2>
+            <div id="compare-modal-content" style="display:flex; gap: 1rem; margin-top:1rem;"></div>
+            <div id="compare-conclusion" style="margin-top: 1.5rem; font-weight:bold; color: #10b981; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 4px;"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    document.getElementById('close-compare-modal').addEventListener('click', () => modal.style.display = 'none');
+    
+    const tbody = document.getElementById('priceTableBody');
+    const observer = new MutationObserver(() => {
+        Array.from(tbody.rows).forEach(row => {
+            if (!row.cells[0].classList.contains('compare-cell')) {
+                const td = document.createElement('td');
+                td.className = 'compare-cell';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'compare-cb';
+                cb.addEventListener('change', updateCompareBtn);
+                td.appendChild(cb);
+                row.insertBefore(td, row.cells[0]);
+            }
+        });
+        
+        const theadTr = document.querySelector('#priceTable thead tr');
+        if (theadTr && (!theadTr.cells[0] || !theadTr.cells[0].classList.contains('compare-th'))) {
+            const th = document.createElement('th');
+            th.className = 'compare-th';
+            th.textContent = 'Compare';
+            theadTr.insertBefore(th, theadTr.cells[0]);
+        }
+        updateCompareBtn();
+    });
+    if(tbody) {
+        observer.observe(tbody, { childList: true });
+    }
+    
+    function updateCompareBtn() {
+        const checked = document.querySelectorAll('.compare-cb:checked');
+        if (checked.length >= 2) {
+            compareBtn.classList.remove('hidden');
+            compareBtn.style.display = 'inline-block';
+            document.querySelectorAll('.compare-cb:not(:checked)').forEach(cb => cb.disabled = checked.length >= 2);
+        } else {
+            compareBtn.classList.add('hidden');
+            compareBtn.style.display = 'none';
+            document.querySelectorAll('.compare-cb').forEach(cb => cb.disabled = false);
+        }
+    }
+    
+    compareBtn.addEventListener('click', () => {
+        const checked = document.querySelectorAll('.compare-cb:checked');
+        if (checked.length !== 2) return;
+        
+        const row1 = checked[0].closest('tr');
+        const row2 = checked[1].closest('tr');
+        
+        const data1 = {
+            store: row1.cells[1].textContent,
+            name: row1.cells[2].textContent,
+            priceStr: row1.cells[3].textContent,
+            price: parseFloat(row1.cells[3].textContent.replace(/[^0-9.]/g, ''))
+        };
+        const data2 = {
+            store: row2.cells[1].textContent,
+            name: row2.cells[2].textContent,
+            priceStr: row2.cells[3].textContent,
+            price: parseFloat(row2.cells[3].textContent.replace(/[^0-9.]/g, ''))
+        };
+        
+        const diff = Math.abs(data1.price - data2.price).toLocaleString();
+        const cheapest = data1.price < data2.price ? data1 : data2;
+        const expensive = data1.price < data2.price ? data2 : data1;
+        
+        document.getElementById('compare-modal-content').innerHTML = `
+            <div style="flex:1; border: 1px solid #333; padding: 1rem; border-radius: 4px; background: #1a1a1a;">
+                <h3 style="color:#6366f1; margin-top:0;">${data1.store}</h3>
+                <p style="font-size:0.9rem; color:#aaa;">${data1.name}</p>
+                <div style="font-size: 1.5rem; font-weight:bold; margin-top:1rem;">${data1.priceStr}</div>
+            </div>
+            <div style="flex:1; border: 1px solid #333; padding: 1rem; border-radius: 4px; background: #1a1a1a;">
+                <h3 style="color:#6366f1; margin-top:0;">${data2.store}</h3>
+                <p style="font-size:0.9rem; color:#aaa;">${data2.name}</p>
+                <div style="font-size: 1.5rem; font-weight:bold; margin-top:1rem;">${data2.priceStr}</div>
+            </div>
+        `;
+        
+        document.getElementById('compare-conclusion').textContent = `Verdict: You save ?${diff} by buying on ${cheapest.store} instead of ${expensive.store}.`;
+        
+        modal.style.display = 'flex';
+    });
+});

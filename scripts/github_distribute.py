@@ -2,10 +2,18 @@ import os
 import subprocess
 import requests
 import json
+import sys
 from pathlib import Path
 
-# Configuration - Renamed to match orchestrator standard
-from scripts.utils import GH_USERNAME
+# Resilient import: works both as package (CI with PYTHONPATH=.) and standalone
+try:
+    from scripts.utils import GH_USERNAME
+except ImportError:
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from scripts.utils import GH_USERNAME
+    except ImportError:
+        GH_USERNAME = "dayashimoga"
 PAT = os.environ.get("GH_PAT") or os.environ.get("GITHUB_PAT")
 
 _username_cache = None
@@ -134,6 +142,14 @@ def sync_repo(local_path, remote_url):
 
 def main():
     projects = get_projects()
+    
+    changed_env = os.environ.get("CHANGED_PROJECTS")
+    if changed_env and changed_env != "ALL":
+        changed_list = [p.strip() for p in changed_env.split(",") if p.strip()]
+        filtered_projects = {k: v for k, v in projects.items() if k in changed_list}
+        projects = filtered_projects
+        print(f"\nSelective sync active! Only syncing {len(projects)} modified projects.")
+    
     for repo_name, local_path in projects.items():
         clone_url = create_github_repo(repo_name)
         if clone_url:

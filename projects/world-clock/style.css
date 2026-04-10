@@ -1,0 +1,24 @@
+.clocks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+.clock-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;transition:all var(--transition-base);position:relative}
+.clock-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.clock-card .remove-btn{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem}
+.clock-analog{width:160px;height:160px;margin:0 auto 1rem;position:relative}
+.clock-face{width:100%;height:100%;border-radius:50%;border:3px solid var(--border);background:var(--bg-surface);position:relative}
+.clock-hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:4px}
+.hand-hour{width:4px;height:35%;background:var(--text);margin-left:-2px}
+.hand-minute{width:3px;height:42%;background:var(--accent);margin-left:-1.5px}
+.hand-second{width:1px;height:45%;background:var(--danger);margin-left:-0.5px}
+.clock-center{position:absolute;top:50%;left:50%;width:8px;height:8px;background:var(--accent);border-radius:50%;transform:translate(-50%,-50%);z-index:2}
+.clock-digital{font-family:var(--font-mono);font-size:2rem;font-weight:700;margin:.5rem 0}
+.clock-city{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+.clock-date{font-size:.8rem;color:var(--text-muted)}
+.clock-offset{font-size:.75rem;color:var(--accent);margin-top:.25rem}
+.tz-list{max-height:300px;overflow-y:auto;margin-top:1rem}
+.tz-item{padding:.6rem;cursor:pointer;border-radius:var(--radius-sm);transition:background var(--transition-fast)}
+.tz-item:hover{background:var(--accent-subtle)}
+.meeting-grid{overflow-x:auto}
+.meeting-grid table{width:100%;border-collapse:collapse;font-size:.8rem}
+.meeting-grid th,.meeting-grid td{padding:.4rem .6rem;border:1px solid var(--border);text-align:center}
+.meeting-grid th{background:var(--bg-surface);font-weight:600;position:sticky;top:0}
+.meeting-grid .work-hours{background:rgba(16,185,129,0.1);color:var(--success)}
+.meeting-grid .sleep-hours{background:rgba(239,68,68,0.05);color:var(--text-muted)}

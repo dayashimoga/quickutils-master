@@ -86,6 +86,7 @@ async function initializeDashboard() {
         renderWatchLists(marketData, macroData);
         renderCharts(marketData, macroData);
         renderComparisonGrid(marketData, macroData);
+        renderMyWatchlist(marketData, macroData);
         renderNews(newsData);
         renderSectors(marketData);
         
@@ -175,14 +176,15 @@ function renderComparisonGrid(marketData, macroData) {
         <table class="w-full text-left" style="font-size: 0.9rem">
             <thead>
                 <tr>
+                    <th><span title="Watchlist">⭐</span></th>
                     <th>Asset</th>
                     <th>Price</th>
                     <th>1D</th>
                     <th>1W</th>
-                    <th>1M</th>
-                    <th class="hidden-mobile">3M</th>
-                    <th class="hidden-mobile">6M</th>
-                    <th class="hidden-mobile">1Y</th>
+                    <th class="hidden-mobile">1M</th>
+                    <th>RSI</th>
+                    <th>MACD</th>
+                    <th class="hidden-mobile">Pattern</th>
                     <th>Signal</th>
                 </tr>
             </thead>
@@ -192,22 +194,129 @@ function renderComparisonGrid(marketData, macroData) {
     groups.forEach(group => {
         html += `<tr class="group-header"><td colspan="9"><strong>${group.title}</strong></td></tr>`;
         group.data.forEach(row => {
+            let rsiText = '-';
+            let macdText = '-';
+            let patternText = '-';
+            if (row.obj.rsi !== undefined) {
+                rsiText = `<span class="${row.obj.rsi > 70 ? 'text-red-500' : (row.obj.rsi < 30 ? 'text-green-500' : 'text-gray-400')}">${row.obj.rsi}</span>`;
+            }
+            if (row.obj.macd && row.obj.macd.hist !== undefined) {
+                macdText = `<span class="${row.obj.macd.hist > 0 ? 'text-green-500' : 'text-red-500'}">${row.obj.macd.hist}</span>`;
+            }
+            if (row.obj.pattern) {
+                patternText = row.obj.pattern.pattern !== 'None' ? row.obj.pattern.pattern : '-';
+                if(patternText !== '-' && patternText !== 'Consolidation') {
+                    patternText = `<span title="Target: ${row.obj.pattern.target}, Stop: ${row.obj.pattern.stop_loss}" style="border-bottom: 1px dotted #888; cursor:help;">${patternText}</span>`;
+                }
+            }
+            let isWatched = getWatchedAssets().includes(row.name);
+            let starHtml = `<button onclick="toggleWatch('${row.name}')" style="background:none;border:none;cursor:pointer;color: ${isWatched ? '#f59e0b' : '#444'};">★</button>`;
             html += `
                 <tr>
+                    <td>${starHtml}</td>
                     <td>${row.name}</td>
                     <td>${row.prefix}${row.obj.current.toFixed(2)}</td>
                     <td>${formatDelta(row.obj.delta_1d)}</td>
                     <td>${formatDelta(row.obj.delta_1w)}</td>
-                    <td>${formatDelta(row.obj.delta_1m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_3m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_6m)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1y)}</td>
+                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
+                    <td>${rsiText}</td>
+                    <td>${macdText}</td>
+                    <td class="hidden-mobile">${patternText}</td>
                     <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
                 </tr>
             `;
         });
     });
 
+    html += `</tbody></table></div>`;
+    grid.innerHTML = html;
+}
+
+function getWatchedAssets() {
+    return JSON.parse(localStorage.getItem('md_watchlist') || '[]');
+}
+
+function toggleWatch(assetName) {
+    let w = getWatchedAssets();
+    if (w.includes(assetName)) {
+        w = w.filter(x => x !== assetName);
+    } else {
+        w.push(assetName);
+    }
+    localStorage.setItem('md_watchlist', JSON.stringify(w));
+    // Quick re-render logic via full page reload for simplicity, or re-init dashboard
+    initializeDashboard();
+}
+
+function renderMyWatchlist(marketData, macroData) {
+    const w = getWatchedAssets();
+    const section = document.getElementById('watchlist-section');
+    const grid = document.getElementById('watchlistGrid');
+    
+    if (w.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    section.style.display = 'block';
+    
+    // Flat dataset
+    const allData = [
+        ...Object.values(marketData.regional).map(x => ({...x, parent:'regional'})),
+        ...Object.values(marketData.global).map(x => ({...x, parent:'global'})),
+        ...Object.values(marketData.crypto).map(x => ({...x, parent:'crypto', prefix: '$'})),
+        {...macroData.crudeOil, name: 'Crude Oil', prefix: '$'},
+        {...macroData.usdInr, name: 'USD/INR', prefix: '₹'}
+    ];
+    // Map objects by matching names (Nifty 50, Bitcoin, etc - matching titles in renderComparisonGrid)
+    // Actually, getting exact names is mapped inside renderComparisonGrid, let's replicate mapping
+    const mapping = [
+        { name: "Nifty 50", obj: marketData.regional.nifty, prefix: "" },
+        { name: "Sensex", obj: marketData.regional.sensex, prefix: "" },
+        { name: "India VIX", obj: marketData.regional.vix, prefix: "" },
+        { name: "Nasdaq", obj: marketData.global.nasdaq, prefix: "" },
+        { name: "Dow Jones", obj: marketData.global.dji, prefix: "" },
+        { name: "Nikkei 225", obj: marketData.global.nikkei, prefix: "" },
+        { name: "Bitcoin", obj: marketData.crypto.btc, prefix: "$" },
+        { name: "Ethereum", obj: marketData.crypto.eth, prefix: "$" },
+        { name: "Solana", obj: marketData.crypto.sol, prefix: "$" },
+        { name: "Crude Oil", obj: macroData.crudeOil, prefix: "$" },
+        { name: "USD/INR", obj: macroData.usdInr, prefix: "₹" }
+    ];
+    
+    let html = `
+        <div class="overflow-x-auto">
+        <table class="w-full text-left" style="font-size: 0.9rem">
+            <thead>
+                <tr>
+                    <th><span title="Watchlist">⭐</span></th>
+                    <th>Asset</th>
+                    <th>Price</th>
+                    <th>1D</th>
+                    <th>1W</th>
+                    <th class="hidden-mobile">1M</th>
+                    <th>Signal</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    w.forEach(assetName => {
+        const row = mapping.find(m => m.name === assetName);
+        if(!row) return;
+        html += `
+            <tr>
+                <td><button onclick="toggleWatch('${row.name}')" style="background:none;border:none;cursor:pointer;color: #f59e0b;">★</button></td>
+                <td>${row.name}</td>
+                <td>${row.prefix}${row.obj.current.toFixed(2)}</td>
+                <td>${formatDelta(row.obj.delta_1d)}</td>
+                <td>${formatDelta(row.obj.delta_1w)}</td>
+                <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
+                <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
+            </tr>
+        `;
+    });
+    
     html += `</tbody></table></div>`;
     grid.innerHTML = html;
 }

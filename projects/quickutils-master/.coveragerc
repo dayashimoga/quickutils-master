@@ -1,0 +1,11 @@
+[run]
+omit =
+    scripts/cleanup.py
+    scripts/distribute_pin_tests.py
+    scripts/expand_data.py
+    scripts/fix_slugs.py
+    scripts/fix_syntax.py
+    scripts/github_distribute.py
+    scripts/run_global_tests.py
+    scripts/sync_project_scripts.py
+    scripts/update_docs.py

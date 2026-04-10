@@ -13,15 +13,19 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   name              = each.value.repo_name
   production_branch = "main"
 
+  lifecycle {
+    ignore_changes = [source]
+  }
+
   source {
     type = "github"
     config {
       owner                         = var.github_username
-      repo_name                     = each.value.repo_name
+      repo_name                     = "quickutils-master"
       production_branch             = "main"
       pr_comments_enabled           = true
-      deployments_enabled           = true
-      production_deployment_enabled = true
+      deployments_enabled           = false
+      production_deployment_enabled = false
       preview_deployment_setting    = "all"
       preview_branch_includes       = ["*"]
       preview_branch_excludes       = []
@@ -31,7 +35,7 @@ resource "cloudflare_pages_project" "quickutils_projects" {
   build_config {
     build_command       = lookup(each.value, "build_command", "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py")
     destination_dir     = lookup(each.value, "destination_dir", "dist")
-    root_dir            = "" # This might need adjustment depending on mono-repo setup vs individual repos
+    root_dir            = lookup(each.value, "root_dir", "")
   }
 
   deployment_configs {
@@ -80,7 +84,7 @@ resource "cloudflare_record" "quickutils_cnames" {
   for_each = local.projects
   zone_id  = data.cloudflare_zone.quickutils_top.id
   name     = each.value.custom_domain == "quickutils.top" ? "@" : split(".", each.value.custom_domain)[0]
-  content         = "${each.value.repo_name}.pages.dev"
+  content         = cloudflare_pages_project.quickutils_projects[each.key].subdomain
   type            = "CNAME"
   proxied         = true
   # Handle existing records by allowing overwrite
@@ -92,6 +96,7 @@ resource "cloudflare_pages_domain" "quickutils_domains" {
   account_id   = var.cloudflare_account_id
   project_name = cloudflare_pages_project.quickutils_projects[each.key].name
   domain       = each.value.custom_domain
+  depends_on   = [cloudflare_record.quickutils_cnames]
 }
 
 # --- Email Routing for contact@quickutils.top ---

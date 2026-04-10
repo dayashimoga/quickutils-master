@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Studio - Free Online Video Editor</title>
+    <meta name="description" content="Edit, cut, trim, format convert, resize and manage audio in videos completely in your browser. No server required.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎥</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+    <nav class="navbar glass-nav">
+        <div class="container nav-inner">
+            <a href="https://quickutils.top" class="brand holo-text">🎥 Video Studio <span class="badge text-xs ml-2">BETA</span></a>
+            <div id="nav-actions"></div>
+        </div>
+    </nav>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4">
+            <h1 class="gradient-text">Browser-Native Video Editor</h1>
+            <p class="text-muted">High performance WebAssembly video editing without servers. Unmatched privacy.</p>
+        </div>
+
+        <div id="dropZone" class="glass-card text-center p-5 mb-4" style="border:2px dashed rgba(255,255,255,0.2);">
+            <div class="display-4 mb-3">📁</div>
+            <h3>Drop your video here</h3>
+            <p class="text-muted mb-3">Supports MP4, WEBM, MOV</p>
+            <input type="file" id="fileInput" accept="video/mp4,video/webm,video/quicktime" class="hidden">
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Select File</button>
+            <p class="text-xs text-muted mt-3">Processing engine loads on first select (~15MB)</p>
+        </div>
+
+        <div id="editorWrap" class="hidden animate-in-up">
+            <div class="vid-container glass-card mb-4" style="background:#000;">
+                <video id="videoPreview" controls class="w-100" style="max-height: 500px; display:block; margin:auto;"></video>
+            </div>
+            
+            <div class="tools-grid">
+                <!-- Video Settings -->
+                <div class="glass-card p-3">
+                    <h3 class="mb-3 text-neon-blue">⚙️ Modify</h3>
+                    <label>Resize / Resolution</label>
+                    <select id="resizeOpt" class="form-control mb-3">
+                        <option value="original">Original Size</option>
+                        <option value="-2:1080">1080p Target</option>
+                        <option value="-2:720">720p Optimized</option>
+                        <option value="-2:480">480p Light</option>
+                    </select>
+
+                    <label>Cut Time (Seconds)</label>
+                    <div class="d-flex gap-2 mb-3">
+                        <input type="number" id="trimStart" class="form-control" placeholder="Start (s)" min="0" value="0">
+                        <input type="number" id="trimEnd" class="form-control" placeholder="End (s)" min="0">
+                    </div>
+
+                    <button class="btn btn-outline w-100" id="resetParamsBtn">Reset Adjustments</button>
+                </div>
+
+                <!-- Audio Settings -->
+                <div class="glass-card p-3">
+                    <h3 class="mb-3 text-neon-amber">🎵 Audio Tools</h3>
+                    
+                    <div class="form-check mb-3">
+                        <input type="checkbox" id="muteVideoChk" class="form-check-input">
+                        <label for="muteVideoChk" class="form-check-label">Mute Video (Remove Audio Track)</label>
+                    </div>
+
+                    <button class="btn btn-secondary w-100 mb-3" id="extractAudioBtn">Extract Audio (Download MP3)</button>
+                    <p class="text-xs text-muted text-center">Fast extraction, skips video rendering.</p>
+                </div>
+
+                <!-- Export -->
+                <div class="glass-card p-3">
+                    <h3 class="mb-3 text-neon-green">🚀 Export</h3>
+                    <label>Output Format</label>
+                    <select id="formatOpt" class="form-control mb-4">
+                        <option value="mp4">MP4 (H.264)</option>
+                        <option value="webm">WEBM (VP9)</option>
+                        <option value="gif">GIF animation</option>
+                    </select>
+
+                    <button class="btn btn-primary btn-lg w-100 glow-btn" id="exportBtn">Export Video</button>
+                    
+                    <div id="progressWrap" class="mt-3 hidden">
+                        <div class="d-flex justify-content-between text-xs mb-1">
+                            <span id="exportStatus">Processing Engine...</span>
+                            <span id="exportPct">0%</span>
+                        </div>
+                        <div class="progress-container"><div class="progress-bar" id="exportProgress" style="width:0%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Overlay -->
+    <div id="loadingOverlay" class="hud-layer hidden" style="position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.9); z-index:9000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <h2>⏳ Loading Required Packages...</h2>
+        <p class="text-muted mt-2 text-center" style="max-width:300px;">Please wait while the FFmpeg WebAssembly core is injected. Do not close the tab.</p>
+    </div>
+
+    <!-- Export Result -->
+    <div id="resultModal" class="hidden" style="position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+        <div class="glass-card p-4 text-center" style="max-width:500px;">
+            <h2 class="text-neon-green mb-3">✅ Export Complete!</h2>
+            <p>Your video has been processed locally and is ready.</p>
+            <a id="downloadLink" class="btn btn-primary btn-lg mt-3" download="processed_video.mp4">Download File</a>
+            <button class="btn btn-secondary mt-3 d-block w-100" onclick="document.getElementById('resultModal').classList.add('hidden')">Close</button>
+        </div>
+    </div>
+
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

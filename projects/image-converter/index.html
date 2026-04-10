@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter — Resize, Crop, Convert & Photo Tiles | QuickUtils</title>
+    <meta name="description" content="Convert images between PNG, JPG, WebP. Resize, crop, rotate, create passport photos, stamp sizes, A4 tiles and more.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🖼️ Image Converter</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-secondary" id="undoBtn" title="Undo">↩️</button>
+            <button class="btn btn-sm btn-secondary" id="redoBtn" title="Redo">↪️</button>
+            <button class="btn btn-sm btn-secondary" id="batchBtn">📦 Batch</button>
+            <button class="btn btn-sm btn-secondary" id="tilesBtn">🧩 Photo Tiles</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container" style="margin-top:1.5rem">
+        <div id="dropZone" class="drop-zone glass-card">
+            <div class="drop-content">
+                <div class="drop-icon">📁</div>
+                <h2>Drop images here or click to browse</h2>
+                <p class="text-muted">Supports PNG, JPG, WebP, BMP, GIF • Up to 50MB</p>
+                <input type="file" id="fileInput" accept="image/*" multiple hidden>
+            </div>
+        </div>
+        <div id="editor" class="editor-panel" style="display:none">
+            <div class="editor-toolbar glass-card">
+                <div class="tool-group">
+                    <label>Format <select id="formatSelect"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WebP</option></select></label>
+                    <label>Quality <input type="range" id="qualitySlider" min="10" max="100" value="90"><span id="qualityVal">90%</span></label>
+                </div>
+                <div class="tool-group">
+                    <label>Width <input type="number" id="widthInput" placeholder="Auto" min="1"></label>
+                    <label>Height <input type="number" id="heightInput" placeholder="Auto" min="1"></label>
+                    <label><input type="checkbox" id="lockRatio" checked> Lock ratio</label>
+                </div>
+                <div class="tool-group">
+                    <button class="btn btn-sm btn-secondary" id="rotateLeftBtn">↺ 90°</button>
+                    <button class="btn btn-sm btn-secondary" id="rotateRightBtn">↻ 90°</button>
+                    <button class="btn btn-sm btn-secondary" id="flipHBtn">↔ Flip</button>
+                    <button class="btn btn-sm btn-secondary" id="flipVBtn">↕ Flip</button>
+                    <button class="btn btn-sm btn-secondary" id="cropBtn">✂️ Crop</button>
+                    <button class="btn btn-sm btn-secondary" id="tiltBtn">📐 Perspective</button>
+                </div>
+                <div class="tool-group">
+                    <select id="presetSelect"><option value="">Aspect Presets...</option><option value="passport">Passport (35×45mm)</option><option value="stamp">Stamp (25×30mm)</option><option value="postcard">Postcard (4×6")</option><option value="a4">A4 (210×297mm)</option><option value="a3">A3 (297×420mm)</option><option value="hd">HD 16:9</option><option value="square">Square 1:1</option><option value="story">Story 9:16</option></select>
+                </div>
+                
+                <div class="filters-panel glass-card hidden" id="filtersPanel">
+                    <label>Brightness: <input type="range" id="fBright" min="0" max="200" value="100"></label>
+                    <label>Contrast: <input type="range" id="fCont" min="0" max="200" value="100"></label>
+                    <label>Saturation: <input type="range" id="fSat" min="0" max="200" value="100"></label>
+                    <label>Hue: <input type="range" id="fHue" min="0" max="360" value="0"></label>
+                    <div class="btn-group mt-2">
+                        <button class="btn btn-sm" id="btnSepia">Sepia</button>
+                        <button class="btn btn-sm" id="btnGray">B&W</button>
+                        <button class="btn btn-sm" id="btnInvert">Invert</button>
+                    </div>
+                </div>
+                
+                <div class="watermark-panel glass-card hidden" id="wmPanel">
+                    <input type="text" id="wmText" placeholder="Watermark Text" class="mb-2">
+                    <div class="grid-2">
+                        <label>Color: <input type="color" id="wmColor" value="#ffffff"></label>
+                        <label>Opacity: <input type="range" id="wmOpacity" min="10" max="100" value="50"></label>
+                        <label>Size: <input type="number" id="wmSize" value="48"></label>
+                        <button class="btn btn-sm btn-secondary" id="applyWmBtn">Apply Watermark</button>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="canvas-area">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="previewCanvas"></canvas>
+                    <div class="crop-overlay" id="cropOverlay" style="display:none"><div class="crop-box" id="cropBox"></div></div>
+                    
+                    <!-- Perspective handles -->
+                    <div class="perspective-handles hidden" id="perspectiveHandles">
+                        <div class="p-handle tl"></div><div class="p-handle tr"></div>
+                        <div class="p-handle bl"></div><div class="p-handle br"></div>
+                        <button class="btn btn-sm btn-primary apply-perspective">Apply Tilt</button>
+                    </div>
+                </div>
+                
+                <div class="compare-overlay hidden" id="compareOverlay">
+                    <canvas id="compareCanvas"></canvas>
+                    <div class="compare-slider" id="compareSlider"></div>
+                </div>
+            </div>
+            
+            <div class="action-bar mt-2">
+                <div class="action-buttons text-left">
+                     <button class="btn btn-sm btn-secondary" id="toggleFiltersBtn">🎨 Filters</button>
+                     <button class="btn btn-sm btn-secondary" id="toggleWmBtn">©️ Watermark</button>
+                     <button class="btn btn-sm btn-secondary" id="compareBtn">🌓 Compare</button>
+                </div>
+                <div id="imageInfo" class="text-muted"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="resetBtn">🔄 Reset</button>
+                    <button class="btn btn-primary" id="downloadBtn">📥 Download</button>
+                    <button class="btn btn-secondary" id="downloadAllBtn" style="display:none">📦 Download All</button>
+                </div>
+            </div>
+        </div>
+        <!-- Tiles Modal -->
+        <div class="modal-overlay" id="tilesModal">
+            <div class="modal-content glass-card" style="max-width:700px">
+                <div class="modal-header"><h2>🧩 Photo Tiles Generator</h2><button class="icon-btn" id="closeTiles">✕</button></div>
+                <div class="tiles-config">
+                    <label>Preset Format
+                        <select id="tilePresetSelect">
+                            <option value="">Custom...</option>
+                            <option value="passport-a4">Passport on A4 (8/sheet)</option>
+                            <option value="passport-a3">Passport on A3 (18/sheet)</option>
+                            <option value="stamp-a4">Stamp on A4 (36/sheet)</option>
+                            <option value="collage-4">Square Collage (2x2)</option>
+                        </select>
+                    </label>
+                    <label>Paper Size <select id="tileLayout"><option value="a4grid">A4 (210×297mm)</option><option value="a3grid">A3 (297×420mm)</option><option value="postcard">Postcard (4×6")</option><option value="square">Square (1:1)</option></select></label>
+                    <label>Image Size
+                         <select id="tileImgSize">
+                             <option value="passport">Passport (35x45mm)</option>
+                             <option value="stamp">Stamp (25x30mm)</option>
+                             <option value="auto">Auto (Fill Grid)</option>
+                         </select>
+                    </label>
+                    <label>Rows <input type="number" id="tileRows" value="4" min="1" max="15"></label>
+                    <label>Cols <input type="number" id="tileCols" value="2" min="1" max="15"></label>
+                    <label>Spacing (px) <input type="number" id="tileSpacing" value="10" min="0" max="100"></label>
+                    <button class="btn btn-primary" id="generateTiles">Generate Tiles</button>
+                </div>
+                <canvas id="tilesCanvas" style="max-width:100%;margin-top:1rem"></canvas>
+                <button class="btn btn-primary mt-3" id="downloadTiles" style="display:none">📥 Download Tile Sheet</button>
+            </div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

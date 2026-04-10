@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coloring Books — 160 Pages for Kids & Adults with PDF Export | QuickUtils</title>
+    <meta name="description" content="160 free coloring pages for kids and adults! Animals, dinosaurs, fairy tales, food, architecture, zen patterns & more. Color online, export as PDF or PNG.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand">🎨 Coloring Books</a>
+        <div class="nav-links">
+            <button class="btn btn-sm btn-primary" id="exportPdfBtn">🖼️ Export PNG</button>
+            <button class="btn btn-sm btn-primary" id="printPdfBtn">📄 Print PDF</button>
+            <button class="btn btn-sm btn-secondary" id="resetPageBtn">↩️ Reset Page</button>
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="coloring-layout">
+        <aside class="page-sidebar glass-card" id="pageSidebar">
+            <h3>📚 Pages <span class="progress-badge" id="progressBadge">0/100</span></h3>
+            <div class="category-tabs" id="categoryTabs"></div>
+            <div class="page-grid" id="pageGrid"></div>
+        </aside>
+        <div class="canvas-area">
+            <div class="color-toolbar glass-card" id="colorToolbar">
+                <div class="palette" id="palette"></div>
+                <div class="tools-row">
+                    <button class="tool-active" id="fillTool" title="Fill">🪣</button>
+                    <button id="eraserTool" title="Eraser">🧽</button>
+                    <button id="undoTool" title="Undo">↩️</button>
+                    <button id="redoTool" title="Redo">↪️</button>
+                </div>
+            </div>
+            <div class="coloring-canvas" id="coloringCanvas">
+                <svg id="coloringSvg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+            <div class="page-title" id="pageTitle">Select a page to start coloring!</div>
+        </div>
+    </main>
+    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="drawings.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<!-- redeploy trigger -->

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Explorer — Viewer & Query Tool | QuickUtils</title>
+<meta name="description" content="Paste JSON to explore with collapsible tree, JSONPath queries, diff, schema validation, and TypeScript generation.">
+<link rel="stylesheet" href="style.css"></head>
+<body><nav class="navbar"><div class="container nav-inner"><a href="https://quickutils.top" class="brand">🔍 JSON Explorer</a><div class="nav-links"><button id="themeBtn" class="theme-btn">🌙</button></div></div></nav>
+<main class="container" style="margin-top:1rem">
+<div class="top-bar glass-card">
+    <div class="tabs"><button class="tab active" data-tab="viewer">🌳 Viewer</button><button class="tab" data-tab="query">🔎 Query</button><button class="tab" data-tab="diff">⇔ Diff</button><button class="tab" data-tab="format">✨ Format</button><button class="tab" data-tab="types">📘 Types</button></div>
+    <div class="top-actions"><button class="btn btn-sm btn-secondary" id="pasteBtn">📋 Paste</button><button class="btn btn-sm btn-secondary" id="sampleBtn">📦 Sample</button><button class="btn btn-sm btn-secondary" id="clearBtn">🗑 Clear</button></div>
+</div>
+<div class="panels">
+    <div class="panel" id="panel-viewer">
+        <div class="split-pane"><div class="pane"><div class="pane-header">Raw JSON</div><textarea id="jsonInput" placeholder="Paste JSON here..." spellcheck="false"></textarea></div>
+        <div class="pane"><div class="pane-header">Tree View <button class="btn btn-sm btn-secondary" id="collapseAllBtn">Collapse All</button><button class="btn btn-sm btn-secondary" id="expandAllBtn">Expand All</button></div><div id="treeView" class="tree-view"></div></div></div>
+    </div>
+    <div class="panel hidden" id="panel-query">
+        <label>JSONPath Query<input type="text" id="queryInput" placeholder="$.store.book[*].title" class="mono-input"></label>
+        <div id="queryResult" class="result-box"></div>
+    </div>
+    <div class="panel hidden" id="panel-diff">
+        <div class="split-pane"><div class="pane"><div class="pane-header">JSON A</div><textarea id="diffA" placeholder="First JSON..." spellcheck="false"></textarea></div>
+        <div class="pane"><div class="pane-header">JSON B</div><textarea id="diffB" placeholder="Second JSON..." spellcheck="false"></textarea></div></div>
+        <button class="btn btn-primary btn-sm" id="diffBtn" style="margin-top:.5rem">Compare</button>
+        <div id="diffResult" class="result-box" style="margin-top:.5rem"></div>
+    </div>
+    <div class="panel hidden" id="panel-format">
+        <div class="format-actions"><button class="btn btn-sm btn-primary" id="beautifyBtn">Beautify</button><button class="btn btn-sm btn-secondary" id="minifyBtn">Minify</button><button class="btn btn-sm btn-secondary" id="sortKeysBtn">Sort Keys</button><button class="btn btn-sm btn-secondary" id="copyFmtBtn">📋 Copy</button></div>
+        <textarea id="formatOutput" class="mono-input" readonly style="height:400px"></textarea>
+    </div>
+    <div class="panel hidden" id="panel-types">
+        <button class="btn btn-sm btn-primary" id="genTypesBtn">Generate TypeScript Interfaces</button>
+        <textarea id="typesOutput" class="mono-input" readonly style="height:400px;margin-top:.5rem"></textarea>
+    </div>
+</div>
+<div class="stats-bar glass-card" style="margin-top:.75rem"><span id="jsonStats">Paste JSON to get started</span></div>
+</main>
+<script src="script.js"></script></body></html>
