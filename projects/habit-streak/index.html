@@ -56,6 +56,29 @@
                 <!-- Dynamic Habits Go Here -->
             </div>
         </div>
+
+        <div class="glass-card mb-4 p-4">
+            <h3>📊 Dashboard Analytics</h3>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;">
+                <div style="flex:1;min-width:120px;text-align:center;padding:1rem;background:rgba(57,211,83,0.1);border-radius:8px;">
+                    <div style="font-size:2rem;font-weight:800;color:#39d353;" id="dashRate">0%</div>
+                    <div style="font-size:0.8rem;color:#888;">Completion Rate</div>
+                </div>
+                <div style="flex:1;min-width:120px;text-align:center;padding:1rem;background:rgba(99,102,241,0.1);border-radius:8px;">
+                    <div style="font-size:2rem;font-weight:800;color:#6366f1;" id="dashStreak">0</div>
+                    <div style="font-size:0.8rem;color:#888;">Best Streak</div>
+                </div>
+                <div style="flex:1;min-width:120px;text-align:center;padding:1rem;background:rgba(245,158,11,0.1);border-radius:8px;">
+                    <div style="font-size:2rem;font-weight:800;color:#f59e0b;" id="dashTotal">0</div>
+                    <div style="font-size:0.8rem;color:#888;">Total Check-ins</div>
+                </div>
+                <div style="flex:1;min-width:120px;text-align:center;padding:1rem;background:rgba(236,72,153,0.1);border-radius:8px;">
+                    <div style="font-size:2rem;font-weight:800;color:#ec4899;" id="dashBestDay">—</div>
+                    <div style="font-size:0.8rem;color:#888;">Best Day</div>
+                </div>
+            </div>
+            <canvas id="weeklyChart" height="150" style="width:100%;margin-top:1rem;"></canvas>
+        </div>
     </main>
     <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>

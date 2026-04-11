@@ -3,12 +3,19 @@ name: QuickUtils Network Orchestrator
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '.gitignore'
   workflow_dispatch:
     inputs:
       trigger_all:
         description: 'Trigger deployment for ALL projects (yes/no)'
         required: false
         default: 'no'
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   provision:
@@ -133,7 +140,7 @@ jobs:
             fi
           done
           # Final Apply
-          terraform apply -auto-approve
+          terraform apply -auto-approve -parallelism=20
 
       - name: Sequential Cloudflare Redeployment
         env:

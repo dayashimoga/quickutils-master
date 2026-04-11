@@ -4,26 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Architect | QuickUtils</title>
-    <meta name="description" content="Free online workout architect utility.">
+    <meta name="description" content="Build custom workout routines with timers, rep counters, and muscle group targeting.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
     <link rel="stylesheet" href="quickutils-core.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <nav class="navbar"><div class="container nav-inner">
-        <a href="https://quickutils.top" class="brand">🏋️ Workout Architect</a>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">🏋️ Workout Architect</a>
         <div class="nav-links">
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
             <button id="themeBtn" class="theme-btn">🌙</button>
         </div>
     </div></nav>
-    <main class="container feature-page">
-        <div class="glass-card">
-            <h2>Welcome to Workout Architect</h2>
-            <p>Start building your amazing tool here.</p>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4"><h1 class="gradient-text">Workout Architect</h1><p class="text-muted">Build your perfect workout routine</p></div>
+    <div class="d-flex gap-4" style="flex-wrap:wrap;">
+        <div class="glass-card p-4" style="flex:1;min-width:300px;">
+            <h3>Build Routine</h3>
+            <select id="muscleGroup" class="form-control mb-2"><option>Chest</option><option>Back</option><option>Legs</option><option>Arms</option><option>Shoulders</option><option>Core</option><option>Full Body</option></select>
+            <div id="exerciseList" class="mt-3"></div>
         </div>
+        <div class="glass-card p-4 text-center" style="flex:1;min-width:300px;">
+            <h3>⏱️ Workout Timer</h3>
+            <div id="timerDisplay" style="font-size:5rem;font-weight:800;font-family:monospace;color:var(--clr-primary,#6366f1);">00:00</div>
+            <div class="d-flex gap-2 justify-content-center mt-3"><button class="btn btn-primary" id="startTimer">▶ Start</button><button class="btn btn-secondary" id="resetTimer">↺ Reset</button></div>
+            <div class="mt-4"><h4>My Routine</h4><div id="myRoutine"></div></div>
+        </div>
+    </div>
     </main>
-    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
 </body>

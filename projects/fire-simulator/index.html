@@ -4,36 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIRE Simulator | QuickUtils</title>
-    <meta name="description" content="Free online fire simulator utility.">
+    <meta name="description" content="Financial Independence calculator with compound growth projections over 40 years.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
     <link rel="stylesheet" href="quickutils-core.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <nav class="navbar"><div class="container nav-inner">
-        <a href="https://quickutils.top" class="brand">📈 FIRE Simulator</a>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">📈 FIRE Simulator</a>
         <div class="nav-links">
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
             <button id="themeBtn" class="theme-btn">🌙</button>
         </div>
     </div></nav>
-    <main class="container feature-page">
-        <div class="glass-card">
-            <h2>Welcome to FIRE Simulator</h2>
-            <div class="glass-card mb-4 p-4 text-center">
-    <h3>FIRE Projection</h3>
-    <div class="d-flex gap-2 justify-content-center mb-3">
-        <input type="number" id="netWorth" class="form-control" placeholder="Current Wealth ($)" value="100000">
-        <input type="number" id="annualSave" class="form-control" placeholder="Annual Savings ($)" value="15000">
-        <input type="number" id="roi" class="form-control" placeholder="Expected ROI (%)" value="7">
-    </div>
-    <button id="calcBtn" class="btn btn-primary glow-btn">Generate Projection</button>
-</div>
-<div class="glass-card p-4"><canvas id="fireChart" style="width:100%; height:350px;"></canvas></div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4"><h1 class="gradient-text">FIRE Simulator</h1><p class="text-muted">Calculate your path to Financial Independence</p></div>
+    <div class="d-flex gap-4" style="flex-wrap:wrap;">
+        <div class="glass-card p-4" style="flex:1;min-width:280px;">
+            <h3>Your Numbers</h3>
+            <div class="mb-3"><label class="text-muted text-sm">Current Savings ($)</label><input type="number" id="savings" class="form-control" value="50000"></div>
+            <div class="mb-3"><label class="text-muted text-sm">Annual Income ($)</label><input type="number" id="income" class="form-control" value="80000"></div>
+            <div class="mb-3"><label class="text-muted text-sm">Annual Expenses ($)</label><input type="number" id="expenses" class="form-control" value="40000"></div>
+            <div class="mb-3"><label class="text-muted text-sm">Expected ROI (%)</label><input type="number" id="roi" class="form-control" value="7" step="0.5"></div>
+            <div class="mb-3"><label class="text-muted text-sm">Withdrawal Rate (%)</label><input type="number" id="withdraw" class="form-control" value="4" step="0.5"></div>
+            <button class="btn btn-primary w-100" id="calcBtn">Calculate FIRE Number</button>
         </div>
+        <div class="glass-card p-4" style="flex:1;min-width:280px;">
+            <div id="fireResult" class="text-center mb-3"></div>
+            <canvas id="fireChart" height="300" style="width:100%;"></canvas>
+        </div>
+    </div>
     </main>
-    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
 </body>

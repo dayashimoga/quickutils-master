@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Generator | QuickUtils</title>
+    <meta name="description" content="Create hilarious memes with templates, custom text, and instant download. Zero accounts required.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😂</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">😂 Meme Generator</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4"><h1 class="gradient-text">Meme Generator</h1><p class="text-muted">Create memes in seconds</p></div>
+    <div class="d-flex gap-4" style="flex-wrap:wrap;">
+        <div class="glass-card p-4" style="flex:1;min-width:280px;">
+            <h3>Choose Background</h3>
+            <div class="d-flex gap-2 mt-3" style="flex-wrap:wrap;" id="colorPicker"></div>
+            <input type="file" id="bgUpload" accept="image/*" style="display:none;">
+            <button class="btn btn-secondary mt-3 w-100" id="uploadBg">📁 Upload Image</button>
+            <div class="mt-4"><label class="text-muted text-sm">Top Text</label><input type="text" id="topText" class="form-control" placeholder="TOP TEXT"></div>
+            <div class="mt-3"><label class="text-muted text-sm">Bottom Text</label><input type="text" id="bottomText" class="form-control" placeholder="BOTTOM TEXT"></div>
+            <div class="mt-3"><label class="text-muted text-sm">Font Size</label><input type="range" id="fontSize" min="20" max="80" value="40" class="w-100"></div>
+            <button class="btn btn-primary mt-3 w-100" id="downloadMeme">⬇️ Download Meme</button>
+        </div>
+        <div class="glass-card p-4 text-center" style="flex:1;min-width:280px;">
+            <canvas id="memeCanvas" width="600" height="600" style="width:100%;background:#222;border-radius:8px;"></canvas>
+        </div>
+    </div>
+    </main>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

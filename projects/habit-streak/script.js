@@ -185,4 +185,54 @@
     loadData();
     renderHabits();
     renderHeatmap();
+    renderDashboard();
+
+    function renderDashboard() {
+        const dr = $('#dashRate'), ds = $('#dashStreak'), dt = $('#dashTotal'), db = $('#dashBestDay');
+        if(!dr) return;
+        
+        let totalCheckins = 0, bestStreak = 0;
+        const dayCounts = {};
+        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        
+        appData.habits.forEach(h => {
+            totalCheckins += h.log.length;
+            const streak = getStreak(h);
+            if(streak > bestStreak) bestStreak = streak;
+            h.log.forEach(d => { const day = new Date(d).getDay(); dayCounts[day] = (dayCounts[day]||0) + 1; });
+        });
+        
+        const habitsCount = appData.habits.length;
+        const rate = habitsCount > 0 ? Math.round((appData.habits.filter(h => h.log.includes(todayStr)).length / habitsCount) * 100) : 0;
+        
+        dr.textContent = rate + '%';
+        ds.textContent = bestStreak;
+        dt.textContent = totalCheckins;
+        
+        let bestDay = '—', bestDayCount = 0;
+        Object.entries(dayCounts).forEach(([d, c]) => { if(c > bestDayCount) { bestDayCount = c; bestDay = days[d]; } });
+        db.textContent = bestDay;
+        
+        // Weekly chart
+        const chart = $('#weeklyChart');
+        if(chart) {
+            const cctx = chart.getContext('2d');
+            const w = chart.width = chart.parentElement.clientWidth;
+            const h = 150;
+            cctx.clearRect(0,0,w,h);
+            const max = Math.max(...Object.values(dayCounts), 1);
+            days.forEach((d, i) => {
+                const count = dayCounts[i] || 0;
+                const bh = (count / max) * (h - 30);
+                const x = (i / 7) * w + w/14;
+                cctx.fillStyle = 'rgba(57,211,83,0.6)';
+                cctx.fillRect(x - 15, h - 20 - bh, 30, bh);
+                cctx.fillStyle = '#888';
+                cctx.font = '11px Inter,sans-serif';
+                cctx.textAlign = 'center';
+                cctx.fillText(d, x, h - 5);
+                cctx.fillText(count, x, h - 24 - bh);
+            });
+        }
+    }
 })();

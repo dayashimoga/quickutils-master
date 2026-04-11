@@ -1,26 +1,45 @@
-/* script.js for room-planner */
+/* room-planner */
 'use strict';
 (function(){
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
-    
-    // Initialize common utilities
     if(typeof QU !== 'undefined') QU.init({ kofi: true, discover: true });
     
-    const ctx = $('#roomCanvas').getContext('2d');
-let items = [];
-function draw() {
-    ctx.clearRect(0,0,800,400); 
-    // grid
-    ctx.strokeStyle='rgba(255,255,255,0.05)';
-    for(let i=0;i<800;i+=20){ ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,400);ctx.stroke(); ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(800,i);ctx.stroke();}
-    items.forEach(it => { ctx.fillStyle=it.c; ctx.fillRect(it.x, it.y, it.w, it.h); ctx.fillStyle='#fff'; ctx.fillText(it.name, it.x+5, it.y+20); });
-}
-$('#addBed').onclick = () => { items.push({x:100, y:100, w:80, h:120, c:'#1d4ed8', name:'Bed'}); draw(); };
-$('#addDesk').onclick = () => { items.push({x:300, y:100, w:100, h:50, c:'#f59e0b', name:'Desk'}); draw(); };
-let drag = null, offset={x:0,y:0};
-$('#roomCanvas').onmousedown = e => { const r=e.target.getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; items.forEach(it=>{if(x>=it.x&&x<=it.x+it.w&&y>=it.y&&y<=it.y+it.h){drag=it; offset={x:x-it.x, y:y-it.y};}}); };
-window.onmouseup = () => drag=null;
-$('#roomCanvas').onmousemove = e => { if(!drag)return; const r=e.target.getBoundingClientRect(); drag.x=e.clientX-r.left-offset.x; drag.y=e.clientY-r.top-offset.y; draw(); };
-draw();
+    const canvas=$('#roomCanvas'),ctx=canvas.getContext('2d');
+    let items=[], drag=null, offset={x:0,y:0};
+    
+    function draw(){
+        const w=800,h=500;ctx.clearRect(0,0,w,h);
+        ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,w,h);
+        // Grid
+        ctx.strokeStyle='rgba(255,255,255,0.05)';
+        for(let x=0;x<w;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+        for(let y=0;y<h;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+        // Walls
+        ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=3;ctx.strokeRect(2,2,w-4,h-4);
+        // Items
+        items.forEach(it=>{
+            ctx.fillStyle=it.c;ctx.fillRect(it.x,it.y,it.w,it.h);
+            ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;ctx.strokeRect(it.x,it.y,it.w,it.h);
+            ctx.fillStyle='#fff';ctx.font='12px Inter';ctx.textAlign='center';ctx.fillText(it.type,it.x+it.w/2,it.y+it.h/2+4);
+        });
+    }
+    
+    $$('.add-furniture').forEach(b=>b.addEventListener('click',()=>{
+        items.push({x:100+Math.random()*400,y:100+Math.random()*200,w:parseInt(b.dataset.w),h:parseInt(b.dataset.h),c:b.dataset.c,type:b.dataset.type});
+        draw();
+    }));
+    
+    canvas.addEventListener('mousedown',e=>{
+        const r=canvas.getBoundingClientRect();const mx=(e.clientX-r.left)*(800/r.width);const my=(e.clientY-r.top)*(500/r.height);
+        for(let i=items.length-1;i>=0;i--){const it=items[i];if(mx>=it.x&&mx<=it.x+it.w&&my>=it.y&&my<=it.y+it.h){drag=it;offset={x:mx-it.x,y:my-it.y};break;}}
+    });
+    canvas.addEventListener('mousemove',e=>{
+        if(!drag)return;const r=canvas.getBoundingClientRect();
+        drag.x=(e.clientX-r.left)*(800/r.width)-offset.x;drag.y=(e.clientY-r.top)*(500/r.height)-offset.y;draw();
+    });
+    window.addEventListener('mouseup',()=>drag=null);
+    $('#clearRoom').addEventListener('click',()=>{items=[];draw();});
+    draw();
+
 })();
