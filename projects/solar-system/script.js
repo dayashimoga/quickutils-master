@@ -8,7 +8,6 @@
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Full viewport canvas
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -20,25 +19,38 @@
     let zoom = 0.01, zoomTarget = 0.01;
     let cx = 0, cy = 0;
     let isDragging = false, dragStart = {x:0,y:0}, camStart = {x:0,y:0};
-    const MIN_ZOOM = 0.0005, MAX_ZOOM = 200;
+    const MIN_ZOOM = 0.0000001, MAX_ZOOM = 20000;
 
-    // Controls overlay
+    // Controls
     const ctrl = document.createElement('div');
     ctrl.innerHTML = `
         <div style="position:fixed;top:70px;left:15px;background:rgba(0,0,0,0.75);padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);z-index:10;backdrop-filter:blur(10px);">
             <p style="margin:0 0 8px;color:#fff;font-weight:700;font-size:14px;">🔭 Space Explorer</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button id="z1" class="btn btn-secondary btn-sm">Galaxy</button>
+                <button id="z0" class="btn btn-secondary btn-sm">Supercluster</button>
+                <button id="z1" class="btn btn-secondary btn-sm">Milky Way</button>
                 <button id="z2" class="btn btn-secondary btn-sm">Constellations</button>
                 <button id="z3" class="btn btn-secondary btn-sm">Solar System</button>
             </div>
             <p id="zoomInfo" style="margin:8px 0 0;font-size:11px;color:#888;">Scroll to zoom • Drag to pan</p>
+        </div>
+        <div id="infoPanel" class="info-panel" style="position:fixed;top:70px;right:-400px;transition:right 0.3s;z-index:10;background:rgba(15,15,26,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.15);padding:24px;border-radius:12px;color:#fff;width:300px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+            <h2 id="ipTitle" style="margin:0 0 10px;font-size:1.5rem;display:flex;align-items:center;gap:8px;">Star</h2>
+            <div id="ipType" style="color:#aaccff;font-size:0.9rem;margin-bottom:15px;font-weight:600;">Type</div>
+            <div class="info-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:15px;">
+                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Magnitude</div><div id="ipMag" style="font-weight:600;">0</div></div>
+                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Planets</div><div id="ipPlanets" style="font-weight:600;">0</div></div>
+                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Distance</div><div id="ipDist" style="font-weight:600;">Unknown</div></div>
+            </div>
+            <button id="ipClose" class="btn btn-primary" style="margin-top:20px;width:100%;">Close Panel</button>
         </div>`;
     document.body.appendChild(ctrl);
 
-    $('#z1').onclick = () => { zoomTarget = 0.001; cx=0; cy=0; };
-    $('#z2').onclick = () => { zoomTarget = 0.03; };
+    $('#z0').onclick = () => { zoomTarget = 0.000005; cx=0; cy=0; };
+    $('#z1').onclick = () => { zoomTarget = 0.001; cx=-100000; cy=50000; };
+    $('#z2').onclick = () => { zoomTarget = 0.03; cx=0; cy=0; };
     $('#z3').onclick = () => { zoomTarget = 1.0; cx=0; cy=0; };
+    $('#ipClose').onclick = () => { $('#infoPanel').style.right = '-400px'; selectedObj = null; };
 
     canvas.addEventListener('mousedown', e => { isDragging=true; dragStart={x:e.clientX,y:e.clientY}; camStart={x:cx,y:cy}; });
     window.addEventListener('mouseup', () => isDragging=false);
@@ -51,17 +63,14 @@
     
     canvas.addEventListener('wheel', e => { e.preventDefault(); const z=e.deltaY>0?0.85:1.18; zoomTarget=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,zoomTarget*z)); },{passive:false});
 
-    // ═══════════════════════════════════════════
     // INFINITE STARFIELD (tiled, no boundary)
-    // ═══════════════════════════════════════════
     const TILE_SIZE = 4000;
-    const STARS_PER_TILE = 200;
+    const STARS_PER_TILE = 150;
     const starTileCache = {};
     
     function getStarTile(tx, ty) {
         const key = `${tx},${ty}`;
         if(starTileCache[key]) return starTileCache[key];
-        // Seeded pseudo-random
         let seed = Math.abs(tx * 73856093 ^ ty * 19349663) % 2147483647;
         const rng = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
         const stars = [];
@@ -78,9 +87,7 @@
         return stars;
     }
 
-    // ═══════════════════════════════════════════
-    // REAL CONSTELLATIONS
-    // ═══════════════════════════════════════════
+    // CONSTELLATIONS
     const CONSTELLATIONS = [
         { name: 'Orion', cx: 3000, cy: 1000, stars: [
             { name: 'Betelgeuse', x: 2700, y: 600, s: 8, color: '#ff6644', type: 'Red Supergiant', mag: 0.42, planets: 0 },
@@ -91,7 +98,6 @@
             { name: 'Alnitak', x: 3150, y: 1000, s: 4, color: '#ddeeff', type: 'Triple Star', mag: 1.77, planets: 3 },
             { name: 'Saiph', x: 2750, y: 1450, s: 4, color: '#bbddff', type: 'Blue Supergiant', mag: 2.09, planets: 0 },
         ], lines: [[0,2],[0,4],[2,5],[3,4],[4,5],[1,5],[1,6],[6,3]] },
-
         { name: 'Ursa Major', cx: -5000, cy: -4000, stars: [
             { name: 'Dubhe', x: -5500, y: -4500, s: 6, color: '#ffd700', type: 'Giant', mag: 1.79, planets: 1 },
             { name: 'Merak', x: -5400, y: -3800, s: 5, color: '#fff', type: 'Main Sequence', mag: 2.37, planets: 2 },
@@ -101,7 +107,6 @@
             { name: 'Mizar', x: -3800, y: -4500, s: 5, color: '#fff', type: 'Binary', mag: 2.04, planets: 1 },
             { name: 'Alkaid', x: -3400, y: -4800, s: 5, color: '#cce0ff', type: 'Main Sequence', mag: 1.86, planets: 0 },
         ], lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]] },
-
         { name: 'Cassiopeia', cx: 7000, cy: -5000, stars: [
             { name: 'Schedar', x: 6500, y: -5200, s: 6, color: '#ffa500', type: 'Giant', mag: 2.24, planets: 1 },
             { name: 'Caph', x: 6800, y: -4600, s: 5, color: '#fff', type: 'Giant', mag: 2.27, planets: 0 },
@@ -109,7 +114,6 @@
             { name: 'Ruchbah', x: 7400, y: -4800, s: 4, color: '#fff', type: 'Eclipsing Binary', mag: 2.68, planets: 0 },
             { name: 'Segin', x: 7600, y: -5300, s: 4, color: '#cce0ff', type: 'B-type', mag: 3.37, planets: 1 },
         ], lines: [[0,1],[1,2],[2,3],[3,4]] },
-
         { name: 'Scorpius', cx: -8000, cy: 6000, stars: [
             { name: 'Antares', x: -8000, y: 6000, s: 9, color: '#ff4400', type: 'Red Supergiant', mag: 0.96, planets: 0 },
             { name: 'Shaula', x: -7200, y: 7200, s: 5, color: '#bbddff', type: 'Binary', mag: 1.63, planets: 2 },
@@ -118,7 +122,6 @@
             { name: 'Acrab', x: -8400, y: 5200, s: 4, color: '#ddeeff', type: 'Multiple', mag: 2.62, planets: 3 },
             { name: 'Fang', x: -8100, y: 5700, s: 3, color: '#cce0ff', type: 'Binary', mag: 3.04, planets: 0 },
         ], lines: [[4,3],[3,5],[5,0],[0,2],[2,1]] },
-
         { name: 'Leo', cx: 10000, cy: 2000, stars: [
             { name: 'Regulus', x: 9500, y: 2500, s: 7, color: '#cce0ff', type: 'Blue-white', mag: 1.35, planets: 1 },
             { name: 'Denebola', x: 10800, y: 1800, s: 5, color: '#fff', type: 'Main Sequence', mag: 2.14, planets: 2 },
@@ -126,7 +129,12 @@
             { name: 'Zosma', x: 10400, y: 1600, s: 4, color: '#fff', type: 'Main Sequence', mag: 2.56, planets: 0 },
             { name: 'Ras Elased', x: 9600, y: 1400, s: 4, color: '#ffd700', type: 'Giant', mag: 3.0, planets: 0 },
         ], lines: [[0,2],[2,4],[2,3],[3,1]] },
-
+        { name: 'Lyra', cx: -1500, cy: -6000, stars: [
+            { name: 'Vega', x: -1500, y: -6000, s: 9, color: '#fff', type: 'Main Sequence A0V', mag: 0.03, planets: 2 },
+            { name: 'Sulafat', x: -1200, y: -5600, s: 4, color: '#cce0ff', type: 'Giant', mag: 3.24, planets: 0 },
+            { name: 'Sheliak', x: -1300, y: -5500, s: 4, color: '#fff', type: 'Eclipsing Binary', mag: 3.52, planets: 1 },
+            { name: 'Epsilon Lyr', x: -1600, y: -5800, s: 3, color: '#fff', type: 'Double-double', mag: 4.67, planets: 0 },
+        ], lines: [[0,3],[0,1],[1,2]] },
         { name: 'Cygnus', cx: -3000, cy: -8000, stars: [
             { name: 'Deneb', x: -3000, y: -9000, s: 8, color: '#fff', type: 'Blue-white Supergiant', mag: 1.25, planets: 0 },
             { name: 'Sadr', x: -3000, y: -8000, s: 5, color: '#fff4cc', type: 'Supergiant', mag: 2.23, planets: 1 },
@@ -134,42 +142,50 @@
             { name: 'Albireo', x: -3000, y: -7000, s: 5, color: '#ffa500', type: 'Binary', mag: 3.08, planets: 2 },
             { name: 'Fawaris', x: -2400, y: -7600, s: 4, color: '#cce0ff', type: 'Main Sequence', mag: 2.87, planets: 1 },
         ], lines: [[0,1],[1,2],[1,3],[1,4]] },
-
-        { name: 'Lyra', cx: -1500, cy: -6000, stars: [
-            { name: 'Vega', x: -1500, y: -6000, s: 9, color: '#fff', type: 'Main Sequence A0V', mag: 0.03, planets: 2 },
-            { name: 'Sulafat', x: -1200, y: -5600, s: 4, color: '#cce0ff', type: 'Giant', mag: 3.24, planets: 0 },
-            { name: 'Sheliak', x: -1300, y: -5500, s: 4, color: '#fff', type: 'Eclipsing Binary', mag: 3.52, planets: 1 },
-            { name: 'Epsilon Lyr', x: -1600, y: -5800, s: 3, color: '#fff', type: 'Double-double', mag: 4.67, planets: 0 },
-        ], lines: [[0,3],[0,1],[1,2]] },
-
-        { name: 'Gemini', cx: 5000, cy: -2000, stars: [
-            { name: 'Pollux', x: 5200, y: -2300, s: 7, color: '#ffa500', type: 'Giant K0III', mag: 1.14, planets: 1 },
-            { name: 'Castor', x: 5100, y: -2600, s: 6, color: '#fff', type: 'Sextuple Star', mag: 1.58, planets: 0 },
-            { name: 'Alhena', x: 4700, y: -1500, s: 5, color: '#fff', type: 'Subgiant', mag: 1.93, planets: 0 },
-            { name: 'Wasat', x: 4900, y: -1900, s: 4, color: '#fff4cc', type: 'Subgiant', mag: 3.53, planets: 1 },
-            { name: 'Mebsuta', x: 5300, y: -1700, s: 4, color: '#ffd700', type: 'Supergiant', mag: 3.06, planets: 0 },
-        ], lines: [[1,0],[0,4],[1,3],[3,2]] },
+        { name: 'Draco', cx: -2000, cy: -11000, stars: [
+            { name: 'Thuban', x: -2000, y: -11000, s: 5, color: '#fff', type: 'Giant', mag: 3.65, planets: 1 },
+            { name: 'Eltanin', x: -1500, y: -10000, s: 6, color: '#ffa500', type: 'Giant', mag: 2.23, planets: 0 },
+            { name: 'Rastaban', x: -1000, y: -10200, s: 5, color: '#ffec8b', type: 'Supergiant', mag: 2.73, planets: 0 },
+            { name: 'Altais', x: -3000, y: -11500, s: 4, color: '#fff4cc', type: 'Giant', mag: 3.07, planets: 1 },
+        ], lines: [[0,1],[1,2],[0,3]] },
+        { name: 'Pegasus', cx: 12000, cy: -3000, stars: [
+            { name: 'Markab', x: 11000, y: -3000, s: 5, color: '#cce0ff', type: 'Dwarf', mag: 2.48, planets: 0 },
+            { name: 'Scheat', x: 11500, y: -4500, s: 5, color: '#ff6644', type: 'Red Giant', mag: 2.42, planets: 1 },
+            { name: 'Algenib', x: 13000, y: -3500, s: 4, color: '#aaccff', type: 'Subgiant', mag: 2.83, planets: 0 },
+            { name: 'Enif', x: 12500, y: -1500, s: 6, color: '#ffa500', type: 'Supergiant', mag: 2.39, planets: 2 },
+        ], lines: [[0,1],[0,2],[1,2],[0,3]] },
+        { name: 'Centaurus', cx: -11000, cy: 11000, stars: [
+            { name: 'Alpha Centauri', x: -11000, y: 11000, s: 9, color: '#fff4cc', type: 'Binary System', mag: -0.27, planets: 3 },
+            { name: 'Hadar', x: -10000, y: 10500, s: 8, color: '#cce0ff', type: 'Giant', mag: 0.61, planets: 0 },
+            { name: 'Menkent', x: -12000, y: 9500, s: 5, color: '#ffa500', type: 'Giant', mag: 2.06, planets: 1 },
+        ], lines: [[0,1],[0,2]] },
+        { name: 'Crux', cx: -12500, cy: 13000, stars: [
+            { name: 'Acrux', x: -12500, y: 13000, s: 8, color: '#cce0ff', type: 'Multiple Star', mag: 0.76, planets: 0 },
+            { name: 'Mimosa', x: -13200, y: 12800, s: 7, color: '#aaccff', type: 'Giant', mag: 1.25, planets: 0 },
+            { name: 'Gacrux', x: -12600, y: 12000, s: 6, color: '#ff6644', type: 'Red Giant', mag: 1.64, planets: 1 },
+            { name: 'Imai', x: -12000, y: 12600, s: 5, color: '#fff', type: 'Subgiant', mag: 2.80, planets: 0 },
+        ], lines: [[0,2],[1,3]] },
     ];
 
-    // Central Solar System
+    // SOLAR SYSTEM (Our Sun at 0,0)
     const sun = { r: 50, color: '#facc15', glow: '#fef08a' };
     const planets = [
-        { name:'Mercury', d:80, s:3, c:'#a8a29e', v:0.04, a:0 },
-        { name:'Venus', d:130, s:6, c:'#fcd34d', v:0.015, a:1 },
-        { name:'Earth', d:190, s:7, c:'#3b82f6', v:0.01, a:2, moon:true },
-        { name:'Mars', d:250, s:5, c:'#ef4444', v:0.008, a:-1 },
-        { name:'Jupiter', d:450, s:22, c:'#fdba74', v:0.002, a:3, bands:true },
-        { name:'Saturn', d:650, s:18, c:'#fde047', v:0.001, a:5, hasRings:true },
-        { name:'Uranus', d:850, s:14, c:'#67e8f9', v:0.0005, a:0 },
-        { name:'Neptune', d:1050, s:13, c:'#3b82f6', v:0.0004, a:Math.PI }
+        { name:'Mercury', d:80, s:3, c:'#a8a29e', v:0.04, a:0, moons:[] },
+        { name:'Venus', d:130, s:6, c:'#fcd34d', v:0.015, a:1, moons:[] },
+        { name:'Earth', d:190, s:7, c:'#3b82f6', v:0.01, a:2, moons:[{name:'Moon', d:14, s:1.5, c:'#ddd', v:0.04}] },
+        { name:'Mars', d:250, s:5, c:'#ef4444', v:0.008, a:-1, moons:[{name:'Phobos', d:9, s:0.8, c:'#aaa', v:0.06}, {name:'Deimos', d:16, s:0.6, c:'#999', v:0.03}] },
+        { name:'Jupiter', d:450, s:22, c:'#fdba74', v:0.002, a:3, bands:true, moons:[{name:'Io', d:32, s:2, c:'#ffeb3b', v:0.02}, {name:'Europa', d:45, s:1.8, c:'#fff', v:0.015}, {name:'Ganymede', d:65, s:2.5, c:'#ccc', v:0.01}, {name:'Callisto', d:90, s:2.3, c:'#888', v:0.007}] },
+        { name:'Saturn', d:650, s:18, c:'#fde047', v:0.001, a:5, hasRings:true, moons:[{name:'Titan', d:48, s:3, c:'#ffb74d', v:0.012}, {name:'Enceladus', d:30, s:1, c:'#fff', v:0.03}, {name:'Mimas', d:25, s:0.8, c:'#bbb', v:0.04}, {name:'Dione', d:35, s:1.2, c:'#ddd', v:0.02}] },
+        { name:'Uranus', d:850, s:14, c:'#67e8f9', v:0.0005, a:0, moons:[{name:'Titania', d:25, s:1.5, c:'#ccc', v:0.015}, {name:'Oberon', d:32, s:1.4, c:'#bbb', v:0.01}, {name:'Umbriel', d:18, s:1.2, c:'#999', v:0.02}] },
+        { name:'Neptune', d:1050, s:13, c:'#3b82f6', v:0.0004, a:Math.PI, moons:[{name:'Triton', d:25, s:2, c:'#b3e5fc', v:-0.015}] }
     ];
 
-    // Generate procedural exoplanet systems for constellation stars
+    // Procedural exoplanet systems
     function genExoSystem(star) {
         if(star._exo) return star._exo;
         let seed = star.name.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
         const rng = () => { seed=(seed*16807)%2147483647; return(seed-1)/2147483646; };
-        const np = star.planets || Math.floor(rng() * 4) + 1;
+        const np = star.planets !== undefined ? star.planets : Math.floor(rng() * 4) + 1;
         const exoPlanets = [];
         for(let i=0; i<np; i++) {
             exoPlanets.push({
@@ -185,33 +201,130 @@
         return exoPlanets;
     }
 
-    // ═══════════════════════════════════════════
-    // RENDER
-    // ═══════════════════════════════════════════
-    let time = 0;
-    let hoveredStar = null;
+    //Procedural Galaxies Generator
+    const GALAXIES = [
+        { name: 'Milky Way', x: -100000, y: 50000, r: 8000, color: '#cce0ff', type: 'Spiral Galaxy', dist: '0 Mly' },
+        { name: 'Andromeda', x: 800000, y: -500000, r: 10000, color: '#e6ffff', type: 'Spiral Galaxy', dist: '2.5 Mly' },
+        { name: 'Triangulum', x: 600000, y: -400000, r: 4000, color: '#ccccff', type: 'Spiral Galaxy', dist: '2.7 Mly' },
+        { name: 'Centaurus A', x: -400000, y: 600000, r: 6000, color: '#ffccb3', type: 'Lenticular Galaxy', dist: '11 Mly' },
+        { name: 'M81', x: 200000, y: -800000, r: 5000, color: '#e6e6fa', type: 'Spiral Galaxy', dist: '11.8 Mly' },
+        { name: 'Sombrero', x: -700000, y: -200000, r: 5500, color: '#ffebcc', type: 'Spiral Galaxy', dist: '31 Mly' }
+    ];
 
-    // Click handler for constellation star zoom
+    function genGalaxyParticles(g) {
+        if(g._particles) return g._particles;
+        let seed = g.name.length * 12345;
+        const rng = () => { seed=(seed*16807)%2147483647; return(seed-1)/2147483646; };
+        const p = [];
+        for(let i=0; i<1500; i++) {
+            const rad = rng() * g.r;
+            const angle = rng() * Math.PI * 2 + (rad/g.r)*3; // Spiral effect
+            p.push({
+                dx: Math.cos(angle) * rad,
+                dy: Math.sin(angle) * rad,
+                s: rng()*2 + 1,
+                c: `hsla(${rng()*20+220}, ${rng()*40+60}%, ${rng()*20+60}%, ${0.1 + rng()*0.6})`
+            });
+        }
+        g._particles = p;
+        return p;
+    }
+
+    // Info Panel Logic
+    let hoveredObj = null;
+    let selectedObj = null;
+
     canvas.addEventListener('click', e => {
-        if(!hoveredStar) return;
-        cx = hoveredStar.x;
-        cy = hoveredStar.y;
-        zoomTarget = 15;
+        if(hoveredObj) {
+            selectedObj = hoveredObj;
+            cx = selectedObj.x;
+            cy = selectedObj.y;
+            zoomTarget = selectedObj.targetZoom || 15;
+            
+            // Show Panel
+            $('#ipTitle').innerHTML = `<span>${selectedObj.emoji || '✨'}</span> ${selectedObj.name}`;
+            $('#ipType').textContent = selectedObj.type || 'Celestial Object';
+            $('#ipMag').textContent = selectedObj.mag !== undefined ? selectedObj.mag : 'N/A';
+            $('#ipPlanets').textContent = selectedObj.planets !== undefined ? selectedObj.planets : 'N/A';
+            $('#ipDist').textContent = selectedObj.dist || (Math.round(Math.hypot(selectedObj.x, selectedObj.y)/10) + ' ly');
+            $('#infoPanel').style.right = '15px';
+        } else {
+            $('#infoPanel').style.right = '-400px';
+            selectedObj = null;
+        }
     });
 
     canvas.addEventListener('mousemove', e => {
         const w = canvas.width, h = canvas.height;
         const mx = (e.clientX - w/2) / zoom + cx;
         const my = (e.clientY - h/2) / zoom + cy;
-        hoveredStar = null;
-        for(const c of CONSTELLATIONS) {
-            for(const s of c.stars) {
-                const d = Math.hypot(mx - s.x, my - s.y);
-                if(d < Math.max(s.s * 2, 30/zoom)) { hoveredStar = s; canvas.style.cursor = 'pointer'; return; }
+        hoveredObj = null;
+
+        if (zoom < 0.005) {
+            // Check Galaxies
+            for(const g of GALAXIES) {
+                if(Math.hypot(mx - g.x, my - g.y) < Math.max(g.r, 50/zoom)) {
+                    hoveredObj = {...g, emoji: '🌌', targetZoom: 0.005};
+                    break;
+                }
+            }
+        } else if (zoom > 0.005 && zoom < 10) {
+            // Check Stars
+            for(const c of CONSTELLATIONS) {
+                for(const s of c.stars) {
+                    if(Math.hypot(mx - s.x, my - s.y) < Math.max(s.s*2, 30/zoom)) {
+                        hoveredObj = {...s, emoji: '⭐', targetZoom: 20};
+                        break;
+                    }
+                }
+                if(hoveredObj) break;
+            }
+            // Check Solar System Planets (if near 0,0)
+            if(!hoveredObj && Math.hypot(mx, my) < 2000) {
+                if(Math.hypot(mx, my) < sun.r) {
+                    hoveredObj = {name:'Sun', x:0, y:0, type:'G-Type Main Sequence', emoji:'☀️', targetZoom: 1.5, mag: -26.74, planets: 8, dist: '0 ly'};
+                } else {
+                    for(const p of planets) {
+                        const px = Math.cos(p.a)*p.d;
+                        const py = Math.sin(p.a)*p.d;
+                        if(Math.hypot(mx - px, my - py) < Math.max(p.s*2, 20/zoom)) {
+                            hoveredObj = {...p, x:px, y:py, emoji:'🪐', type:'Solar System Planet', mag:'N/A', planets: p.moons.length + ' moons', targetZoom: 25, dist: p.d + ' Mkm'};
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (zoom >= 10 && selectedObj) {
+            // Check Exo Planets or Moons
+            if(selectedObj.moons) {
+                for(const m of selectedObj.moons) {
+                    const cx2 = selectedObj.x; const cy2 = selectedObj.y;
+                    const mx = cx2 + Math.cos(m.a)*m.d;
+                    const my = cy2 + Math.sin(m.a)*m.d;
+                    const d = Math.hypot((e.clientX - w/2)/zoom + cx - mx, (e.clientY - h/2)/zoom + cy - my);
+                    if(d < Math.max(m.s*2, 20/zoom)) {
+                        hoveredObj = {...m, x:mx, y:my, emoji:'🌑', type:'Natural Satellite', mag:'N/A', planets:0, targetZoom: 100, dist: selectedObj.dist};
+                        break;
+                    }
+                }
+            } else if (selectedObj._exo) {
+                for(const ep of selectedObj._exo) {
+                    const cx2 = selectedObj.x; const cy2 = selectedObj.y;
+                    const mx = cx2 + Math.cos(ep.a)*ep.d;
+                    const my = cy2 + Math.sin(ep.a)*ep.d;
+                    const d = Math.hypot((e.clientX - w/2)/zoom + cx - mx, (e.clientY - h/2)/zoom + cy - my);
+                    if(d < Math.max(ep.s*2, 20/zoom)) {
+                        hoveredObj = {...ep, x:mx, y:my, emoji:'🌍', type:'Exoplanet', mag:'N/A', planets:0, targetZoom: 100, dist: selectedObj.dist};
+                        break;
+                    }
+                }
             }
         }
-        canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+        
+        canvas.style.cursor = hoveredObj ? 'pointer' : (isDragging ? 'grabbing' : 'grab');
     });
+
+    let time = 0;
 
     function draw() {
         const w = canvas.width, h = canvas.height;
@@ -221,7 +334,8 @@
         zoom += (zoomTarget - zoom) * 0.08;
 
         // HUD
-        $('#zoomInfo').textContent = `Zoom: ${(zoom*1000).toFixed(1)}x | [${Math.round(cx)}, ${Math.round(cy)}]`;
+        let zText = zoom < 0.001 ? (zoom*1000000).toFixed(0) + ' µx' : (zoom*1000).toFixed(1) + 'x';
+        $('#zoomInfo').textContent = `Zoom: ${zText} | [${Math.round(cx)}, ${Math.round(cy)}]`;
 
         ctx.save();
         ctx.translate(w/2, h/2);
@@ -231,27 +345,69 @@
         const vw = w/zoom, vh = h/zoom;
         const vl = cx - vw/2, vr = cx + vw/2, vt = cy - vh/2, vb = cy + vh/2;
 
-        // ── 1. INFINITE TILED STARFIELD ──
-        const tileL = Math.floor(vl/TILE_SIZE) - 1;
-        const tileR = Math.floor(vr/TILE_SIZE) + 1;
-        const tileT = Math.floor(vt/TILE_SIZE) - 1;
-        const tileB = Math.floor(vb/TILE_SIZE) + 1;
-        const maxTiles = 100;
-        let tileCount = 0;
-        for(let tx = tileL; tx <= tileR && tileCount < maxTiles; tx++) {
-            for(let ty = tileT; ty <= tileB && tileCount < maxTiles; ty++) {
-                const stars = getStarTile(tx, ty);
-                for(const s of stars) {
-                    const twinkle = 0.7 + 0.3 * Math.sin(time * 0.03 + s.x * 0.01);
-                    ctx.fillStyle = `hsla(${s.h},80%,80%,${s.b * twinkle})`;
-                    ctx.fillRect(s.x, s.y, s.s / Math.max(1, zoom * 0.5), s.s / Math.max(1, zoom * 0.5));
+        // 1. GALAXIES & DEEP SPACE (Scale < 0.005)
+        if (zoom < 0.005) {
+            for(const g of GALAXIES) {
+                if(g.x < vl - g.r*2 || g.x > vr + g.r*2 || g.y < vt - g.r*2 || g.y > vb + g.r*2) continue;
+                
+                // Render Galaxy Particles
+                const particles = genGalaxyParticles(g);
+                ctx.globalCompositeOperation = 'screen';
+                for(const p of particles) {
+                    ctx.fillStyle = p.c;
+                    ctx.fillRect(g.x + p.dx, g.y + p.dy, p.s/Math.max(0.0001, zoom*50), p.s/Math.max(0.0001, zoom*50));
                 }
-                tileCount++;
+                ctx.globalCompositeOperation = 'source-over';
+
+                // Core Glow
+                const coreG = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, g.r/4);
+                coreG.addColorStop(0, '#fff'); coreG.addColorStop(0.2, g.color); coreG.addColorStop(1, 'transparent');
+                ctx.fillStyle = coreG;
+                ctx.beginPath(); ctx.arc(g.x, g.y, g.r/4, 0, Math.PI*2); ctx.fill();
+
+                // Black Hole at center if zoomed into galaxy (around 0.002 to 0.01)
+                if (zoom > 0.0005) {
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath(); ctx.arc(g.x, g.y, 100, 0, Math.PI*2); ctx.fill();
+                    ctx.lineWidth = 15;
+                    ctx.strokeStyle = 'rgba(255,150,50,0.8)';
+                    ctx.beginPath(); ctx.ellipse(g.x, g.y, 300, 80, time*0.01, 0, Math.PI*2); ctx.stroke();
+                    ctx.fillStyle='#fff';
+                    ctx.font = `${15/zoom}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(g.name + ' Center (SMBH)', g.x, g.y - 350);
+                } else {
+                    const isHovered = hoveredObj && hoveredObj.name === g.name;
+                    ctx.fillStyle = isHovered ? '#fff' : 'rgba(255,255,255,0.7)';
+                    ctx.font = `bold ${isHovered ? 20/zoom : 15/zoom}px Inter,sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(g.name, g.x, g.y - g.r/3);
+                }
             }
         }
 
-        // ── 2. NEBULA GLOW (at low zoom) ──
-        if(zoom < 0.05) {
+        // 2. INFINITE STARFIELD (Between 0.001 and 10)
+        if (zoom > 0.0005 && zoom < 50) {
+            const tileL = Math.floor(vl/TILE_SIZE) - 1;
+            const tileR = Math.floor(vr/TILE_SIZE) + 1;
+            const tileT = Math.floor(vt/TILE_SIZE) - 1;
+            const tileB = Math.floor(vb/TILE_SIZE) + 1;
+            let tileCount = 0;
+            for(let tx = tileL; tx <= tileR && tileCount < 150; tx++) {
+                for(let ty = tileT; ty <= tileB && tileCount < 150; ty++) {
+                    const stars = getStarTile(tx, ty);
+                    for(const s of stars) {
+                        const twinkle = 0.7 + 0.3 * Math.sin(time * 0.03 + s.x * 0.01);
+                        ctx.fillStyle = `hsla(${s.h},80%,80%,${s.b * twinkle})`;
+                        ctx.fillRect(s.x, s.y, s.s / Math.max(1, zoom * 0.5), s.s / Math.max(1, zoom * 0.5));
+                    }
+                    tileCount++;
+                }
+            }
+        }
+
+        // 3. NEBULA GLOW (at low zoom)
+        if(zoom > 0.0005 && zoom < 0.05) {
             ctx.globalCompositeOperation = 'screen';
             [[0,0,'rgba(40,10,80,0.3)'],[5000,-3000,'rgba(10,40,80,0.2)'],[-4000,4000,'rgba(80,20,20,0.2)']].forEach(([nx,ny,nc]) => {
                 const g = ctx.createRadialGradient(nx,ny,0,nx,ny,8000);
@@ -261,14 +417,12 @@
             ctx.globalCompositeOperation = 'source-over';
         }
 
-        // ── 3. CONSTELLATIONS ──
+        // 4. CONSTELLATIONS
         if(zoom > 0.003 && zoom < 3) {
             for(const c of CONSTELLATIONS) {
-                // Check if constellation is in view
                 if(c.cx < vl - 5000 || c.cx > vr + 5000 || c.cy < vt - 5000 || c.cy > vb + 5000) continue;
 
-                // Lines
-                ctx.strokeStyle = `rgba(100,150,255,${Math.min(0.5, zoom * 5)})`;
+                ctx.strokeStyle = `rgba(100,150,255,${Math.min(0.3, zoom * 5)})`;
                 ctx.lineWidth = 2 / zoom;
                 ctx.beginPath();
                 for(const [a,b] of c.lines) {
@@ -277,103 +431,104 @@
                 }
                 ctx.stroke();
 
-                // Stars
                 for(const s of c.stars) {
-                    const isHovered = hoveredStar === s;
+                    const isHovered = hoveredObj && hoveredObj.name === s.name;
                     const r = (s.s + (isHovered ? 4 : 0)) / Math.max(0.3, Math.sqrt(zoom));
                     
-                    // Glow
                     ctx.shadowBlur = isHovered ? 30/zoom : 15/zoom;
                     ctx.shadowColor = s.color;
                     ctx.fillStyle = s.color;
                     ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI*2); ctx.fill();
                     ctx.shadowBlur = 0;
 
-                    // Label
                     if(zoom > 0.01) {
-                        ctx.fillStyle = isHovered ? '#fff' : 'rgba(255,255,255,0.6)';
-                        const fs = Math.max(10, Math.min(50, 14/zoom));
+                        ctx.fillStyle = isHovered ? '#fff' : 'rgba(255,255,255,0.7)';
+                        let fs = Math.max(10, Math.min(50, 14/zoom));
                         ctx.font = `${isHovered ? 'bold ' : ''}${fs}px Inter,sans-serif`;
                         ctx.textAlign = 'left';
+                        
+                        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                        ctx.shadowBlur = 4;
                         ctx.fillText(s.name, s.x + r + 8/zoom, s.y + 5/zoom);
+                        ctx.shadowBlur = 0;
+                        
                         if(isHovered && zoom > 0.02) {
-                            ctx.fillStyle = 'rgba(200,200,255,0.5)';
+                            ctx.fillStyle = 'rgba(200,200,255,0.8)';
                             ctx.font = `${fs * 0.7}px Inter,sans-serif`;
                             ctx.fillText(`${s.type} • Mag ${s.mag}`, s.x + r + 8/zoom, s.y + 5/zoom + fs*1.2);
-                            if(s.planets > 0) ctx.fillText(`${s.planets} exoplanet${s.planets>1?'s':''}  — Click to explore`, s.x + r + 8/zoom, s.y + 5/zoom + fs*2.2);
                         }
                     }
                 }
 
-                // Constellation name
                 if(zoom > 0.005 && zoom < 0.5) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
                     ctx.font = `bold ${60/zoom}px Inter,sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(c.name, c.cx, c.cy - 2000);
+                    ctx.shadowColor = 'rgba(0,0,100,0.5)'; ctx.shadowBlur = 10;
+                    ctx.fillText(c.name, c.cx, c.cy - 1200);
+                    ctx.shadowBlur = 0;
                 }
             }
         }
 
-        // ── 4. EXOPLANET SYSTEMS (when zoomed into a constellation star) ──
+        // 5. EXOPLANET SYSTEMS
         if(zoom > 5) {
             for(const c of CONSTELLATIONS) {
                 for(const s of c.stars) {
                     if(s.planets <= 0) continue;
                     const dd = Math.hypot(cx - s.x, cy - s.y);
-                    if(dd > 200) continue;
+                    if(dd > 400/zoom) continue;
 
-                    // Draw star as a sun
                     const sg = ctx.createRadialGradient(s.x, s.y, 2, s.x, s.y, 15);
-                    sg.addColorStop(0, '#fff');
-                    sg.addColorStop(0.5, s.color);
-                    sg.addColorStop(1, 'transparent');
+                    sg.addColorStop(0, '#fff'); sg.addColorStop(0.5, s.color); sg.addColorStop(1, 'transparent');
                     ctx.fillStyle = sg;
                     ctx.beginPath(); ctx.arc(s.x, s.y, 15, 0, Math.PI*2); ctx.fill();
 
-                    // Draw exoplanets
                     const exos = genExoSystem(s);
                     for(const ep of exos) {
-                        ep.a -= ep.v;
-                        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                        ep.a -= ep.v * 0.5;
+                        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
                         ctx.lineWidth = 0.5/zoom;
                         ctx.beginPath(); ctx.arc(s.x, s.y, ep.d, 0, Math.PI*2); ctx.stroke();
                         const px = s.x + Math.cos(ep.a) * ep.d;
                         const py = s.y + Math.sin(ep.a) * ep.d;
                         ctx.fillStyle = ep.c;
-                        ctx.beginPath(); ctx.arc(px, py, ep.s, 0, Math.PI*2); ctx.fill();
+                        const isHovered = hoveredObj && hoveredObj.name === ep.name;
+                        const psize = isHovered ? ep.s*1.5 : ep.s;
+                        ctx.beginPath(); ctx.arc(px, py, psize, 0, Math.PI*2); ctx.fill();
+                        
                         if(zoom > 10) {
-                            ctx.fillStyle = '#aaa';
-                            ctx.font = `${1}px Inter`;
+                            ctx.fillStyle = isHovered ? '#fff' : '#aaa';
+                            ctx.font = `${isHovered ? 1.5 : 1}px Inter`;
                             ctx.textAlign = 'left';
-                            ctx.fillText(ep.name, px + ep.s + 2, py + 1);
+                            ctx.fillText(ep.name, px + psize + 1, py + 0.5);
                         }
                     }
 
-                    // Star name and info
                     ctx.fillStyle = '#fff';
-                    ctx.font = `${2}px Inter,sans-serif`;
+                    ctx.font = `3px Inter,sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.fillText(`${s.name} System`, s.x, s.y - 25);
                 }
             }
         }
 
-        // ── 5. SOLAR SYSTEM (our Sun at 0,0) ──
-        if(zoom > 0.05) {
+        // 6. SOLAR SYSTEM
+        if(zoom > 0.05 && cx > -10000 && cx < 10000) {
             ctx.strokeStyle = 'rgba(255,255,255,0.05)';
             ctx.lineWidth = 1/zoom;
             for(const p of planets) { ctx.beginPath(); ctx.arc(0,0,p.d,0,Math.PI*2); ctx.stroke(); }
 
-            // Sun
+            // Sun body
             const rg = ctx.createRadialGradient(0,0,sun.r*0.1,0,0,sun.r*2);
             rg.addColorStop(0,'#fff'); rg.addColorStop(0.5,sun.color); rg.addColorStop(1,'transparent');
             ctx.fillStyle = rg;
             ctx.beginPath(); ctx.arc(0,0,sun.r*2,0,Math.PI*2); ctx.fill();
 
             if(zoom > 0.3) {
-                ctx.fillStyle = '#fff';
-                ctx.font = `${14/zoom}px Inter`;
+                const hovSun = hoveredObj && hoveredObj.name === 'Sun';
+                ctx.fillStyle = hovSun ? '#fff' : '#ccc';
+                ctx.font = `${hovSun ? 16/zoom : 14/zoom}px Inter`;
                 ctx.textAlign = 'center';
                 ctx.fillText('Sun', 0, -sun.r*2 - 10/zoom);
             }
@@ -382,20 +537,45 @@
                 p.a -= p.v;
                 const px = Math.cos(p.a)*p.d, py = Math.sin(p.a)*p.d;
                 ctx.save(); ctx.translate(px,py);
+                
+                const isHoveredP = hoveredObj && hoveredObj.name === p.name;
+
                 if(p.hasRings) {
-                    ctx.strokeStyle='rgba(200,200,180,0.4)'; ctx.lineWidth=3/zoom;
-                    ctx.beginPath(); ctx.ellipse(0,0,p.s+15,p.s+5,Math.PI/4,0,Math.PI*2); ctx.stroke();
+                    ctx.strokeStyle='rgba(200,200,180,0.5)'; ctx.lineWidth=4/zoom;
+                    ctx.beginPath(); ctx.ellipse(0,0,p.s+18,p.s+6,Math.PI/4,0,Math.PI*2); ctx.stroke();
                 }
                 ctx.fillStyle = p.c;
-                ctx.beginPath(); ctx.arc(0,0,p.s,0,Math.PI*2); ctx.fill();
-                if(p.moon && zoom > 0.5) {
-                    const ma = time * 0.05;
-                    ctx.fillStyle = '#ccc';
-                    ctx.beginPath(); ctx.arc(Math.cos(ma)*12, Math.sin(ma)*12, 2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(0,0,isHoveredP ? p.s*1.2 : p.s,0,Math.PI*2); ctx.fill();
+                
+                // Draw Moons
+                if(zoom > 0.5 && p.moons && p.moons.length > 0) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    ctx.lineWidth = 0.5/zoom;
+                    for(const m of p.moons) {
+                        m.a -= m.v;
+                        const mx = Math.cos(m.a)*m.d, my = Math.sin(m.a)*m.d;
+                        ctx.beginPath(); ctx.arc(0,0,m.d,0,Math.PI*2); ctx.stroke(); // Orbit ring
+                        
+                        const hoverM = hoveredObj && hoveredObj.name === m.name;
+                        ctx.fillStyle = m.c;
+                        ctx.beginPath(); ctx.arc(mx, my, hoverM ? m.s*1.5 : m.s, 0, Math.PI*2); ctx.fill();
+                        
+                        if(zoom > 15) {
+                            ctx.fillStyle = hoverM ? '#fff' : '#aaa';
+                            ctx.font = `1px Inter`;
+                            ctx.textAlign = 'left';
+                            ctx.fillText(m.name, mx + m.s + 1, my);
+                        }
+                    }
                 }
+
                 if(zoom > 0.5) {
-                    ctx.fillStyle='#fff'; ctx.font=`${14/zoom}px Inter`; ctx.textAlign='center';
-                    ctx.fillText(p.name, 0, -p.s-10/zoom);
+                    ctx.fillStyle= isHoveredP ? '#fff' : 'rgba(255,255,255,0.7)'; 
+                    ctx.font=`${isHoveredP ? 16/zoom : 14/zoom}px Inter`; 
+                    ctx.textAlign='center';
+                    ctx.shadowColor='#000'; ctx.shadowBlur=3;
+                    ctx.fillText(p.name, 0, -p.s - 15/zoom);
+                    ctx.shadowBlur=0;
                 }
                 ctx.restore();
             }
@@ -403,7 +583,7 @@
 
         ctx.restore();
 
-        // ── HUD Overlay ──
+        // HUD Overlay
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(0, 0, w, 1);
         ctx.fillRect(0, h-1, w, 1);
@@ -411,7 +591,6 @@
         requestAnimationFrame(draw);
     }
 
-    // Start zoomed out for the galaxy experience
     setTimeout(() => { zoomTarget = 0.02; }, 500);
     requestAnimationFrame(draw);
 })();
