@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Visualizer | QuickUtils</title>
+    <meta name="description" content="Upload audio or use your microphone to see stunning real-time waveform and spectrum visualizations.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎶</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">🎶 Music Visualizer</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4"><h1 class="gradient-text">Music Visualizer</h1><p class="text-muted">See your music come alive with real-time visuals</p></div>
+    <div class="glass-card p-4 text-center">
+        <canvas id="vizCanvas" width="800" height="400" style="width:100%;background:#000;border-radius:12px;"></canvas>
+        <div class="d-flex gap-2 justify-content-center mt-3" style="flex-wrap:wrap;">
+            <button class="btn btn-primary" id="micBtn">🎤 Use Microphone</button>
+            <input type="file" id="audioFile" accept="audio/*" style="display:none;">
+            <button class="btn btn-secondary" id="fileBtn">📁 Upload Audio</button>
+            <select class="btn btn-secondary" id="vizMode"><option value="bars">Bars</option><option value="wave">Waveform</option><option value="circle">Circular</option></select>
+        </div>
+        <audio id="audioPlayer" controls style="width:100%;margin-top:1rem;display:none;"></audio>
+    </div>
+    </main>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

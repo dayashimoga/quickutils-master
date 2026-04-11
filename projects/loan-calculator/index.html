@@ -4,26 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loan Calculator | QuickUtils</title>
-    <meta name="description" content="Free online loan calculator utility.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+    <meta name="description" content="Free online loan calculator with amortization schedules, extra payments, and interactive charts.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
     <link rel="stylesheet" href="quickutils-core.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; color: var(--clr-text-muted); }
+        .summary-card { background: var(--bg-surface-2); padding: 1.5rem; border-radius: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .summary-value { font-size: 2rem; font-weight: bold; color: var(--clr-primary); margin: 0.5rem 0; }
+        .table-wrap { overflow-x: auto; margin-top: 2rem; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,0,0,0.2); position: sticky; top: 0; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        input[type=range] { width: 100%; margin-top: 0.5rem; cursor: pointer; }
+    </style>
 </head>
-<body>
-    <nav class="navbar"><div class="container nav-inner">
-        <a href="https://quickutils.top" class="brand">🚀 Loan Calculator</a>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">🚀 Loan Calculator</a>
         <div class="nav-links">
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
             <button id="themeBtn" class="theme-btn">🌙</button>
         </div>
     </div></nav>
-    <main class="container feature-page">
-        <div class="glass-card">
-            <h2>Welcome to Loan Calculator</h2>
-            <p>Start building your amazing tool here.</p>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4">
+            <h1 class="gradient-text">Advanced Loan & Mortgage Calculator</h1>
+            <p class="text-muted">Calculate monthly payments, see amortization schedules, and learn how extra payments save you money.</p>
         </div>
+
+        <div class="d-flex gap-4" style="flex-wrap:wrap;">
+            <!-- Inputs -->
+            <div class="glass-card p-4" style="flex:1; min-width:300px;">
+                <h3 class="mb-4">Loan Details</h3>
+                <div class="input-group">
+                    <label>Loan Amount ($)</label>
+                    <input type="number" id="principal" class="form-control" value="300000" min="0" step="1000">
+                </div>
+                <div class="input-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="rate" class="form-control" value="6.5" min="0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Loan Term (Years)</label>
+                    <input type="number" id="years" class="form-control" value="30" min="1" max="50">
+                    <input type="range" id="yearsSlider" min="1" max="50" value="30">
+                </div>
+                <div class="input-group">
+                    <label>Extra Monthly Payment ($)</label>
+                    <input type="number" id="extra" class="form-control" value="0" min="0" step="50">
+                    <p class="text-xs text-muted mt-1">See how much interest you save by paying extra!</p>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div class="glass-card p-4 text-center" style="flex:1; min-width:300px;">
+                <h3 class="mb-4">Summary</h3>
+                <div class="d-flex justify-content-center gap-2 mb-4" style="flex-wrap:wrap;">
+                    <div class="summary-card flex-1">
+                        <div class="text-sm">Monthly Payment</div>
+                        <div class="summary-value" id="resMonthly">$0</div>
+                    </div>
+                    <div class="summary-card flex-1">
+                        <div class="text-sm">Total Interest Paid</div>
+                        <div class="summary-value text-neon-amber" id="resInterest">$0</div>
+                    </div>
+                </div>
+                
+                <div id="savingsAlert" class="mb-3 text-neon-green" style="font-weight:bold; display:none;">
+                    By paying extra, you save <span id="saveAmount">$0</span> in interest and pay off the loan <span id="saveMonths">0</span> early!
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="loanChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-4 mt-4">
+            <h3>Amortization Schedule</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Month</th>
+                            <th>Payment</th>
+                            <th>Principal</th>
+                            <th>Interest</th>
+                            <th>Total Interest</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        <!-- JS gen -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
-    <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
 </body>

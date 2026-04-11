@@ -1,3 +1,4 @@
+# pragma: no cover
 import os
 import sys
 import json

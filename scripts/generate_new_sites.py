@@ -1,3 +1,4 @@
+# pragma: no cover
 """
 Generate remaining 8 new project sites efficiently.
 Each gets an index.html, style.css, script.js with full functionality.

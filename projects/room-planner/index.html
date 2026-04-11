@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Planner | QuickUtils</title>
+    <meta name="description" content="Design room layouts with drag-and-drop furniture on a grid canvas.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+    <nav class="navbar glass-nav"><div class="container nav-inner">
+        <a href="https://quickutils.top" class="brand holo-text">🏠 Room Planner</a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
+            <button id="themeBtn" class="theme-btn">🌙</button>
+        </div>
+    </div></nav>
+    <main class="container py-4">
+        <div class="hero-section text-center mb-4"><h1 class="gradient-text">Room Planner</h1><p class="text-muted">Design your room layout with drag-and-drop</p></div>
+    <div class="glass-card p-4">
+        <div class="d-flex gap-2 mb-3" style="flex-wrap:wrap;">
+            <button class="btn btn-primary add-furniture" data-type="bed" data-w="80" data-h="120" data-c="#4a5568">🛏️ Bed</button>
+            <button class="btn btn-secondary add-furniture" data-type="desk" data-w="100" data-h="50" data-c="#d69e2e">🪑 Desk</button>
+            <button class="btn btn-secondary add-furniture" data-type="sofa" data-w="120" data-h="50" data-c="#3182ce">🛋️ Sofa</button>
+            <button class="btn btn-secondary add-furniture" data-type="table" data-w="60" data-h="60" data-c="#718096">🪑 Table</button>
+            <button class="btn btn-secondary add-furniture" data-type="wardrobe" data-w="80" data-h="40" data-c="#553c9a">🗄️ Wardrobe</button>
+            <button class="btn btn-secondary add-furniture" data-type="plant" data-w="30" data-h="30" data-c="#38a169">🌿 Plant</button>
+            <button class="btn btn-secondary" id="clearRoom">🗑️ Clear</button>
+        </div>
+        <canvas id="roomCanvas" width="800" height="500" style="width:100%;background:#1a1a2e;border:2px solid rgba(255,255,255,0.1);border-radius:8px;display:block;cursor:crosshair;"></canvas>
+        <div class="text-muted text-sm mt-2">Click furniture buttons to place • Drag to move • Room: 800×500 units</div>
+    </div>
+    </main>
+    <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
