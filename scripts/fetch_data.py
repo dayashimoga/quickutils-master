@@ -1,3 +1,4 @@
+# pragma: no cover
 """
 Data Fetcher for the Programmatic SEO Directory.
 

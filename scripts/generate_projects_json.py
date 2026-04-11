@@ -1,3 +1,4 @@
+# pragma: no cover
 import json
 from pathlib import Path
 

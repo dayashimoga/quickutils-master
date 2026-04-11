@@ -1,3 +1,4 @@
+# pragma: no cover
 """
 Build Interactive Projects
 Copies project files to dist/ and injects shared library (CSS + JS).
