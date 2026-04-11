@@ -140,7 +140,7 @@ jobs:
             fi
           done
           # Final Apply
-          terraform apply -auto-approve -parallelism=20
+          terraform apply -auto-approve
 
       - name: Sequential Cloudflare Redeployment
         env:
