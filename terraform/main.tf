@@ -26,8 +26,8 @@ resource "cloudflare_pages_project" "quickutils_projects" {
       pr_comments_enabled           = true
       deployments_enabled           = false
       production_deployment_enabled = false
-      preview_deployment_setting    = "all"
-      preview_branch_includes       = ["*"]
+      preview_deployment_setting    = "none"
+      preview_branch_includes       = []
       preview_branch_excludes       = []
     }
   }

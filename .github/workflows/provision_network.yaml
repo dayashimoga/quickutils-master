@@ -89,4 +89,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
+          python scripts/cancel_cf_builds.py
           python scripts/redeploy_cloudflare.py
