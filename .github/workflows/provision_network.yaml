@@ -51,10 +51,16 @@ jobs:
             CHANGED="ALL"
             echo "Manual trigger: deploying ALL projects"
           else
-            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              DIFF_TARGET="HEAD~1 HEAD"
+            else
+              DIFF_TARGET="$BEFORE ${{ github.sha }}"
+            fi
+            CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
             if [ -z "$CHANGED" ]; then
-              CHANGED="ALL"
-              echo "No specific project changes detected — syncing all projects"
+              CHANGED="NONE"
+              echo "No specific project changes detected — skipping project syncs"
             else
               echo "Changed projects: $CHANGED"
             fi
