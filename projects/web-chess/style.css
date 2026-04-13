@@ -172,7 +172,7 @@ body {
     background-position: center; background-repeat: no-repeat;
     z-index: 10; position: relative;
     filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.3));
-    transition: transform 0.05s ease-out;
+    transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s;
     pointer-events: none; /* clicks go to the square */
 }
 
@@ -241,6 +241,18 @@ body {
 .move-row {
     display: contents;
 }
+.move-quality {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+.quality-brilliant { background: #1cb5a2; box-shadow: 0 0 5px #1cb5a2; }
+.quality-good { background: #81b64c; }
+.quality-inaccuracy { background: #fccc4b; }
+.quality-mistake { background: #f7a030; }
+.quality-blunder { background: #fa3c28; }
 .move-num {
     color: var(--text-muted); font-size: 0.75rem; width: 28px;
     display: inline-flex; align-items: center; justify-content: flex-end;
@@ -293,7 +305,16 @@ body {
 .copyright a { color: var(--primary-color); text-decoration: none; }
 
 /* ─── Player Info ─── */
-.player-info { display: none; } /* Simplified — info shown in sidebar */
+.player-info {
+    font-size: 0.9rem; font-weight: 600;
+}
+.captured-piece-img {
+    width: 16px; height: 16px; background-size: contain;
+    display: inline-block; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
+}
+.capture-score {
+    font-size: 0.8rem; color: #888; font-weight: 600; margin-left: 4px;
+}
 
 /* ─── Utilities ─── */
 .hidden { display: none !important; }

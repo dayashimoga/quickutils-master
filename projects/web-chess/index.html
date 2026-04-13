@@ -46,6 +46,11 @@
                 <div class="eval-text" id="evalText">0.0</div>
             </div>
             
+            <div class="player-info p-black mb-2" style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="player-name">Black</span>
+                <div class="captured-pieces" id="capturedBlack" style="display:flex; gap:2px; height:1.5rem;"></div>
+            </div>
+            
             <div class="board-wrapper glass-card">
                 <div class="promotion-modal hidden" id="promotionModal">
                     <div class="promo-pieces"></div>
@@ -53,9 +58,18 @@
                 <div class="chess-board" id="board"></div>
             </div>
             
-            <div class="player-info p-white">
+            <div class="player-info p-white mt-2" style="display:flex; justify-content:space-between; align-items:center;">
                 <span class="player-name">White</span>
+                <div class="captured-pieces" id="capturedWhite" style="display:flex; gap:2px; height:1.5rem;"></div>
             </div>
+            
+            <!-- Sound Effects -->
+            <audio id="snd-move" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-self.mp3" preload="auto"></audio>
+            <audio id="snd-capture" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/capture.mp3" preload="auto"></audio>
+            <audio id="snd-check" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-check.mp3" preload="auto"></audio>
+            <audio id="snd-castle" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/castle.mp3" preload="auto"></audio>
+            <audio id="snd-end" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/game-end.mp3" preload="auto"></audio>
+            <audio id="snd-illegal" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/illegal.mp3" preload="auto"></audio>
         </div>
 
         <!-- RIGHT: Controls & PGN -->

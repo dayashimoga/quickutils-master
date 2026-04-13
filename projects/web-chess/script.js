@@ -251,8 +251,62 @@ function renderPosition() {
         }
     }
 
+    updateCapturedPieces();
     updateMovesList();
     checkGameEnd();
+}
+
+function updateCapturedPieces() {
+    const history = chess.history({ verbose: true });
+    let whiteScore = 0, blackScore = 0;
+    const piecesValues = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9 };
+    
+    // Count pieces currently on board
+    let whitePieces = { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 };
+    let blackPieces = { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 };
+    
+    const board = chess.board();
+    for (const row of board) {
+        for (const p of row) {
+            if (!p) continue;
+            if (p.color === 'w' && piecesValues[p.type]) whitePieces[p.type]++;
+            if (p.color === 'b' && piecesValues[p.type]) blackPieces[p.type]++;
+        }
+    }
+    
+    // Starting pieces - current pieces = captured by opponent
+    const starting = { 'p': 8, 'n': 2, 'b': 2, 'r': 2, 'q': 1 };
+    
+    let capturedByWhiteHTML = '';
+    let capturedByBlackHTML = '';
+    
+    // Calculate differences and generate HTML
+    for (const type of ['q', 'r', 'b', 'n', 'p']) {
+        const whiteMissing = Math.max(0, starting[type] - whitePieces[type]);
+        const blackMissing = Math.max(0, starting[type] - blackPieces[type]);
+        
+        // White missing means black captured them
+        for(let i=0; i<whiteMissing; i++) {
+            capturedByBlackHTML += `<div class="captured-piece-img" style="background-image:url(${PIECE_URLS['w'+type]})"></div>`;
+            blackScore += piecesValues[type];
+        }
+        
+        // Black missing means white captured them
+        for(let i=0; i<blackMissing; i++) {
+            capturedByWhiteHTML += `<div class="captured-piece-img" style="background-image:url(${PIECE_URLS['b'+type]})"></div>`;
+            whiteScore += piecesValues[type];
+        }
+    }
+    
+    const wScoreEl = document.getElementById('capturedWhite');
+    const bScoreEl = document.getElementById('capturedBlack');
+    
+    if (wScoreEl) {
+        wScoreEl.innerHTML = capturedByWhiteHTML + (whiteScore > blackScore ? `<span class="capture-score">+${whiteScore - blackScore}</span>` : '');
+    }
+    if (bScoreEl) {
+        bScoreEl.innerHTML = capturedByBlackHTML + (blackScore > whiteScore ? `<span class="capture-score">+${blackScore - whiteScore}</span>` : '');
+    }
 }
 
 // ═══════════════════════════════════════════════════
@@ -373,9 +427,13 @@ function commitMove(move) {
         san: move.san,
         from: move.from,
         to: move.to,
-        fen: chess.fen()
+        fen: chess.fen(),
+        flags: move.flags
     });
     currentMoveIdx = moveHistory.length - 1;
+
+    // Play sound based on move characteristics
+    playSound(move);
 
     renderPosition();
 
@@ -383,6 +441,24 @@ function commitMove(move) {
     if (!chess.isGameOver()) {
         requestEngineAnalysis();
     }
+}
+
+function playSound(move) {
+    if (mode === 'analyze') return; // Don't spam sounds during PGN load or scrolling
+    
+    try {
+        if (chess.isGameOver()) {
+            document.getElementById('snd-end').play().catch(()=>{});
+        } else if (chess.isCheck()) {
+            document.getElementById('snd-check').play().catch(()=>{});
+        } else if (move.flags.includes('c') || move.flags.includes('e')) { // capture or en passant
+            document.getElementById('snd-capture').play().catch(()=>{});
+        } else if (move.flags.includes('k') || move.flags.includes('q')) { // castling
+            document.getElementById('snd-castle').play().catch(()=>{});
+        } else {
+            document.getElementById('snd-move').play().catch(()=>{});
+        }
+    } catch(e) {}
 }
 
 function jumpToMove(idx) {
