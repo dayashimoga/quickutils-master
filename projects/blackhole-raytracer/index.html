@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Hole Raytracer | QuickUtils</title>
+    <meta name="description" content="Interactive relativistic gravity simulator. Watch how mass bends light.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bh-bg">
+    <nav class="navbar glass-nav transparent-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🕳️ Relativistic Raytracer</a>
+        </div>
+    </nav>
+
+    <!-- WebGL Canvas -->
+    <canvas id="glCanvas" class="gl-canvas"></canvas>
+
+    <div class="hud-panel glass-card">
+        <h3 class="mb-3 text-neon-blue">Spacetime Controls</h3>
+        <p class="text-xs text-muted mb-3">Adjust parameters to see how strongly the black hole lenses the background accretion disk and stars.</p>
+        
+        <label class="form-label d-flex justify-content-between text-xs">
+            Black Hole Mass <span id="valMass">1.0</span>
+        </label>
+        <input type="range" class="form-range mb-3" id="bhMass" min="0" max="3" step="0.05" value="1.0">
+        
+        <label class="form-label d-flex justify-content-between text-xs">
+            Accretion Disk Radius <span id="valDisk">2.5</span>
+        </label>
+        <input type="range" class="form-range mb-3" id="diskSize" min="1.5" max="5.0" step="0.1" value="2.5">
+        
+        <label class="form-label d-flex justify-content-between text-xs">
+            Camera Distance <span id="valCam">10</span>
+        </label>
+        <input type="range" class="form-range mb-4" id="camDist" min="3" max="25" step="0.5" value="10">
+
+        <h4 class="text-xs text-muted text-uppercase mb-2">Instructions</h4>
+        <ul class="text-xs text-muted" style="padding-left:15px; margin-bottom:0;">
+            <li>Drag canvas to orbit camera</li>
+            <li>Scroll to adjust field of view</li>
+            <li>Observe the secondary Einstein Ring</li>
+        </ul>
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Privacy Tracker & Map | QuickUtils</title>
+    <meta name="description" content="Interactive 3D globe visualizing data breaches, privacy laws, and digital trackers.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- D3 for Globe mapping -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- TopoJSON for country borders -->
+    <script src="https://unpkg.com/topojson-client@3"></script>
+</head>
+<body class="privacy-bg">
+    <nav class="navbar glass-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🛡️ Data Privacy Map</a>
+            <div id="nav-actions">
+                <span class="badge" id="threatLvl">Global Threat: MODERATE</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="layout-grid">
+        <!-- Sidebar -->
+        <div class="side-panel glass-card p-4">
+            <h3 class="mb-4 text-neon-blue">Data Intelligence</h3>
+            
+            <div class="filter-group mb-4">
+                <button class="btn btn-outline active w-100 mb-2" id="btnBreaches">🔴 Live Data Breaches</button>
+                <button class="btn btn-outline w-100 mb-2" id="btnLaws">🟢 Privacy Law Status</button>
+                <button class="btn btn-outline w-100" id="btnTrackers">🔵 Ad-Tracker Nodes</button>
+            </div>
+
+            <div class="info-card mt-4 p-3" id="countryInfo" style="display:none;">
+                <h4 id="ciName" class="mb-2">Country</h4>
+                <p class="text-xs text-muted mb-2">Privacy Laws: <strong id="ciLaw" class="text-white"></strong></p>
+                <p class="text-xs text-muted mb-2">Recent Breaches: <strong id="ciBreach" class="text-white"></strong></p>
+                <p class="text-xs text-muted">Tracking Index: <strong id="ciTrack" class="text-white"></strong></p>
+            </div>
+
+            <div class="feed mt-4" id="liveFeed">
+                <h4 class="text-xs text-muted text-uppercase mb-2 border-bottom pb-2">Live Interpol Feed</h4>
+                <!-- JS populated -->
+            </div>
+        </div>
+
+        <!-- Globe Area -->
+        <div class="globe-panel" id="globePanel">
+            <canvas id="globeCanvas"></canvas>
+            <div class="globe-overlay-hint">Drag to rotate • Scroll to zoom</div>
+        </div>
+    </div>
+
+    <!-- Details overlay -->
+    <div id="tooltip" class="globe-tooltip"></div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

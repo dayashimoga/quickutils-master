@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline of Everything | QuickUtils</title>
+    <meta name="description" content="A deep scrolling journey from the Big Bang to the end of the universe.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="timeline-bg">
+    <nav class="navbar glass-nav transparent-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🌌 Timeline of Everything</a>
+            <div id="nav-actions">
+                <span class="text-xs text-muted" id="scrollProgress">0%</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Parallax Stars Background -->
+    <div class="stars-bg" id="starsBg"></div>
+
+    <header class="hero-section">
+        <h1 class="cinzel text-glow mb-3">The Universe</h1>
+        <p class="inter text-muted mb-4 max-w-lg mx-auto text-center">Scroll down to traverse across 13.8 billion years of history, and into the unimaginably distant future.</p>
+        <div class="scroll-prompt">
+            <div class="mouse"></div>
+        </div>
+    </header>
+
+    <div class="timeline-container" id="timelineContainer">
+        <!-- Central Line -->
+        <div class="center-line"></div>
+
+        <!-- Timeline Events -->
+        <!-- Big Bang -->
+        <div class="timeline-event fade-in-up" data-epoch="-13.8 Billion Years">
+            <div class="event-marker glow-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel text-neon-blue">The Big Bang</h3>
+                <p class="text-sm mt-2">Space and time explode into existence. The universe expands from an infinitely dense singularity.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event right fade-in-up" data-epoch="-13.6 Billion Years">
+            <div class="event-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel text-neon-amber">First Stars Ignite</h3>
+                <p class="text-sm mt-2">Hydrogen gas clouds collapse under gravity to form hypermassive Population III stars.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event fade-in-up" data-epoch="-4.6 Billion Years">
+            <div class="event-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel">Solar System Forms</h3>
+                <p class="text-sm mt-2">Our Sun ignites. A protoplanetary disk coalesces to form Earth and the other planets.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event right fade-in-up" data-epoch="-3.5 Billion Years">
+            <div class="event-marker glow-marker" style="--glow-col: #10b981;"></div>
+            <div class="event-content glass-card border-green">
+                <h3 class="cinzel">First Life</h3>
+                <p class="text-sm mt-2">Single-celled microbes (archaea and bacteria) appear in Earth's primordial oceans.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event fade-in-up" data-epoch="-66 Million Years">
+            <div class="event-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel text-danger">K-T Extinction</h3>
+                <p class="text-sm mt-2">An asteroid impacts Earth, wiping out the non-avian dinosaurs and allowing mammals to thrive.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event right fade-in-up" data-epoch="-300,000 Years">
+            <div class="event-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel text-neon-blue">Homo Sapiens</h3>
+                <p class="text-sm mt-2">Anatomically modern humans evolve in Africa.</p>
+            </div>
+        </div>
+
+        <!-- Future -->
+        <div class="timeline-event fade-in-up" data-epoch="+5 Billion Years">
+            <div class="event-marker glow-marker" style="--glow-col: #f00;"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel">Sun Becomes Red Giant</h3>
+                <p class="text-sm mt-2">The Sun expands to swallow Mercury, Venus, and likely Earth. Life as we know it ceases locally.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event right fade-in-up" data-epoch="+100 Trillion Years">
+            <div class="event-marker"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel">Stelliferous Era Ends</h3>
+                <p class="text-sm mt-2">The last star burns out. The universe goes completely dark, populated only by black holes, neutron stars, and brown dwarfs.</p>
+            </div>
+        </div>
+
+        <div class="timeline-event fade-in-up" data-epoch="+10^100 Years">
+            <div class="event-marker glow-marker" style="--glow-col: #000; border-color:#555;"></div>
+            <div class="event-content glass-card">
+                <h3 class="cinzel text-muted">The Heat Death</h3>
+                <p class="text-sm mt-2 text-muted">All black holes evaporate via Hawking radiation. Entropy is maximized. Nothing happens, forever.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

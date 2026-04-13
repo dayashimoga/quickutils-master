@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein Folding Visualizer | QuickUtils</title>
+    <meta name="description" content="3D Bio-molecular explorer. View and fold protein chains in real time.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Three.js safely from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body class="protein-bg">
+    <nav class="navbar glass-nav transparent-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🧬 Protein Visualizer</a>
+            <div id="nav-actions">
+                <button class="btn btn-outline" id="toggleModeBtn">Build Mode</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="canvasWrap" class="canvas-wrap">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" id="loader">
+            <div class="text-neon-blue" style="font-size:1.5rem; font-weight: bold; animation: pulse 1s infinite alternate;">Initializing WebGL...</div>
+        </div>
+    </div>
+
+    <div class="hud-left glass-card">
+        <h3 class="mb-3">Sequence Editor</h3>
+        <p class="text-xs text-muted mb-2">Build a custom amino acid chain.</p>
+        <div class="amino-picker" id="aminoPicker">
+            <button class="aa-btn" data-aa="A" title="Alanine (Hydrophobic)" style="--aa-col: #c8c8c8">A</button>
+            <button class="aa-btn" data-aa="C" title="Cysteine (Polar)" style="--aa-col: #e6e600">C</button>
+            <button class="aa-btn" data-aa="D" title="Aspartic Acid (Negative)" style="--aa-col: #e60a0a">D</button>
+            <button class="aa-btn" data-aa="E" title="Glutamic Acid (Negative)" style="--aa-col: #e60a0a">E</button>
+            <button class="aa-btn" data-aa="F" title="Phenylalanine (Hydrophobic)" style="--aa-col: #3232aa">F</button>
+            <button class="aa-btn" data-aa="G" title="Glycine (Hydrophobic)" style="--aa-col: #ebebeb">G</button>
+            <button class="aa-btn" data-aa="H" title="Histidine (Positive)" style="--aa-col: #8282d2">H</button>
+            <button class="aa-btn" data-aa="I" title="Isoleucine (Hydrophobic)" style="--aa-col: #0f820f">I</button>
+            <button class="aa-btn" data-aa="K" title="Lysine (Positive)" style="--aa-col: #145aff">K</button>
+            <button class="aa-btn" data-aa="L" title="Leucine (Hydrophobic)" style="--aa-col: #0f820f">L</button>
+            <button class="aa-btn" data-aa="M" title="Methionine (Hydrophobic)" style="--aa-col: #e6e600">M</button>
+            <button class="aa-btn" data-aa="N" title="Asparagine (Polar)" style="--aa-col: #00dcdc">N</button>
+            <button class="aa-btn" data-aa="P" title="Proline (Hydrophobic)" style="--aa-col: #dc9682">P</button>
+            <button class="aa-btn" data-aa="Q" title="Glutamine (Polar)" style="--aa-col: #00dcdc">Q</button>
+            <button class="aa-btn" data-aa="R" title="Arginine (Positive)" style="--aa-col: #145aff">R</button>
+            <button class="aa-btn" data-aa="S" title="Serine (Polar)" style="--aa-col: #fa9600">S</button>
+            <button class="aa-btn" data-aa="T" title="Threonine (Polar)" style="--aa-col: #fa9600">T</button>
+            <button class="aa-btn" data-aa="V" title="Valine (Hydrophobic)" style="--aa-col: #0f820f">V</button>
+            <button class="aa-btn" data-aa="W" title="Tryptophan (Hydrophobic)" style="--aa-col: #b45ab4">W</button>
+            <button class="aa-btn" data-aa="Y" title="Tyrosine (Polar)" style="--aa-col: #3232aa">Y</button>
+        </div>
+        
+        <div class="mt-3 p-2 chain-display" id="sequenceDisplay"></div>
+        
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-secondary w-100" id="clearBtn">Clear</button>
+            <button class="btn btn-primary w-100 glow-btn" id="foldBtn">Simulate Fold</button>
+        </div>
+    </div>
+
+    <div class="hud-right glass-card">
+        <h3 class="mb-3 text-neon-green">Presets</h3>
+        <select id="presetSelect" class="form-control mb-3">
+            <option value="">Custom Build</option>
+            <option value="insulin">Insulin (Alpha/Beta)</option>
+            <option value="collagen">Collagen Helix</option>
+            <option value="prion">Prion (Scrapie Fold)</option>
+        </select>
+        
+        <div class="stat-box mt-3 mb-3">
+            <div class="text-xs text-muted text-uppercase mb-1">Energy State</div>
+            <div class="fs-4 fw-bold" id="energyRating">-12.4 kcal/mol</div>
+        </div>
+
+        <p class="text-xs text-muted mb-2">Simulation Physics</p>
+        <label class="d-flex justify-content-between align-items-center mb-1 text-xs">
+            Hydrophobic Attraction <input type="range" class="form-range w-50" id="hydroOpt" min="0" max="100" value="70">
+        </label>
+        <label class="d-flex justify-content-between align-items-center mb-1 text-xs">
+            Electric Repulsion <input type="range" class="form-range w-50" id="elecOpt" min="0" max="100" value="40">
+        </label>
+        <label class="d-flex justify-content-between align-items-center text-xs">
+            Temperature <input type="range" class="form-range w-50" id="tempOpt" min="0" max="100" value="10">
+        </label>
+    </div>
+
+    <style>
+        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+    </style>
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

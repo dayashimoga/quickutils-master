@@ -1,0 +1,63 @@
+:root {
+    --bg-color: #000;
+}
+
+body.bh-bg {
+    background-color: var(--bg-color);
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #e2e8f0;
+}
+
+.transparent-nav {
+    background: transparent !important;
+    border-bottom: none !important;
+    position: absolute;
+    width: 100%;
+    z-index: 100;
+    pointer-events: none;
+}
+.transparent-nav a {
+    pointer-events: auto;
+}
+
+.gl-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    cursor: grab;
+}
+.gl-canvas:active { cursor: grabbing; }
+
+.hud-panel {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 320px;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 12px;
+    z-index: 10;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+}
+
+.form-range {
+    height: 4px;
+    appearance: none;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    outline: none;
+}
+.form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #aaccff;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(170, 204, 255, 0.5);
+}

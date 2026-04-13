@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Logic Simulator | QuickUtils</title>
+    <meta name="description" content="Build working digital circuits and computers using logic gates.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="logic-bg">
+    <nav class="navbar glass-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🔌 Logic Sandbox</a>
+            <div id="nav-actions">
+                <span class="badge me-3">Clock: <span id="clockStatus" class="text-neon-green">Running</span></span>
+                <button class="btn btn-primary btn-sm" id="btnClock">Toggle Clock</button>
+                <button class="btn btn-outline btn-sm" id="btnClear">Clear</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Toolbox -->
+    <div class="toolbox glass-card p-3">
+        <h4 class="mb-3 text-uppercase text-xs text-muted">Inputs / Outputs</h4>
+        <div class="d-flex gap-2 mb-3">
+            <button class="btn-tool bg-hover flex-grow-1" data-type="switch">Switch</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="clock">Clock</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="bulb">Bulb</button>
+        </div>
+
+        <h4 class="mb-3 text-uppercase text-xs text-muted">Logic Gates</h4>
+        <div class="gate-grid">
+            <button class="btn-tool gate-btn" data-type="and">AND</button>
+            <button class="btn-tool gate-btn" data-type="or">OR</button>
+            <button class="btn-tool gate-btn" data-type="not">NOT</button>
+            <button class="btn-tool gate-btn" data-type="xor">XOR</button>
+            <button class="btn-tool gate-btn" data-type="nand">NAND</button>
+            <button class="btn-tool gate-btn" data-type="nor">NOR</button>
+        </div>
+
+        <h4 class="mb-3 mt-3 text-uppercase text-xs text-muted">Advanced</h4>
+        <div class="d-flex gap-2">
+            <button class="btn-tool bg-hover flex-grow-1" data-type="dff">D-FlipFlop</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="seg7">7-Seg</button>
+        </div>
+        
+        <p class="text-xs text-muted mt-4">Drag from OUT nodes (circle right) to IN nodes (circle left) to wire. Green wires = High (1), Red wires = Low (0).</p>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="workspace" id="workspace">
+        <svg id="wireLayer" class="wire-layer"></svg>
+        <div id="container"></div>
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

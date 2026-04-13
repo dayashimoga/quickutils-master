@@ -1,0 +1,54 @@
+:root {
+    --bg-color: #050510;
+}
+
+body.planet-bg {
+    background-color: var(--bg-color);
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    color: #e2e8f0;
+}
+
+.transparent-nav {
+    background: transparent !important;
+    border-bottom: none !important;
+    position: absolute;
+    width: 100%;
+    z-index: 100;
+}
+
+#canvasWrap {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+}
+
+.planet-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 300px;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.form-range {
+    height: 4px;
+    appearance: none;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    outline: none;
+}
+.form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #22c55e;
+    cursor: pointer;
+}

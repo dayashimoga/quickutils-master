@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmic City Simulator | QuickUtils</title>
+    <meta name="description" content="Build cities and watch real-time A* pathfinding and traffic congestion.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="city-bg">
+    <nav class="navbar glass-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🏙️ City Flow Simulator</a>
+            <div id="nav-actions">
+                <span class="text-xs text-muted me-3">Agents: <span id="agentCount">0</span></span>
+                <span class="text-xs text-muted">FPS: <span id="fpsCount">60</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-layout">
+        <!-- Tools Panel -->
+        <div class="tools-side glass-card p-3">
+            <h4 class="text-uppercase text-muted text-xs mb-3">Zoning Tools</h4>
+            
+            <div class="tool-grid mb-4">
+                <button class="city-tool active" data-tool="road">
+                    <div class="tool-icon">🛣️</div><div>Road</div>
+                </button>
+                <button class="city-tool" data-tool="house">
+                    <div class="tool-icon" style="color:#10b981;">🏠</div><div>Residential</div>
+                </button>
+                <button class="city-tool" data-tool="work">
+                    <div class="tool-icon" style="color:#3b82f6;">🏢</div><div>Commercial</div>
+                </button>
+                <button class="city-tool" data-tool="erase">
+                    <div class="tool-icon" style="color:#ef4444;">✖️</div><div>Bulldoze</div>
+                </button>
+            </div>
+
+            <h4 class="text-uppercase text-muted text-xs mb-2">Simulation</h4>
+            <div class="d-flex gap-2 mb-3">
+                <button class="btn btn-primary flex-grow-1" id="playBtn">Pause</button>
+                <button class="btn btn-secondary flex-grow-1" id="clearBtn">Clear city</button>
+            </div>
+            
+            <label class="text-xs text-muted d-block mb-1">Time Speed</label>
+            <input type="range" class="form-range mb-4" id="speedSlider" min="1" max="10" value="5">
+
+            <div class="stat-box p-3">
+                <div class="text-neon-amber fw-bold mb-1">Traffic Congestion</div>
+                <div class="progress-container mb-2" style="height: 10px; background: rgba(255,255,255,0.1); border-radius:5px;">
+                    <div id="congestionBar" class="progress-bar" style="width: 0%; background: linear-gradient(90deg, #10b981, #ef4444);"></div>
+                </div>
+                <p class="text-xs text-muted m-0">Cars dynamically recalculate A* paths when roads congest. Heavy traffic causes delays.</p>
+            </div>
+
+            <button class="btn btn-outline w-100 mt-3" id="demoBtn">Load Demo Grid</button>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-region">
+            <canvas id="cityCanvas"></canvas>
+        </div>
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Neural Node Editor | QuickUtils</title>
+    <meta name="description" content="Drag and drop neural network builder with visual forward propagation.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="ml-bg">
+    <nav class="navbar glass-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text">🧠 Neural Node Editor</a>
+            <div id="nav-actions">
+                <button class="btn btn-primary" id="btnTrain">Propagate Signal ⚡</button>
+                <button class="btn btn-outline" id="btnClear">Clear Canvas</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Toolbox -->
+    <div class="toolbox glass-card">
+        <h4 class="mb-3 text-uppercase text-xs text-muted">Add Nodes</h4>
+        <button class="btn btn-sm btn-outline w-100 mb-2 add-node" data-type="input">Input Data</button>
+        <button class="btn btn-sm btn-outline w-100 mb-2 add-node" data-type="dense">Dense Layer</button>
+        <button class="btn btn-sm btn-outline w-100 mb-2 add-node" data-type="relu">ReLU Activation</button>
+        <button class="btn btn-sm btn-outline w-100 mb-2 add-node" data-type="output">Output</button>
+        
+        <hr class="border-secondary my-3">
+        <p class="text-xs text-muted">Drag from <strong>Out</strong> to <strong>In</strong> ports to wire the network. Click a wire to delete it.</p>
+    </div>
+
+    <!-- Node Editor Canvas -->
+    <div class="canvas-container" id="nodeCanvas">
+        <!-- Connecting Splines -->
+        <svg class="wires-svg" id="wiresSvg"></svg>
+        
+        <!-- Draggable Nodes (added via JS) -->
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

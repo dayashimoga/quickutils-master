@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Defense Simulator | QuickUtils</title>
+    <meta name="description" content="Hack-and-defend corporate network simulator.">
+    <link rel="stylesheet" href="../../quickutils-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="cyber-bg">
+    <div class="crt-overlay"></div>
+    
+    <nav class="navbar glass-nav transparent-nav">
+        <div class="container nav-inner px-4">
+            <a href="../../index.html" class="brand holo-text" style="color:#0f0; text-shadow:0 0 5px #0f0;">OVERSEER_OS v9.4</a>
+            <div id="nav-actions">
+                <span class="text-danger me-3 fw-bold blink">DEFCON 3</span>
+                <span class="text-neon-green">SYS_INTEGRITY: <span id="sysIntegrity">100</span>%</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="cyber-layout">
+        <!-- Terminal Logs -->
+        <div class="terminal-panel glass-card p-3">
+            <div class="panel-header mb-2 text-uppercase text-xs" style="color:#0f0;">> packet_sniffer_v2</div>
+            <div id="terminalOutput" class="terminal-body">
+                <div class="log-line">Initializing monitoring...</div>
+                <div class="log-line">Listening on ext_eth0...</div>
+            </div>
+        </div>
+
+        <!-- Network View -->
+        <div class="network-panel glass-card">
+            <svg id="netSvg" class="net-svg"></svg>
+            <div class="node-server" id="n_root" style="top:50%; left:80%;">CORE_DB</div>
+            <div class="node-proxy" id="n_auth" style="top:30%; left:50%;">AUTH_GW</div>
+            <div class="node-proxy" id="n_web" style="top:70%; left:50%;">WEB_SVR</div>
+            <div class="node-ext" id="n_int" style="top:50%; left:10%;">INTERNET</div>
+        </div>
+
+        <!-- Firewall Controls -->
+        <div class="controls-panel glass-card p-3">
+            <div class="panel-header mb-3 text-uppercase text-xs" style="color:#f00;">> active_firewall_rules</div>
+            
+            <div id="rulesList" class="rules-list mb-3">
+                <!-- JS Populated -->
+            </div>
+
+            <div class="add-rule-form mt-4 border-top pt-3" style="border-color:#333 !important;">
+                <p class="text-xs text-muted mb-2">Deploy Countermeasure</p>
+                <div class="d-flex gap-2">
+                    <select class="form-control form-control-sm text-xs" id="ruleType">
+                        <option value="BLOCK_IP">BLOCK_IP (DDoS)</option>
+                        <option value="RATE_LIMIT">RATE_LIMIT (Bruteforce)</option>
+                        <option value="DEEP_INSPECT">DEEP_INSPECT (Payloads)</option>
+                    </select>
+                    <button class="btn btn-danger btn-sm" id="btnDeploy">EXECUTE</button>
+                </div>
+            </div>
+
+            <div class="mt-4 p-2" style="background:rgba(255,0,0,0.1); border:1px solid #f00;">
+                <p class="text-danger text-xs fw-bold mb-1">INCOMING THREAT VECTOR</p>
+                <div class="progress" style="height:4px; background:#333;">
+                    <div id="threatLevel" class="progress-bar bg-danger" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
