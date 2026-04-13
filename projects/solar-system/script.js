@@ -61,7 +61,7 @@
     canvas.addEventListener('touchmove', e => { if(!isDragging||e.touches.length!==1)return; cx=camStart.x-(e.touches[0].clientX-dragStart.x)/zoom; cy=camStart.y-(e.touches[0].clientY-dragStart.y)/zoom; e.preventDefault(); },{passive:false});
     canvas.addEventListener('touchend', () => isDragging=false);
     
-    canvas.addEventListener('wheel', e => { e.preventDefault(); const z=e.deltaY>0?0.85:1.18; zoomTarget=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,zoomTarget*z)); },{passive:false});
+    canvas.addEventListener('wheel', e => { e.preventDefault(); const z=e.deltaY>0?0.9:1.1; zoomTarget=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,zoomTarget*z)); },{passive:false});
 
     // INFINITE STARFIELD (tiled, no boundary)
     const TILE_SIZE = 4000;
@@ -165,6 +165,16 @@
             { name: 'Gacrux', x: -12600, y: 12000, s: 6, color: '#ff6644', type: 'Red Giant', mag: 1.64, planets: 1 },
             { name: 'Imai', x: -12000, y: 12600, s: 5, color: '#fff', type: 'Subgiant', mag: 2.80, planets: 0 },
         ], lines: [[0,2],[1,3]] },
+        { name: 'Gemini', cx: 5000, cy: 5000, stars: [
+            { name: 'Pollux', x: 4500, y: 5500, s: 6, color: '#ffa500', type: 'Giant', mag: 1.14, planets: 1 },
+            { name: 'Castor', x: 5500, y: 4500, s: 5, color: '#cce0ff', type: 'Multiple Star', mag: 1.58, planets: 0 },
+            { name: 'Alhena', x: 4000, y: 6500, s: 4, color: '#fff', type: 'Subgiant', mag: 1.93, planets: 0 },
+        ], lines: [[0,1],[0,2]] },
+        { name: 'Taurus', cx: 8000, cy: 8000, stars: [
+            { name: 'Aldebaran', x: 8000, y: 8000, s: 8, color: '#ff6644', type: 'Red Giant', mag: 0.85, planets: 1 },
+            { name: 'Elnath', x: 9000, y: 7000, s: 5, color: '#cce0ff', type: 'Giant', mag: 1.65, planets: 0 },
+            { name: 'Alcyone', x: 8500, y: 9000, s: 4, color: '#bbddff', type: 'Binary', mag: 2.85, planets: 0 },
+        ], lines: [[0,1],[0,2]] },
     ];
 
     // SOLAR SYSTEM (Our Sun at 0,0)
@@ -174,10 +184,11 @@
         { name:'Venus', d:130, s:6, c:'#fcd34d', v:0.015, a:1, moons:[] },
         { name:'Earth', d:190, s:7, c:'#3b82f6', v:0.01, a:2, moons:[{name:'Moon', d:14, s:1.5, c:'#ddd', v:0.04}] },
         { name:'Mars', d:250, s:5, c:'#ef4444', v:0.008, a:-1, moons:[{name:'Phobos', d:9, s:0.8, c:'#aaa', v:0.06}, {name:'Deimos', d:16, s:0.6, c:'#999', v:0.03}] },
-        { name:'Jupiter', d:450, s:22, c:'#fdba74', v:0.002, a:3, bands:true, moons:[{name:'Io', d:32, s:2, c:'#ffeb3b', v:0.02}, {name:'Europa', d:45, s:1.8, c:'#fff', v:0.015}, {name:'Ganymede', d:65, s:2.5, c:'#ccc', v:0.01}, {name:'Callisto', d:90, s:2.3, c:'#888', v:0.007}] },
-        { name:'Saturn', d:650, s:18, c:'#fde047', v:0.001, a:5, hasRings:true, moons:[{name:'Titan', d:48, s:3, c:'#ffb74d', v:0.012}, {name:'Enceladus', d:30, s:1, c:'#fff', v:0.03}, {name:'Mimas', d:25, s:0.8, c:'#bbb', v:0.04}, {name:'Dione', d:35, s:1.2, c:'#ddd', v:0.02}] },
-        { name:'Uranus', d:850, s:14, c:'#67e8f9', v:0.0005, a:0, moons:[{name:'Titania', d:25, s:1.5, c:'#ccc', v:0.015}, {name:'Oberon', d:32, s:1.4, c:'#bbb', v:0.01}, {name:'Umbriel', d:18, s:1.2, c:'#999', v:0.02}] },
-        { name:'Neptune', d:1050, s:13, c:'#3b82f6', v:0.0004, a:Math.PI, moons:[{name:'Triton', d:25, s:2, c:'#b3e5fc', v:-0.015}] }
+        { name:'Jupiter', d:450, s:22, c:'#fdba74', v:0.002, a:3, bands:true, moons:[{name:'Io', d:32, s:2, c:'#ffeb3b', v:0.02}, {name:'Europa', d:45, s:1.8, c:'#fff', v:0.015}, {name:'Ganymede', d:65, s:2.5, c:'#ccc', v:0.01}, {name:'Callisto', d:90, s:2.3, c:'#888', v:0.007}, {name:'Amalthea', d:28, s:1.2, c:'#cca', v:0.025}] },
+        { name:'Saturn', d:650, s:18, c:'#fde047', v:0.001, a:5, hasRings:true, moons:[{name:'Titan', d:48, s:3, c:'#ffb74d', v:0.012}, {name:'Enceladus', d:30, s:1, c:'#fff', v:0.03}, {name:'Mimas', d:25, s:0.8, c:'#bbb', v:0.04}, {name:'Dione', d:35, s:1.2, c:'#ddd', v:0.02}, {name:'Rhea', d:40, s:1.5, c:'#eef', v:0.018}, {name:'Iapetus', d:60, s:1.4, c:'#999', v:0.008}] },
+        { name:'Uranus', d:850, s:14, c:'#67e8f9', v:0.0005, a:0, moons:[{name:'Titania', d:25, s:1.5, c:'#ccc', v:0.015}, {name:'Oberon', d:32, s:1.4, c:'#bbb', v:0.01}, {name:'Umbriel', d:18, s:1.2, c:'#999', v:0.02}, {name:'Ariel', d:20, s:1.1, c:'#ddd', v:0.025}, {name:'Miranda', d:15, s:0.9, c:'#eee', v:0.035}] },
+        { name:'Neptune', d:1050, s:13, c:'#3b82f6', v:0.0004, a:Math.PI, moons:[{name:'Triton', d:25, s:2, c:'#b3e5fc', v:-0.015}, {name:'Proteus', d:18, s:1.2, c:'#aaa', v:0.02}, {name:'Nereid', d:40, s:0.8, c:'#888', v:0.008}] },
+        { name:'Pluto', d:1250, s:2.5, c:'#ddc', v:0.0002, a:4, moons:[{name:'Charon', d:8, s:1.2, c:'#ccc', v:0.05}] }
     ];
 
     // Procedural exoplanet systems
@@ -208,7 +219,14 @@
         { name: 'Triangulum', x: 600000, y: -400000, r: 4000, color: '#ccccff', type: 'Spiral Galaxy', dist: '2.7 Mly' },
         { name: 'Centaurus A', x: -400000, y: 600000, r: 6000, color: '#ffccb3', type: 'Lenticular Galaxy', dist: '11 Mly' },
         { name: 'M81', x: 200000, y: -800000, r: 5000, color: '#e6e6fa', type: 'Spiral Galaxy', dist: '11.8 Mly' },
-        { name: 'Sombrero', x: -700000, y: -200000, r: 5500, color: '#ffebcc', type: 'Spiral Galaxy', dist: '31 Mly' }
+        { name: 'Sombrero', x: -700000, y: -200000, r: 5500, color: '#ffebcc', type: 'Spiral Galaxy', dist: '31 Mly' },
+        { name: 'Pinwheel', x: 1200000, y: 300000, r: 7000, color: '#eef', type: 'Spiral Galaxy', dist: '21 Mly' }
+    ];
+
+    const CLUSTERS = [
+        { name: 'Local Group', x: 200000, y: -200000, r: 1500000 },
+        { name: 'Virgo Cluster', x: -5000000, y: 3000000, r: 4000000 },
+        { name: 'Fornax Cluster', x: 4000000, y: -6000000, r: 3500000 }
     ];
 
     function genGalaxyParticles(g) {
@@ -371,7 +389,10 @@
                     ctx.beginPath(); ctx.arc(g.x, g.y, 100, 0, Math.PI*2); ctx.fill();
                     ctx.lineWidth = 15;
                     ctx.strokeStyle = 'rgba(255,150,50,0.8)';
-                    ctx.beginPath(); ctx.ellipse(g.x, g.y, 300, 80, time*0.01, 0, Math.PI*2); ctx.stroke();
+                    const rot = time*0.01;
+                    ctx.beginPath(); ctx.ellipse(g.x, g.y, 300, 80, rot, 0, Math.PI*2); ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(g.x, g.y, 80, 250, rot + Math.PI/2, Math.PI, Math.PI*2); ctx.stroke();
+                    
                     ctx.fillStyle='#fff';
                     ctx.font = `${15/zoom}px Inter`;
                     ctx.textAlign = 'center';
@@ -383,6 +404,25 @@
                     ctx.textAlign = 'center';
                     ctx.fillText(g.name, g.x, g.y - g.r/3);
                 }
+            }
+
+            // Draw Clusters
+            if (zoom < 0.001) {
+                for(const cl of CLUSTERS) {
+                    ctx.strokeStyle = 'rgba(200, 200, 255, 0.1)';
+                    ctx.lineWidth = 2000;
+                    ctx.setLineDash([5000, 5000]);
+                    ctx.beginPath(); ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI*2); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.font = `bold ${30/zoom}px Inter,sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(cl.name, cl.x, cl.y - cl.r - 10000);
+                }
+                // Supercluster
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.font = `bold ${50/zoom}px Inter,sans-serif`;
+                ctx.fillText("Laniakea Supercluster Center", -2000000, 1000000);
             }
         }
 

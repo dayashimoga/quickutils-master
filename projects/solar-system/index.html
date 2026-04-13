@@ -35,9 +35,19 @@
     <nav class="navbar">
         <a href="https://quickutils.top" class="brand">🔭 Galaxy Explorer</a>
         <div class="nav-links">
+            <button id="toggleConstellations" class="btn btn-secondary btn-sm">Constellations: ON</button>
+            <button id="toggleMoons" class="btn btn-secondary btn-sm">Moons: ON</button>
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕ Support</a>
         </div>
     </nav>
+    <div id="uiOverlay" style="position:fixed;bottom:20px;left:20px;z-index:20;background:rgba(2,2,8,0.7);padding:10px 15px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(8px);">
+        <div style="font-size:0.75rem;color:#888;margin-bottom:5px;font-weight:600;">ZOOM DEPTH</div>
+        <div id="zoomLevelText" style="font-size:1.1rem;color:#fff;font-weight:700;">Local System</div>
+        <div style="display:flex;gap:5px;margin-top:8px;">
+            <button id="zoomInBtn" class="btn btn-secondary" style="padding:4px 10px;font-size:1.1rem;">+</button>
+            <button id="zoomOutBtn" class="btn btn-secondary" style="padding:4px 10px;font-size:1.1rem;">-</button>
+        </div>
+    </div>
     <canvas id="solarCanvas"></canvas>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>

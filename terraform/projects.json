@@ -560,69 +560,98 @@
         "repo_name": "ai-prompt-builder",
         "project_type": "ai-prompt-builder",
         "root_dir": "projects/ai-prompt-builder",
-        "custom_domain": "aiprompt.quickutils.top"
+        "custom_domain": "aiprompt.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "decision_maker": {
         "directory": "projects/decision-maker",
         "repo_name": "decision-maker",
         "project_type": "decision-maker",
         "root_dir": "projects/decision-maker",
-        "custom_domain": "decide.quickutils.top"
+        "custom_domain": "decide.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "screen_recorder": {
         "directory": "projects/screen-recorder",
         "repo_name": "screen-recorder",
         "project_type": "screen-recorder",
         "root_dir": "projects/screen-recorder",
-        "custom_domain": "screenrecord.quickutils.top"
+        "custom_domain": "screenrecord.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "keyboard_tester": {
         "directory": "projects/keyboard-tester",
         "repo_name": "keyboard-tester",
         "project_type": "keyboard-tester",
         "root_dir": "projects/keyboard-tester",
-        "custom_domain": "keyboard.quickutils.top"
+        "custom_domain": "keyboard.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "speed_test": {
         "directory": "projects/speed-test",
         "repo_name": "speed-test",
         "project_type": "speed-test",
         "root_dir": "projects/speed-test",
-        "custom_domain": "speed.quickutils.top"
+        "custom_domain": "speed.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "escape_room": {
         "directory": "projects/escape-room",
         "repo_name": "escape-room",
         "project_type": "escape-room",
         "root_dir": "projects/escape-room",
-        "custom_domain": "escaperoom.quickutils.top"
+        "custom_domain": "escaperoom.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "stock_simulator": {
         "directory": "projects/stock-simulator",
         "repo_name": "stock-simulator",
         "project_type": "stock-simulator",
         "root_dir": "projects/stock-simulator",
-        "custom_domain": "stocks.quickutils.top"
+        "custom_domain": "stocks.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "music_visualizer": {
         "directory": "projects/music-visualizer",
         "repo_name": "music-visualizer",
         "project_type": "music-visualizer",
         "root_dir": "projects/music-visualizer",
-        "custom_domain": "musicviz.quickutils.top"
+        "custom_domain": "musicviz.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "meme_generator": {
         "directory": "projects/meme-generator",
         "repo_name": "meme-generator",
         "project_type": "meme-generator",
         "root_dir": "projects/meme-generator",
-        "custom_domain": "memes.quickutils.top"
+        "custom_domain": "memes.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     },
     "text_behind_image": {
         "directory": "projects/text-behind-image",
         "repo_name": "text-behind-image",
         "project_type": "text-behind-image",
         "root_dir": "projects/text-behind-image",
-        "custom_domain": "textbehind.quickutils.top"
+        "custom_domain": "textbehind.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
+    "web_chess": {
+        "directory": "projects/web-chess",
+        "repo_name": "web-chess",
+        "project_type": "web-chess",
+        "root_dir": "projects/web-chess",
+        "custom_domain": "chess.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     }
 }

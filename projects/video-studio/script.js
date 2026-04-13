@@ -35,12 +35,13 @@
     let duration = 0;
 
     // Load FFmpeg dynamically
+    let ffmpegLoadedFlag = false;
     let ffmpegLoading = false;
     async function loadFFmpeg() {
-        if(ffmpegInst) return true;
-        if(ffmpegLoading) { // Prevent double-load on rapid uploads
+        if(ffmpegLoadedFlag && ffmpegInst) return true;
+        if(ffmpegLoading) {
             while(ffmpegLoading) await new Promise(r => setTimeout(r, 200));
-            return !!ffmpegInst;
+            return ffmpegLoadedFlag;
         }
         ffmpegLoading = true;
         loadingOverlay.classList.remove('hidden');
@@ -71,19 +72,39 @@
                 console.log(message);
             });
 
-            // Use single-threaded core if SharedArrayBuffer is unavailable
-            const useMT = typeof SharedArrayBuffer !== 'undefined';
-            const coreBase = useMT
-                ? 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm'
-                : 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
-
-            await ffmpegInst.load({
-                coreURL: coreBase + '/ffmpeg-core.js',
-                wasmURL: coreBase + '/ffmpeg-core.wasm',
-                ...(useMT ? { workerURL: coreBase + '/ffmpeg-core.worker.js' } : {})
-            });
+            const hasSAB = typeof SharedArrayBuffer !== 'undefined';
+            let loadedMt = false;
+            
+            // Try Multi-threaded first if available
+            if (hasSAB) {
+                try {
+                    await ffmpegInst.load({
+                        coreURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.js`, 'application/javascript'),
+                        wasmURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.wasm`, 'application/wasm'),
+                        workerURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js`, 'application/javascript')
+                    });
+                    loadedMt = true;
+                } catch(e) {
+                    console.warn("Multi-threaded FFmpeg load failed, falling back to single-threaded:", e);
+                }
+            }
+            
+            // Fallback to Single-threaded
+            if (!loadedMt) {
+                ffmpegInst = new FFmpeg();
+                ffmpegInst.on('progress', ({ progress, time }) => {
+                    const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
+                    exportProgress.style.width = pct + '%';
+                    exportPct.textContent = pct + '%';
+                });
+                await ffmpegInst.load({
+                    coreURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js`, 'application/javascript'),
+                    wasmURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm`, 'application/wasm')
+                });
+            }
             
             loadingOverlay.classList.add('hidden');
+            ffmpegLoadedFlag = true;
             ffmpegLoading = false;
             return true;
         } catch (e) {
@@ -91,6 +112,17 @@
             ffmpegLoading = false;
             loadingOverlay.innerHTML = `<h2 class="text-neon-red">Error Loading Processing Core</h2><p class="mt-2 text-muted">Failed to load FFmpeg. This may be caused by adblockers, strict CORS policies, or an unsupported browser.</p><p class="mt-2 text-muted" style="font-size:0.8rem">${e.message || ''}</p><button onclick="location.reload()" class="btn btn-secondary mt-4">Retry</button>`;
             return false;
+        }
+    }
+
+    async function toBlobURL(url, mime) {
+        try {
+            const res = await fetch(url);
+            const buf = await res.arrayBuffer();
+            const blob = new Blob([buf], { type: mime });
+            return URL.createObjectURL(blob);
+        } catch (e) {
+            return url;
         }
     }
 
@@ -122,7 +154,10 @@
         if(e.target !== fileInput) fileInput.click();
     });
     fileInput.addEventListener('change', e => {
-        if(e.target.files.length) handleFile(e.target.files[0]);
+        if(e.target.files.length) {
+            handleFile(e.target.files[0]);
+            e.target.value = ''; // Allows selecting the same file immediately if needed without a double upload attempt
+        }
     });
     
     document.addEventListener('dragover', e => e.preventDefault());

@@ -1530,67 +1530,16 @@ function loop(timestamp) {
     const dt = timestamp - lastTime;
     lastTime = timestamp;
     
-    if (currentGame === 'snake') {
-        updateSnake(dt);
-        if (gameState === STATES.PLAYING) drawSnake();
-    } else if (currentGame === 'tetris') {
-        updateTetris(dt);
-        if (gameState === STATES.PLAYING) drawTetris();
-    } else if (currentGame === '2048') {
-        draw2048();
-    } else if (currentGame === 'breakout') {
-        updateBreakout(dt);
-        if (gameState === STATES.PLAYING) drawBreakout();
-    } else if (currentGame === 'minesweeper') {
-        drawMinesweeper();
-    } else if (currentGame === 'flappy') {
-        updateFlappy(dt);
-        if (gameState === STATES.PLAYING) drawFlappy();
-    } else if (currentGame === 'invaders') {
-        updateInvaders(dt);
-        if (gameState === STATES.PLAYING) drawInvaders();
-    } else if (currentGame === 'pacman') {
-        updatePacman(dt);
-        if (gameState === STATES.PLAYING) drawPacman();
-    } else if (currentGame === 'asteroids') {
-        updateAsteroids(dt);
-        if (gameState === STATES.PLAYING) drawAsteroids();
-    } else if (currentGame === 'racing') {
-        updateRacing(dt);
-        if (gameState === STATES.PLAYING) drawRacing();
-    
-    } else if (currentGame === 'neonracer') { updateNeonracer(dt); if (gameState === STATES.PLAYING) drawNeonracer();
-    } else if (currentGame === 'defender') { updateDefender(dt); if (gameState === STATES.PLAYING) drawDefender();
-    } else if (currentGame === 'lander') { updateLander(dt); if (gameState === STATES.PLAYING) drawLander();
-    } else if (currentGame === 'hexagon') { updateHexagon(dt); if (gameState === STATES.PLAYING) drawHexagon();
-    } else if (currentGame === 'pinball') { updatePinball(dt); if (gameState === STATES.PLAYING) drawPinball();
-    } else if (currentGame === 'driftking') { updateDriftking(dt); if (gameState === STATES.PLAYING) drawDriftking();
-    } else if (currentGame === 'chopper') { updateChopper(dt); if (gameState === STATES.PLAYING) drawChopper();
-    } else if (currentGame === 'pong') { updatePong(dt); if (gameState === STATES.PLAYING) drawPong();
-    } else if (currentGame === 'shooter') { updateShooter(dt); if (gameState === STATES.PLAYING) drawShooter();
-    } else if (currentGame === 'platformer') { updatePlatformer(dt); if (gameState === STATES.PLAYING) drawPlatformer();
-    } else if (currentGame === 'breakerplus') { updateBreakerPlus(dt); if (gameState === STATES.PLAYING) drawBreakerPlus();
-    } else if (currentGame === 'match3') { updateMatch3(dt); if (gameState === STATES.PLAYING) drawMatch3();
-    } else if (currentGame === 'snake2') { updateSnake2(dt); if (gameState === STATES.PLAYING) drawSnake2();
-    } else if (currentGame === 'sudoku') { updateSudoku(dt); if (gameState === STATES.PLAYING) drawSudoku();
-    } else if (currentGame === 'mazeescape') { updateMazeescape(dt); if (gameState === STATES.PLAYING) drawMazeescape();
-    } else if (currentGame === 'towerdefense') { updateTowerdefense(dt); if (gameState === STATES.PLAYING) drawTowerdefense();
-    } else if (currentGame === 'bounceball') { updateBounceball(dt); if (gameState === STATES.PLAYING) drawBounceball();
-    } else if (currentGame === 'frogger') { updateFrogger(dt); if (gameState === STATES.PLAYING) drawFrogger();
-    } else if (currentGame === 'gemcollector') { updateGemcollector(dt); if (gameState === STATES.PLAYING) drawGemcollector();
-    } else if (currentGame === 'runner') { updateRunner(dt); if (gameState === STATES.PLAYING) drawRunner();
-    // New
-    } else if (currentGame === 'simonsays') { updateSimonsays(dt); if (gameState === STATES.PLAYING) drawSimonsays();
-    } else if (currentGame === 'streetracer') { updateStreetracer(dt); if (gameState === STATES.PLAYING) drawStreetracer();
-    } else if (currentGame === 'trafficrun') { updateTrafficrun(dt); if (gameState === STATES.PLAYING) drawTrafficrun();
-    } else if (currentGame === 'meteordodge') { updateMeteordodge(dt); if (gameState === STATES.PLAYING) drawMeteordodge();
-    } else if (currentGame === 'sokoban') { updateSokoban(dt); if (gameState === STATES.PLAYING) drawSokoban();
-    } else if (currentGame === 'whackamole') { updateWhackamole(dt); if (gameState === STATES.PLAYING) drawWhackamole();
-    } else if (currentGame === 'archery') { updateArchery(dt); if (gameState === STATES.PLAYING) drawArchery();
-    } else if (currentGame === 'memorymatch') { updateMemorymatch(dt); if (gameState === STATES.PLAYING) drawMemorymatch();
-    } else if (currentGame === 'lumberjack') { updateLumberjack(dt); if (gameState === STATES.PLAYING) drawLumberjack();
-    } else if (currentGame === 'spacepro') { updateSpacepro(dt); if (gameState === STATES.PLAYING) drawSpacepro();
-    }
+    const gameNameUpper = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+    try {
+        const updateFn = eval(`typeof update${gameNameUpper} !== 'undefined' ? update${gameNameUpper} : null`);
+        if (updateFn) updateFn(dt);
+        
+        if (gameState === STATES.PLAYING) {
+            const drawFn = eval(`typeof draw${gameNameUpper} !== 'undefined' ? draw${gameNameUpper} : null`);
+            if (drawFn) drawFn();
+        }
+    } catch(err) {}
 
     if (gameState === STATES.PLAYING) {
         animFrame = requestAnimationFrame(loop);
@@ -1619,36 +1568,11 @@ $$('.game-card').forEach(card => {
         updateStats(); // Shows high score for selected game
 
         // Auto-start the game immediately
-        if (currentGame === 'snake') initSnake();
-        else if (currentGame === 'tetris') initTetris();
-        else if (currentGame === '2048') init2048();
-        else if (currentGame === 'breakout') initBreakout();
-        else if (currentGame === 'minesweeper') initMinesweeper();
-        else if (currentGame === 'flappy') initFlappy();
-        else if (currentGame === 'invaders') initInvaders();
-        else if (currentGame === 'pacman') initPacman();
-        else if (currentGame === 'asteroids') initAsteroids();
-        else if (currentGame === 'racing') initRacing();
-        else if (currentGame === 'neonracer') initNeonracer();
-        else if (currentGame === 'defender') initDefender();
-        else if (currentGame === 'lander') initLander();
-        else if (currentGame === 'hexagon') initHexagon();
-        else if (currentGame === 'pinball') initPinball();
-        else if (currentGame === 'driftking') initDriftking();
-        else if (currentGame === 'chopper') initChopper();
-        else if (currentGame === 'pong') initPong();
-        else if (currentGame === 'shooter') initShooter();
-        else if (currentGame === 'platformer') initPlatformer();
-        else if (currentGame === 'breakerplus') initBreakerPlus();
-        else if (currentGame === 'match3') initMatch3();
-        else if (currentGame === 'snake2') initSnake2();
-        else if (currentGame === 'sudoku') initSudoku();
-        else if (currentGame === 'mazeescape') initMazeescape();
-        else if (currentGame === 'runner') initRunner();
-        else if (currentGame === 'gemcollector') initGemcollector();
-        else if (currentGame === 'frogger') initFrogger();
-        else if (currentGame === 'bounceball') initBounceball();
-        else if (currentGame === 'towerdefense') initTowerdefense();
+        const gameNameUpper = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+        try {
+            const initFn = eval(`typeof init${gameNameUpper} !== 'undefined' ? init${gameNameUpper} : null`);
+            if(initFn) initFn();
+        } catch(err) {}
 
 
         
@@ -1661,51 +1585,16 @@ $$('.game-card').forEach(card => {
 
 $('#startGameBtn').addEventListener('click', () => {
     // Force start/restart of current game
-    if (currentGame === 'snake') initSnake();
-    else if (currentGame === 'tetris') initTetris();
-    else if (currentGame === '2048') init2048();
-    else if (currentGame === 'breakout') initBreakout();
-    else if (currentGame === 'minesweeper') initMinesweeper();
-    else if (currentGame === 'flappy') initFlappy();
-    else if (currentGame === 'invaders') initInvaders();
-    else if (currentGame === 'pacman') initPacman();
-    else if (currentGame === 'asteroids') initAsteroids();
-    else if (currentGame === 'racing') initRacing();
-    else if (currentGame === 'neonracer') initNeonracer();
-    else if (currentGame === 'defender') initDefender();
-    else if (currentGame === 'lander') initLander();
-    else if (currentGame === 'hexagon') initHexagon();
-    else if (currentGame === 'pinball') initPinball();
-    else if (currentGame === 'driftking') initDriftking();
-    else if (currentGame === 'chopper') initChopper();
-    else if (currentGame === 'pong') initPong();
-    else if (currentGame === 'shooter') initShooter();
-    else if (currentGame === 'platformer') initPlatformer();
-    else if (currentGame === 'breakerplus') initBreakerPlus();
-    else if (currentGame === 'match3') initMatch3();
-    else if (currentGame === 'snake2') initSnake2();
-    else if (currentGame === 'sudoku') initSudoku();
-    else if (currentGame === 'mazeescape') initMazeescape();
-    else if (currentGame === 'runner') initRunner();
-    else if (currentGame === 'gemcollector') initGemcollector();
-    else if (currentGame === 'frogger') initFrogger();
-    else if (currentGame === 'bounceball') initBounceball();
-    else if (currentGame === 'towerdefense') initTowerdefense();
-    // New games below:
-    else if (currentGame === 'simonsays') initSimonsays();
-    else if (currentGame === 'streetracer') initStreetracer();
-    else if (currentGame === 'trafficrun') initTrafficrun();
-    else if (currentGame === 'meteordodge') initMeteordodge();
-    else if (currentGame === 'sokoban') initSokoban();
-    else if (currentGame === 'whackamole') initWhackamole();
-    else if (currentGame === 'archery') initArchery();
-    else if (currentGame === 'memorymatch') initMemorymatch();
-    else if (currentGame === 'lumberjack') initLumberjack();
-    else if (currentGame === 'spacepro') initSpacepro();
+    const gameNameUpper = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+    try {
+        const initFn = eval(`typeof init${gameNameUpper} !== 'undefined' ? init${gameNameUpper} : null`);
+        if(initFn) initFn();
+    } catch(err) {}
     
     gameState = STATES.PLAYING;
     $('#startGameBtn').textContent = '▶ Restart';
     lastTime = performance.now();
+    cancelAnimationFrame(animFrame);
     animFrame = requestAnimationFrame(loop);
 });
 
@@ -1734,49 +1623,11 @@ document.addEventListener('keydown', e => {
         e.preventDefault();
     }
     
-    if (currentGame === 'snake') handleSnakeInput(e.key);
-    else if (currentGame === 'tetris') handleTetrisInput(e.key);
-    else if (currentGame === '2048') handle2048Input(e.key);
-    else if (currentGame === 'breakout') handleBreakoutInput(e.key);
-    else if (currentGame === 'flappy') handleFlappyInput(e.key);
-    else if (currentGame === 'invaders') handleInvadersInput(e.key);
-    else if (currentGame === 'pacman') handlePacmanInput(e.key);
-    else if (currentGame === 'asteroids') handleAsteroidsInput(e.key);
-    else if (currentGame === 'racing') handleRacingInput(e.key);
-    else if (currentGame === 'neonracer') handleNeonracerInput(e.key);
-    else if (currentGame === 'defender') handleDefenderInput(e.key);
-    else if (currentGame === 'lander') handleLanderInput(e.key);
-    else if (currentGame === 'hexagon') handleHexagonInput(e.key);
-    else if (currentGame === 'pinball') handlePinballInput(e.key);
-    else if (currentGame === 'driftking') handleDriftkingInput(e.key);
-    else if (currentGame === 'chopper') handleChopperInput(e.key);
-    else if (currentGame === 'pong') handlePongInput(e.key);
-    else if (currentGame === 'shooter') handleShooterInput(e.key);
-    else if (currentGame === 'platformer') handlePlatformerInput(e.key);
-    else if (currentGame === 'breakerplus') handleBreakerPlusInput(e.key);
-    else if (currentGame === 'match3') handleMatch3Input(e.key);
-    else if (currentGame === 'snake2') handleSnake2Input(e.key);
-    else if (currentGame === 'sudoku') handleSudokuInput(e.key);
-    else if (currentGame === 'mazeescape') handleMazeescapeInput(e.key);
-    else if (currentGame === 'runner') handleRunnerInput(e.key);
-    else if (currentGame === 'gemcollector') handleGemcollectorInput(e.key);
-    else if (currentGame === 'frogger') handleFroggerInput(e.key);
-    else if (currentGame === 'bounceball') handleBounceballInput(e.key);
-    else if (currentGame === 'towerdefense') handleTowerdefenseInput(e.key);
-    
-    // New games
-    else if (currentGame === 'simonsays') handleSimonsaysInput(e.key);
-    else if (currentGame === 'streetracer') handleStreetracerInput(e.key);
-    else if (currentGame === 'trafficrun') handleTrafficrunInput(e.key);
-    else if (currentGame === 'meteordodge') handleMeteordodgeInput(e.key);
-    else if (currentGame === 'sokoban') handleSokobanInput(e.key);
-    else if (currentGame === 'whackamole') handleWhackamoleInput(e.key);
-    else if (currentGame === 'archery') handleArcheryInput(e.key);
-    else if (currentGame === 'memorymatch') handleMemorymatchInput(e.key);
-    else if (currentGame === 'lumberjack') handleLumberjackInput(e.key);
-    else if (currentGame === 'spacepro') handleSpaceproInput(e.key);
-
-
+    const gameNameUpper = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+    try {
+        const inputFn = eval(`typeof handle${gameNameUpper}Input !== 'undefined' ? handle${gameNameUpper}Input : null`);
+        if(inputFn) inputFn(e.key);
+    } catch(err) {}
 });
 
 // Touch controls via buttons
@@ -1791,18 +1642,14 @@ $$('.dpad-btn').forEach(btn => {
         
         if (gameState !== STATES.PLAYING) return;
         
-        if (currentGame === 'snake') handleSnakeInput(key);
-        else if (currentGame === 'tetris') {
-            if(k==='up') handleTetrisInput('ArrowUp');
-            else handleTetrisInput(key);
-        }
-        else if (currentGame === '2048') handle2048Input(key);
-        else if (currentGame === 'breakout') handleBreakoutInput(key);
-        else if (currentGame === 'flappy') handleFlappyInput(key);
-        else if (currentGame === 'invaders') handleInvadersInput(key);
-        else if (currentGame === 'pacman') handlePacmanInput(key);
-        else if (currentGame === 'asteroids') handleAsteroidsInput(key);
-        else if (currentGame === 'racing') handleRacingInput(key);
+        const gameNameUpper = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+        try {
+            const inputFn = eval(`typeof handle${gameNameUpper}Input !== 'undefined' ? handle${gameNameUpper}Input : null`);
+            if(inputFn) {
+                if (currentGame === 'tetris' && k === 'up') inputFn('ArrowUp');
+                else inputFn(key);
+            }
+        } catch(err) {}
     });
 });
 
