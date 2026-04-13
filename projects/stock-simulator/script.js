@@ -14,7 +14,8 @@
         {sym:'NVDA',name:'NVIDIA',price:900,owned:0,history:[900]},
     ];
     let cash=10000;
-    const cCtx=$('#chartCanvas').getContext('2d');
+    const canvas = $('#chartCanvas');
+    const cCtx = canvas ? canvas.getContext('2d') : null;
 
     function tick(){
         stocks.forEach(s=>{const change=(Math.random()-0.48)*s.price*0.03;s.price=Math.max(1,s.price+change);s.history.push(s.price);if(s.history.length>60)s.history.shift();});
@@ -35,6 +36,7 @@
         drawChart();
     }
     function drawChart(){
+        if(!cCtx || !$('#chartCanvas')) return;
         const w=$('#chartCanvas').width=$('#chartCanvas').parentElement.clientWidth;
         const h=200;cCtx.clearRect(0,0,w,h);
         stocks.forEach((s,si)=>{

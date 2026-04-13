@@ -173,8 +173,8 @@ describe('HTML Pages', () => {
             expect($('#network-section').length).toBe(1);
         });
 
-        test('has 26 tool cards', () => {
-            expect($('.tool-card').length).toBe(26);
+        test('has 36 tool cards', () => {
+            expect($('.tool-card').length).toBe(36);
         });
 
         test('has blog section', () => {

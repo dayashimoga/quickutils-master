@@ -5,8 +5,11 @@
     const $$ = s => document.querySelectorAll(s);
     if(typeof QU !== 'undefined') QU.init({ kofi: true, discover: true });
     
-    $('#startTest').addEventListener('click', async()=>{
-        $('#startTest').disabled=true; $('#connStatus').textContent='Testing...';
+    const startBtn = $('#startTest');
+    if(startBtn) {
+        startBtn.addEventListener('click', async()=>{
+            $('#startTest').disabled=true; 
+            if($('#connStatus')) $('#connStatus').textContent='Testing...';
         // Latency test (ping)
         const pings=[];
         for(let i=0;i<5;i++){ const t=performance.now(); try{await fetch('https://www.cloudflare.com/cdn-cgi/trace',{cache:'no-store',mode:'no-cors'});}catch(e){} pings.push(performance.now()-t); }
