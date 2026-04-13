@@ -124,6 +124,11 @@
                             <option value="immortal">Kasparov's Immortal (1999)</option>
                             <option value="deepblue">Deep Blue vs Kasparov (1997)</option>
                             <option value="carlsen">Carlsen's Queen Sac (2016)</option>
+                            <option value="evergreen">The Evergreen Game (Anderssen, 1852)</option>
+                            <option value="brilliancy">The Brilliancy Prize (Tal, 1960)</option>
+                            <option value="spassky">Fischer vs Spassky G6 (1972)</option>
+                            <option value="zugzwang">Nimzowitsch Zugzwang (1923)</option>
+                            <option value="alphazero">AlphaZero vs Stockfish (2017)</option>
                         </select>
                     </div>
 
@@ -142,6 +147,12 @@
                 </div>
                 <div class="moves-list" id="movesList"></div>
                 <div class="game-result hidden" id="gameResult"></div>
+                <div class="opening-name" id="openingName" style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-muted);font-style:italic;"></div>
+                <div class="utility-buttons" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" id="exportPgn" title="Export PGN">📋 Export PGN</button>
+                    <button class="btn btn-secondary btn-sm" id="copyFen" title="Copy FEN">📄 Copy FEN</button>
+                    <button class="btn btn-secondary btn-sm" id="flipBoard" title="Flip Board">🔄 Flip</button>
+                </div>
             </div>
 
         </div>

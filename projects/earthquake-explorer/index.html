@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earthquake Explorer — Real-Time Seismic Globe | QuickUtils</title>
+    <meta name="description" content="Explore real-time earthquakes worldwide on an interactive 3D globe. Filter by magnitude, view plate tectonics, and replay historical seismic events.">
+    <meta name="keywords" content="earthquake, seismic, real-time, globe, 3D, USGS, plate tectonics, QuickUtils">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quickutils.top/earthquake-explorer/">
+    <meta property="og:title" content="Earthquake Explorer — Real-Time Seismic Globe | QuickUtils">
+    <meta property="og:description" content="Explore real-time earthquakes worldwide on an interactive 3D globe with USGS seismic data.">
+    <meta property="og:url" content="https://quickutils.top/earthquake-explorer/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">🌍 <span>EarthquakeExplorer</span></a>
+    <div class="nav-links">
+        <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+        <a href="https://quickutils.top" target="_blank">QuickUtils</a>
+    </div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+</div></nav>
+<main class="container">
+    <section class="hero">
+        <h1><span class="gradient-text">Earthquake Explorer</span></h1>
+        <p class="hero-sub">Real-time seismic activity on an interactive globe — Powered by USGS</p>
+    </section>
+
+    <div class="controls-bar glass-card">
+        <div class="control-group">
+            <label>Time Range</label>
+            <select id="timeRange">
+                <option value="hour">Past Hour</option>
+                <option value="day" selected>Past Day</option>
+                <option value="week">Past 7 Days</option>
+                <option value="month">Past 30 Days</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Min Magnitude</label>
+            <select id="minMag">
+                <option value="all">All</option>
+                <option value="1.0">1.0+</option>
+                <option value="2.5" selected>2.5+</option>
+                <option value="4.5">4.5+</option>
+                <option value="significant">Significant</option>
+            </select>
+        </div>
+        <div class="stats-row">
+            <div class="stat"><span class="stat-value" id="quakeCount">0</span><span class="stat-label">Earthquakes</span></div>
+            <div class="stat"><span class="stat-value" id="maxMag">0.0</span><span class="stat-label">Max Mag</span></div>
+            <div class="stat"><span class="stat-value" id="lastUpdate">--</span><span class="stat-label">Updated</span></div>
+        </div>
+        <button class="btn btn-primary" id="refreshBtn">🔄 Refresh</button>
+    </div>
+
+    <div class="globe-container glass-card">
+        <canvas id="globe" width="900" height="600"></canvas>
+        <div class="globe-overlay" id="tooltip"></div>
+        <div class="legend">
+            <div class="legend-item"><span class="dot dot-sm green"></span> M &lt; 3</div>
+            <div class="legend-item"><span class="dot dot-md yellow"></span> M 3-5</div>
+            <div class="legend-item"><span class="dot dot-lg orange"></span> M 5-7</div>
+            <div class="legend-item"><span class="dot dot-xl red"></span> M 7+</div>
+        </div>
+    </div>
+
+    <div class="quake-list glass-card">
+        <h2>Recent Earthquakes</h2>
+        <div id="quakeList" class="list-container"></div>
+    </div>
+</main>
+<footer class="footer"><div class="container footer-inner">
+    <div class="footer-brand"><span>🌍 EarthquakeExplorer</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>
+    <p class="copyright">© 2026 QuickUtils. Data from <a href="https://earthquake.usgs.gov/" style="color:var(--accent)">USGS</a>.</p>
+</div></footer>
+<script src="script.js"></script>
+</body>
+</html>

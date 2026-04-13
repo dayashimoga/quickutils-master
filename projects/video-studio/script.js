@@ -45,63 +45,66 @@
         }
         ffmpegLoading = true;
         loadingOverlay.classList.remove('hidden');
+        loadingOverlay.innerHTML = `<h2 style="color:#fff">⏳ Loading Video Engine...</h2><p class="mt-2 text-muted">This may take a few seconds on first load.</p>`;
         try {
-            const p = new Promise(async (resolve, reject) => {
-                const t = setTimeout(()=>reject(new Error("FFmpeg script CDN timeout")), 30000);
+            let ffmpegMod, utilMod;
+            const cdnSources = [
+                ['https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js', 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js'],
+                ['https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js', 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js']
+            ];
+            for(const [ffUrl, utilUrl] of cdnSources) {
                 try {
-                    const ffmpegMod = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js');
-                    const utilMod = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
-                    clearTimeout(t);
-                    resolve({ f: ffmpegMod.FFmpeg, util: utilMod.fetchFile });
-                } catch(e) { clearTimeout(t); reject(e); }
-            });
+                    ffmpegMod = await import(ffUrl);
+                    utilMod = await import(utilUrl);
+                    break;
+                } catch(err) { console.warn("CDN source failed:", ffUrl, err); }
+            }
+            if(!ffmpegMod || !utilMod) throw new Error("All CDN sources failed. Check your internet connection or adblocker.");
 
-            const lib = await p;
-            FFmpeg = lib.f;
-            fetchFile = lib.util;
+            FFmpeg = ffmpegMod.FFmpeg;
+            fetchFile = utilMod.fetchFile;
             
             ffmpegInst = new FFmpeg();
-            
-            ffmpegInst.on('progress', ({ progress, time }) => {
+            ffmpegInst.on('progress', ({ progress }) => {
                 const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
                 exportProgress.style.width = pct + '%';
                 exportPct.textContent = pct + '%';
             });
-            
-            ffmpegInst.on('log', ({ message }) => {
-                console.log(message);
-            });
+            ffmpegInst.on('log', ({ message }) => { console.log(message); });
 
             const hasSAB = typeof SharedArrayBuffer !== 'undefined';
-            let loadedMt = false;
-            
-            // Try Multi-threaded first if available
+            let loaded = false;
+
+            // Try Multi-threaded first if SharedArrayBuffer is available
             if (hasSAB) {
                 try {
                     await ffmpegInst.load({
-                        coreURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.js`, 'application/javascript'),
-                        wasmURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.wasm`, 'application/wasm'),
-                        workerURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js`, 'application/javascript')
+                        coreURL: await toBlobURL('https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.js', 'application/javascript'),
+                        wasmURL: await toBlobURL('https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.wasm', 'application/wasm'),
+                        workerURL: await toBlobURL('https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd/ffmpeg-core.worker.js', 'application/javascript')
                     });
-                    loadedMt = true;
-                } catch(e) {
-                    console.warn("Multi-threaded FFmpeg load failed, falling back to single-threaded:", e);
-                }
+                    loaded = true;
+                } catch(e) { console.warn("Multi-threaded FFmpeg failed, trying single-threaded:", e); }
             }
             
             // Fallback to Single-threaded
-            if (!loadedMt) {
+            if (!loaded) {
                 ffmpegInst = new FFmpeg();
-                ffmpegInst.on('progress', ({ progress, time }) => {
+                ffmpegInst.on('progress', ({ progress }) => {
                     const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
                     exportProgress.style.width = pct + '%';
                     exportPct.textContent = pct + '%';
                 });
-                await ffmpegInst.load({
-                    coreURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js`, 'application/javascript'),
-                    wasmURL: await toBlobURL(`https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm`, 'application/wasm')
-                });
+                try {
+                    await ffmpegInst.load({
+                        coreURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js', 'application/javascript'),
+                        wasmURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm', 'application/wasm')
+                    });
+                    loaded = true;
+                } catch(e) { console.warn("Single-threaded FFmpeg also failed:", e); }
             }
+
+            if(!loaded) throw new Error("FFmpeg core could not be loaded. Your browser may not support WebAssembly, or a content blocker is interfering.");
             
             loadingOverlay.classList.add('hidden');
             ffmpegLoadedFlag = true;
@@ -110,7 +113,7 @@
         } catch (e) {
             console.error('FFmpeg load error:', e);
             ffmpegLoading = false;
-            loadingOverlay.innerHTML = `<h2 class="text-neon-red">Error Loading Processing Core</h2><p class="mt-2 text-muted">Failed to load FFmpeg. This may be caused by adblockers, strict CORS policies, or an unsupported browser.</p><p class="mt-2 text-muted" style="font-size:0.8rem">${e.message || ''}</p><button onclick="location.reload()" class="btn btn-secondary mt-4">Retry</button>`;
+            loadingOverlay.innerHTML = `<h2 class="text-neon-red">⚠️ Video Engine Unavailable</h2><p class="mt-2 text-muted">${e.message || 'Failed to load FFmpeg.'}</p><p class="mt-2 text-muted" style="font-size:0.8rem">Try: disable adblocker, use Chrome/Edge, or check your connection.</p><button onclick="location.reload()" class="btn btn-secondary mt-4">🔄 Retry</button>`;
             return false;
         }
     }
@@ -118,6 +121,7 @@
     async function toBlobURL(url, mime) {
         try {
             const res = await fetch(url);
+            if (!res.ok) throw new Error("fetch failed");
             const buf = await res.arrayBuffer();
             const blob = new Blob([buf], { type: mime });
             return URL.createObjectURL(blob);
@@ -153,10 +157,12 @@
     dropZone.addEventListener('click', e => {
         if(e.target !== fileInput) fileInput.click();
     });
+    fileInput.addEventListener('click', e => {
+        e.target.value = null; // Fixes double upload bug immediately
+    });
     fileInput.addEventListener('change', e => {
         if(e.target.files.length) {
             handleFile(e.target.files[0]);
-            e.target.value = ''; // Allows selecting the same file immediately if needed without a double upload attempt
         }
     });
     

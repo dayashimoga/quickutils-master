@@ -17,20 +17,20 @@ resource "cloudflare_pages_project" "quickutils_projects" {
     ignore_changes = [source]
   }
 
-  source {
-    type = "github"
-    config {
-      owner                         = var.github_username
-      repo_name                     = "quickutils-master"
-      production_branch             = "main"
-      pr_comments_enabled           = true
-      deployments_enabled           = false
-      production_deployment_enabled = false
-      preview_deployment_setting    = "none"
-      preview_branch_includes       = []
-      preview_branch_excludes       = []
-    }
-  }
+  # source {
+  #   type = "github"
+  #   config {
+  #     owner                         = var.github_username
+  #     repo_name                     = "quickutils-master"
+  #     production_branch             = "main"
+  #     pr_comments_enabled           = true
+  #     deployments_enabled           = false
+  #     production_deployment_enabled = false
+  #     preview_deployment_setting    = "none"
+  #     preview_branch_includes       = []
+  #     preview_branch_excludes       = []
+  #   }
+  # }
 
   build_config {
     build_command       = lookup(each.value, "build_command", "export PYTHONPATH=$PYTHONPATH:. && pip install -r requirements.txt && python scripts/fetch_data.py && python scripts/build_directory.py && python scripts/generate_sitemap.py")

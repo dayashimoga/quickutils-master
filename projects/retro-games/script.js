@@ -1988,5 +1988,225 @@ function handleSpaceproInput(k) {
     if(k==='ArrowRight') sp_x=Math.min(380,sp_x+20);
     if(k===' '||k==='ArrowUp') sp_b.push({x:sp_x, y:380, hit:false});
 }
+// ══════════════════════════════════════════════════
+// 🎮 CORE GAME LOOP & EVENT HANDLERS
+// ══════════════════════════════════════════════════
 
+function gameLoop(timestamp) {
+    if (gameState !== STATES.PLAYING) return;
+    
+    let dt = timestamp - lastTime;
+    lastTime = timestamp;
+    if (dt > 100) dt = 16; // Prevent huge jumps if tab was inactive
+
+    if (currentGame === 'snake') { updateSnake(dt); drawSnake(); }
+    else if (currentGame === 'tetris') { updateTetris(dt); drawTetris(); }
+    else if (currentGame === '2048') { draw2048(); } // 2048 only updates on keypress
+    else if (currentGame === 'breakout') { updateBreakout(dt); drawBreakout(); }
+    else if (currentGame === 'minesweeper') { /* pure event driven */ }
+    else if (currentGame === 'flappy') { updateFlappy(dt); drawFlappy(); }
+    else if (currentGame === 'invaders') { updateInvaders(dt); drawInvaders(); }
+    else if (currentGame === 'pacman') { if(typeof updatePacman==='function'){updatePacman(dt); drawPacman();} }
+    else if (currentGame === 'asteroids') { if(typeof updateAsteroids==='function'){updateAsteroids(dt); drawAsteroids();} }
+    else if (currentGame === 'racing') { if(typeof updateRacing==='function'){updateRacing(dt); drawRacing();} }
+    else if (currentGame === 'neonracer') { if(typeof updateNeonracer==='function'){updateNeonracer(dt); drawNeonracer();} }
+    else if (currentGame === 'defender') { if(typeof updateDefender==='function'){updateDefender(dt); drawDefender();} }
+    else if (currentGame === 'hexagon') { if(typeof updateHexagon==='function'){updateHexagon(dt); drawHexagon();} }
+    else if (currentGame === 'lander') { if(typeof updateLander==='function'){updateLander(dt); drawLander();} }
+    else if (currentGame === 'pinball') { if(typeof updatePinball==='function'){updatePinball(dt); drawPinball();} }
+    else if (currentGame === 'driftking') { if(typeof updateDriftking==='function'){updateDriftking(dt); drawDriftking();} }
+    else if (currentGame === 'chopper') { if(typeof updateChopper==='function'){updateChopper(dt); drawChopper();} }
+    else if (currentGame === 'pong') { if(typeof updatePong==='function'){updatePong(dt); drawPong();} }
+    else if (currentGame === 'shooter') { if(typeof updateShooter==='function'){updateShooter(dt); drawShooter();} }
+    else if (currentGame === 'platformer') { if(typeof updatePlatformer==='function'){updatePlatformer(dt); drawPlatformer();} }
+    else if (currentGame === 'breakerplus') { if(typeof updateBreakerplus==='function'){updateBreakerplus(dt); drawBreakerplus();} }
+    else if (currentGame === 'match3') { if(typeof updateMatch3==='function'){updateMatch3(dt); drawMatch3();} }
+    else if (currentGame === 'snake2') { if(typeof updateSnake2==='function'){updateSnake2(dt); drawSnake2();} }
+    else if (currentGame === 'sudoku') { if(typeof updateSudoku==='function'){updateSudoku(dt); drawSudoku();} }
+    else if (currentGame === 'mazeescape') { if(typeof updateMazeescape==='function'){updateMazeescape(dt); drawMazeescape();} }
+    else if (currentGame === 'towerdefense') { if(typeof updateTowerdefense==='function'){updateTowerdefense(dt); drawTowerdefense();} }
+    else if (currentGame === 'bounceball') { if(typeof updateBounceball==='function'){updateBounceball(dt); drawBounceball();} }
+    else if (currentGame === 'frogger') { if(typeof updateFrogger==='function'){updateFrogger(dt); drawFrogger();} }
+    else if (currentGame === 'gemcollector') { if(typeof updateGemcollector==='function'){updateGemcollector(dt); drawGemcollector();} }
+    else if (currentGame === 'runner') { if(typeof updateRunner==='function'){updateRunner(dt); drawRunner();} }
+    else if (currentGame === 'simonsays') { if(typeof updateSimonsays==='function'){updateSimonsays(dt); drawSimonsays();} }
+    else if (currentGame === 'streetracer') { if(typeof updateStreetracer==='function'){updateStreetracer(dt); drawStreetracer();} }
+    else if (currentGame === 'trafficrun') { if(typeof updateTrafficrun==='function'){updateTrafficrun(dt); drawTrafficrun();} }
+    else if (currentGame === 'meteordodge') { if(typeof updateMeteordodge==='function'){updateMeteordodge(dt); drawMeteordodge();} }
+    else if (currentGame === 'sokoban') { if(typeof updateSokoban==='function'){updateSokoban(dt); drawSokoban();} }
+    else if (currentGame === 'whackamole') { if(typeof updateWhackamole==='function'){updateWhackamole(dt); drawWhackamole();} }
+    else if (currentGame === 'archery') { if(typeof updateArchery==='function'){updateArchery(dt); drawArchery();} }
+    else if (currentGame === 'memorymatch') { if(typeof updateMemorymatch==='function'){updateMemorymatch(dt); drawMemorymatch();} }
+    else if (currentGame === 'lumberjack') { if(typeof updateLumberjack==='function'){updateLumberjack(dt); drawLumberjack();} }
+    else if (currentGame === 'spacepro') { if(typeof updateSpacepro==='function'){updateSpacepro(dt); drawSpacepro();} }
+
+    animFrame = requestAnimationFrame(gameLoop);
+}
+
+function startGame(gameName) {
+    currentGame = gameName || currentGame;
+    gameState = STATES.PLAYING;
+    cancelAnimationFrame(animFrame);
+    
+    if (currentGame === 'snake') initSnake();
+    else if (currentGame === 'tetris') initTetris();
+    else if (currentGame === '2048') init2048();
+    else if (currentGame === 'breakout') initBreakout();
+    else if (currentGame === 'minesweeper') initMinesweeper();
+    else if (currentGame === 'flappy') initFlappy();
+    else if (currentGame === 'invaders') initInvaders();
+    else if (currentGame === 'pacman') { if(typeof initPacman==='function') initPacman(); }
+    else if (currentGame === 'asteroids') { if(typeof initAsteroids==='function') initAsteroids(); }
+    else if (currentGame === 'racing') { if(typeof initRacing==='function') initRacing(); }
+    else if (currentGame === 'neonracer') { if(typeof initNeonracer==='function') initNeonracer(); }
+    else if (currentGame === 'defender') { if(typeof initDefender==='function') initDefender(); }
+    else if (currentGame === 'hexagon') { if(typeof initHexagon==='function') initHexagon(); }
+    else if (currentGame === 'lander') { if(typeof initLander==='function') initLander(); }
+    else if (currentGame === 'pinball') { if(typeof initPinball==='function') initPinball(); }
+    else if (currentGame === 'driftking') { if(typeof initDriftking==='function') initDriftking(); }
+    else if (currentGame === 'chopper') { if(typeof initChopper==='function') initChopper(); }
+    else if (currentGame === 'pong') { if(typeof initPong==='function') initPong(); }
+    else if (currentGame === 'shooter') { if(typeof initShooter==='function') initShooter(); }
+    else if (currentGame === 'platformer') { if(typeof initPlatformer==='function') initPlatformer(); }
+    else if (currentGame === 'breakerplus') { if(typeof initBreakerplus==='function') initBreakerplus(); }
+    else if (currentGame === 'match3') { if(typeof initMatch3==='function') initMatch3(); }
+    else if (currentGame === 'snake2') { if(typeof initSnake2==='function') initSnake2(); }
+    else if (currentGame === 'sudoku') { if(typeof initSudoku==='function') initSudoku(); }
+    else if (currentGame === 'mazeescape') { if(typeof initMazeescape==='function') initMazeescape(); }
+    else if (currentGame === 'towerdefense') { if(typeof initTowerdefense==='function') initTowerdefense(); }
+    else if (currentGame === 'bounceball') { if(typeof initBounceball==='function') initBounceball(); }
+    else if (currentGame === 'frogger') { if(typeof initFrogger==='function') initFrogger(); }
+    else if (currentGame === 'gemcollector') { if(typeof initGemcollector==='function') initGemcollector(); }
+    else if (currentGame === 'runner') { if(typeof initRunner==='function') initRunner(); }
+    else if (currentGame === 'simonsays') { if(typeof initSimonsays==='function') initSimonsays(); }
+    else if (currentGame === 'streetracer') { if(typeof initStreetracer==='function') initStreetracer(); }
+    else if (currentGame === 'trafficrun') { if(typeof initTrafficrun==='function') initTrafficrun(); }
+    else if (currentGame === 'meteordodge') { if(typeof initMeteordodge==='function') initMeteordodge(); }
+    else if (currentGame === 'sokoban') { if(typeof initSokoban==='function') initSokoban(); }
+    else if (currentGame === 'whackamole') { if(typeof initWhackamole==='function') initWhackamole(); }
+    else if (currentGame === 'archery') { if(typeof initArchery==='function') initArchery(); }
+    else if (currentGame === 'memorymatch') { if(typeof initMemorymatch==='function') initMemorymatch(); }
+    else if (currentGame === 'lumberjack') { if(typeof initLumberjack==='function') initLumberjack(); }
+    else if (currentGame === 'spacepro') { if(typeof initSpacepro==='function') initSpacepro(); }
+
+    updateStats();
+    lastTime = performance.now();
+    animFrame = requestAnimationFrame(gameLoop);
+}
+
+// Global Keyboard Events
+window.addEventListener('keydown', e => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
+        e.preventDefault();
+    }
+    
+    if (gameState !== STATES.PLAYING) return;
+    
+    if (currentGame === 'snake') handleSnakeInput(e.key);
+    else if (currentGame === 'tetris') handleTetrisInput(e.key);
+    else if (currentGame === '2048') handle2048Input(e.key);
+    else if (currentGame === 'breakout') handleBreakoutInput(e.key);
+    else if (currentGame === 'flappy') handleFlappyInput(e.key);
+    else if (currentGame === 'invaders') handleInvadersInput(e.key);
+    else if (currentGame === 'pacman') { if(typeof handlePacmanInput==='function') handlePacmanInput(e.key); }
+    else if (currentGame === 'asteroids') { if(typeof handleAsteroidsInput==='function') handleAsteroidsInput(e.key); }
+    else if (currentGame === 'racing') { if(typeof handleRacingInput==='function') handleRacingInput(e.key); }
+    else if (currentGame === 'neonracer') { if(typeof handleNeonracerInput==='function') handleNeonracerInput(e.key); }
+    else if (currentGame === 'defender') { if(typeof handleDefenderInput==='function') handleDefenderInput(e.key); }
+    else if (currentGame === 'hexagon') { if(typeof handleHexagonInput==='function') handleHexagonInput(e.key); }
+    else if (currentGame === 'lander') { if(typeof handleLanderInput==='function') handleLanderInput(e.key); }
+    else if (currentGame === 'pinball') { if(typeof handlePinballInput==='function') handlePinballInput(e.key); }
+    else if (currentGame === 'driftking') { if(typeof handleDriftkingInput==='function') handleDriftkingInput(e.key); }
+    else if (currentGame === 'chopper') { if(typeof handleChopperInput==='function') handleChopperInput(e.key); }
+    else if (currentGame === 'pong') { if(typeof handlePongInput==='function') handlePongInput(e.key); }
+    else if (currentGame === 'shooter') { if(typeof handleShooterInput==='function') handleShooterInput(e.key); }
+    else if (currentGame === 'platformer') { if(typeof handlePlatformerInput==='function') handlePlatformerInput(e.key); }
+    else if (currentGame === 'breakerplus') { if(typeof handleBreakerplusInput==='function') handleBreakerplusInput(e.key); }
+    else if (currentGame === 'match3') { if(typeof handleMatch3Input==='function') handleMatch3Input(e.key); }
+    else if (currentGame === 'snake2') { if(typeof handleSnake2Input==='function') handleSnake2Input(e.key); }
+    else if (currentGame === 'sudoku') { if(typeof handleSudokuInput==='function') handleSudokuInput(e.key); }
+    else if (currentGame === 'mazeescape') { if(typeof handleMazeescapeInput==='function') handleMazeescapeInput(e.key); }
+    else if (currentGame === 'towerdefense') { if(typeof handleTowerdefenseInput==='function') handleTowerdefenseInput(e.key); }
+    else if (currentGame === 'bounceball') { if(typeof handleBounceballInput==='function') handleBounceballInput(e.key); }
+    else if (currentGame === 'frogger') { if(typeof handleFroggerInput==='function') handleFroggerInput(e.key); }
+    else if (currentGame === 'gemcollector') { if(typeof handleGemcollectorInput==='function') handleGemcollectorInput(e.key); }
+    else if (currentGame === 'runner') { if(typeof handleRunnerInput==='function') handleRunnerInput(e.key); }
+    else if (currentGame === 'simonsays') { if(typeof handleSimonsaysInput==='function') handleSimonsaysInput(e.key); }
+    else if (currentGame === 'streetracer') { if(typeof handleStreetracerInput==='function') handleStreetracerInput(e.key); }
+    else if (currentGame === 'trafficrun') { if(typeof handleTrafficrunInput==='function') handleTrafficrunInput(e.key); }
+    else if (currentGame === 'meteordodge') { if(typeof handleMeteordodgeInput==='function') handleMeteordodgeInput(e.key); }
+    else if (currentGame === 'sokoban') { if(typeof handleSokobanInput==='function') handleSokobanInput(e.key); }
+    else if (currentGame === 'whackamole') { if(typeof handleWhackamoleInput==='function') handleWhackamoleInput(e.key); }
+    else if (currentGame === 'archery') { if(typeof handleArcheryInput==='function') handleArcheryInput(e.key); }
+    else if (currentGame === 'memorymatch') { if(typeof handleMemorymatchInput==='function') handleMemorymatchInput(e.key); }
+    else if (currentGame === 'lumberjack') { if(typeof handleLumberjackInput==='function') handleLumberjackInput(e.key); }
+    else if (currentGame === 'spacepro') { if(typeof handleSpaceproInput==='function') handleSpaceproInput(e.key); }
+});
+
+// UI Bindings
+$$('.game-card').forEach(card => {
+    card.addEventListener('click', () => {
+        $$('.game-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentGame = card.dataset.game;
+        
+        ctx.fillStyle = '#12121e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 24px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(card.querySelector('.game-name').textContent, canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '16px Inter';
+        ctx.fillStyle = '#888';
+        ctx.fillText('Press Start to play', canvas.width / 2, canvas.height / 2 + 20);
+        
+        updateStats();
+        gameState = STATES.MENU;
+    });
+});
+
+$('#startGameBtn').addEventListener('click', () => {
+    startGame();
+    canvas.focus();
+});
+
+$('#pauseGameBtn').addEventListener('click', () => {
+    if (gameState === STATES.PLAYING) {
+        gameState = STATES.PAUSED;
+        cancelAnimationFrame(animFrame);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 30px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+    } else if (gameState === STATES.PAUSED) {
+        gameState = STATES.PLAYING;
+        lastTime = performance.now();
+        animFrame = requestAnimationFrame(gameLoop);
+    }
+});
+
+// Mobile D-Pad
+$$('.dpad-btn').forEach(btn => {
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const dir = btn.dataset.dir;
+        let key = '';
+        if(dir === 'up') key = 'ArrowUp';
+        if(dir === 'down') key = 'ArrowDown';
+        if(dir === 'left') key = 'ArrowLeft';
+        if(dir === 'right') key = 'ArrowRight';
+        
+        if (gameState === STATES.PLAYING) {
+            window.dispatchEvent(new KeyboardEvent('keydown', {'key': key}));
+        }
+    }, {passive: false});
+});
+
+// Initial screen setup
+if ($$('.game-card').length > 0) $$('.game-card')[0].click();
+
+if(typeof QU !== 'undefined') QU.init({ kofi: true, theme: true });
 })();
