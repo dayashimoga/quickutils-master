@@ -36,7 +36,7 @@ jobs:
           pytest tests/ -q --tb=short
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
           echo "Core scripts coverage: $COVERAGE"
-          python -c "import sys; c=float('$COVERAGE'); print(f'Coverage: {c*100:.1f}%'); sys.exit(0 if c >= 0.80 else 1)"
+          python -c "import sys; c=float('$COVERAGE'); print(f'Coverage: {c*100:.1f}%'); sys.exit(0 if c >= 0.90 else 1)"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -48,7 +48,7 @@ jobs:
         run: npm ci
 
       - name: Run Vitest (JS Tests)
-        run: npx vitest run --reporter=verbose
+        run: npx vitest run --reporter=basic --pool=threads
         env:
           NODE_ENV: test
 

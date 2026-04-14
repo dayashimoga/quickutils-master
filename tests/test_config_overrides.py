@@ -46,11 +46,11 @@ def test_individual_project_ids_resolution():
         real_config = json.load(f)
         
     with patch("scripts.utils._CONFIG", real_config):
-        # Test dailyfacts specifically (known to have overrides)
-        with patch("scripts.utils.PROJECT_TYPE", "dailyfacts"):
-            assert get_config("GA_MEASUREMENT_ID", "") == "G-9PEGCBXCL7"
-            assert get_config("SITE_URL", "") == "https://facts.quickutils.top"
-            assert get_config("ENABLE_ADSENSE", False) is True
+        # Test apistatus-directory specifically
+        with patch("scripts.utils.PROJECT_TYPE", "apistatus-directory"):
+            assert get_config("GA_MEASUREMENT_ID", "") == "G-Q7EZXMN9C8"
+            assert get_config("SITE_URL", "") == "https://apistatus.quickutils.top"
+            assert get_config("AMAZON_AFFILIATE_TAG", "") == "quickutils-20"
             
         # Test a standard directory (should have its specific SITE_URL but global AdSense)
         with patch("scripts.utils.PROJECT_TYPE", "tools-directory"):

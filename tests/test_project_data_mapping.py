@@ -23,7 +23,6 @@ DIRECTORY_PROJECTS = [
     "jobs-directory",
     "opensource-directory",
     "prompts-directory",
-    "quickutils-master",
     "tools-directory",
 ]
 
@@ -159,8 +158,8 @@ class TestGetConfigResolution:
 
         expected_projects = {
             "apistatus-directory", "boilerplates-directory", "cheatsheets-directory",
-            "dailyfacts", "datasets-directory", "jobs-directory",
-            "opensource-directory", "prompts-directory", "quickutils-master",
+            "datasets-directory", "jobs-directory",
+            "opensource-directory", "prompts-directory",
             "tools-directory", "boringwebsite",
         }
 
