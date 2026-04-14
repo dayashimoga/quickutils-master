@@ -55,6 +55,16 @@ def run_build_and_deploy(project_key, config):
         result = subprocess.run(deploy_cmd, check=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 timeout=120)
+                                
+        # Attempt to map custom domain if specified in config
+        custom_domain = config.get("custom_domain")
+        if custom_domain:
+            try:
+                domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
+                subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+            except Exception:
+                pass
+                
         print(f"✅ [{repo_name}] Deployed successfully")
         return repo_name, True
     except subprocess.CalledProcessError as e:
@@ -70,6 +80,16 @@ def run_build_and_deploy(project_key, config):
                 subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
                 # Retry deploy
                 result = subprocess.run(deploy_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+                
+                # Attempt to map custom domain if specified in config
+                custom_domain = config.get("custom_domain")
+                if custom_domain:
+                    try:
+                        domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
+                        subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+                    except Exception:
+                        pass
+                
                 print(f"✅ [{repo_name}] Created & deployed successfully")
                 return repo_name, True
             except Exception as e2:

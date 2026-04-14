@@ -698,5 +698,173 @@
         "custom_domain": "soundlab.quickutils.top",
         "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
         "destination_dir": "dist"
+    },
+    "pdf-studio": {
+        "directory": "projects/pdf-studio",
+        "repo_name": "pdf-studio",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "pdfstudio.quickutils.top",
+        "root_dir": "projects/pdf-studio"
+    },
+    "subtitle-generator": {
+        "directory": "projects/subtitle-generator",
+        "repo_name": "subtitle-generator",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "subtitlegenerator.quickutils.top",
+        "root_dir": "projects/subtitle-generator"
+    },
+    "fire-simulator": {
+        "directory": "projects/fire-simulator",
+        "repo_name": "fire-simulator",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "firesimulator.quickutils.top",
+        "root_dir": "projects/fire-simulator"
+    },
+    "room-planner": {
+        "directory": "projects/room-planner",
+        "repo_name": "room-planner",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "roomplanner.quickutils.top",
+        "root_dir": "projects/room-planner"
+    },
+    "workout-architect": {
+        "directory": "projects/workout-architect",
+        "repo_name": "workout-architect",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "workoutarchitect.quickutils.top",
+        "root_dir": "projects/workout-architect"
+    },
+    "world-builder": {
+        "directory": "projects/world-builder",
+        "repo_name": "world-builder",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "worldbuilder.quickutils.top",
+        "root_dir": "projects/world-builder"
+    },
+    "garden-planner": {
+        "directory": "projects/garden-planner",
+        "repo_name": "garden-planner",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "gardenplanner.quickutils.top",
+        "root_dir": "projects/garden-planner"
+    },
+    "beat-maker": {
+        "directory": "projects/beat-maker",
+        "repo_name": "beat-maker",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "beatmaker.quickutils.top",
+        "root_dir": "projects/beat-maker"
+    },
+    "travel-builder": {
+        "directory": "projects/travel-builder",
+        "repo_name": "travel-builder",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "travelbuilder.quickutils.top",
+        "root_dir": "projects/travel-builder"
+    },
+    "language-playground": {
+        "directory": "projects/language-playground",
+        "repo_name": "language-playground",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "languageplayground.quickutils.top",
+        "root_dir": "projects/language-playground"
+    },
+    "meditation-journey": {
+        "directory": "projects/meditation-journey",
+        "repo_name": "meditation-journey",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "meditationjourney.quickutils.top",
+        "root_dir": "projects/meditation-journey"
+    },
+    "quantum-sandbox": {
+        "directory": "projects/quantum-sandbox",
+        "repo_name": "quantum-sandbox",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "quantumsandbox.quickutils.top",
+        "root_dir": "projects/quantum-sandbox"
+    },
+    "protein-visualizer": {
+        "directory": "projects/protein-visualizer",
+        "repo_name": "protein-visualizer",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "proteins.quickutils.top",
+        "root_dir": "projects/protein-visualizer"
+    },
+    "city-pathfinding": {
+        "directory": "projects/city-pathfinding",
+        "repo_name": "city-pathfinding",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "cityflow.quickutils.top",
+        "root_dir": "projects/city-pathfinding"
+    },
+    "blackhole-raytracer": {
+        "directory": "projects/blackhole-raytracer",
+        "repo_name": "blackhole-raytracer",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "blackhole.quickutils.top",
+        "root_dir": "projects/blackhole-raytracer"
+    },
+    "privacy-map": {
+        "directory": "projects/privacy-map",
+        "repo_name": "privacy-map",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "privacymap.quickutils.top",
+        "root_dir": "projects/privacy-map"
+    },
+    "ml-node-editor": {
+        "directory": "projects/ml-node-editor",
+        "repo_name": "ml-node-editor",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "mlnodes.quickutils.top",
+        "root_dir": "projects/ml-node-editor"
+    },
+    "procedural-planet": {
+        "directory": "projects/procedural-planet",
+        "repo_name": "procedural-planet",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "planets.quickutils.top",
+        "root_dir": "projects/procedural-planet"
+    },
+    "logic-simulator": {
+        "directory": "projects/logic-simulator",
+        "repo_name": "logic-simulator",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "logicsim.quickutils.top",
+        "root_dir": "projects/logic-simulator"
+    },
+    "cyber-defense": {
+        "directory": "projects/cyber-defense",
+        "repo_name": "cyber-defense",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "cyberdefense.quickutils.top",
+        "root_dir": "projects/cyber-defense"
+    },
+    "timeline-universe": {
+        "directory": "projects/timeline-universe",
+        "repo_name": "timeline-universe",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "timeline.quickutils.top",
+        "root_dir": "projects/timeline-universe"
     }
 }
