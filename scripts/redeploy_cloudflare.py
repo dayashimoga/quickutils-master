@@ -49,7 +49,8 @@ def run_build_and_deploy(project_key, config):
             "npx", "wrangler@latest", "pages", "deploy",
             str(dist_path),
             "--project-name", repo_name,
-            "--branch", "main"
+            "--branch", "main",
+            "--commit-dirty=true"
         ]
 
         result = subprocess.run(deploy_cmd, check=True,

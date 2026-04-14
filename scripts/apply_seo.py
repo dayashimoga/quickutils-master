@@ -1,12 +1,22 @@
 import os
 import re
+import json
+from pathlib import Path
 
 def update_seo_metadata():
     project_dir = "projects"
+    config_path = "project_config.json"
     
     if not os.path.exists(project_dir):
         print("Projects directory not found.")
         return
+
+    # Load configuration mappings natively
+    project_config = {}
+    if os.path.exists(config_path):
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+            project_config = cfg.get("projects", {})
 
     count = 0
     for foldername in os.listdir(project_dir):
@@ -50,10 +60,20 @@ def update_seo_metadata():
         if len(desc) > 160:
             desc = desc[:157] + "..."
 
-        domain = "https://quickutils.top"
-        url = f"{domain}/{foldername}/"
+        # Dynamically fetch Correct Custom Domain
+        url = f"https://quickutils.top/{foldername}/"
+        if foldername in project_config and "SITE_URL" in project_config[foldername]:
+            url = project_config[foldername]["SITE_URL"]
+            if not url.endswith('/'):
+                url += '/'
+        # Handle the case where short name is used in config (e.g., cheatsheets instead of cheatsheets-directory)
+        short_name = foldername.replace("-directory", "")
+        if short_name in project_config and "SITE_URL" in project_config[short_name]:
+            url = project_config[short_name]["SITE_URL"]
+            if not url.endswith('/'):
+                url += '/'
         
-        # Tags to ensure are present
+        # Build Standard SEO Tags
         tags_to_add = []
         if '<meta name="description"' not in content.lower():
             tags_to_add.append(f'<meta name="description" content="{desc}">')
@@ -73,12 +93,37 @@ def update_seo_metadata():
             tags_to_add.append('<meta property="og:type" content="website">')
         if 'name="twitter:card"' not in content.lower():
             tags_to_add.append('<meta name="twitter:card" content="summary_large_image">')
+            
+        # Build strict JSON-LD Schema
+        if 'type="application/ld+json"' not in content.lower():
+            schema_json = {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": title_str.replace(" | QuickUtils", ""),
+                "url": url,
+                "description": desc,
+                "applicationCategory": "BrowserApplication",
+                "operatingSystem": "All",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0.00",
+                    "priceCurrency": "USD"
+                }
+            }
+            schema_payload = f"<script type=\"application/ld+json\">\n{json.dumps(schema_json, indent=4)}\n</script>"
+            tags_to_add.append(schema_payload)
         
         if not tags_to_add:
             continue
 
         seo_payload = "\n    ".join(tags_to_add)
         
+        # Flush previously hardcoded canonical URLs silently to override with real dynamic configs
+        content = re.sub(r'<link\s+rel=["\']canonical["\'].*?>', '', content, flags=re.IGNORECASE)
+        tags_to_add_str = "\n    ".join([t for t in tags_to_add if 'canonical' not in t])
+        tags_to_add_str += f'\n    <link rel="canonical" href="{url}">'
+        seo_payload = tags_to_add_str
+
         # Insert right after <title> or after charset/viewport
         if title_match:
             new_content = content.replace(title_match.group(0), title_match.group(0) + "\n    " + seo_payload)
@@ -90,7 +135,7 @@ def update_seo_metadata():
             with open(html_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             count += 1
-            print(f"Updated SEO for {foldername}")
+            print(f"Updated Advanced SEO schemas for {foldername} mapped to {url}")
 
     print(f"Applied SEO updates to {count} projects.")
 
