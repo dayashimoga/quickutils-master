@@ -61,11 +61,11 @@ jobs:
             fi
             CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/\|^terraform/\|^shared/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
             
-            # Also detect shared/config changes that affect all projects
-            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json' || true)
+            # Also detect shared/config/scripts changes that affect all projects
+            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json\|^scripts/redeploy\|^scripts/cancel' || true)
             if [ "$SHARED_CHANGED" -gt "0" ]; then
               CHANGED="ALL"
-              echo "Shared files changed — deploying ALL projects"
+              echo "Infrastructure files changed — deploying ALL projects"
             fi
             
             if [ -z "$CHANGED" ]; then
