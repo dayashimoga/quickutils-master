@@ -1,61 +1,14 @@
-name: Deploy to Cloudflare Pages
+# This workflow is intentionally disabled.
+# Deployment is handled by provision_network.yaml which includes
+# GitHub distribution, and Cloudflare Pages deployment via Wrangler.
+# Keeping this file to prevent re-creation.
+
+name: "[DISABLED] Deploy to Cloudflare Pages"
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install Python Dependencies
-        run: pip install -r requirements.txt
-      
-      - name: Install Node Dependencies
-        run: npm ci
-      
-      - name: Run Python Tests
-        run: pytest tests/ -x -q --timeout=30
-      
-      - name: Run JS Tests
-        run: npx vitest run --reporter=verbose || true
-
-  deploy:
-    name: Deploy
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      deployments: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Directory Index
-        run: |
-          python scripts/build_directory.py || true
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=quickutils --branch=main --commit-dirty=true
+    inputs:
+      confirm:
+        description: 'This workflow is disabled. Use provision_network.yaml instead.'
+        required: false
+        default: 'no'

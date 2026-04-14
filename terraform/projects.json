@@ -653,5 +653,50 @@
         "custom_domain": "chess.quickutils.top",
         "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
         "destination_dir": "dist"
+    },
+    "earthquake-explorer": {
+        "directory": "projects/earthquake-explorer",
+        "repo_name": "earthquake-explorer",
+        "project_type": "earthquake-explorer",
+        "root_dir": "projects/earthquake-explorer",
+        "custom_domain": "earthquake.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
+    "genetic-code-studio": {
+        "directory": "projects/genetic-code-studio",
+        "repo_name": "genetic-code-studio",
+        "project_type": "genetic-code-studio",
+        "root_dir": "projects/genetic-code-studio",
+        "custom_domain": "genetics.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
+    "rhythm-trainer": {
+        "directory": "projects/rhythm-trainer",
+        "repo_name": "rhythm-trainer",
+        "project_type": "rhythm-trainer",
+        "root_dir": "projects/rhythm-trainer",
+        "custom_domain": "rhythm.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
+    "weather-dashboard": {
+        "directory": "projects/weather-dashboard",
+        "repo_name": "weather-dashboard",
+        "project_type": "weather-dashboard",
+        "root_dir": "projects/weather-dashboard",
+        "custom_domain": "weather.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
+    "sound-lab": {
+        "directory": "projects/sound-lab",
+        "repo_name": "sound-lab",
+        "project_type": "sound-lab",
+        "root_dir": "projects/sound-lab",
+        "custom_domain": "soundlab.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
     }
 }

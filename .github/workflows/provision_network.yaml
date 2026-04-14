@@ -6,6 +6,8 @@ on:
     paths-ignore:
       - '*.md'
       - '.gitignore'
+      - 'tests/**'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       trigger_all:
@@ -20,6 +22,7 @@ concurrency:
 jobs:
   provision:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +49,6 @@ jobs:
       - name: Detect Changed Projects
         id: changes
         run: |
-          # If trigger_all is set to 'yes', deploy everything
           if [ "${{ github.event.inputs.trigger_all }}" = "yes" ]; then
             CHANGED="ALL"
             echo "Manual trigger: deploying ALL projects"
@@ -57,17 +59,26 @@ jobs:
             else
               DIFF_TARGET="$BEFORE ${{ github.sha }}"
             fi
-            CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+            CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/\|^terraform/\|^shared/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+            
+            # Also detect shared/config changes that affect all projects
+            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json' || true)
+            if [ "$SHARED_CHANGED" -gt "0" ]; then
+              CHANGED="ALL"
+              echo "Shared files changed — deploying ALL projects"
+            fi
+            
             if [ -z "$CHANGED" ]; then
               CHANGED="NONE"
-              echo "No specific project changes detected — skipping project syncs"
+              echo "No project changes detected — skipping deployment"
             else
               echo "Changed projects: $CHANGED"
             fi
           fi
           echo "projects=$CHANGED" >> $GITHUB_OUTPUT
 
-      - name: Create or Update GitHub Repositories & Sync Code
+      - name: Sync GitHub Repositories
+        if: steps.changes.outputs.projects != 'NONE'
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
@@ -75,7 +86,7 @@ jobs:
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
           python scripts/sync_project_scripts.py
-          python scripts/generate_projects_json.py
+          python scripts/generate_projects_json.py 2>/dev/null || true
           
           git config --global user.email "bot@quickutils.top"
           git config --global user.name "QuickUtils Bot"
@@ -83,7 +94,8 @@ jobs:
           echo "Syncing projects: $CHANGED_PROJECTS"
           python scripts/github_distribute.py
 
-      - name: Direct Build & Deploy via Wrangler
+      - name: Cancel Queued CF Builds & Deploy via Wrangler
+        if: steps.changes.outputs.projects != 'NONE'
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -91,3 +103,7 @@ jobs:
         run: |
           python scripts/cancel_cf_builds.py
           python scripts/redeploy_cloudflare.py
+
+      - name: Skip - No Changes
+        if: steps.changes.outputs.projects == 'NONE'
+        run: echo "✅ No project changes detected. Skipping deployment."

@@ -4,9 +4,12 @@ import sys
 import json
 import subprocess
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
+MAX_PARALLEL = 4  # Deploy up to 4 projects at once
+
 
 def get_projects_config():
     try:
@@ -16,65 +19,83 @@ def get_projects_config():
         print(f"Error reading projects.json: {e}")
         return {}
 
+
 def run_build_and_deploy(project_key, config):
     repo_name = config.get("repo_name", project_key)
     build_cmd = config.get("build_command", "mkdir -p dist && cp -r * dist/ || true")
     root_dir = config.get("directory", config.get("root_dir", f"projects/{repo_name}"))
     out_dir = config.get("destination_dir", "dist")
 
-    print(f"\n🚀 Processing {repo_name}...")
-    
     # 1. Build
     try:
         full_cwd = ROOT_DIR / root_dir
         if not full_cwd.exists():
-            print(f"⚠️ Directory {full_cwd} does not exist. Skipping.")
-            return False
-            
-        print(f"🔨 Running build: {build_cmd}")
-        subprocess.run(build_cmd, shell=True, cwd=full_cwd, check=True)
+            print(f"⚠️ [{repo_name}] Directory {full_cwd} does not exist. Skipping.")
+            return repo_name, False
+
+        subprocess.run(build_cmd, shell=True, cwd=full_cwd, check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed for {repo_name}: {e}")
-        return False
-        
+        print(f"❌ [{repo_name}] Build failed: {e}")
+        return repo_name, False
+
     # 2. Deploy
     try:
         dist_path = full_cwd / out_dir
         if not dist_path.exists():
-            print(f"⚠️ Output directory {dist_path} not found!")
-            # try fallback
             dist_path = full_cwd
-            
-        print(f"☁️ Deploying {dist_path} via Wrangler...")
+
         deploy_cmd = [
-            "npx", "wrangler@latest", "pages", "deploy", 
+            "npx", "wrangler@latest", "pages", "deploy",
             str(dist_path),
             "--project-name", repo_name,
             "--branch", "main"
         ]
-        
-        # Wrangler uses CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN from env
-        result = subprocess.run(deploy_cmd, check=True)
-        print(f"✅ Successfully deployed {repo_name}")
-        return True
+
+        result = subprocess.run(deploy_cmd, check=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=120)
+        print(f"✅ [{repo_name}] Deployed successfully")
+        return repo_name, True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Deployment failed for {repo_name}: {e}")
-        return False
+        stderr = e.stderr.decode() if e.stderr else ""
+        # Wrangler auto-creates projects, but may fail on first attempt
+        if "could not find" in stderr.lower() or "project not found" in stderr.lower():
+            print(f"⚠️ [{repo_name}] Project not found on Cloudflare — creating it...")
+            try:
+                create_cmd = [
+                    "npx", "wrangler@latest", "pages", "project", "create",
+                    repo_name, "--production-branch", "main"
+                ]
+                subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+                # Retry deploy
+                result = subprocess.run(deploy_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+                print(f"✅ [{repo_name}] Created & deployed successfully")
+                return repo_name, True
+            except Exception as e2:
+                print(f"❌ [{repo_name}] Create+deploy failed: {e2}")
+                return repo_name, False
+        print(f"❌ [{repo_name}] Deploy failed: {stderr[:200]}")
+        return repo_name, False
+    except subprocess.TimeoutExpired:
+        print(f"❌ [{repo_name}] Deploy timed out after 120s")
+        return repo_name, False
+
 
 def main():
     changed = os.environ.get("CHANGED_PROJECTS", "")
-    
+
     projects = get_projects_config()
     if not projects:
         return
 
     deploy_list = set()
-    
+
     if changed:
         if changed.strip() == "ALL":
             deploy_list.update(projects.keys())
-            print(f"🚀 Deploying ALL projects...")
-        else:
+            print(f"🚀 Deploying ALL {len(deploy_list)} projects...")
+        elif changed.strip() != "NONE":
             changed_list = [p.strip() for p in changed.split(",") if p.strip()]
             for p in changed_list:
                 for k, v in projects.items():
@@ -82,17 +103,32 @@ def main():
                         deploy_list.add(k)
                         break
             print(f"📝 Found {len(deploy_list)} changed projects to deploy.")
-            
+
     if not deploy_list:
         print("No projects to deploy.")
         return
 
+    # Deploy in parallel batches
     success = 0
-    for key in deploy_list:
-        if run_build_and_deploy(key, projects[key]):
-            success += 1
-            
-    print(f"\n📊 Deployment summary: {success}/{len(deploy_list)} projects built and deployed successfully.")
+    failed = []
+    print(f"\n🚀 Deploying {len(deploy_list)} projects ({MAX_PARALLEL} parallel)...\n")
+
+    with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as executor:
+        futures = {
+            executor.submit(run_build_and_deploy, key, projects[key]): key
+            for key in deploy_list
+        }
+        for future in as_completed(futures):
+            name, ok = future.result()
+            if ok:
+                success += 1
+            else:
+                failed.append(name)
+
+    print(f"\n📊 Deployment: {success}/{len(deploy_list)} succeeded")
+    if failed:
+        print(f"❌ Failed: {', '.join(failed)}")
+
 
 if __name__ == "__main__":
     main()
