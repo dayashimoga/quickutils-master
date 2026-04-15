@@ -96,7 +96,8 @@ def run_build_and_deploy(project_key, config):
             except Exception as e2:
                 print(f"❌ [{repo_name}] Create+deploy failed: {e2}")
                 return repo_name, False
-        print(f"❌ [{repo_name}] Deploy failed: {stderr[:200]}")
+        stdout = e.stdout.decode() if e.stdout else ""
+        print(f"❌ [{repo_name}] Deploy failed.\nSTDOUT:\n{stdout[-1000:]}\nSTDERR:\n{stderr[-1000:]}")
         return repo_name, False
     except subprocess.TimeoutExpired:
         print(f"❌ [{repo_name}] Deploy timed out after 120s")
