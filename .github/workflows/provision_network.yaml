@@ -101,6 +101,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
+          # Free CF 100-limit slots by extinguishing orphaned projects first
+          python scripts/cf_extinguisher.py emoji-kitchen garden-planner ai-prompt-builder
+          
           # Cancel old builds in background while deploying new ones
           python scripts/cancel_cf_builds.py &
           CANCEL_PID=$!

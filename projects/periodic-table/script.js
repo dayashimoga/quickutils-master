@@ -1400,28 +1400,171 @@ function showDetails(id) {
         <div class="data-item"><div class="data-lbl">Electron Config</div><div class="data-val">${el.ec}</div></div>
         <div class="data-item"><div class="data-lbl">Group</div><div class="data-val">${el.group || 'N/A'}</div></div>
         <div class="data-item"><div class="data-lbl">Period</div><div class="data-val">${el.period > 7 ? el.period-2 : el.period}</div></div>
-        <div class="desc-box">${escapeHtml(el.desc)}</div>
+        <div class="desc-box">
+            ${escapeHtml(el.desc)}
+            <h4 style="margin-top:20px;text-align:center;color:var(--accent);">Live Bohr Model</h4>
+            <div style="text-align:center;"><canvas id="bohrCanvas" width="250" height="250" style="margin:10px auto;border-radius:50%;background:rgba(0,0,0,0.2);box-shadow:inset 0 0 20px rgba(0,0,0,0.5);"></canvas></div>
+        </div>
     </div>
     `;
     content.innerHTML = html;
     panel.classList.add('open');
+    drawBohrModel(el);
 }
+
+// Draw dynamic Bohr Model
+function drawBohrModel(el) {
+    const cvs = document.getElementById('bohrCanvas');
+    if(!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const w = cvs.width, h = cvs.height;
+    const cx = w/2, cy = h/2;
+    
+    // Calculate electrons per shell based on atomic number
+    let z = el.n;
+    const maxCapacity = [2, 8, 18, 32, 32, 18, 8];
+    const shells = [];
+    for(let cap of maxCapacity) {
+        if(z <= 0) break;
+        let e = Math.min(z, cap);
+        // Correcting valence anomalies for simplicity (Bohr is an approximation)
+        if(z > cap && e === cap && cap >= 18 && z - cap < 8) {
+            e = cap - Math.min(z-cap+8, 10); // rough fallback
+        }
+        shells.push(e);
+        z -= e;
+    }
+    
+    // Animate
+    let t = 0;
+    function render() {
+        if(!cvs.isConnected) return;
+        ctx.clearRect(0,0,w,h);
+        
+        // Nucleus
+        ctx.beginPath();
+        const nGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 15);
+        nGrad.addColorStop(0, '#fff');
+        nGrad.addColorStop(1, 'var(--accent)');
+        ctx.fillStyle = nGrad;
+        ctx.arc(cx, cy, 15, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(el.s, cx, cy+4);
+        
+        // Shells
+        const shellDist = (w/2 - 20) / shells.length;
+        shells.forEach((electrons, sIdx) => {
+            const r = 25 + sIdx * shellDist;
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1.5;
+            ctx.arc(cx, cy, r, 0, Math.PI*2);
+            ctx.stroke();
+            
+            // Electrons
+            for(let e=0; e<electrons; e++) {
+                const angle = (Math.PI*2 / electrons) * e + (t * (sIdx % 2===0 ? 1 : -1) * (0.02 - sIdx*0.003));
+                const ex = cx + Math.cos(angle) * r;
+                const ey = cy + Math.sin(angle) * r;
+                ctx.beginPath();
+                ctx.fillStyle = '#6366f1';
+                ctx.arc(ex, ey, 3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 5; ctx.shadowColor = '#6366f1'; ctx.fill(); ctx.shadowBlur = 0;
+            }
+        });
+        t += 0.5;
+        requestAnimationFrame(render);
+    }
+    render();
+}
+
 
 $('#closePanelBtn').addEventListener('click', () => panel.classList.remove('open'));
 
-$('#searchInput').addEventListener('input', e => {
-    const term = e.target.value.toLowerCase();
+$('#searchInput').addEventListener('input', applyFilters);
+
+// Temperature Simulation
+const tempSlider = document.createElement('div');
+tempSlider.innerHTML = `
+    <div style="margin:20px auto; max-width:600px; padding:15px; background:rgba(0,0,0,0.2); border-radius:12px; display:flex; align-items:center; gap:15px; border:1px solid rgba(255,255,255,0.1);">
+        <label for="tempInput" style="font-weight:bold; white-space:nowrap;">Global Temp:</label>
+        <input type="range" id="tempInput" min="0" max="6000" value="298" style="flex:1;">
+        <span id="tempVal" style="font-weight:bold; font-variant-numeric: tabular-nums; width:70px; text-align:right;">298 K</span>
+    </div>
+`;
+document.querySelector('.search-bar').insertAdjacentElement('afterend', tempSlider);
+
+$('#tempInput').addEventListener('input', (e) => {
+    $('#tempVal').textContent = e.target.value + ' K';
+    applyFilters();
+});
+
+function getPhase(n, temp) {
+    // Highly simplified melting/boiling model for demonstration
+    // Noble gases (gas at room temp, liquify very low)
+    const noble = [2, 10, 18, 36, 54, 86];
+    if(noble.includes(n)) return temp < 100 ? (temp < 10 ? 'solid' : 'liquid') : 'gas';
+    
+    // Halogens / Nonmetals
+    const nonMetals = [1, 7, 8, 9, 17, 35, 53];
+    if(nonMetals.includes(n)) return temp < 200 ? 'solid' : (temp < 300 && n===35 ? 'liquid' : 'gas');
+
+    // Liquids at room temp
+    if(n === 80) return temp < 234 ? 'solid' : (temp > 630 ? 'gas' : 'liquid'); // Mercury
+    
+    // High melt solids
+    const meltingPt = 600 + (n * 10);
+    const boilingPt = meltingPt + 1500;
+    if(temp > boilingPt) return 'gas';
+    if(temp > meltingPt) return 'liquid';
+    return 'solid';
+}
+
+function applyFilters() {
+    const term = $('#searchInput').value.toLowerCase();
+    const temp = parseInt($('#tempInput').value);
+    
     $$('.element-cell').forEach(cell => {
         const id = parseInt(cell.dataset.id);
         const el = elements.find(x => x.n === id);
-        if (!term) {
-            cell.classList.remove('filtered');
+        
+        // Search Matching
+        let match = true;
+        if (term) {
+            match = el.name.toLowerCase().includes(term) || el.s.toLowerCase().includes(term) || el.n.toString() === term;
+        }
+        
+        // Temperature phase
+        const phase = getPhase(id, temp);
+        
+        if (!match) {
+            cell.style.opacity = '0.1';
+            cell.style.transform = 'scale(0.9)';
+            cell.style.filter = 'grayscale(100%)';
         } else {
-            const match = el.name.toLowerCase().includes(term) || el.s.toLowerCase().includes(term) || el.n.toString() === term;
-            cell.classList.toggle('filtered', !match);
+            cell.style.opacity = '1';
+            cell.style.transform = 'scale(1)';
+            
+            // Apply Physical State Visuals
+            if(phase === 'solid') {
+                cell.style.filter = 'drop-shadow(0 0 0px transparent)';
+                cell.style.borderRadius = '4px';
+                cell.style.border = '1px solid rgba(255,255,255,0.4)';
+            } else if (phase === 'liquid') {
+                cell.style.filter = 'drop-shadow(0 5px 8px rgba(0,100,255,0.5)) opacity(0.8)';
+                cell.style.borderRadius = '50% 50% 40% 40%'; // Droplet
+                cell.style.border = '2px solid #3b82f6';
+            } else if (phase === 'gas') {
+                cell.style.filter = 'blur(1px) drop-shadow(0 -5px 15px rgba(200,200,200,0.6)) opacity(0.6)';
+                cell.style.borderRadius = '50%';
+                cell.style.border = '1px dashed rgba(255,255,255,0.6)';
+            }
         }
     });
-});
+}
+
 
 $('#themeBtn').addEventListener('click', () => {
     const html = document.documentElement;
