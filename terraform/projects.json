@@ -26,14 +26,6 @@
         "custom_domain": "cheatsheets.quickutils.top",
         "root_dir": "projects/cheatsheets-directory"
     },
-    "dailyfacts": {
-        "directory": "projects/dailyfacts",
-        "repo_name": "dailyfacts",
-        "build_command": "npm install && npm run build",
-        "destination_dir": "dist",
-        "custom_domain": "facts.quickutils.top",
-        "root_dir": "projects/dailyfacts"
-    },
     "datasets": {
         "directory": "projects/datasets-directory",
         "repo_name": "datasets-directory",
@@ -211,14 +203,6 @@
         "custom_domain": "circuits.quickutils.top",
         "root_dir": "projects/circuit-designer"
     },
-    "color-palette": {
-        "directory": "projects/color-palette",
-        "repo_name": "color-palette",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "colors.quickutils.top",
-        "root_dir": "projects/color-palette"
-    },
     "markdown-editor": {
         "directory": "projects/markdown-editor",
         "repo_name": "markdown-editor",
@@ -259,14 +243,6 @@
         "custom_domain": "cron.quickutils.top",
         "root_dir": "projects/cron-builder"
     },
-    "emoji-kitchen": {
-        "directory": "projects/emoji-kitchen",
-        "repo_name": "emoji-kitchen",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "emoji.quickutils.top",
-        "root_dir": "projects/emoji-kitchen"
-    },
     "ascii-art-studio": {
         "directory": "projects/ascii-art-studio",
         "repo_name": "ascii-art-studio",
@@ -274,14 +250,6 @@
         "destination_dir": "dist",
         "custom_domain": "ascii.quickutils.top",
         "root_dir": "projects/ascii-art-studio"
-    },
-    "password-fortress": {
-        "directory": "projects/password-fortress",
-        "repo_name": "password-fortress",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "passwords.quickutils.top",
-        "root_dir": "projects/password-fortress"
     },
     "chemistry-lab": {
         "directory": "projects/chemistry-lab",
@@ -355,14 +323,6 @@
         "custom_domain": "games.quickutils.top",
         "root_dir": "projects/retro-games"
     },
-    "unit-converter": {
-        "directory": "projects/unit-converter",
-        "repo_name": "unit-converter",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "units.quickutils.top",
-        "root_dir": "projects/unit-converter"
-    },
     "text-toolkit": {
         "directory": "projects/text-toolkit",
         "repo_name": "text-toolkit",
@@ -410,14 +370,6 @@
         "destination_dir": "dist",
         "custom_domain": "nettools.quickutils.top",
         "root_dir": "projects/network-tools"
-    },
-    "meal-planner": {
-        "directory": "projects/meal-planner",
-        "repo_name": "meal-planner",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "meals.quickutils.top",
-        "root_dir": "projects/meal-planner"
     },
     "invoice-generator": {
         "directory": "projects/invoice-generator",
@@ -555,15 +507,6 @@
         "custom_domain": "spacemission.quickutils.top",
         "root_dir": "projects/space-mission-control"
     },
-    "ai_prompt_builder": {
-        "directory": "projects/ai-prompt-builder",
-        "repo_name": "ai-prompt-builder",
-        "project_type": "ai-prompt-builder",
-        "root_dir": "projects/ai-prompt-builder",
-        "custom_domain": "aiprompt.quickutils.top",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist"
-    },
     "decision_maker": {
         "directory": "projects/decision-maker",
         "repo_name": "decision-maker",
@@ -579,15 +522,6 @@
         "project_type": "screen-recorder",
         "root_dir": "projects/screen-recorder",
         "custom_domain": "screenrecord.quickutils.top",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist"
-    },
-    "keyboard_tester": {
-        "directory": "projects/keyboard-tester",
-        "repo_name": "keyboard-tester",
-        "project_type": "keyboard-tester",
-        "root_dir": "projects/keyboard-tester",
-        "custom_domain": "keyboard.quickutils.top",
         "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
         "destination_dir": "dist"
     },
@@ -651,15 +585,6 @@
         "project_type": "web-chess",
         "root_dir": "projects/web-chess",
         "custom_domain": "chess.quickutils.top",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist"
-    },
-    "earthquake-explorer": {
-        "directory": "projects/earthquake-explorer",
-        "repo_name": "earthquake-explorer",
-        "project_type": "earthquake-explorer",
-        "root_dir": "projects/earthquake-explorer",
-        "custom_domain": "earthquake.quickutils.top",
         "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
         "destination_dir": "dist"
     },
@@ -747,14 +672,6 @@
         "custom_domain": "worldbuilder.quickutils.top",
         "root_dir": "projects/world-builder"
     },
-    "garden-planner": {
-        "directory": "projects/garden-planner",
-        "repo_name": "garden-planner",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "gardenplanner.quickutils.top",
-        "root_dir": "projects/garden-planner"
-    },
     "beat-maker": {
         "directory": "projects/beat-maker",
         "repo_name": "beat-maker",
@@ -778,14 +695,6 @@
         "destination_dir": "dist",
         "custom_domain": "languageplayground.quickutils.top",
         "root_dir": "projects/language-playground"
-    },
-    "meditation-journey": {
-        "directory": "projects/meditation-journey",
-        "repo_name": "meditation-journey",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "meditationjourney.quickutils.top",
-        "root_dir": "projects/meditation-journey"
     },
     "quantum-sandbox": {
         "directory": "projects/quantum-sandbox",

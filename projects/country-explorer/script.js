@@ -385,123 +385,158 @@ function renderWorldMap(){
   const cvs=$('#worldMapCanvas');if(!cvs)return;
   const mapContainer=cvs.parentElement;
   
-  if(mapContainer.querySelector('svg') || mapContainer.dataset.loading) return; // Already rendered or loading
-  mapContainer.dataset.loading = 'true';
-  mapContainer.innerHTML = '<div style="text-align:center;padding:50px;color:var(--text-muted);">Fetching Global Boundaries...</div><div id="mapInfo" class="map-info"></div>';
+  if(cvs.dataset.rendered) return; // Already rendered
+  cvs.dataset.rendered = 'true';
+  $('#mapInfo').innerHTML = '<div style="color:var(--text-muted);">Fetching Global Topology...</div>';
 
-  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-    .then(r=>r.json())
-    .then(geoData=>{
-      mapContainer.innerHTML = '<div id="mapInfo" class="map-info">Select a country to view details</div>';
-      
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("width", "100%");
-      svg.setAttribute("height", "100%");
-      svg.setAttribute("viewBox", "0 0 1000 600");
-      svg.style.cursor = "grab";
-      
-      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      
-      // Simple offset Mercator projection
-      function project(lon, lat) {
-          const x = (lon + 180) * (1000 / 360);
-          const latRad = lat * Math.PI / 180;
-          const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-          const y = (600 / 2) - (1000 * mercN / (2 * Math.PI)) + 80; 
-          return { x, y };
-      }
-      
-      function geoJsonPolygonToPath(coords) {
-          let d = "";
-          for (let ring of coords) {
-              for (let i = 0; i < ring.length; i++) {
-                  const pt = project(ring[i][0], ring[i][1]);
-                  d += (i === 0 ? "M " : "L ") + pt.x + " " + pt.y + " ";
-              }
-              d += "Z ";
+  let width = mapContainer.clientWidth;
+  let height = mapContainer.clientHeight;
+  cvs.width = width;  cvs.height = height;
+  const ctx = cvs.getContext('2d');
+
+  const projection = d3.geoOrthographic()
+      .scale(Math.min(width, height) / 2.1)
+      .translate([width / 2, height / 2])
+      .precision(0.1);
+
+  const path = d3.geoPath().projection(projection).context(ctx);
+
+  let worldData = null, land = null, borders = null, countryFeatures = [];
+  let rotation = [0, -15, 0];
+  let isDragging = false, dragStart = null, rotStart = null;
+  let hoveredFeature = null;
+
+  d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(world => {
+      worldData = world;
+      countryFeatures = topojson.feature(world, world.objects.countries).features;
+      borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+      $('#mapInfo').innerHTML = 'Drag to rotate. Hover to inspect countries. Scroll to zoom.';
+      startGlobe();
+  }).catch(()=>{
+      $('#mapInfo').innerHTML = '<div style="color:red">Failed to load map data.</div>';
+  });
+
+  window.addEventListener('resize', () => {
+      width = mapContainer.clientWidth;
+      height = mapContainer.clientHeight;
+      cvs.width = width; cvs.height = height;
+      projection.translate([width / 2, height / 2]).scale(Math.min(width, height) / 2.1);
+  });
+
+  cvs.addEventListener('mousedown', e => {
+      isDragging = true;
+      dragStart = [e.clientX, e.clientY];
+      rotStart = [...rotation];
+      cvs.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; cvs.style.cursor = hoveredFeature ? 'pointer' : 'grab'; });
+  
+  cvs.addEventListener('mousemove', e => {
+      if(isDragging) {
+          const dx = e.clientX - dragStart[0];
+          const dy = e.clientY - dragStart[1];
+          rotation[0] = rotStart[0] + dx * 0.4;
+          rotation[1] = Math.max(-90, Math.min(90, rotStart[1] - dy * 0.4));
+      } else {
+          // Identify hovered country
+          const pos = [e.offsetX, e.offsetY];
+          const coord = projection.invert(pos);
+          let found = null;
+          if (coord) {
+              found = countryFeatures.find(f => d3.geoContains(f, coord));
           }
-          return d;
-      }
-
-      const regionColors = { Africa:'#f59e0b', Americas:'#10b981', Asia:'#ef4444', Europe:'#3b82f6', Oceania:'#8b5cf6' };
-
-      geoData.features.forEach(feature => {
-          const countryName = feature.properties.name;
-          // Loose matching to catch minor naming differences
-          const cObj = countries.find(c => c.name === countryName || c.name.includes(countryName) || countryName.includes(c.name));
-          
-          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          path.classList.add('country-path');
-          
-          if (feature.geometry.type === "Polygon") {
-              path.setAttribute("d", geoJsonPolygonToPath(feature.geometry.coordinates));
-          } else if (feature.geometry.type === "MultiPolygon") {
-              let d = "";
-              feature.geometry.coordinates.forEach(poly => {
-                  d += geoJsonPolygonToPath(poly);
-              });
-              path.setAttribute("d", d);
-          }
-          
-          if (cObj) {
-              path.style.fill = regionColors[cObj.region] || '#444';
-              
-              path.addEventListener('click', (e) => {
-                  e.stopPropagation();
-                  $$('.country-path').forEach(p => p.classList.remove('selected'));
-                  path.classList.add('selected');
-                  
-                  $('#mapInfo').innerHTML = `<img src="https://flagcdn.com/w40/${cObj.code}.png" style="height:20px;vertical-align:middle" onerror="this.outerHTML='${cObj.flag}'"> <strong>${cObj.name}</strong> — ${cObj.capital} | Pop: ${fmt(cObj.population)} | ${cObj.currencies.split(':')[0]}`;
-                  
-                  // Double click to view full detail
-                  if(path.dataset.lastClick && (Date.now() - path.dataset.lastClick < 300)) {
-                      showDetail(cObj.name);
+          if(found !== hoveredFeature) {
+              hoveredFeature = found;
+              cvs.style.cursor = found ? 'pointer' : 'grab';
+              if(found) {
+                  let cObj = countries.find(c => c.name === found.properties.name || c.name.includes(found.properties.name));
+                  if(cObj) {
+                      $('#mapInfo').innerHTML = `<img src="https://flagcdn.com/w40/${cObj.code}.png" style="height:20px;vertical-align:middle;border-radius:2px" onerror="this.outerHTML='${cObj.flag}'"> <strong style="color:var(--primary);font-size:1.1em">${cObj.name}</strong> — Capital: ${cObj.capital} | Pop: ${fmt(cObj.population)} | ${cObj.region}`;
+                  } else {
+                      $('#mapInfo').innerHTML = `<strong style="color:#aaa">${found.properties.name}</strong>`;
                   }
-                  path.dataset.lastClick = Date.now();
-              });
-              
-              const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-              title.textContent = cObj.name;
-              path.appendChild(title);
-          } else {
-              path.style.fill = '#2a2a35'; // Unmatched/ocean
+              } else {
+                  $('#mapInfo').innerHTML = 'Drag to rotate. Hover to inspect countries. Scroll to zoom.';
+              }
+          }
+      }
+  });
+
+  cvs.addEventListener('click', () => {
+      if(hoveredFeature) {
+          let cObj = countries.find(c => c.name === hoveredFeature.properties.name || c.name.includes(hoveredFeature.properties.name));
+          if(cObj) showDetail(cObj.name);
+      }
+  });
+
+  cvs.addEventListener('wheel', e => {
+      e.preventDefault();
+      const sc = projection.scale();
+      projection.scale(Math.max(100, Math.min(2000, sc - e.deltaY * 0.5)));
+  });
+
+  function startGlobe() {
+      requestAnimationFrame(draw);
+  }
+
+  function draw() {
+      if(!isDragging) rotation[0] += 0.15;
+      projection.rotate(rotation);
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Ocean layer
+      ctx.beginPath();
+      path({type: "Sphere"});
+      ctx.fillStyle = '#0f172a'; // Deep blue ocean
+      ctx.fill();
+
+      // Landmasses
+      for(let feature of countryFeatures) {
+          ctx.beginPath();
+          path(feature);
+          
+          let cObj = countries.find(c => c.name === feature.properties.name || c.name.includes(feature.properties.name));
+          let fl = '#1e293b'; // Default land
+          
+          // Region coloring
+          if(cObj) {
+              const rc = { Africa:'#b45309', Americas:'#047857', Asia:'#b91c1c', Europe:'#1d4ed8', Oceania:'#5b21b6' };
+              fl = rc[cObj.region] || fl;
           }
           
-          g.appendChild(path);
-      });
+          if(feature === hoveredFeature) {
+              ctx.fillStyle = '#fde047'; // Bright yellow hover
+          } else {
+              ctx.fillStyle = fl;
+          }
+          
+          ctx.fill();
+      }
 
-      svg.appendChild(g);
-      mapContainer.appendChild(svg);
-      
-      // Simple panning support
-      let isDragging = false, startX, startY;
-      let tx = 0, ty = 0;
-      
-      svg.addEventListener('mousedown', (e) => {
-          isDragging = true;
-          startX = e.clientX - tx;
-          startY = e.clientY - ty;
-          svg.style.cursor = 'grabbing';
-      });
-      window.addEventListener('mousemove', (e) => {
-          if(!isDragging) return;
-          tx = e.clientX - startX;
-          ty = e.clientY - startY;
-          g.setAttribute('transform', `translate(${tx}, ${ty})`);
-      });
-      window.addEventListener('mouseup', () => {
-          isDragging = false;
-          svg.style.cursor = 'grab';
-      });
-      svg.addEventListener('mouseleave', () => {
-          isDragging = false;
-          svg.style.cursor = 'grab';
-      });
-      
-    }).catch(err => {
-      console.error(err);
-      mapContainer.innerHTML = '<div style="color:red;padding:20px;">Failed to load map data. Ensure you have an internet connection.</div>';
-    });
+      // Borders
+      if(borders) {
+          ctx.beginPath();
+          path(borders);
+          ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+      }
+
+      // Atmospheric glowing rim
+      ctx.beginPath();
+      path({type: "Sphere"});
+      const grad = ctx.createRadialGradient(width/2, height/2, projection.scale()*0.85, width/2, height/2, projection.scale());
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.5)'); // Cyan glow
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      requestAnimationFrame(draw);
+  }
 }
 
 // ── Export Functionality ──
