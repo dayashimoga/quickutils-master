@@ -776,10 +776,12 @@
         "custom_domain": "timeline.quickutils.top",
         "root_dir": "projects/timeline-universe"
     },
-    "web-chess": {
-        "name": "web-chess"
-    },
     "earthquake-explorer": {
-        "name": "earthquake-explorer"
+        "directory": "projects/earthquake-explorer",
+        "repo_name": "earthquake-explorer",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "earthquake.quickutils.top",
+        "root_dir": "projects/earthquake-explorer"
     }
 }
