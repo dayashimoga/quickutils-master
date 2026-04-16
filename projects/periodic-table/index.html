@@ -55,10 +55,25 @@
             <div class="search-wrap">
                 <input type="text" id="searchInput" placeholder="Search by name, symbol, or atomic number..." autocomplete="off">
             </div>
-            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
+            
+            <div class="phase-controls glass-card p-3" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label for="tempInput" style="font-weight:600; color:var(--text); font-size:0.9rem">🌡️ Temperature (Kelvin)</label>
+                    <span id="tempVal" style="font-family:monospace; font-weight:700; color:var(--accent);">298 K</span>
+                </div>
+                <input type="range" id="tempInput" min="0" max="6000" step="10" value="298" style="width:100%; outline:none;" class="slider">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                    <span>Absolute Zero (0 K)</span>
+                    <span>Room Temp (298 K)</span>
+                    <span>Surface of Sun (5778 K)</span>
+                </div>
             </div>
-            <div class="legend-filter" id="legendFilter">
+
+            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:1rem;">
+                <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
+                <button class="btn btn-secondary btn-sm" id="sensitivityBtn">☢️ Highlight Sensitivity</button>
+            </div>
+            <div class="legend-filter mt-3" id="legendFilter">
                 <!-- Populated by JS -->
             </div>
         </div>

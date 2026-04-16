@@ -74,21 +74,29 @@
                         <option value="-2:480">480p Light</option>
                     </select>
 
-                    <label>Visual Effects</label>
+                    <label>Video Effect Filters</label>
                     <select id="effectOpt" class="form-control mb-3">
                         <option value="none">None</option>
-                        <option value="hue=s=0">Grayscale</option>
-                        <option value="boxblur=5:1">Blur (Light)</option>
-                        <option value="negate">Invert Colors</option>
+                        <option value="hue=s=0">Cinematic B&W</option>
+                        <option value="boxblur=5:1">Gaussian Blur</option>
+                        <option value="negate">Color Invert</option>
                     </select>
 
-                    <label>Cut Time (Seconds)</label>
+                    <label>Speed Modifier</label>
+                    <select id="speedOpt" class="form-control mb-3">
+                        <option value="1">Normal (1x)</option>
+                        <option value="0.5">Slow Motion (0.5x)</option>
+                        <option value="1.5">Fast Forward (1.5x)</option>
+                        <option value="2">Timelapse (2x)</option>
+                    </select>
+
+                    <label>Precision Trim (Seconds)</label>
                     <div class="d-flex gap-2 mb-3">
                         <input type="number" id="trimStart" class="form-control" placeholder="Start (s)" min="0" value="0">
                         <input type="number" id="trimEnd" class="form-control" placeholder="End (s)" min="0">
                     </div>
 
-                    <button class="btn btn-outline w-100" id="resetParamsBtn">Reset Adjustments</button>
+                    <button class="btn btn-outline w-100" id="resetParamsBtn">Undo Modifications</button>
                 </div>
 
                 <!-- Audio Settings -->

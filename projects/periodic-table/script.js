@@ -1485,19 +1485,20 @@ $('#closePanelBtn').addEventListener('click', () => panel.classList.remove('open
 
 $('#searchInput').addEventListener('input', applyFilters);
 
-// Temperature Simulation
-const tempSlider = document.createElement('div');
-tempSlider.innerHTML = `
-    <div style="margin:20px auto; max-width:600px; padding:15px; background:rgba(0,0,0,0.2); border-radius:12px; display:flex; align-items:center; gap:15px; border:1px solid rgba(255,255,255,0.1);">
-        <label for="tempInput" style="font-weight:bold; white-space:nowrap;">Global Temp:</label>
-        <input type="range" id="tempInput" min="0" max="6000" value="298" style="flex:1;">
-        <span id="tempVal" style="font-weight:bold; font-variant-numeric: tabular-nums; width:70px; text-align:right;">298 K</span>
-    </div>
-`;
-document.querySelector('.search-bar').insertAdjacentElement('afterend', tempSlider);
+// Temperature controls are now natively handled in HTML and listeners below
+let sensitivityMode = false;
+let currentTemp = 298;
 
 $('#tempInput').addEventListener('input', (e) => {
-    $('#tempVal').textContent = e.target.value + ' K';
+    currentTemp = parseInt(e.target.value);
+    $('#tempVal').textContent = currentTemp + ' K';
+    applyFilters();
+});
+
+$('#sensitivityBtn').addEventListener('click', () => {
+    sensitivityMode = !sensitivityMode;
+    $('#sensitivityBtn').classList.toggle('btn-primary', sensitivityMode);
+    $('#sensitivityBtn').classList.toggle('btn-secondary', !sensitivityMode);
     applyFilters();
 });
 
@@ -1524,7 +1525,6 @@ function getPhase(n, temp) {
 
 function applyFilters() {
     const term = $('#searchInput').value.toLowerCase();
-    const temp = parseInt($('#tempInput').value);
     
     $$('.element-cell').forEach(cell => {
         const id = parseInt(cell.dataset.id);
@@ -1535,29 +1535,38 @@ function applyFilters() {
         if (term) {
             match = el.name.toLowerCase().includes(term) || el.s.toLowerCase().includes(term) || el.n.toString() === term;
         }
+
+        // Sensitivity Matching
+        let isSensitive = false;
+        if (sensitivityMode) {
+            // Highly reactive (alkali) or Radioactive (n > 82 or 43, 61)
+            isSensitive = (id > 82 || id === 43 || id === 61 || el.group === 1 || el.group === 17);
+            if (!isSensitive) match = false;
+        }
         
         // Temperature phase
-        const phase = getPhase(id, temp);
+        const phase = getPhase(id, currentTemp);
         
         if (!match) {
-            cell.style.opacity = '0.1';
+            cell.style.opacity = sensitivityMode ? '0.2' : '0.1';
             cell.style.transform = 'scale(0.9)';
             cell.style.filter = 'grayscale(100%)';
+            cell.style.boxShadow = 'none';
         } else {
             cell.style.opacity = '1';
             cell.style.transform = 'scale(1)';
             
             // Apply Physical State Visuals
             if(phase === 'solid') {
-                cell.style.filter = 'drop-shadow(0 0 0px transparent)';
+                cell.style.filter = sensitivityMode ? 'drop-shadow(0 0 10px var(--c-alkali))' : 'drop-shadow(0 0 0px transparent)';
                 cell.style.borderRadius = '4px';
                 cell.style.border = '1px solid rgba(255,255,255,0.4)';
             } else if (phase === 'liquid') {
-                cell.style.filter = 'drop-shadow(0 5px 8px rgba(0,100,255,0.5)) opacity(0.8)';
+                cell.style.filter = sensitivityMode ? 'drop-shadow(0 0 10px var(--c-alkali))' : 'drop-shadow(0 5px 8px rgba(0,100,255,0.5)) opacity(0.8)';
                 cell.style.borderRadius = '50% 50% 40% 40%'; // Droplet
                 cell.style.border = '2px solid #3b82f6';
             } else if (phase === 'gas') {
-                cell.style.filter = 'blur(1px) drop-shadow(0 -5px 15px rgba(200,200,200,0.6)) opacity(0.6)';
+                cell.style.filter = sensitivityMode ? 'blur(1px) drop-shadow(0 0 10px var(--c-alkali))' : 'blur(1px) drop-shadow(0 -5px 15px rgba(200,200,200,0.6)) opacity(0.6)';
                 cell.style.borderRadius = '50%';
                 cell.style.border = '1px dashed rgba(255,255,255,0.6)';
             }

@@ -15,6 +15,7 @@
     const muteVideoChk = $('#muteVideoChk');
     const formatOpt = $('#formatOpt');
     const effectOpt = $('#effectOpt');
+    const speedOpt = $('#speedOpt');
     const extractAudioBtn = $('#extractAudioBtn');
     const exportBtn = $('#exportBtn');
     
@@ -60,8 +61,26 @@
         try {
             // Load UMD bundles via script tag
             const cdn = 'https://cdn.jsdelivr.net/npm';
+            
+            // Native Polyfill for Worker to bypass UMD cross-origin Worker restriction
+            console.log("Fetching ffmpeg worker script as blob to bypass CORS...");
+            const workerRes = await fetch(`${cdn}/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js`);
+            const workerBlob = await workerRes.blob();
+            const workerBlobURL = URL.createObjectURL(workerBlob);
+
+            const OriginalWorker = window.Worker;
+            window.Worker = function(url, options) {
+                if (url && (typeof url === 'string' || url instanceof URL)) {
+                    let urlStr = url.toString();
+                    if (urlStr.includes('814.ffmpeg.js')) {
+                        console.log("Intercepted FFmpeg Worker creation! Using Blob URL.");
+                        return new OriginalWorker(workerBlobURL, options);
+                    }
+                }
+                return new OriginalWorker(url, options);
+            };
+
             await loadScript(`${cdn}/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js`);
-            // await loadScript(`${cdn}/@ffmpeg/util@0.12.2/dist/umd/index.js`);
 
             FFmpeg = FFmpegWASM.FFmpeg;
             
@@ -169,6 +188,7 @@
         muteVideoChk.checked = false;
         formatOpt.value = 'mp4';
         if(effectOpt) effectOpt.value = 'none';
+        if(speedOpt) speedOpt.value = '1';
     });
 
     async function executeFFmpeg(args, outName) {
@@ -238,7 +258,16 @@
         
         // Flags
         const filters = [];
+        let audioFilters = [];
         
+        const speed = parseFloat(speedOpt.value) || 1;
+        if(speed !== 1) {
+            filters.push(`setpts=${1/speed}*PTS`);
+            let atempo = speed;
+            // atempo supports 0.5 to 2.0. If we need more we'd chain them, but we only have 0.5, 1.5, 2.0 so we are fine.
+            audioFilters.push(`atempo=${atempo}`);
+        }
+
         if(resizeOpt.value !== 'original') {
             filters.push(`scale=${resizeOpt.value}`);
         }
@@ -257,7 +286,11 @@
         if(fmt === 'gif' || muteVideoChk.checked) {
             args.push('-an'); // remove audio
         } else if (fmt !== 'gif') {
-            args.push('-c:a', 'copy'); // try direct copy 
+            if(audioFilters.length > 0) {
+                args.push('-af', audioFilters.join(','));
+            } else {
+                args.push('-c:a', 'copy'); // try direct copy 
+            }
         }
         
         args.push(out);

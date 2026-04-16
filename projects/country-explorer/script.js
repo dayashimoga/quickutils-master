@@ -405,10 +405,13 @@ function renderWorldMap(){
   let rotation = [0, -15, 0];
   let isDragging = false, dragStart = null, rotStart = null;
   let hoveredFeature = null;
+  let autoRotate = true;
 
   d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(world => {
       worldData = world;
       countryFeatures = topojson.feature(world, world.objects.countries).features;
+      // Precompute centroids
+      countryFeatures.forEach(f => { f.centroid = d3.geoCentroid(f); });
       borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
       $('#mapInfo').innerHTML = 'Drag to rotate. Hover to inspect countries. Scroll to zoom.';
       startGlobe();
@@ -417,14 +420,16 @@ function renderWorldMap(){
   });
 
   window.addEventListener('resize', () => {
+      if(mapContainer.clientWidth === 0) return;
       width = mapContainer.clientWidth;
       height = mapContainer.clientHeight;
       cvs.width = width; cvs.height = height;
-      projection.translate([width / 2, height / 2]).scale(Math.min(width, height) / 2.1);
+      projection.translate([width / 2, height / 2]);
   });
 
   cvs.addEventListener('mousedown', e => {
       isDragging = true;
+      autoRotate = false; // Stop spinning when user interacts!
       dragStart = [e.clientX, e.clientY];
       rotStart = [...rotation];
       cvs.style.cursor = 'grabbing';
@@ -451,7 +456,7 @@ function renderWorldMap(){
               if(found) {
                   let cObj = countries.find(c => c.name === found.properties.name || c.name.includes(found.properties.name));
                   if(cObj) {
-                      $('#mapInfo').innerHTML = `<img src="https://flagcdn.com/w40/${cObj.code}.png" style="height:20px;vertical-align:middle;border-radius:2px" onerror="this.outerHTML='${cObj.flag}'"> <strong style="color:var(--primary);font-size:1.1em">${cObj.name}</strong> — Capital: ${cObj.capital} | Pop: ${fmt(cObj.population)} | ${cObj.region}`;
+                      $('#mapInfo').innerHTML = `<img src="https://flagcdn.com/w40/${cObj.code}.png" style="height:24px;vertical-align:middle;border-radius:2px" onerror="this.outerHTML='${cObj.flag}'"> <strong style="color:var(--primary);font-size:1.2em">${cObj.name}</strong> — Capital: ${cObj.capital} | Pop: ${fmt(cObj.population)} | ${cObj.region}`;
                   } else {
                       $('#mapInfo').innerHTML = `<strong style="color:#aaa">${found.properties.name}</strong>`;
                   }
@@ -472,7 +477,7 @@ function renderWorldMap(){
   cvs.addEventListener('wheel', e => {
       e.preventDefault();
       const sc = projection.scale();
-      projection.scale(Math.max(100, Math.min(2000, sc - e.deltaY * 0.5)));
+      projection.scale(Math.max(100, Math.min(8000, sc - e.deltaY * 1.5))); // Increased zoom limit
   });
 
   function startGlobe() {
@@ -480,7 +485,7 @@ function renderWorldMap(){
   }
 
   function draw() {
-      if(!isDragging) rotation[0] += 0.15;
+      if(autoRotate && !isDragging) rotation[0] += 0.15;
       projection.rotate(rotation);
 
       ctx.clearRect(0, 0, width, height);
@@ -521,6 +526,35 @@ function renderWorldMap(){
           ctx.strokeStyle = 'rgba(255,255,255,0.15)';
           ctx.lineWidth = 1;
           ctx.stroke();
+      }
+      
+      // Labels
+      const center = projection.invert([width/2, height/2]);
+      const currentScale = projection.scale();
+      
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for(let feature of countryFeatures) {
+          // Label only if centroid is on the visible front hemisphere (distance < 90 degrees/pi/2)
+          if(d3.geoDistance(feature.centroid, center) < Math.PI/2) {
+              const [x, y] = projection(feature.centroid);
+              
+              // Only draw labels if zoom is high enough OR country is physically large
+              // We estimate physical size using spherical area
+              const area = d3.geoArea(feature);
+              
+              if(currentScale > 1000 || area > 0.05) {
+                  let cObj = countries.find(c => c.name === feature.properties.name || c.name.includes(feature.properties.name));
+                  let label = cObj ? cObj.name : feature.properties.name;
+                  
+                  ctx.font = area > 0.1 ? '14px sans-serif' : '10px sans-serif';
+                  ctx.fillStyle = '#fff';
+                  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                  ctx.shadowBlur = 4;
+                  ctx.fillText(label, x, y);
+                  ctx.shadowBlur = 0; // reset
+              }
+          }
       }
 
       // Atmospheric glowing rim
