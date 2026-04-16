@@ -48,7 +48,8 @@ def api_request(method, url, token, payload=None):
         with urllib.request.urlopen(req) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        print(f"HTTPError {e.code}: {e.read().decode('utf-8')}")
+        if e.code != 404:
+            print(f"HTTPError {e.code}: {e.read().decode('utf-8')}")
     except Exception as e:
         print(f"Error: {e}")
     return None
