@@ -1587,7 +1587,6 @@ function escapeHtml(s) { return s.replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
 renderGrid();
 renderLegend();
-})();
 
 // ── Quiz Mode ──
 let quizMode = false;
@@ -1674,7 +1673,6 @@ showDetails = function(id) {
     }
 };
 
-
     // -- ENHANCED TEMPERATURE LOGIC --
     const tempInput = document.getElementById('tempInput');
     const tempVal = document.getElementById('tempVal');
@@ -1721,4 +1719,5 @@ showDetails = function(id) {
             });
         });
     }
+
 })();

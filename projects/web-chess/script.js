@@ -205,7 +205,7 @@ function buildBoard() {
 }
 
 function renderPosition() {
-    // Instead of deleting all pieces, we mark them for diffing to allow CSS transitions
+    // Mark all existing pieces as stale for diff-based rendering
     const existingPieces = Array.from(document.querySelectorAll('.piece'));
     existingPieces.forEach(p => p.dataset.stale = 'true');
 
@@ -236,8 +236,10 @@ function renderPosition() {
         }
     }
 
-    // Draw pieces
+    // Draw pieces — two-pass approach to prevent scrambling
     const board = chess.board();
+
+    // PASS 1: Claim pieces already on the correct square (these never move in the DOM)
     for (let r = 0; r < 8; r++) {
         for (let f = 0; f < 8; f++) {
             const p = board[r][f];
@@ -246,34 +248,52 @@ function renderPosition() {
                 const sqEl = document.getElementById('sq-' + sq);
                 if (sqEl) {
                     const pieceId = `${p.color}${p.type}`;
-                    // Find a stale piece of same type already on this exact square!
-                    let pieceEl = existingPieces.find(el => el.dataset.stale === 'true' && el.parentElement.id === 'sq-' + sq && el.dataset.pieceType === pieceId);
-                    
-                    // If none, take any stale piece of this type (this handles the piece that actually moved)
-                    if (!pieceEl) {
-                         pieceEl = existingPieces.find(el => el.dataset.stale === 'true' && el.dataset.pieceType === pieceId);
-                    }
-                    if (pieceEl) {
-                        pieceEl.dataset.stale = 'false';
-                        if (pieceEl.parentElement !== sqEl) {
-                            sqEl.appendChild(pieceEl); // Move it
-                        }
-                    } else {
-                        // Create new
-                        pieceEl = document.createElement('div');
-                        pieceEl.className = 'piece animate-in-piece';
-                        pieceEl.dataset.pieceType = pieceId;
-                        pieceEl.style.backgroundImage = `url(${PIECE_URLS[pieceId]})`;
-                        sqEl.appendChild(pieceEl);
-                        // Force reflow for transition
-                        void pieceEl.offsetWidth;
+                    const resident = existingPieces.find(el =>
+                        el.dataset.stale === 'true' &&
+                        el.parentElement === sqEl &&
+                        el.dataset.pieceType === pieceId
+                    );
+                    if (resident) {
+                        resident.dataset.stale = 'false';
                     }
                 }
             }
         }
     }
 
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
+    // PASS 2: For squares that still need a piece, grab any remaining stale piece of that type and move it
+    for (let r = 0; r < 8; r++) {
+        for (let f = 0; f < 8; f++) {
+            const p = board[r][f];
+            if (p) {
+                const sq = 'abcdefgh'[f] + (8 - r);
+                const sqEl = document.getElementById('sq-' + sq);
+                if (sqEl) {
+                    // Check if this square already has a claimed piece
+                    const alreadyClaimed = sqEl.querySelector('.piece:not([data-stale="true"])');
+                    if (alreadyClaimed) continue;
+
+                    const pieceId = `${p.color}${p.type}`;
+                    let pieceEl = existingPieces.find(el =>
+                        el.dataset.stale === 'true' && el.dataset.pieceType === pieceId
+                    );
+                    if (pieceEl) {
+                        pieceEl.dataset.stale = 'false';
+                        sqEl.appendChild(pieceEl);
+                    } else {
+                        // Create brand new piece element
+                        pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        pieceEl.dataset.pieceType = pieceId;
+                        pieceEl.style.backgroundImage = `url(${PIECE_URLS[pieceId]})`;
+                        sqEl.appendChild(pieceEl);
+                    }
+                }
+            }
+        }
+    }
+
+    // Remove captured pieces (anything still marked stale)
     document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     updateCapturedPieces();
     updateMovesList();
