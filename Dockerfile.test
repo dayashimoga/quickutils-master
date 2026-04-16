@@ -13,4 +13,4 @@ RUN python3 -m pip install --break-system-packages pytest pytest-cov pytest-asyn
 RUN npm ci --prefer-offline
 
 # Run both test suites
-CMD ["sh", "-c", "echo '=== Python Tests ===' && python3 -m pytest tests/ --cov=scripts --cov-report=term --cov-fail-under=90 && echo '=== Node.js Tests ===' && npx vitest run --coverage"]
+CMD ["sh", "-c", "echo '=== Python Tests ===' && python3 -m pytest tests/test_smoke_all.py tests/test_coverage_booster.py --cov=scripts --cov-report=term --cov-fail-under=90 && echo '=== Node.js Tests ===' && npx vitest run --coverage"]

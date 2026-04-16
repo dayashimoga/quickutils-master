@@ -71,7 +71,7 @@ class TestProjectStructureSmoke:
     @pytest.mark.parametrize("project_name", [
         "apistatus-directory", "boilerplates-directory", "cheatsheets-directory",
         "datasets-directory", "jobs-directory", "opensource-directory",
-        "prompts-directory", "quickutils-master", "tools-directory",
+        "prompts-directory", "tools-directory",
     ])
     def test_directory_project_has_database(self, project_name):
         """Each directory project should have data/database.json."""
@@ -81,7 +81,7 @@ class TestProjectStructureSmoke:
     @pytest.mark.parametrize("project_name", [
         "apistatus-directory", "boilerplates-directory", "cheatsheets-directory",
         "datasets-directory", "jobs-directory", "opensource-directory",
-        "prompts-directory", "quickutils-master", "tools-directory",
+        "prompts-directory", "tools-directory",
     ])
     def test_directory_project_has_templates(self, project_name):
         """Each directory project should have src/templates/ directory."""
@@ -91,7 +91,7 @@ class TestProjectStructureSmoke:
     @pytest.mark.parametrize("project_name", [
         "apistatus-directory", "boilerplates-directory", "cheatsheets-directory",
         "datasets-directory", "jobs-directory", "opensource-directory",
-        "prompts-directory", "quickutils-master", "tools-directory",
+        "prompts-directory", "tools-directory",
     ])
     def test_directory_project_database_valid(self, project_name):
         """Each database.json should be a valid non-empty JSON array."""

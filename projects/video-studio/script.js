@@ -161,10 +161,17 @@
     }
 
     dropZone.addEventListener('click', e => {
-        if(e.target !== fileInput) fileInput.click();
+        if(e.target !== fileInput && e.target.tagName !== 'BUTTON') {
+             fileInput.click();
+        }
     });
+    const btnSelectMain = document.getElementById('btnSelectMain');
+    if (btnSelectMain) {
+        btnSelectMain.addEventListener('click', () => fileInput.click());
+    }
     fileInput.addEventListener('click', e => {
-        e.target.value = null; // Fixes double upload bug immediately
+        e.stopPropagation(); // Stop bubbling immediately
+        e.target.value = '';
     });
     fileInput.addEventListener('change', e => {
         if(e.target.files.length) {
