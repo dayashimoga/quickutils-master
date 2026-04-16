@@ -102,7 +102,7 @@ jobs:
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
           # Free CF 100-limit slots by extinguishing orphaned projects first
-          python scripts/cf_extinguisher.py emoji-kitchen garden-planner ai-prompt-builder
+          python scripts/cf_extinguisher.py
           
           # Cancel old builds in background while deploying new ones
           python scripts/cancel_cf_builds.py &
