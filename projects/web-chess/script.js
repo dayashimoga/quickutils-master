@@ -81,7 +81,7 @@ function onEngineMessage(event) {
         const match = line.match(/^bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
         if (match && mode === 'play') {
             // Delay AI move slightly for realistic feel and readability
-            setTimeout(() => { executeEngineMove(match[1]); }, 1200);
+            setTimeout(() => { executeEngineMove(match[1]); }, typeof engineDelay !== 'undefined' ? engineDelay : 1200);
         }
         if (mode === 'analyze') {
             setEngineStatus('ready', 'Analysis complete');
@@ -951,6 +951,33 @@ commitMove = function(move) {
     origCommitMove(move);
     detectOpening();
 };
+
+// ═══════════════════════════════════════════════════
+// BOARD THEMES
+// ═══════════════════════════════════════════════════
+const BOARD_THEMES = {
+    classic:  { light: '#f0d9b5', dark: '#b58863' },
+    emerald:  { light: '#eeeed2', dark: '#769656' },
+    midnight: { light: '#dee3e6', dark: '#4b7399' },
+    marble:   { light: '#e8e0d0', dark: '#8b7d6b' },
+};
+
+document.getElementById('boardTheme').addEventListener('change', (e) => {
+    const theme = BOARD_THEMES[e.target.value];
+    if (theme) {
+        document.documentElement.style.setProperty('--board-light', theme.light);
+        document.documentElement.style.setProperty('--board-dark', theme.dark);
+    }
+});
+
+// ═══════════════════════════════════════════════════
+// MOVE TIMING SLIDER
+// ═══════════════════════════════════════════════════
+let engineDelay = 1200;
+document.getElementById('moveTimingSlider').addEventListener('input', (e) => {
+    engineDelay = parseInt(e.target.value);
+    document.getElementById('moveTimingVal').textContent = (engineDelay / 1000).toFixed(1) + 's';
+});
 
 // ═══════════════════════════════════════════════════
 // BOOTSTRAP

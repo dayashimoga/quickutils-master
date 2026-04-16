@@ -168,9 +168,25 @@
                 <div class="game-result hidden" id="gameResult"></div>
                 <div class="opening-name" id="openingName" style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-muted);font-style:italic;"></div>
                 <div class="utility-buttons" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" id="exportPgn" title="Export PGN">📋 Export PGN</button>
-                    <button class="btn btn-secondary btn-sm" id="copyFen" title="Copy FEN">📄 Copy FEN</button>
-                    <button class="btn btn-secondary btn-sm" id="flipBoard" title="Flip Board">🔄 Flip</button>
+                    <button class="btn btn-secondary btn-sm" id="exportPgn" title="Export PGN">&#x1F4CB; Export PGN</button>
+                    <button class="btn btn-secondary btn-sm" id="copyFen" title="Copy FEN">&#x1F4C4; Copy FEN</button>
+                    <button class="btn btn-secondary btn-sm" id="flipBoard" title="Flip Board">&#x1F504; Flip</button>
+                </div>
+                <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border-color);">
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+                        <label style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;">&#x1F3A8; Theme</label>
+                        <select id="boardTheme" class="btn btn-secondary btn-sm" style="flex:1;padding:4px 8px;font-size:0.8rem;">
+                            <option value="classic">Classic Wood</option>
+                            <option value="emerald">Emerald</option>
+                            <option value="midnight">Midnight Blue</option>
+                            <option value="marble">Marble</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <label style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;">&#x23F1; AI Delay</label>
+                        <input type="range" id="moveTimingSlider" min="200" max="3000" step="100" value="1200" style="flex:1;accent-color:var(--primary-color);">
+                        <span id="moveTimingVal" style="font-size:0.75rem;color:var(--text-muted);min-width:32px;">1.2s</span>
+                    </div>
                 </div>
             </div>
 
