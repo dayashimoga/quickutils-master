@@ -36,14 +36,6 @@
             "GA_MEASUREMENT_ID": "G-QW4WYBERHN",
             "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
-        "dailyfacts": {
-            "SITE_NAME": "Daily Facts",
-            "SITE_URL": "https://facts.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-9PEGCBXCL7",
-            "AMAZON_AFFILIATE_TAG": "quickutils-20",
-            "GOOGLE_SITE_VERIFICATION": "facts-google-token",
-            "ENABLE_ADSENSE": true
-        },
         "datasets-directory": {
             "SITE_NAME": "Datasets Directory",
             "SITE_URL": "https://datasets.quickutils.top",
@@ -78,12 +70,6 @@
             "SITE_NAME": "Prompts Directory",
             "SITE_URL": "https://prompts.quickutils.top",
             "GA_MEASUREMENT_ID": "G-D7JX9KJ29W",
-            "AMAZON_AFFILIATE_TAG": "quickutils-20"
-        },
-        "quickutils-master": {
-            "SITE_NAME": "API Directory",
-            "SITE_URL": "https://directory.quickutils.top/",
-            "GA_MEASUREMENT_ID": "G-LKF615Z8NY",
             "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "tools-directory": {
@@ -192,20 +178,10 @@
             "SITE_URL": "https://games.quickutils.top",
             "GA_MEASUREMENT_ID": "G-RETROGAME01"
         },
-        "unit-converter": {
-            "SITE_NAME": "Unit Converter",
-            "SITE_URL": "https://units.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-UNITCONV001"
-        },
         "circuit-designer": {
             "SITE_NAME": "Circuit Designer",
             "SITE_URL": "https://circuits.quickutils.top",
             "GA_MEASUREMENT_ID": "G-CIRCUITS001"
-        },
-        "color-palette": {
-            "SITE_NAME": "Color Palette Generator",
-            "SITE_URL": "https://colors.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-COLORS00001"
         },
         "markdown-editor": {
             "SITE_NAME": "Markdown Editor",
@@ -232,20 +208,10 @@
             "SITE_URL": "https://cron.quickutils.top",
             "GA_MEASUREMENT_ID": "G-CRON0000001"
         },
-        "emoji-kitchen": {
-            "SITE_NAME": "Emoji Kitchen",
-            "SITE_URL": "https://emoji.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-EMOJI000001"
-        },
         "ascii-art-studio": {
             "SITE_NAME": "ASCII Art Studio",
             "SITE_URL": "https://ascii.quickutils.top",
             "GA_MEASUREMENT_ID": "G-ASCII000001"
-        },
-        "password-fortress": {
-            "SITE_NAME": "Password Fortress",
-            "SITE_URL": "https://passwords.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-PASSWD00001"
         },
         "text-toolkit": {
             "SITE_NAME": "Text Toolkit",
@@ -276,11 +242,6 @@
             "SITE_NAME": "Network Tools",
             "SITE_URL": "https://nettools.quickutils.top",
             "GA_MEASUREMENT_ID": "G-NETTOOLS001"
-        },
-        "meal-planner": {
-            "SITE_NAME": "Meal Planner",
-            "SITE_URL": "https://meals.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-MEALS000001"
         },
         "invoice-generator": {
             "SITE_NAME": "Invoice Generator",
@@ -397,11 +358,6 @@
             "SITE_URL": "https://worldbuilder.quickutils.top",
             "GA_MEASUREMENT_ID": "G-WORLD000001"
         },
-        "garden-planner": {
-            "SITE_NAME": "Garden Planner",
-            "SITE_URL": "https://gardenplanner.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-GARDEN00001"
-        },
         "beat-maker": {
             "SITE_NAME": "Beat Maker",
             "SITE_URL": "https://beatmaker.quickutils.top",
@@ -417,17 +373,6 @@
             "SITE_URL": "https://languageplayground.quickutils.top",
             "GA_MEASUREMENT_ID": "G-LANG0000001"
         },
-        "meditation-journey": {
-            "SITE_NAME": "Meditation Journey",
-            "SITE_URL": "https://meditationjourney.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-MEDITATE001"
-        },
-        "ai-prompt-builder": {
-            "SITE_URL": "https://aiprompt.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-462CD4539B",
-            "TITLE": "AI Prompt Builder",
-            "DESCRIPTION": "Build perfect AI prompts"
-        },
         "decision-maker": {
             "SITE_URL": "https://decide.quickutils.top",
             "GA_MEASUREMENT_ID": "G-C05B72C5B8",
@@ -439,12 +384,6 @@
             "GA_MEASUREMENT_ID": "G-AD1A3C0D2B",
             "TITLE": "Screen Recorder",
             "DESCRIPTION": "Record screen"
-        },
-        "keyboard-tester": {
-            "SITE_URL": "https://keyboard.quickutils.top",
-            "GA_MEASUREMENT_ID": "G-2466B342CA",
-            "TITLE": "Keyboard Tester",
-            "DESCRIPTION": "Test your keyboard"
         },
         "speed-test": {
             "SITE_URL": "https://speed.quickutils.top",
@@ -481,6 +420,102 @@
             "GA_MEASUREMENT_ID": "G-46743ABDB2",
             "TITLE": "Text Behind Image",
             "DESCRIPTION": "Text behind subject effects"
+        },
+        "quantum-sandbox": {
+            "SITE_URL": "https://quantumsandbox.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-QUANTUM001",
+            "TITLE": "Quantum Sandbox",
+            "DESCRIPTION": "Build visual quantum circuits"
+        },
+        "protein-visualizer": {
+            "SITE_URL": "https://proteins.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-PROTEIN001",
+            "TITLE": "Protein Visualizer",
+            "DESCRIPTION": "3D biomolecular explorer"
+        },
+        "city-pathfinding": {
+            "SITE_URL": "https://cityflow.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-CITYFLOW01",
+            "TITLE": "City Flow Simulator",
+            "DESCRIPTION": "A* Pathfinding traffic sim"
+        },
+        "blackhole-raytracer": {
+            "SITE_URL": "https://blackhole.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-BLACKHOLE1",
+            "TITLE": "Relativistic Raytracer",
+            "DESCRIPTION": "Interactive Spacetime Simulator"
+        },
+        "privacy-map": {
+            "SITE_URL": "https://privacymap.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-PRIVACY001",
+            "TITLE": "Data Privacy Map",
+            "DESCRIPTION": "Global Privacy Tracker"
+        },
+        "ml-node-editor": {
+            "SITE_URL": "https://mlnodes.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-MLNODES001",
+            "TITLE": "ML Node Editor",
+            "DESCRIPTION": "Neural network builder"
+        },
+        "procedural-planet": {
+            "SITE_URL": "https://planets.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-PLANETS001",
+            "TITLE": "Procedural Planets",
+            "DESCRIPTION": "WebGL 3D Planet Generator"
+        },
+        "logic-simulator": {
+            "SITE_URL": "https://logicsim.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-LOGICSIM01",
+            "TITLE": "Logic Sandbox",
+            "DESCRIPTION": "Digital Logic Simulator"
+        },
+        "cyber-defense": {
+            "SITE_URL": "https://cyberdefense.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-CYBER00001",
+            "TITLE": "Cyber-Defense Simulator",
+            "DESCRIPTION": "Hack-and-defend network sim"
+        },
+        "timeline-universe": {
+            "SITE_URL": "https://timeline.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-TIMELINE01",
+            "TITLE": "Timeline of Everything",
+            "DESCRIPTION": "Universe scrolling journey"
+        },
+        "earthquake-explorer": {
+            "SITE_URL": "https://earthquake.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-QUAKE00001",
+            "TITLE": "Earthquake Explorer",
+            "DESCRIPTION": "Real-time 3D seismic globe with USGS data"
+        },
+        "genetic-code-studio": {
+            "SITE_URL": "https://genetics.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-GENET00001",
+            "TITLE": "Genetic Code Studio",
+            "DESCRIPTION": "Interactive DNA/RNA codon table and mutation simulator"
+        },
+        "rhythm-trainer": {
+            "SITE_URL": "https://rhythm.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-RHYTHM0001",
+            "TITLE": "Rhythm Trainer",
+            "DESCRIPTION": "Beat practice game with visual feedback"
+        },
+        "weather-dashboard": {
+            "SITE_URL": "https://weather.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-WEATHR0001",
+            "TITLE": "Weather Dashboard",
+            "DESCRIPTION": "Beautiful forecasts with Open-Meteo API"
+        },
+        "sound-lab": {
+            "SITE_URL": "https://soundlab.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-SNDLAB0001",
+            "TITLE": "Sound Lab",
+            "DESCRIPTION": "Audio synthesizer and beat sequencer"
+        },
+        "web-chess": {
+            "SITE_URL": "https://chess.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-CHESS00001",
+            "TITLE": "Web Chess Pro",
+            "DESCRIPTION": "Play chess against Stockfish AI or analyze PGNs"
         }
     }
 }

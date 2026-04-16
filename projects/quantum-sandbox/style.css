@@ -1,0 +1,187 @@
+:root {
+    --q-bg: #0b0c10;
+    --q-grid-line: rgba(255, 255, 255, 0.1);
+    --gate-h-color: #3b82f6;
+    --gate-x-color: #ef4444;
+    --gate-y-color: #f59e0b;
+    --gate-z-color: #10b981;
+    --gate-cx-color: #8b5cf6;
+    --gate-m-color: #64748b;
+}
+
+body.quantum-bg {
+    background: radial-gradient(circle at center, #1f2235 0%, #0b0c10 100%);
+    color: #e2e8f0;
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+}
+
+.quantum-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+    gap: 20px;
+    align-items: start;
+}
+@media(max-width: 992px) {
+    .quantum-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gates-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.q-gate {
+    width: 100%;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+.q-gate:active { cursor: grabbing; transform: scale(0.95); }
+
+.gate-h { border-color: var(--gate-h-color); box-shadow: 0 0 10px rgba(59,130,246,0.3); }
+.gate-x { border-color: var(--gate-x-color); box-shadow: 0 0 10px rgba(239,68,68,0.3); }
+.gate-y { border-color: var(--gate-y-color); box-shadow: 0 0 10px rgba(245,158,11,0.3); }
+.gate-z { border-color: var(--gate-z-color); box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+.gate-cnot { border-color: var(--gate-cx-color); box-shadow: 0 0 10px rgba(139,92,246,0.3); }
+.gate-m { border-color: var(--gate-m-color); }
+
+.circuit-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    padding: 10px 0;
+}
+
+/* Base line across all rows */
+.circuit-grid::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 45px;
+    width: 2px;
+}
+
+.qubit-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 50px;
+}
+
+.qubit-label {
+    width: 50px;
+    font-weight: 700;
+    color: #aaccff;
+    flex-shrink: 0;
+}
+
+/* The wire */
+.qubit-wire {
+    position: absolute;
+    left: 50px;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: var(--q-grid-line);
+    z-index: 0;
+}
+
+.slots-container {
+    display: flex;
+    gap: 10px;
+    padding-left: 10px;
+    z-index: 1;
+    flex: 1;
+}
+
+.gate-slot {
+    width: 50px;
+    height: 50px;
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    background: var(--q-bg);
+}
+.gate-slot.drag-over {
+    background: rgba(255,255,255,0.1);
+    border-color: #fff;
+    border-style: solid;
+}
+.gate-slot.has-gate {
+    border: none;
+}
+
+/* Gate instances inside circuit */
+.gate-instance {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Connecting line for CNOT */
+.cnot-line {
+    position: absolute;
+    width: 2px;
+    background: var(--gate-cx-color);
+    z-index: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.prob-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.prob-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.prob-label {
+    width: 45px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #aaccff;
+}
+.prob-bar-container {
+    flex: 1;
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+.prob-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    width: 0%;
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.prob-val {
+    width: 35px;
+    text-align: right;
+    font-size: 0.8rem;
+}

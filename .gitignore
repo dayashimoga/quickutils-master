@@ -113,6 +113,10 @@ desktop.ini
 *.temp
 logs/
 scratch/
+*.txt
+!requirements.txt
+!robots.txt
+!ads.txt
 
 # Databases
 *.sqlite

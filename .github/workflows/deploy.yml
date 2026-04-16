@@ -1,0 +1,14 @@
+# This workflow is intentionally disabled.
+# Deployment is handled by provision_network.yaml which includes
+# GitHub distribution, and Cloudflare Pages deployment via Wrangler.
+# Keeping this file to prevent re-creation.
+
+name: "[DISABLED] Deploy to Cloudflare Pages"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'This workflow is disabled. Use provision_network.yaml instead.'
+        required: false
+        default: 'no'

@@ -1400,28 +1400,175 @@ function showDetails(id) {
         <div class="data-item"><div class="data-lbl">Electron Config</div><div class="data-val">${el.ec}</div></div>
         <div class="data-item"><div class="data-lbl">Group</div><div class="data-val">${el.group || 'N/A'}</div></div>
         <div class="data-item"><div class="data-lbl">Period</div><div class="data-val">${el.period > 7 ? el.period-2 : el.period}</div></div>
-        <div class="desc-box">${escapeHtml(el.desc)}</div>
+        <div class="desc-box">
+            ${escapeHtml(el.desc)}
+            <h4 style="margin-top:20px;text-align:center;color:var(--accent);">Live Bohr Model</h4>
+            <div style="text-align:center;"><canvas id="bohrCanvas" width="250" height="250" style="margin:10px auto;border-radius:50%;background:rgba(0,0,0,0.2);box-shadow:inset 0 0 20px rgba(0,0,0,0.5);"></canvas></div>
+        </div>
     </div>
     `;
     content.innerHTML = html;
     panel.classList.add('open');
+    drawBohrModel(el);
 }
+
+// Draw dynamic Bohr Model
+function drawBohrModel(el) {
+    const cvs = document.getElementById('bohrCanvas');
+    if(!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const w = cvs.width, h = cvs.height;
+    const cx = w/2, cy = h/2;
+    
+    // Calculate electrons per shell based on atomic number
+    let z = el.n;
+    const maxCapacity = [2, 8, 18, 32, 32, 18, 8];
+    const shells = [];
+    for(let cap of maxCapacity) {
+        if(z <= 0) break;
+        let e = Math.min(z, cap);
+        // Correcting valence anomalies for simplicity (Bohr is an approximation)
+        if(z > cap && e === cap && cap >= 18 && z - cap < 8) {
+            e = cap - Math.min(z-cap+8, 10); // rough fallback
+        }
+        shells.push(e);
+        z -= e;
+    }
+    
+    // Animate
+    let t = 0;
+    function render() {
+        if(!cvs.isConnected) return;
+        ctx.clearRect(0,0,w,h);
+        
+        // Nucleus
+        ctx.beginPath();
+        const nGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 15);
+        nGrad.addColorStop(0, '#fff');
+        nGrad.addColorStop(1, 'var(--accent)');
+        ctx.fillStyle = nGrad;
+        ctx.arc(cx, cy, 15, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(el.s, cx, cy+4);
+        
+        // Shells
+        const shellDist = (w/2 - 20) / shells.length;
+        shells.forEach((electrons, sIdx) => {
+            const r = 25 + sIdx * shellDist;
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1.5;
+            ctx.arc(cx, cy, r, 0, Math.PI*2);
+            ctx.stroke();
+            
+            // Electrons
+            for(let e=0; e<electrons; e++) {
+                const angle = (Math.PI*2 / electrons) * e + (t * (sIdx % 2===0 ? 1 : -1) * (0.02 - sIdx*0.003));
+                const ex = cx + Math.cos(angle) * r;
+                const ey = cy + Math.sin(angle) * r;
+                ctx.beginPath();
+                ctx.fillStyle = '#6366f1';
+                ctx.arc(ex, ey, 3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 5; ctx.shadowColor = '#6366f1'; ctx.fill(); ctx.shadowBlur = 0;
+            }
+        });
+        t += 0.5;
+        requestAnimationFrame(render);
+    }
+    render();
+}
+
 
 $('#closePanelBtn').addEventListener('click', () => panel.classList.remove('open'));
 
-$('#searchInput').addEventListener('input', e => {
-    const term = e.target.value.toLowerCase();
+$('#searchInput').addEventListener('input', applyFilters);
+
+// Temperature controls are now natively handled in HTML and listeners below
+let sensitivityMode = false;
+let currentTemp = 298;
+
+$('#tempInput').addEventListener('input', (e) => {
+    currentTemp = parseInt(e.target.value);
+    $('#tempVal').textContent = currentTemp + ' K';
+    applyFilters();
+});
+
+$('#sensitivityBtn').addEventListener('click', () => {
+    sensitivityMode = !sensitivityMode;
+    $('#sensitivityBtn').classList.toggle('btn-primary', sensitivityMode);
+    $('#sensitivityBtn').classList.toggle('btn-secondary', !sensitivityMode);
+    applyFilters();
+});
+
+function getPhase(n, temp) {
+    // Highly simplified melting/boiling model for demonstration
+    // Noble gases (gas at room temp, liquify very low)
+    const noble = [2, 10, 18, 36, 54, 86];
+    if(noble.includes(n)) return temp < 100 ? (temp < 10 ? 'solid' : 'liquid') : 'gas';
+    
+    // Halogens / Nonmetals
+    const nonMetals = [1, 7, 8, 9, 17, 35, 53];
+    if(nonMetals.includes(n)) return temp < 200 ? 'solid' : (temp < 300 && n===35 ? 'liquid' : 'gas');
+
+    // Liquids at room temp
+    if(n === 80) return temp < 234 ? 'solid' : (temp > 630 ? 'gas' : 'liquid'); // Mercury
+    
+    // High melt solids
+    const meltingPt = 600 + (n * 10);
+    const boilingPt = meltingPt + 1500;
+    if(temp > boilingPt) return 'gas';
+    if(temp > meltingPt) return 'liquid';
+    return 'solid';
+}
+
+function applyFilters() {
+    const term = $('#searchInput').value.toLowerCase();
+    
     $$('.element-cell').forEach(cell => {
         const id = parseInt(cell.dataset.id);
         const el = elements.find(x => x.n === id);
-        if (!term) {
-            cell.classList.remove('filtered');
+        
+        // Search Matching
+        let match = true;
+        if (term) {
+            match = el.name.toLowerCase().includes(term) || el.s.toLowerCase().includes(term) || el.n.toString() === term;
+        }
+
+        // Sensitivity Matching
+        let isSensitive = false;
+        if (sensitivityMode) {
+            // Highly reactive (alkali) or Radioactive (n > 82 or 43, 61)
+            isSensitive = (id > 82 || id === 43 || id === 61 || el.group === 1 || el.group === 17);
+            if (!isSensitive) match = false;
+        }
+        
+        // Temperature phase
+        const phase = getPhase(id, currentTemp);
+        
+        if (!match) {
+            cell.style.opacity = sensitivityMode ? '0.2' : '0.1';
+            cell.style.transform = 'scale(0.9)';
+            cell.style.filter = 'grayscale(100%)';
+            cell.style.boxShadow = 'none';
         } else {
-            const match = el.name.toLowerCase().includes(term) || el.s.toLowerCase().includes(term) || el.n.toString() === term;
-            cell.classList.toggle('filtered', !match);
+            cell.style.opacity = '1';
+            cell.style.transform = 'scale(1)';
+            
+            // Apply Physical State Visuals via CSS classes
+            cell.classList.remove('phase-solid', 'phase-liquid', 'phase-gas');
+            cell.classList.add('phase-' + phase);
+            
+            if (sensitivityMode) {
+                cell.style.filter = 'drop-shadow(0 0 10px var(--c-alkali))';
+            } else {
+                cell.style.filter = 'none';
+            }
         }
     });
-});
+}
+
 
 $('#themeBtn').addEventListener('click', () => {
     const html = document.documentElement;
@@ -1527,3 +1674,95 @@ showDetails = function(id) {
     }
 };
 
+
+    // -- ENHANCED TEMPERATURE LOGIC --
+    const tempInput = document.getElementById('tempInput');
+    const tempVal = document.getElementById('tempVal');
+    
+    // Fallback pseudo-melting/boiling thresholds if missing
+    function getStateAtTemp(el, currentTemp) {
+        // Mock calculations based on group/type to simulate state changes visually
+        let melt = 1000, boil = 3000;
+        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
+        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
+        else if (el.group === 1) { melt = 350; boil = 1000; }
+        else if (el.group === 2) { melt = 900; boil = 1800; }
+        
+        if (currentTemp < melt) return 'solid';
+        if (currentTemp < boil) return 'liquid';
+        return 'gas';
+    }
+
+    if (tempInput) {
+        tempInput.addEventListener('input', (e) => {
+            const temp = parseInt(e.target.value);
+            tempVal.textContent = temp + ' K';
+            
+            document.querySelectorAll('.element-card').forEach(card => {
+                const num = parseInt(card.dataset.n);
+                const elData = elements.find(x => x.n === num);
+                if (elData) {
+                    const state = getStateAtTemp(elData, temp);
+                    if (state === 'liquid') {
+                        card.style.opacity = '0.8';
+                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
+                        card.style.transform = 'scale(0.98)';
+                    } else if (state === 'gas') {
+                        card.style.opacity = '0.3';
+                        card.style.boxShadow = 'none';
+                        card.style.transform = 'scale(0.95)';
+                    } else {
+                        card.style.opacity = '1';
+                        card.style.boxShadow = 'var(--shadow-sm)';
+                        card.style.transform = 'scale(1)';
+                    }
+                }
+            });
+        });
+    }
+
+    // -- ENHANCED TEMPERATURE LOGIC --
+    const tempInput = document.getElementById('tempInput');
+    const tempVal = document.getElementById('tempVal');
+    
+    // Fallback pseudo-melting/boiling thresholds if missing
+    function getStateAtTemp(el, currentTemp) {
+        // Mock calculations based on group/type to simulate state changes visually
+        let melt = 1000, boil = 3000;
+        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
+        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
+        else if (el.group === 1) { melt = 350; boil = 1000; }
+        else if (el.group === 2) { melt = 900; boil = 1800; }
+        
+        if (currentTemp < melt) return 'solid';
+        if (currentTemp < boil) return 'liquid';
+        return 'gas';
+    }
+
+    if (tempInput) {
+        tempInput.addEventListener('input', (e) => {
+            const temp = parseInt(e.target.value);
+            tempVal.textContent = temp + ' K';
+            
+            document.querySelectorAll('.element-card').forEach(card => {
+                const num = parseInt(card.dataset.n);
+                const elData = elements.find(x => x.n === num);
+                if (elData) {
+                    const state = getStateAtTemp(elData, temp);
+                    if (state === 'liquid') {
+                        card.style.opacity = '0.8';
+                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
+                        card.style.transform = 'scale(0.98)';
+                    } else if (state === 'gas') {
+                        card.style.opacity = '0.3';
+                        card.style.boxShadow = 'none';
+                        card.style.transform = 'scale(0.95)';
+                    } else {
+                        card.style.opacity = '1';
+                        card.style.boxShadow = 'var(--shadow-sm)';
+                        card.style.transform = 'scale(1)';
+                    }
+                }
+            });
+        });
+    }

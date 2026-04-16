@@ -2,123 +2,158 @@
 import os
 import sys
 import json
-import time
-import urllib.request
-import urllib.error
+import subprocess
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
+MAX_PARALLEL = 1  # Deploy up to 1 project at once (Avoid CF 429 Too Many Requests)
 
-def get_deployment_count(account_id, api_token, project_name):
-    """Check how many deployments a project has to detect 522 states (0 deployments)."""
-    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
-    req = urllib.request.Request(url, method="GET")
-    req.add_header("Authorization", f"Bearer {api_token}")
-    try:
-        resp = urllib.request.urlopen(req, timeout=10)
-        data = json.loads(resp.read().decode("utf-8"))
-        deployments = data.get("result", [])
-        
-        # Performance/Queue Fix: Purge pending builds prior to queueing a new one
-        for dep in deployments:
-            if dep.get('latest_stage', {}).get('status') in ['queued', 'building', 'active', 'pending', 'idle', 'initializing']:
-                dep_id = dep.get('id')
-                cancel_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments/{dep_id}/cancel"
-                creq = urllib.request.Request(cancel_url, method="POST")
-                creq.add_header("Authorization", f"Bearer {api_token}")
-                try: 
-                    urllib.request.urlopen(creq, timeout=10)
-                    print(f"    - Purged hanging queued build for {project_name}")
-                except Exception: 
-                    pass
-        
-        return len(deployments)
-    except Exception as e:
-        print(f"⚠️ Could not check deployment count for {project_name}: {e}")
-        return -1
 
-def trigger_deployment(account_id, api_token, project_name):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
-    req = urllib.request.Request(url, method="POST")
-    req.add_header("Authorization", f"Bearer {api_token}")
-    req.add_header("Content-Type", "application/json")
-    # Send branch explicitly so Cloudflare fetches the latest commit instead of reusing the stale known hash
-    payload = json.dumps({"branch": "main"}).encode("utf-8")
-    try:
-        resp = urllib.request.urlopen(req, data=payload, timeout=30)
-        print(f"✅ Successfully queued deployment for {project_name}")
-        return True
-    except urllib.error.HTTPError as e:
-        if e.code == 304:
-            print(f"⏩ {project_name} skipped: HTTP 304 Not Modified (latest commit already deployed)")
-            return True
-        print(f"❌ Failed to queue {project_name}: HTTP Error {e.code}: {e.reason}")
-        return False
-    except urllib.error.URLError as e:
-        print(f"❌ Failed to queue {project_name}: {e}")
-        return False
-
-def get_all_project_names():
-    """Read all repo_name values from terraform/projects.json"""
+def get_projects_config():
     try:
         with open(PROJECTS_JSON, "r", encoding="utf-8") as f:
-            projects = json.load(f)
-        return [v.get("repo_name", k) for k, v in projects.items()]
+            return json.load(f)
     except Exception as e:
         print(f"Error reading projects.json: {e}")
-        return []
+        return {}
+
+
+def run_build_and_deploy(project_key, config):
+    repo_name = config.get("repo_name", project_key)
+    build_cmd = config.get("build_command", "mkdir -p dist && cp -r * dist/ || true")
+    root_dir = config.get("directory", config.get("root_dir", f"projects/{repo_name}"))
+    out_dir = config.get("destination_dir", "dist")
+
+    # 1. Build
+    try:
+        full_cwd = ROOT_DIR / root_dir
+        if not full_cwd.exists():
+            print(f"⚠️ [{repo_name}] Directory {full_cwd} does not exist. Skipping.")
+            return repo_name, False
+
+        subprocess.run(build_cmd, shell=True, cwd=full_cwd, check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ [{repo_name}] Build failed: {e}")
+        return repo_name, False
+
+    # 2. Deploy
+    try:
+        dist_path = full_cwd / out_dir
+        if not dist_path.exists():
+            dist_path = full_cwd
+
+        deploy_cmd = [
+            "npx", "wrangler@latest", "pages", "deploy",
+            str(dist_path),
+            "--project-name", repo_name,
+            "--branch", "main",
+            "--commit-dirty=true"
+        ]
+
+        result = subprocess.run(deploy_cmd, check=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=120)
+                                
+        # Attempt to map custom domain if specified in config
+        custom_domain = config.get("custom_domain")
+        if custom_domain:
+            try:
+                domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
+                subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+            except Exception:
+                pass
+                
+        print(f"✅ [{repo_name}] Deployed successfully")
+        return repo_name, True
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr.decode() if e.stderr else ""
+        # Wrangler auto-creates projects, but may fail on first attempt
+        if "could not find" in stderr.lower() or "project not found" in stderr.lower():
+            print(f"⚠️ [{repo_name}] Project not found on Cloudflare — creating it...")
+            try:
+                create_cmd = [
+                    "npx", "wrangler@latest", "pages", "project", "create",
+                    repo_name, "--production-branch", "main"
+                ]
+                subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+                # Retry deploy
+                result = subprocess.run(deploy_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+                
+                # Attempt to map custom domain if specified in config
+                custom_domain = config.get("custom_domain")
+                if custom_domain:
+                    try:
+                        domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
+                        subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+                    except Exception:
+                        pass
+                
+                print(f"✅ [{repo_name}] Created & deployed successfully")
+                return repo_name, True
+            except Exception as e2:
+                print(f"❌ [{repo_name}] Create+deploy failed: {e2}")
+                return repo_name, False
+        stdout = e.stdout.decode() if e.stdout else ""
+        print(f"❌ [{repo_name}] Deploy failed.\nSTDOUT:\n{stdout[-1000:]}\nSTDERR:\n{stderr[-1000:]}")
+        return repo_name, False
+    except subprocess.TimeoutExpired:
+        print(f"❌ [{repo_name}] Deploy timed out after 120s")
+        return repo_name, False
+
 
 def main():
     changed = os.environ.get("CHANGED_PROJECTS", "")
-    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
-    api_token = os.environ.get("CLOUDFLARE_API_TOKEN")
 
-    if not account_id or not api_token:
-        print("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN environment variables.")
-        return
-
-    all_projects = get_all_project_names()
-    if not all_projects:
-        print("Could not determine project list from projects.json; aborting.")
+    projects = get_projects_config()
+    if not projects:
         return
 
     deploy_list = set()
 
-    # 1. Add explicitly changed projects
     if changed:
         if changed.strip() == "ALL":
-            deploy_list.update(all_projects)
-            print(f"🚀 Deploying ALL {len(all_projects)} projects via manual trigger...")
-        else:
+            deploy_list.update(projects.keys())
+            print(f"🚀 Deploying ALL {len(deploy_list)} projects...")
+        elif changed.strip() != "NONE":
             changed_list = [p.strip() for p in changed.split(",") if p.strip()]
-            deploy_list.update(changed_list)
-            print(f"📝 Found {len(changed_list)} changed projects to deploy.")
+            for p in changed_list:
+                for k, v in projects.items():
+                    if v.get("repo_name") == p or k == p:
+                        deploy_list.add(k)
+                        break
+            print(f"📝 Found {len(deploy_list)} changed projects to deploy.")
 
-    # 2. Add any projects with 0 deployments (522 error state)
-    print("\n🔍 Checking all projects for 522 Not Deployed state (0 deployments)...")
-    for project in all_projects:
-        if project in deploy_list:
-            continue # already queued
-        
-        count = get_deployment_count(account_id, api_token, project)
-        if count == 0:
-            print(f"⚠️ Alert: {project} has 0 prior deployments! Adding to queue to fix 522 error.")
-            deploy_list.add(project)
-        time.sleep(1) # small pause to respect Cloudflare API rate limits
-        
     if not deploy_list:
-        print("No projects to deploy and all existing projects have >0 deployments.")
+        print("No projects to deploy.")
         return
 
-    print(f"\n🚀 Triggering CF rebuilds for {len(deploy_list)} projects...")
+    # Deploy in parallel batches
     success = 0
-    for project in deploy_list:
-        if trigger_deployment(account_id, api_token, project):
-            success += 1
-        time.sleep(5)
-    
-    print(f"\n📊 Deployment summary: {success}/{len(deploy_list)} projects queued/synced successfully.")
+    failed = []
+    print(f"\n🚀 Deploying {len(deploy_list)} projects ({MAX_PARALLEL} parallel)...\n")
+
+    with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as executor:
+        futures = {
+            executor.submit(run_build_and_deploy, key, projects[key]): key
+            for key in deploy_list
+        }
+        for future in as_completed(futures):
+            name, ok = future.result()
+            if ok:
+                success += 1
+            else:
+                failed.append(name)
+            import time
+            time.sleep(10)
+
+    print(f"\n📊 Deployment: {success}/{len(deploy_list)} succeeded")
+    if failed:
+        print(f"❌ Failed: {', '.join(failed)}")
+
 
 if __name__ == "__main__":
     main()
+# Trigger Redeploy

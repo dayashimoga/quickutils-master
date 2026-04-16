@@ -2,10 +2,31 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Interactive Periodic Table — QuickUtils</title>
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Interactive Periodic Table \u2014 QuickUtils",
+    "url": "https://elements.quickutils.top/",
+    "description": "Free interactive periodic table of elements. Explore chemical properties, electron configurations, and comprehensive data for every element.",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "All",
+    "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+    }
+}
+</script>
+    <link rel="canonical" href="https://elements.quickutils.top/">
+    <meta name="keywords" content="QuickUtils, periodic, table, code, design, productivity, online tools">
+    <meta name="robots" content="index, follow">
+    <meta property="og:url" content="https://quickutils.top/periodic-table/">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="description" content="Free interactive periodic table of elements. Explore chemical properties, electron configurations, and comprehensive data for every element.">
-    <link rel="canonical" href="https://elements.quickutils.top">
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
     <meta property="og:title" content="Interactive Periodic Table">
     <meta property="og:description" content="Explore elements and their properties interactively.">
@@ -17,6 +38,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ELEMENTS001"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-ELEMENTS001');</script>
+    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
     <nav class="navbar"><div class="container nav-inner">
@@ -24,8 +46,8 @@
         <div class="nav-links">
             <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
             <a href="https://quickutils.top" target="_blank" rel="noopener">QuickUtils</a>
+            <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
         </div>
-        <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
     </div></nav>
 
     <main class="container main-content">
@@ -33,10 +55,25 @@
             <div class="search-wrap">
                 <input type="text" id="searchInput" placeholder="Search by name, symbol, or atomic number..." autocomplete="off">
             </div>
-            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
+            
+            <div class="phase-controls glass-card p-3" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label for="tempInput" style="font-weight:600; color:var(--text); font-size:0.9rem">🌡️ Temperature (Kelvin)</label>
+                    <span id="tempVal" style="font-family:monospace; font-weight:700; color:var(--accent);">298 K</span>
+                </div>
+                <input type="range" id="tempInput" min="0" max="6000" step="10" value="298" style="width:100%; outline:none;" class="slider">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                    <span>Absolute Zero (0 K)</span>
+                    <span>Room Temp (298 K)</span>
+                    <span>Surface of Sun (5778 K)</span>
+                </div>
             </div>
-            <div class="legend-filter" id="legendFilter">
+
+            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:1rem;">
+                <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
+                <button class="btn btn-secondary btn-sm" id="sensitivityBtn">☢️ Highlight Sensitivity</button>
+            </div>
+            <div class="legend-filter mt-3" id="legendFilter">
                 <!-- Populated by JS -->
             </div>
         </div>

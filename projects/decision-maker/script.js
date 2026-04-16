@@ -19,9 +19,11 @@
             wCtx.beginPath(); wCtx.moveTo(cx,cy);
             wCtx.arc(cx,cy,r,angle+i*slice,angle+(i+1)*slice);
             wCtx.fillStyle = colors[i%colors.length]; wCtx.fill();
-            wCtx.save(); wCtx.translate(cx,cy); wCtx.rotate(angle+(i+0.5)*slice);
-            wCtx.fillStyle='#fff'; wCtx.font='bold 13px Inter'; wCtx.textAlign='right';
-            wCtx.fillText(o.substring(0,12),r-15,5); wCtx.restore();
+            if (wCtx.save) {
+                wCtx.save(); wCtx.translate(cx,cy); wCtx.rotate(angle+(i+0.5)*slice);
+                wCtx.fillStyle='#fff'; wCtx.font='bold 13px Inter'; wCtx.textAlign='right';
+                wCtx.fillText(o.substring(0,12),r-15,5); wCtx.restore();
+            }
         });
         // Arrow
         wCtx.fillStyle='#fff'; wCtx.beginPath(); wCtx.moveTo(cx+r+5,cy); wCtx.lineTo(cx+r+20,cy-10); wCtx.lineTo(cx+r+20,cy+10); wCtx.fill();

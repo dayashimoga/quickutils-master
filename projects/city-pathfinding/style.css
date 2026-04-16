@@ -1,0 +1,87 @@
+:root {
+    --bg-color: #0d1117;
+    --panel-bg: rgba(22, 27, 34, 0.95);
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.city-bg {
+    background-color: var(--bg-color);
+    margin: 0;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', monospace;
+    color: #e2e8f0;
+}
+
+.main-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+    width: 100vw;
+}
+
+.tools-side {
+    width: 300px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+/* Tool Grid */
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.city-tool {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+.city-tool:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.city-tool.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.tool-icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+/* Canvas config */
+.canvas-region {
+    flex: 1;
+    position: relative;
+    background: #0f131a;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+#cityCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.stat-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+}

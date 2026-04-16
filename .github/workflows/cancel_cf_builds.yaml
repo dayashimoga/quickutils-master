@@ -1,0 +1,30 @@
+name: Cancel Cloudflare Builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type YES to cancel all queued CF builds and disable automatic deployments'
+        required: true
+        default: 'YES'
+
+jobs:
+  cancel-builds:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'YES'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Cancel All Queued Builds & Disable Auto-Deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python scripts/cancel_cf_builds.py

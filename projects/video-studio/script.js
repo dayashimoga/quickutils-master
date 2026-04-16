@@ -15,6 +15,7 @@
     const muteVideoChk = $('#muteVideoChk');
     const formatOpt = $('#formatOpt');
     const effectOpt = $('#effectOpt');
+    const speedOpt = $('#speedOpt');
     const extractAudioBtn = $('#extractAudioBtn');
     const exportBtn = $('#exportBtn');
     
@@ -34,65 +35,106 @@
     let activeFileName = '';
     let duration = 0;
 
-    // Load FFmpeg dynamically
+    // Load FFmpeg dynamically via UMD script tags (avoids ESM Worker CORS errors)
+    let ffmpegLoadedFlag = false;
     let ffmpegLoading = false;
+    
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+
     async function loadFFmpeg() {
-        if(ffmpegInst) return true;
-        if(ffmpegLoading) { // Prevent double-load on rapid uploads
+        if(ffmpegLoadedFlag && ffmpegInst) return true;
+        if(ffmpegLoading) {
             while(ffmpegLoading) await new Promise(r => setTimeout(r, 200));
-            return !!ffmpegInst;
+            return ffmpegLoadedFlag;
         }
         ffmpegLoading = true;
         loadingOverlay.classList.remove('hidden');
+        loadingOverlay.innerHTML = `<h2 style="color:#fff">⏳ Loading Video Engine...</h2><p class="mt-2 text-muted">This may take a few seconds on first load.</p>`;
         try {
-            const p = new Promise(async (resolve, reject) => {
-                const t = setTimeout(()=>reject(new Error("FFmpeg script CDN timeout")), 30000);
-                try {
-                    const ffmpegMod = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js');
-                    const utilMod = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
-                    clearTimeout(t);
-                    resolve({ f: ffmpegMod.FFmpeg, util: utilMod.fetchFile });
-                } catch(e) { clearTimeout(t); reject(e); }
-            });
+            // Load UMD bundles via script tag
+            const cdn = 'https://cdn.jsdelivr.net/npm';
+            
+            // Native Polyfill for Worker to bypass UMD cross-origin Worker restriction
+            console.log("Fetching ffmpeg worker script as blob to bypass CORS...");
+            const workerRes = await fetch(`${cdn}/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js`);
+            const workerBlob = await workerRes.blob();
+            const workerBlobURL = URL.createObjectURL(workerBlob);
 
-            const lib = await p;
-            FFmpeg = lib.f;
-            fetchFile = lib.util;
+            const OriginalWorker = window.Worker;
+            window.Worker = function(url, options) {
+                if (url && (typeof url === 'string' || url instanceof URL)) {
+                    let urlStr = url.toString();
+                    if (urlStr.includes('814.ffmpeg.js')) {
+                        console.log("Intercepted FFmpeg Worker creation! Using Blob URL.");
+                        return new OriginalWorker(workerBlobURL, options);
+                    }
+                }
+                return new OriginalWorker(url, options);
+            };
+
+            await loadScript(`${cdn}/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js`);
+
+            FFmpeg = FFmpegWASM.FFmpeg;
+            
+            // Native Polyfill for FFmpegUtil to bypass UMD export failures
+            fetchFile = async (file) => {
+                if (typeof file === 'string') {
+                    const res = await fetch(file);
+                    return new Uint8Array(await res.arrayBuffer());
+                }
+                return new Uint8Array(await file.arrayBuffer());
+            };
+            
+            const toBlobURL = async (url, mimeType) => {
+                const res = await fetch(url);
+                const buf = await res.arrayBuffer();
+                const blob = new Blob([buf], { type: mimeType });
+                return URL.createObjectURL(blob);
+            };
             
             ffmpegInst = new FFmpeg();
-            
-            ffmpegInst.on('progress', ({ progress, time }) => {
+            ffmpegInst.on('progress', ({ progress }) => {
                 const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
                 exportProgress.style.width = pct + '%';
                 exportPct.textContent = pct + '%';
             });
-            
-            ffmpegInst.on('log', ({ message }) => {
-                console.log(message);
-            });
+            ffmpegInst.on('log', ({ message }) => { console.log(message); });
 
-            // Use single-threaded core if SharedArrayBuffer is unavailable
-            const useMT = typeof SharedArrayBuffer !== 'undefined';
-            const coreBase = useMT
-                ? 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm'
-                : 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+            // Must use single-threaded core for Cloudflare Pages (no COOP/COEP headers for SharedArrayBuffer)
+            const baseURL = `${cdn}/@ffmpeg/core@0.12.6/dist/umd`;
+            
+            console.log("Downloading FFmpeg core as blobs to bypass CORS Worker block...");
+            const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'application/javascript');
+            const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm');
 
             await ffmpegInst.load({
-                coreURL: coreBase + '/ffmpeg-core.js',
-                wasmURL: coreBase + '/ffmpeg-core.wasm',
-                ...(useMT ? { workerURL: coreBase + '/ffmpeg-core.worker.js' } : {})
+                coreURL: coreURL,
+                wasmURL: wasmURL,
             });
-            
+
             loadingOverlay.classList.add('hidden');
+            ffmpegLoadedFlag = true;
             ffmpegLoading = false;
             return true;
         } catch (e) {
             console.error('FFmpeg load error:', e);
             ffmpegLoading = false;
-            loadingOverlay.innerHTML = `<h2 class="text-neon-red">Error Loading Processing Core</h2><p class="mt-2 text-muted">Failed to load FFmpeg. This may be caused by adblockers, strict CORS policies, or an unsupported browser.</p><p class="mt-2 text-muted" style="font-size:0.8rem">${e.message || ''}</p><button onclick="location.reload()" class="btn btn-secondary mt-4">Retry</button>`;
+            loadingOverlay.innerHTML = `<h2 class="text-neon-red">⚠️ Video Engine Unavailable</h2><p class="mt-2 text-muted">${e.message || 'Failed to load FFmpeg.'}</p><p class="mt-2 text-muted" style="font-size:0.8rem">Try: disable adblocker, use Chrome/Edge, or check your connection.</p><button onclick="location.reload()" class="btn btn-secondary mt-4">🔄 Retry</button>`;
             return false;
         }
     }
+
+    // Eagerly start loading FFmpeg on page load so it's ready when user uploads
+    loadFFmpeg();
+
 
     async function handleFile(file) {
         if(!file) return;
@@ -119,10 +161,22 @@
     }
 
     dropZone.addEventListener('click', e => {
-        if(e.target !== fileInput) fileInput.click();
+        if(e.target !== fileInput && e.target.tagName !== 'BUTTON') {
+             fileInput.click();
+        }
+    });
+    const btnSelectMain = document.getElementById('btnSelectMain');
+    if (btnSelectMain) {
+        btnSelectMain.addEventListener('click', () => fileInput.click());
+    }
+    fileInput.addEventListener('click', e => {
+        e.stopPropagation(); // Stop bubbling immediately
+        e.target.value = '';
     });
     fileInput.addEventListener('change', e => {
-        if(e.target.files.length) handleFile(e.target.files[0]);
+        if(e.target.files.length) {
+            handleFile(e.target.files[0]);
+        }
     });
     
     document.addEventListener('dragover', e => e.preventDefault());
@@ -141,6 +195,7 @@
         muteVideoChk.checked = false;
         formatOpt.value = 'mp4';
         if(effectOpt) effectOpt.value = 'none';
+        if(speedOpt) speedOpt.value = '1';
     });
 
     async function executeFFmpeg(args, outName) {
@@ -210,7 +265,16 @@
         
         // Flags
         const filters = [];
+        let audioFilters = [];
         
+        const speed = parseFloat(speedOpt.value) || 1;
+        if(speed !== 1) {
+            filters.push(`setpts=${1/speed}*PTS`);
+            let atempo = speed;
+            // atempo supports 0.5 to 2.0. If we need more we'd chain them, but we only have 0.5, 1.5, 2.0 so we are fine.
+            audioFilters.push(`atempo=${atempo}`);
+        }
+
         if(resizeOpt.value !== 'original') {
             filters.push(`scale=${resizeOpt.value}`);
         }
@@ -229,7 +293,11 @@
         if(fmt === 'gif' || muteVideoChk.checked) {
             args.push('-an'); // remove audio
         } else if (fmt !== 'gif') {
-            args.push('-c:a', 'copy'); // try direct copy 
+            if(audioFilters.length > 0) {
+                args.push('-af', audioFilters.join(','));
+            } else {
+                args.push('-c:a', 'copy'); // try direct copy 
+            }
         }
         
         args.push(out);

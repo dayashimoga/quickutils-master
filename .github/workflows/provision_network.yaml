@@ -6,6 +6,8 @@ on:
     paths-ignore:
       - '*.md'
       - '.gitignore'
+      - 'tests/**'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       trigger_all:
@@ -20,6 +22,7 @@ concurrency:
 jobs:
   provision:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,120 +35,86 @@ jobs:
           python-version: "3.11"
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install requests
 
-      - name: Cache Terraform Providers
-        uses: actions/cache@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ~/.terraform.d/plugin-cache
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/terraform/.terraform.lock.hcl') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
 
       - name: Detect Changed Projects
         id: changes
         run: |
-          # If trigger_all is set to 'yes', deploy everything
           if [ "${{ github.event.inputs.trigger_all }}" = "yes" ]; then
             CHANGED="ALL"
             echo "Manual trigger: deploying ALL projects"
           else
-            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep '^projects/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
-            if [ -z "$CHANGED" ]; then
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              DIFF_TARGET="HEAD~1 HEAD"
+            else
+              DIFF_TARGET="$BEFORE ${{ github.sha }}"
+            fi
+            CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/\|^terraform/\|^shared/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
+            
+            # Also detect shared/config/scripts changes that affect all projects
+            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json\|^scripts/redeploy\|^scripts/cancel' || true)
+            if [ "$SHARED_CHANGED" -gt "0" ]; then
               CHANGED="ALL"
-              echo "No specific project changes detected — syncing all projects"
+              echo "Infrastructure files changed — deploying ALL projects"
+            fi
+            
+            if [ -z "$CHANGED" ]; then
+              CHANGED="NONE"
+              echo "No project changes detected — skipping deployment"
             else
               echo "Changed projects: $CHANGED"
             fi
           fi
           echo "projects=$CHANGED" >> $GITHUB_OUTPUT
 
-      - name: Create or Update GitHub Repositories & Sync Code
+      - name: Sync GitHub Repositories
+        if: steps.changes.outputs.projects != 'NONE'
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
           PYTHONPATH: "."
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
-          # Step 1: Prep project files locally
           python scripts/sync_project_scripts.py
-          python scripts/generate_projects_json.py
+          python scripts/generate_projects_json.py 2>/dev/null || true
           
-          # Configure Git for syncing
           git config --global user.email "bot@quickutils.top"
           git config --global user.name "QuickUtils Bot"
           
-          # Step 2: Selective sync — only push changed projects for speed
           echo "Syncing projects: $CHANGED_PROJECTS"
           python scripts/github_distribute.py
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "latest"
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Terraform Init & adoption
-        working-directory: terraform
-        env:
-          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform.d/plugin-cache
-        run: |
-          mkdir -p ~/.terraform.d/plugin-cache
-          export TF_PLUGIN_CACHE_DIR=~/.terraform.d/plugin-cache
-          terraform init
-          
-          echo "Checking for existing Cloudflare projects and domains to import..."
-          jq -r 'to_entries[] | "\(.key) \(.value.repo_name) \(.value.custom_domain)"' projects.json | while read -r key repo domain; do
-            
-            echo "Processing $key ($repo)..."
-            
-            # 1. Adopt Pages Project
-            STATUS_PROJ=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo" \
-              -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
-              
-            if [ "$STATUS_PROJ" == "200" ]; then
-              if ! terraform state show 'cloudflare_pages_project.quickutils_projects["'$key'"]' > /dev/null 2>&1; then
-                echo "Adopting project: $repo"
-                terraform import -input=false 'cloudflare_pages_project.quickutils_projects["'$key'"]' "$ACCOUNT_ID/$repo" || echo "Import failed for project $repo"
-              else
-                echo "Project $repo already in state."
-              fi
-              
-              # 2. Adopt Custom Domain (if it exists)
-              if [ "$domain" != "null" ] && [ -n "$domain" ]; then
-                STATUS_DOM=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$repo/domains/$domain" \
-                  -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
-                  
-                if [ "$STATUS_DOM" == "200" ]; then
-                  if ! terraform state show 'cloudflare_pages_domain.quickutils_domains["'$key'"]' > /dev/null 2>&1; then
-                    echo "Adopting domain: $domain for $repo"
-                    terraform import -input=false 'cloudflare_pages_domain.quickutils_domains["'$key'"]' "$ACCOUNT_ID/$repo/$domain" || echo "Import failed for domain $domain"
-                  else
-                    echo "Domain $domain already in state."
-                  fi
-                else
-                  echo "Domain $domain not found in Cloudflare (Status: $STATUS_DOM). Removing from state if it exists."
-                  terraform state rm 'cloudflare_pages_domain.quickutils_domains["'$key'"]' || true
-                fi
-              fi
-            else
-              echo "Project $repo not found in Cloudflare (Status: $STATUS_PROJ). Removing from state if it exists to force recreate."
-              terraform state rm 'cloudflare_pages_project.quickutils_projects["'$key'"]' || true
-              terraform state rm 'cloudflare_pages_domain.quickutils_domains["'$key'"]' || true
-            fi
-          done
-          # Final Apply
-          terraform apply -auto-approve
-
-      - name: Sequential Cloudflare Redeployment
+      - name: Cancel Queued CF Builds & Deploy via Wrangler
+        if: steps.changes.outputs.projects != 'NONE'
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
         run: |
+          # Free CF 100-limit slots by extinguishing orphaned projects first
+          python scripts/cf_extinguisher.py
+          
+          # Cancel old builds in background while deploying new ones
+          python scripts/cancel_cf_builds.py &
+          CANCEL_PID=$!
+          
+          # Deploy changed projects immediately (parallel, 4 at a time)
           python scripts/redeploy_cloudflare.py
+          
+          # Wait for cancel to finish
+          wait $CANCEL_PID 2>/dev/null || true
+
+      - name: Skip - No Changes
+        if: steps.changes.outputs.projects == 'NONE'
+        run: echo "✅ No project changes detected. Skipping deployment."
+
