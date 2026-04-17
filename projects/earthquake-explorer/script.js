@@ -165,26 +165,41 @@
             if (allVisible) { ctx.closePath(); ctx.fill(); }
         });
 
-        // Tectonic plate boundaries
-        ctx.strokeStyle = 'rgba(239,68,68,0.15)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        PLATES.forEach(plate => {
-            ctx.beginPath();
-            let started = false;
-            plate.forEach(([lat, lon]) => {
-                const p = project(lat, lon);
-                if (!p.visible) { started = false; return; }
-                if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-                else ctx.lineTo(p.x, p.y);
+        const showPlates = document.getElementById('showPlates');
+        if (!showPlates || showPlates.checked) {
+            // Tectonic plate boundaries
+            ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            PLATES.forEach(plate => {
+                ctx.beginPath();
+                let started = false;
+                plate.forEach(([lat, lon]) => {
+                    const p = project(lat, lon);
+                    if (!p.visible) { started = false; return; }
+                    if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+                    else ctx.lineTo(p.x, p.y);
+                });
+                ctx.stroke();
             });
-            ctx.stroke();
-        });
-        ctx.setLineDash([]);
+            ctx.setLineDash([]);
+        }
 
-        // Earthquake dots
+        // Playback filtering
+        const timeSliderVal = parseInt(document.getElementById('timeSlider')?.value || 1000);
+        let currTimeLimit = Date.now();
+        if(earthquakes.length > 0 && timeSliderVal < 1000) {
+            const minTime = Math.min(...earthquakes.map(e => e.time));
+            const maxTime = Math.max(...earthquakes.map(e => e.time));
+            currTimeLimit = minTime + (maxTime - minTime) * (timeSliderVal / 1000);
+        }
+
+        const showHeatmap = document.getElementById('showHeatmap')?.checked;
+
+        // Earthquake dots / heatmap
         const now = Date.now();
         earthquakes.forEach(eq => {
+            if (eq.time > currTimeLimit) return; // future in timeline
             const p = project(eq.lat, eq.lon);
             if (!p.visible) return;
 
@@ -195,29 +210,41 @@
             else if (mag >= 3) { color = '#f59e0b'; size = 5; }
             else { color = '#10b981'; size = 3; }
 
-            // Pulse animation for recent quakes (< 2 hours)
-            const age = now - eq.time;
-            const isRecent = age < 7200000;
+            // Pulse animation for recent quakes (< 2 hours from timeline current)
+            const age = currTimeLimit - eq.time;
+            const isRecent = age < 7200000 && age >= 0;
             const pulse = isRecent ? 1 + 0.3 * Math.sin(time / 300 + eq.time) : 1;
 
-            // Glow
-            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.5 * pulse);
-            grad.addColorStop(0, color);
-            grad.addColorStop(0.4, color + '80');
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(p.x, p.y, size * 2.5 * pulse, 0, Math.PI * 2); ctx.fill();
+            if (showHeatmap) {
+                // Additive Gaussian-like blur
+                ctx.globalCompositeOperation = 'lighter';
+                const rad = size * 5 * pulse;
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
+                ctx.globalCompositeOperation = 'source-over';
+            } else {
+                // Glow
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.5 * pulse);
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.4, color + '80');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(p.x, p.y, size * 2.5 * pulse, 0, Math.PI * 2); ctx.fill();
 
-            // Core dot
-            ctx.fillStyle = color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, size * pulse, 0, Math.PI * 2); ctx.fill();
+                // Core dot
+                ctx.fillStyle = color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, size * pulse, 0, Math.PI * 2); ctx.fill();
 
-            // Ripple for big quakes
-            if (mag >= 5 && isRecent) {
-                const ripple = (time / 500 + eq.time / 1000) % 1;
-                ctx.strokeStyle = color + Math.round((1 - ripple) * 100).toString(16).padStart(2, '0');
-                ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.arc(p.x, p.y, size * 2 + ripple * 20, 0, Math.PI * 2); ctx.stroke();
+                // Ripple for big quakes
+                if (mag >= 5 && isRecent) {
+                    const ripple = (time / 500 + eq.time / 1000) % 1;
+                    ctx.strokeStyle = color + Math.round((1 - ripple) * 100).toString(16).padStart(2, '0');
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, size * 2 + ripple * 20, 0, Math.PI * 2); ctx.stroke();
+                }
             }
         });
 
@@ -284,11 +311,62 @@
 
             updateStats();
             renderList();
+            updateTimelineText();
         } catch (e) {
             console.error('Fetch error:', e);
             document.getElementById('quakeList').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">Failed to load earthquake data. Check your connection and try again.</p>';
         }
     }
+
+    // Timeline logic
+    const timeSlider = document.getElementById('timeSlider');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const btnPlay = document.getElementById('btnPlay');
+    let isPlaying = false;
+    let playInterval = null;
+
+    function updateTimelineText() {
+        if (!earthquakes.length) return;
+        const val = parseInt(timeSlider.value);
+        if (val === 1000) {
+            timeDisplay.textContent = 'Live / Now';
+            timeDisplay.style.color = 'var(--text-muted)';
+        } else {
+            const minTime = Math.min(...earthquakes.map(e => e.time));
+            const maxTime = Math.max(...earthquakes.map(e => e.time));
+            const ct = minTime + (maxTime - minTime) * (val / 1000);
+            const d = new Date(ct);
+            timeDisplay.textContent = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            timeDisplay.style.color = 'var(--neon-blue)';
+        }
+    }
+
+    if(timeSlider) {
+        timeSlider.addEventListener('input', () => {
+            if(isPlaying) togglePlay();
+            updateTimelineText();
+        });
+    }
+
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        if(isPlaying) {
+            btnPlay.textContent = '⏸ Pause';
+            if (parseInt(timeSlider.value) === 1000) timeSlider.value = 0; // restart
+            playInterval = setInterval(() => {
+                let v = parseInt(timeSlider.value);
+                v += 2;
+                if (v >= 1000) { v = 1000; togglePlay(); }
+                timeSlider.value = v;
+                updateTimelineText();
+            }, 50);
+        } else {
+            btnPlay.textContent = '▶ Play';
+            clearInterval(playInterval);
+        }
+    }
+
+    if(btnPlay) btnPlay.addEventListener('click', togglePlay);
 
     function updateStats() {
         document.getElementById('quakeCount').textContent = earthquakes.length;

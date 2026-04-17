@@ -70,12 +70,26 @@
                 <option value="significant">Significant</option>
             </select>
         </div>
+        <div class="control-group" style="padding-top:0.25rem;">
+            <label>View Output</label>
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-top:2px;">
+                <label style="font-size:0.75rem; display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="showPlates" checked style="margin-right:4px;"> Plates</label>
+                <label style="font-size:0.75rem; display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="showHeatmap" style="margin-right:4px;"> Heatmap</label>
+            </div>
+        </div>
         <div class="stats-row">
             <div class="stat"><span class="stat-value" id="quakeCount">0</span><span class="stat-label">Earthquakes</span></div>
             <div class="stat"><span class="stat-value" id="maxMag">0.0</span><span class="stat-label">Max Mag</span></div>
             <div class="stat"><span class="stat-value" id="lastUpdate">--</span><span class="stat-label">Updated</span></div>
         </div>
         <button class="btn btn-primary" id="refreshBtn">🔄 Refresh</button>
+    </div>
+
+    <!-- Playback Timeline -->
+    <div class="glass-card" style="margin-bottom: 2rem; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+        <button class="btn btn-primary btn-sm" id="btnPlay" style="width: 80px;">▶ Play</button>
+        <input type="range" id="timeSlider" min="0" max="1000" value="1000" style="flex-grow: 1; accent-color: var(--neon-green);">
+        <span id="timeDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; min-width: 150px; text-align: right; color: var(--text-muted);">Live</span>
     </div>
 
     <div class="globe-container glass-card">
