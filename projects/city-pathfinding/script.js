@@ -8,6 +8,10 @@
     const canvas = $('#cityCanvas');
     const ctx = canvas.getContext('2d', { alpha: false });
     const wrapper = $('.canvas-region');
+    
+    let isIsometric = false;
+    let totalPaths = 0;
+    let totalPathTime = 0;
 
     let cw = wrapper.clientWidth;
     let ch = wrapper.clientHeight;
@@ -120,22 +124,52 @@
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        const tx = Math.floor(mx / ts);
-        const ty = Math.floor(my / ts);
+        
+        let mapX = mx;
+        let mapY = my;
+        
+        if (isIsometric) {
+            let cx = mx - cw/2;
+            let cy = my - ch*0.1;
+            mapX = (cx + 2*cy) / 2;
+            mapY = (2*cy - cx) / 2;
+        }
+
+        const tx = Math.floor(mapX / ts);
+        const ty = Math.floor(mapY / ts);
         
         let v = 0;
         if(activeTool === 'road') v=1;
         else if(activeTool === 'house') v=2;
         else if(activeTool === 'work') v=3;
         
-        // Brush size
         setTile(tx, ty, v);
-        // if road, draw continuous line? Just simple point for now
     }
 
     canvas.addEventListener('mousedown', e => { isDrawing = true; doPaint(e); });
     canvas.addEventListener('mousemove', e => { if(isDrawing) doPaint(e); });
     window.addEventListener('mouseup', () => { isDrawing = false; });
+    
+    const isoToggleBtn = $('#isoToggleBtn');
+    if(isoToggleBtn) {
+        isoToggleBtn.onclick = () => {
+            isIsometric = !isIsometric;
+            isoToggleBtn.classList.toggle('btn-primary', isIsometric);
+        };
+    }
+
+    const algoSelect = $('#algoSelect');
+    if(algoSelect) {
+        algoSelect.onchange = () => {
+            agents.forEach(a => {
+                if(a.state === 'to_work' || a.state === 'to_home') {
+                    let tx = a.state==='to_work'?a.wx:a.hx;
+                    let ty = a.state==='to_work'?a.wy:a.hy;
+                    a.path = a.findPath(a.x, a.y, tx, ty);
+                }
+            });
+        };
+    }
 
     // -- Agent Logic & A* --
     class Agent {
@@ -152,15 +186,17 @@
         assignWork(wx, wy) { this.wx = wx; this.wy = wy; }
         
         findPath(sx, sy, ex, ey) {
-            // Priority queue (dumb array for simplicity due to code limits, but map for open set)
-            let open = [{x:sx, y:sy, g:0, h:Math.abs(ex-sx)+Math.abs(ey-sy), p:null}];
+            let tStart = performance.now();
+            let algoType = $('#algoSelect').value;
+            let open = [{x:sx, y:sy, g:0, h:0, p:null}];
             let openMap = new Map();
             openMap.set(`${sx},${sy}`, open[0]);
             let closed = new Set();
             
-            while(open.length > 0 && open.length < 2000) { // Limit search to prevent hangs
-                // sort by f = g+h
-                open.sort((a,b) => (a.g+a.h) - (b.g+b.h));
+            while(open.length > 0 && open.length < 2500) {
+                if(algoType !== 'bfs') {
+                    open.sort((a,b) => (a.g+a.h) - (b.g+b.h));
+                }
                 let curr = open.shift();
                 openMap.delete(`${curr.x},${curr.y}`);
                 
@@ -170,6 +206,12 @@
                     while(c) {
                         p.push({x:c.x, y:c.y});
                         c = c.p;
+                    }
+                    totalPaths++;
+                    totalPathTime += (performance.now() - tStart);
+                    if(totalPaths % 5 === 0) {
+                        $('#nodesEval').textContent = totalPaths;
+                        $('#pathTime').textContent = (totalPathTime / totalPaths).toFixed(2);
                     }
                     return p.reverse();
                 }
@@ -182,17 +224,15 @@
                     if(nx>=0 && nx<cols && ny>=0 && ny<rows) {
                         let idx = ny*cols + nx;
                         const t = grid[idx];
-                        // Can walk on roads, or the start/end tiles
                         if(t !== 1 && !(nx===ex&&ny===ey) && !(nx===sx&&ny===sy)) continue; 
                         
                         let key = `${nx},${ny}`;
                         if(closed.has(key)) continue;
                         
-                        // Congestion increases movement cost greatly
                         let cost = 1 + (congestion[idx]*2);
-                        
-                        let ng = curr.g + cost;
-                        let nh = Math.abs(ex-nx) + Math.abs(ey-ny);
+                        let ng = curr.g + (algoType === 'bfs' ? 1 : cost);
+                        let nh = 0;
+                        if(algoType === 'astar') nh = Math.abs(ex-nx) + Math.abs(ey-ny);
                         
                         let exist = openMap.get(key);
                         if(exist && exist.g <= ng) continue;
@@ -265,8 +305,15 @@
         draw() {
             if(this.state === 'at_home' || this.state === 'at_work') return;
             ctx.fillStyle = this.color;
+            let rx = this.x*ts + ts/2;
+            let ry = this.y*ts + ts/2;
+            if(isIsometric) {
+                let ix = (rx - ry) + cw/2;
+                let iy = (rx + ry)/2 + ch*0.1;
+                rx = ix; ry = iy - 8;
+            }
             ctx.beginPath();
-            ctx.arc(this.x*ts + ts/2, this.y*ts + ts/2, ts/3, 0, Math.PI*2);
+            ctx.arc(rx, ry, ts/3, 0, Math.PI*2);
             ctx.fill();
         }
     }
@@ -315,31 +362,79 @@
         // Draw map
         let maxC = 0;
         let totC = 0;
+
+        function isoPt(x, y) {
+            return {
+                x: (x - y) + cw/2,
+                y: (x + y)/2 + ch*0.1
+            };
+        }
+
+        // Must draw isometric back-to-front, which is roughly y+x increasing
+        let tiles = [];
         for(let r=0; r<rows; r++) {
             for(let c=0; c<cols; c++) {
-                let v = grid[r*cols+c];
-                let cong = congestion[r*cols+c];
-                maxC = Math.max(maxC, cong);
-                totC += cong;
+                tiles.push({r, c, v:grid[r*cols+c], cong:congestion[r*cols+c]});
+            }
+        }
+        if(isIsometric) tiles.sort((a,b) => (a.r+a.c) - (b.r+b.c));
+
+        for(let t of tiles) {
+            let r = t.r, c = t.c, v = t.v, cong = t.cong;
+            maxC = Math.max(maxC, cong);
+            totC += cong;
+            
+            if(v === 0) continue; // skip bg
+            
+            let fillMain = '#222730';
+            if(v===1) {
+                if(cong > 0) {
+                    let cf = Math.min(1.0, cong / 4.0);
+                    fillMain = `rgb(${80 + cf*150}, ${80 - cf*50}, ${80 - cf*50})`;
+                }
+            } else if (v===2) fillMain = '#059669';
+            else if (v===3) fillMain = '#2563eb';
+
+            if(isIsometric) {
+                let p1 = isoPt(c*ts, r*ts);
+                let p2 = isoPt((c+1)*ts, r*ts);
+                let p3 = isoPt((c+1)*ts, (r+1)*ts);
+                let p4 = isoPt(c*ts, (r+1)*ts);
                 
-                if(v === 1) { // Road
-                    // Map congestion to color
-                    if(cong > 0) {
-                        let cf = Math.min(1.0, cong / 4.0);
-                        ctx.fillStyle = `rgb(${80 + cf*150}, ${80 - cf*50}, ${80 - cf*50})`;
-                    } else {
-                        ctx.fillStyle = '#222730';
-                    }
-                    ctx.fillRect(c*ts, r*ts, ts-1, ts-1);
-                } 
-                else if (v === 2) { // House
-                    ctx.fillStyle = '#059669'; // Emerald
-                    ctx.fillRect(c*ts + 2, r*ts + 2, ts-4, ts-4);
+                ctx.fillStyle = fillMain;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+                ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
+                ctx.fill();
+                // Grid lines?
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.stroke();
+
+                if (v===2 || v===3) {
+                    let h = v===2 ? ts*0.8 : ts*1.8;
+                    // Left wall
+                    ctx.fillStyle = v===2 ? '#047857' : '#1d4ed8';
+                    ctx.beginPath();
+                    ctx.moveTo(p4.x, p4.y); ctx.lineTo(p3.x, p3.y);
+                    ctx.lineTo(p3.x, p3.y - h); ctx.lineTo(p4.x, p4.y - h);
+                    ctx.fill();
+                    // Right wall
+                    ctx.fillStyle = v===2 ? '#065f46' : '#1e3a8a';
+                    ctx.beginPath();
+                    ctx.moveTo(p3.x, p3.y); ctx.lineTo(p2.x, p2.y);
+                    ctx.lineTo(p2.x, p2.y - h); ctx.lineTo(p3.x, p3.y - h);
+                    ctx.fill();
+                    // Roof
+                    ctx.fillStyle = fillMain;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y - h); ctx.lineTo(p2.x, p2.y - h);
+                    ctx.lineTo(p3.x, p3.y - h); ctx.lineTo(p4.x, p4.y - h);
+                    ctx.fill();
                 }
-                else if (v === 3) { // Work
-                    ctx.fillStyle = '#2563eb'; // Blue
-                    ctx.fillRect(c*ts + 2, r*ts + 2, ts-4, ts-4);
-                }
+            } else {
+                ctx.fillStyle = fillMain;
+                if(v===1) ctx.fillRect(c*ts, r*ts, ts-1, ts-1);
+                else ctx.fillRect(c*ts + 2, r*ts + 2, ts-4, ts-4);
             }
         }
         

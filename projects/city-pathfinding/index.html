@@ -70,6 +70,21 @@
                 <button class="btn btn-primary flex-grow-1" id="playBtn">Pause</button>
                 <button class="btn btn-secondary flex-grow-1" id="clearBtn">Clear city</button>
             </div>
+
+            <h4 class="text-uppercase text-muted text-xs mb-2">Pathfinding Algorithm</h4>
+            <select class="form-control mb-3 text-xs" id="algoSelect" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:8px;">
+                <option value="astar">A* Search (Optimal + Fast)</option>
+                <option value="dijkstra">Dijkstra (Optimal + Slow)</option>
+                <option value="bfs">Breadth-First Search</option>
+            </select>
+
+            <h4 class="text-uppercase text-muted text-xs mb-2">Camera Perspective</h4>
+            <button class="btn btn-outline w-100 mb-3 text-xs" id="isoToggleBtn" style="border-color:var(--neon-purple); color:var(--neon-purple);">Toggle Isometric View</button>
+            
+            <div class="stat-box p-3 mb-3" style="background:rgba(0,0,0,0.3); border-radius:4px;">
+                <div class="text-xs text-muted mb-1 d-flex justify-content-between"><span>Paths Calc:</span> <span id="nodesEval" class="text-neon-blue fw-bold">0</span></div>
+                <div class="text-xs text-muted d-flex justify-content-between"><span>Avg Calc ms:</span> <span id="pathTime" class="text-neon-blue fw-bold">0.0</span></div>
+            </div>
             
             <label class="text-xs text-muted d-block mb-1">Time Speed</label>
             <input type="range" class="form-range mb-4" id="speedSlider" min="1" max="10" value="5">
