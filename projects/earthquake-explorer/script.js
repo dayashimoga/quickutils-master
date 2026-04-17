@@ -314,7 +314,8 @@
             updateTimelineText();
         } catch (e) {
             console.error('Fetch error:', e);
-            document.getElementById('quakeList').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">Failed to load earthquake data. Check your connection and try again.</p>';
+            const ql = document.getElementById('quakeList');
+            if (ql) ql.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">Failed to load earthquake data. Check your connection and try again.</p>';
         }
     }
 
