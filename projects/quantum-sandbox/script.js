@@ -151,6 +151,56 @@
         });
 
         $('#stateVector').innerHTML = vecStr || "Invalid State";
+        
+        // Compute Bloch Vector for Q0
+        const bit = 1 << (numQubits - 1); // Q0 is MSB in our loop
+        let r00 = 0, r11 = 0;
+        let r01 = new C(0);
+        for(let i=0; i< (1<<numQubits); i++) {
+            if((i & bit) === 0) {
+                const amp0 = state[i];
+                const amp1 = state[i | bit];
+                r00 += amp0.magSq();
+                r11 += amp1.magSq();
+                const c_amp1_conj = new C(amp1.r, -amp1.i);
+                r01 = r01.add(amp0.mul(c_amp1_conj));
+            }
+        }
+        const x = 2 * r01.r;
+        const y = -2 * r01.i;
+        const z = r00 - r11;
+        drawBlochSphere(x, y, z);
+    }
+
+    function drawBlochSphere(x, y, z) {
+        const c = $('#blochSphere');
+        if(!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width, h = c.height;
+        ctx.clearRect(0,0,w,h);
+        
+        const r = w/2 * 0.8;
+        const cx = w/2, cy = h/2;
+        
+        ctx.strokeStyle = '#444';
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(cx, cy, r, r*0.3, 0, 0, Math.PI*2); ctx.stroke();
+        
+        ctx.strokeStyle = '#333';
+        ctx.beginPath(); ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.stroke();
+
+        const px = cx + (y * r) + (x * r * -0.3);
+        const py = cy - (z * r) + (x * r * 0.3);
+
+        ctx.strokeStyle = 'var(--neon-purple)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+        ctx.fillStyle = 'var(--neon-green)';
+        ctx.beginPath(); ctx.arc(px,py, 4, 0, Math.PI*2); ctx.fill();
+
+        const st = $('#blochStats');
+        if(st) st.textContent = `x: ${x.toFixed(2)}  y: ${y.toFixed(2)}  z: ${z.toFixed(2)}`;
     }
 
     // --- UI & Drag-Drop Logic ---
@@ -304,6 +354,27 @@
     $('#addQubitBtn').onclick = () => { if(numQubits<5) {numQubits++; initCircuit();} };
     $('#remQubitBtn').onclick = () => { if(numQubits>1) {numQubits--; initCircuit();} };
     $('#resetBtn').onclick = () => initCircuit();
+
+    const dEnt = $('#btnDemoEntangle');
+    if(dEnt) dEnt.onclick = () => {
+        numQubits = 2;
+        circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'CNOT:1';
+        circuit[1][1] = 'T';
+        renderCircuit();
+        simulate();
+    };
+
+    const dInt = $('#btnDemoInterference');
+    if(dInt) dInt.onclick = () => {
+        numQubits = 1;
+        circuit = Array.from({length: maxSteps}, () => Array(1).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'H';
+        renderCircuit();
+        simulate();
+    };
 
     initCircuit();
 
