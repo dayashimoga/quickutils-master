@@ -49,7 +49,21 @@
     <div class="planet-controls glass-card p-4">
         <h3 class="mb-4 text-neon-green">Planet Generator</h3>
         
-        <button class="btn btn-primary w-100 mb-4 glow-btn" id="btnRandomize">Randomize Seed 🎲</button>
+        <button class="btn btn-primary w-100 mb-2 glow-btn" id="btnRandomize">Randomize Seed 🎲</button>
+
+        <!-- Seed Export & Presets -->
+        <div class="d-flex" style="gap:5px; margin-bottom: 1rem;">
+            <input type="text" id="seedDisplay" class="form-control text-xs" readonly style="background:var(--bg-glass); border:1px solid rgba(255,255,255,0.1); color:#fff;" placeholder="Seed">
+            <button class="btn btn-secondary btn-sm" id="btnCopySeed" title="Copy Seed">📋</button>
+        </div>
+        
+        <label class="form-label text-xs">Biome Presets</label>
+        <div class="d-flex" style="gap:5px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstEarth">Earth</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstMars">Mars</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstIce">Ice</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstDesert">Desert</button>
+        </div>
 
         <label class="form-label text-xs d-flex justify-content-between">
             Water Level <span id="valWater">0.5</span>

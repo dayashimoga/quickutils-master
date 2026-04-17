@@ -247,14 +247,61 @@
         const oW = $('#optWater'), vW = $('#valWater');
         const oT = $('#optTemp'), vT = $('#valTemp');
         const oA = $('#optAtmo'), vA = $('#valAtmo');
+        
+        const seedInput = $('#seedDisplay');
+        const btnCopy = $('#btnCopySeed');
 
-        oW.oninput = () => { uniforms.uWaterLevel.value = oW.value; vW.textContent = oW.value; updateBars(); };
-        oT.oninput = () => { uniforms.uTemp.value = oT.value; vT.textContent = oT.value; updateBars(); };
-        oA.oninput = () => { uniforms.uAtmo.value = oA.value; vA.textContent = oA.value; };
+        function setSliders(w, t, a) {
+            oW.value = w; vW.textContent = w; uniforms.uWaterLevel.value = w;
+            oT.value = t; vT.textContent = t; uniforms.uTemp.value = t;
+            oA.value = a; vA.textContent = a; uniforms.uAtmo.value = a;
+            updateBars();
+            updateSeedDisplay();
+        }
+
+        function updateSeedDisplay() {
+            const s = Math.round(uniforms.uSeed.value * 1000);
+            const w = Math.round(oW.value * 100);
+            const t = Math.round(oT.value * 100);
+            const a = Math.round(oA.value * 100);
+            seedInput.value = btoa(`${s}:${w}:${t}:${a}`);
+        }
+
+        seedInput.addEventListener('change', () => {
+            try {
+                const str = atob(seedInput.value);
+                const [s, w, t, a] = str.split(':').map(Number);
+                if(!isNaN(s) && !isNaN(w) && !isNaN(t) && !isNaN(a)) {
+                    uniforms.uSeed.value = s / 1000;
+                    setSliders(w / 100, t / 100, a / 100);
+                }
+            } catch(e) {}
+        });
 
         $('#btnRandomize').onclick = () => {
             uniforms.uSeed.value = Math.random() * 100;
+            updateSeedDisplay();
         };
+
+        if(btnCopy) {
+            btnCopy.onclick = () => {
+                navigator.clipboard.writeText(seedInput.value).catch(()=>{});
+                const orig = btnCopy.textContent;
+                btnCopy.textContent = '✅';
+                setTimeout(() => btnCopy.textContent = orig, 1000);
+            };
+        }
+
+        const prstEarth = $('#btnPrstEarth'); if(prstEarth) prstEarth.onclick = () => setSliders(0.55, 0.5, 0.35);
+        const prstMars = $('#btnPrstMars'); if(prstMars) prstMars.onclick = () => setSliders(0.0, 0.7, 0.1);
+        const prstIce = $('#btnPrstIce'); if(prstIce) prstIce.onclick = () => setSliders(0.8, 0.0, 0.4);
+        const prstDesert = $('#btnPrstDesert'); if(prstDesert) prstDesert.onclick = () => setSliders(0.1, 0.9, 0.2);
+
+        oW.oninput = () => { uniforms.uWaterLevel.value = oW.value; vW.textContent = oW.value; updateBars(); updateSeedDisplay(); };
+        oT.oninput = () => { uniforms.uTemp.value = oT.value; vT.textContent = oT.value; updateBars(); updateSeedDisplay(); };
+        oA.oninput = () => { uniforms.uAtmo.value = oA.value; vA.textContent = oA.value; updateSeedDisplay(); };
+        
+        updateSeedDisplay();
     }
 
     function updateBars() {
