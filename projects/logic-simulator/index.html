@@ -38,13 +38,30 @@
     <nav class="navbar glass-nav">
         <div class="container nav-inner px-4">
             <a href="../../index.html" class="brand holo-text">🔌 Logic Sandbox</a>
-            <div id="nav-actions">
-                <span class="badge me-3">Clock: <span id="clockStatus" class="text-neon-green">Running</span></span>
-                <button class="btn btn-primary btn-sm" id="btnClock">Toggle Clock</button>
+            <div id="nav-actions" class="d-flex align-items-center">
+                <span class="badge me-2" style="white-space:nowrap;">Clock: <span id="clockStatus" class="text-neon-green">Running</span></span>
+                <input type="range" id="clockSpeed" min="100" max="2500" step="100" value="1000" style="width: 80px; accent-color: var(--neon-green);" class="me-2" title="Clock Interval (ms)">
+                <button class="btn btn-primary btn-sm me-2" id="btnClock">Pause Clock</button>
+                <button class="btn btn-outline btn-sm me-1" id="btnSave" title="Save Circuit">💾 Save</button>
+                <button class="btn btn-outline btn-sm me-2" id="btnLoad" title="Load Circuit">📂 Load</button>
+                <button class="btn btn-outline btn-sm me-2" id="btnTruth" title="Generate Truth Table (from Switches to Bulbs)" style="border-color:var(--neon-amber);color:var(--neon-amber);">🧮 Truth Table</button>
                 <button class="btn btn-outline btn-sm" id="btnClear">Clear</button>
             </div>
         </div>
     </nav>
+
+    <!-- Truth Table Panel -->
+    <div id="ttPanel" class="glass-card p-3" style="display:none; position:absolute; top: 80px; left: 20px; z-index: 1000; max-height: 400px; max-width: 500px; overflow-y:auto; background: rgba(10,15,30,0.95); border: 1px solid var(--neon-blue);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="text-sm text-neon-blue m-0">Truth Table Generator</h4>
+            <button class="btn-del" id="btnCloseTT" style="background:none; border:none; color:#fff; cursor:pointer;">✕</button>
+        </div>
+        <div class="text-xs text-muted mb-2">Evaluates combinational logic from current Switches to Bulbs.</div>
+        <table class="table text-center text-xs" style="color:#fff; border-collapse: collapse; width: 100%;" id="ttTable">
+            <thead><tr id="ttHead" style="border-bottom: 1px solid #444;"></tr></thead>
+            <tbody id="ttBody"></tbody>
+        </table>
+    </div>
 
     <!-- Sidebar Toolbox -->
     <div class="toolbox glass-card p-3">
