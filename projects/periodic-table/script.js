@@ -1813,3 +1813,49 @@ showDetails = function(id) {
             });
         });
     }
+
+    // -- ENHANCED TEMPERATURE LOGIC --
+    const tempInput = document.getElementById('tempInput');
+    const tempVal = document.getElementById('tempVal');
+    
+    // Fallback pseudo-melting/boiling thresholds if missing
+    function getStateAtTemp(el, currentTemp) {
+        // Mock calculations based on group/type to simulate state changes visually
+        let melt = 1000, boil = 3000;
+        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
+        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
+        else if (el.group === 1) { melt = 350; boil = 1000; }
+        else if (el.group === 2) { melt = 900; boil = 1800; }
+        
+        if (currentTemp < melt) return 'solid';
+        if (currentTemp < boil) return 'liquid';
+        return 'gas';
+    }
+
+    if (tempInput) {
+        tempInput.addEventListener('input', (e) => {
+            const temp = parseInt(e.target.value);
+            tempVal.textContent = temp + ' K';
+            
+            document.querySelectorAll('.element-card').forEach(card => {
+                const num = parseInt(card.dataset.n);
+                const elData = elements.find(x => x.n === num);
+                if (elData) {
+                    const state = getStateAtTemp(elData, temp);
+                    if (state === 'liquid') {
+                        card.style.opacity = '0.8';
+                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
+                        card.style.transform = 'scale(0.98)';
+                    } else if (state === 'gas') {
+                        card.style.opacity = '0.3';
+                        card.style.boxShadow = 'none';
+                        card.style.transform = 'scale(0.95)';
+                    } else {
+                        card.style.opacity = '1';
+                        card.style.boxShadow = 'var(--shadow-sm)';
+                        card.style.transform = 'scale(1)';
+                    }
+                }
+            });
+        });
+    }

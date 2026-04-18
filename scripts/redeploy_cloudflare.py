@@ -52,7 +52,7 @@ def run_build_and_deploy(project_key, config):
         "--commit-dirty=true"
     ]
 
-    max_retries = 3
+    max_retries = 8
     for attempt in range(max_retries):
         try:
             result = subprocess.run(deploy_cmd, check=True,
@@ -83,9 +83,10 @@ def run_build_and_deploy(project_key, config):
             # Cloudflare 429 Rate Limit Interception
             if "429" in stderr or "too many requests" in stderr.lower() or "429 Too Many Requests" in stdout:
                 if attempt < max_retries - 1:
-                    print(f"⏳ [{repo_name}] Rate limited by Cloudflare (429). Sleeping for 60s...")
+                    wait_time = 120 + (attempt * 60)
+                    print(f"⏳ [{repo_name}] Rate limited by Cloudflare (429). Sleeping for {wait_time}s...")
                     import time
-                    time.sleep(60)
+                    time.sleep(wait_time)
                     continue
                     
             print(f"❌ [{repo_name}] Deploy failed.\nSTDOUT:\n{stdout[-1000:]}\nSTDERR:\n{stderr[-1000:]}")
