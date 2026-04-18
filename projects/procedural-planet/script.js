@@ -243,6 +243,8 @@
         animate();
     }
 
+    let rotationSpeed = 1.0;
+
     function bindUI() {
         const oW = $('#optWater'), vW = $('#valWater');
         const oT = $('#optTemp'), vT = $('#valTemp');
@@ -252,10 +254,11 @@
         const btnCopy = $('#btnCopySeed');
 
         function setSliders(w, t, a) {
-            oW.value = w; vW.textContent = w; uniforms.uWaterLevel.value = w;
-            oT.value = t; vT.textContent = t; uniforms.uTemp.value = t;
-            oA.value = a; vA.textContent = a; uniforms.uAtmo.value = a;
+            oW.value = w; vW.textContent = parseFloat(w).toFixed(2); uniforms.uWaterLevel.value = w;
+            oT.value = t; vT.textContent = parseFloat(t).toFixed(2); uniforms.uTemp.value = t;
+            oA.value = a; vA.textContent = parseFloat(a).toFixed(2); uniforms.uAtmo.value = a;
             updateBars();
+            updateStats();
             updateSeedDisplay();
         }
 
@@ -281,6 +284,7 @@
         $('#btnRandomize').onclick = () => {
             uniforms.uSeed.value = Math.random() * 100;
             updateSeedDisplay();
+            updateStats();
         };
 
         if(btnCopy) {
@@ -292,15 +296,45 @@
             };
         }
 
+        // Screenshot Export
+        const btnScreenshot = $('#btnScreenshot');
+        if(btnScreenshot) {
+            btnScreenshot.onclick = () => {
+                renderer.render(scene, camera);
+                const link = document.createElement('a');
+                link.download = 'planet_' + Date.now() + '.png';
+                link.href = renderer.domElement.toDataURL('image/png');
+                link.click();
+            };
+        }
+
+        // 8 Presets
         const prstEarth = $('#btnPrstEarth'); if(prstEarth) prstEarth.onclick = () => setSliders(0.55, 0.5, 0.35);
         const prstMars = $('#btnPrstMars'); if(prstMars) prstMars.onclick = () => setSliders(0.0, 0.7, 0.1);
         const prstIce = $('#btnPrstIce'); if(prstIce) prstIce.onclick = () => setSliders(0.8, 0.0, 0.4);
         const prstDesert = $('#btnPrstDesert'); if(prstDesert) prstDesert.onclick = () => setSliders(0.1, 0.9, 0.2);
+        const prstVolcanic = $('#btnPrstVolcanic'); if(prstVolcanic) prstVolcanic.onclick = () => setSliders(0.05, 1.0, 0.6);
+        const prstOcean = $('#btnPrstOcean'); if(prstOcean) prstOcean.onclick = () => setSliders(0.9, 0.5, 0.5);
+        const prstGasGiant = $('#btnPrstGasGiant'); if(prstGasGiant) prstGasGiant.onclick = () => setSliders(0.0, 0.4, 0.95);
+        const prstFrozen = $('#btnPrstFrozen'); if(prstFrozen) prstFrozen.onclick = () => setSliders(0.6, 0.1, 0.2);
 
-        oW.oninput = () => { uniforms.uWaterLevel.value = oW.value; vW.textContent = oW.value; updateBars(); updateSeedDisplay(); };
-        oT.oninput = () => { uniforms.uTemp.value = oT.value; vT.textContent = oT.value; updateBars(); updateSeedDisplay(); };
-        oA.oninput = () => { uniforms.uAtmo.value = oA.value; vA.textContent = oA.value; updateSeedDisplay(); };
+        oW.oninput = () => { uniforms.uWaterLevel.value = oW.value; vW.textContent = parseFloat(oW.value).toFixed(2); updateBars(); updateStats(); updateSeedDisplay(); };
+        oT.oninput = () => { uniforms.uTemp.value = oT.value; vT.textContent = parseFloat(oT.value).toFixed(2); updateBars(); updateStats(); updateSeedDisplay(); };
+        oA.oninput = () => { uniforms.uAtmo.value = oA.value; vA.textContent = parseFloat(oA.value).toFixed(2); updateStats(); updateSeedDisplay(); };
         
+        // Rotation Speed
+        const oR = $('#optRotation'), vR = $('#valRotation');
+        if(oR) oR.oninput = () => { rotationSpeed = parseFloat(oR.value); if(vR) vR.textContent = rotationSpeed.toFixed(1); };
+
+        // Light Angle
+        const oL = $('#optLight'), vL = $('#valLight');
+        if(oL) oL.oninput = () => {
+            const deg = parseFloat(oL.value);
+            if(vL) vL.textContent = Math.round(deg) + '°';
+            const rad = deg * Math.PI / 180;
+            uniforms.uLightDir.value.set(Math.cos(rad), 0.5, Math.sin(rad)).normalize();
+        };
+
         updateSeedDisplay();
     }
 
@@ -321,11 +355,44 @@
         $('#barForest').style.width = forest + '%';
     }
 
+    function updateStats() {
+        const w = parseFloat($('#optWater')?.value || 0.5);
+        const t = parseFloat($('#optTemp')?.value || 0.5);
+        const a = parseFloat($('#optAtmo')?.value || 0.3);
+
+        const area = Math.round(300 + w * 400);
+        const ocean = Math.round(w * 100);
+        const tempC = Math.round(-50 + t * 130);
+        const biomes = (w > 0.1 ? 1 : 0) + (t > 0.3 ? 1 : 0) + (t < 0.3 ? 1 : 0) + (w < 0.9 ? 1 : 0) + (a > 0.2 ? 1 : 0);
+
+        // Habitability: best when water~0.5, temp~0.5, atmo~0.3
+        const wScore = 1 - Math.abs(w - 0.55) * 2;
+        const tScore = 1 - Math.abs(t - 0.5) * 2;
+        const aScore = 1 - Math.abs(a - 0.35) * 2;
+        const habit = Math.max(0, Math.min(100, Math.round((wScore * 40 + tScore * 35 + aScore * 25))));
+
+        const el = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+        el('statArea', area + 'M km²');
+        el('statOcean', ocean + '%');
+        el('statTemp', tempC + '°C');
+        el('statAtmo', parseFloat(a).toFixed(2) + ' atm');
+        el('statBiomes', Math.min(6, biomes));
+        el('habitScore', habit + ' / 100');
+
+        const fill = document.getElementById('habitFill');
+        if(fill) {
+            fill.style.width = habit + '%';
+            if(habit > 60) fill.style.background = '#10b981';
+            else if(habit > 30) fill.style.background = '#f59e0b';
+            else fill.style.background = '#ef4444';
+        }
+    }
+
     function animate() {
         requestAnimationFrame(animate);
         uniforms.uTime.value += 0.01;
         
-        planetMesh.rotation.y += 0.001;
+        planetMesh.rotation.y += 0.001 * rotationSpeed;
         
         controls.update();
         renderer.render(scene, camera);
@@ -336,6 +403,7 @@
             clearInterval(waitInt);
             init();
             updateBars();
+            updateStats();
         }
     }, 100);
 

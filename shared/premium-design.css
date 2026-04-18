@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════
+   QUICKUTILS PREMIUM DESIGN SYSTEM — Glassmorphism Edition
+   Shared across all premium projects
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #111827;
+    --bg-card: rgba(17, 24, 39, 0.6);
+    --glass-bg: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --glass-hover: rgba(255,255,255,0.08);
+    --glass-blur: 16px;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    --gradient-card: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.05));
+    --shadow-glass: 0 8px 32px rgba(0,0,0,0.3);
+    --shadow-hover: 0 12px 40px rgba(59,130,246,0.15);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --transition-fast: 0.15s ease;
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+[data-theme="light"] {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #e2e8f0;
+    --bg-card: rgba(255,255,255,0.7);
+    --glass-bg: rgba(255,255,255,0.5);
+    --glass-border: rgba(0,0,0,0.08);
+    --glass-hover: rgba(0,0,0,0.04);
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --shadow-glass: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* ─── Glass Card ─── */
+.glass-card, .g-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glass);
+    padding: 1.25rem;
+    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+.glass-card:hover, .g-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(59,130,246,0.15);
+}
+
+/* ─── Glass Panel (no hover lift) ─── */
+.g-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glass);
+    padding: 1rem;
+}
+
+/* ─── Premium Buttons ─── */
+.g-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 16px; border: 1px solid var(--glass-border);
+    background: var(--glass-bg); color: var(--text-primary);
+    border-radius: var(--radius-sm); cursor: pointer;
+    font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.g-btn:hover { background: var(--glass-hover); border-color: var(--accent-blue); color: var(--accent-blue); }
+.g-btn-primary {
+    background: var(--gradient-primary); border: none; color: #fff; font-weight: 600;
+}
+.g-btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.g-btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.g-btn-icon { width: 34px; height: 34px; padding: 0; border-radius: 50%; }
+
+/* ─── Inputs ─── */
+.g-input, .g-select, .g-textarea {
+    width: 100%; padding: 8px 12px;
+    background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+    color: var(--text-primary); border-radius: var(--radius-sm);
+    font-family: var(--font-sans); font-size: 0.85rem;
+    transition: border-color var(--transition-fast);
+}
+.g-input:focus, .g-select:focus, .g-textarea:focus {
+    outline: none; border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.g-range {
+    width: 100%; accent-color: var(--accent-blue); cursor: pointer;
+}
+
+/* ─── Stat Pill ─── */
+.g-stat {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 10px 14px; background: var(--glass-bg);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+}
+.g-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.g-stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+/* ─── Badge / Tag ─── */
+.g-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 600;
+    background: rgba(59,130,246,0.15); color: var(--accent-blue);
+}
+.g-badge-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+.g-badge-amber { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.g-badge-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+
+/* ─── Neon Text ─── */
+.neon-blue { color: var(--accent-blue); text-shadow: 0 0 8px rgba(59,130,246,0.4); }
+.neon-green { color: var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4); }
+.neon-purple { color: var(--accent-purple); text-shadow: 0 0 8px rgba(139,92,246,0.4); }
+.neon-amber { color: var(--accent-amber); text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+.neon-red { color: var(--accent-red); text-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+/* ─── Section Title ─── */
+.g-title {
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.g-title::before {
+    content: ''; width: 3px; height: 1em;
+    background: var(--gradient-primary); border-radius: 2px;
+}
+
+/* ─── Divider ─── */
+.g-divider {
+    border: none; height: 1px; margin: 1rem 0;
+    background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+}
+
+/* ─── Grid Layouts ─── */
+.g-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+.g-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.g-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+.g-flex { display: flex; gap: 0.5rem; align-items: center; }
+.g-flex-col { display: flex; flex-direction: column; gap: 0.5rem; }
+.g-flex-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.g-flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ─── Animations ─── */
+@keyframes g-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes g-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes g-glow { 0%,100% { box-shadow: 0 0 5px rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 20px rgba(59,130,246,0.5); } }
+@keyframes g-slide-in { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+.g-animate { animation: g-fade-in 0.4s ease-out both; }
+.g-pulse { animation: g-pulse 2s infinite; }
+.g-glow { animation: g-glow 2s infinite; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .g-grid-2, .g-grid-3, .g-grid-4 { grid-template-columns: 1fr; }
+    .g-card, .glass-card { padding: 0.875rem; }
+    .g-hide-mobile { display: none !important; }
+}
+@media (max-width: 480px) {
+    .g-btn { padding: 6px 12px; font-size: 0.8rem; }
+    .g-stat-value { font-size: 0.95rem; }
+}
+
+/* ─── Tooltip ─── */
+.g-tooltip {
+    position: absolute; padding: 6px 10px;
+    background: rgba(0,0,0,0.85); color: #fff;
+    border-radius: var(--radius-sm); font-size: 0.75rem;
+    pointer-events: none; z-index: 100;
+    backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ─── Live Indicator ─── */
+.g-live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-green);
+    animation: g-pulse 1.5s infinite;
+    display: inline-block;
+}
+
+/* ─── Progress Bar ─── */
+.g-progress {
+    width: 100%; height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; overflow: hidden;
+}
+.g-progress-fill {
+    height: 100%; background: var(--gradient-primary);
+    border-radius: 3px; transition: width var(--transition-smooth);
+}

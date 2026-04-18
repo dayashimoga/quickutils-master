@@ -46,52 +46,75 @@
 
     <div id="canvasWrap"></div>
 
-    <div class="planet-controls glass-card p-4">
-        <h3 class="mb-4 text-neon-green">Planet Generator</h3>
-        
-        <button class="btn btn-primary w-100 mb-2 glow-btn" id="btnRandomize">Randomize Seed 🎲</button>
+    <!-- Stats Panel (Left) -->
+    <div class="planet-stats" id="statsPanel">
+        <div style="font-size:0.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">📊 Planet Analysis</div>
+        <div class="stat-row"><span class="stat-label">Surface Area</span><span class="stat-value" id="statArea">510M km²</span></div>
+        <div class="stat-row"><span class="stat-label">Ocean Cover</span><span class="stat-value" id="statOcean" style="color:#3b82f6">50%</span></div>
+        <div class="stat-row"><span class="stat-label">Avg Temp</span><span class="stat-value" id="statTemp">15°C</span></div>
+        <div class="stat-row"><span class="stat-label">Atmosphere</span><span class="stat-value" id="statAtmo">0.30 atm</span></div>
+        <div class="stat-row"><span class="stat-label">Biome Count</span><span class="stat-value" id="statBiomes">4</span></div>
+        <div style="margin-top:8px;font-size:0.72rem;font-weight:600;color:#64748b;text-transform:uppercase;">Habitability Index</div>
+        <div class="habitability-bar"><div class="habitability-fill" id="habitFill" style="width:65%;background:var(--accent);"></div></div>
+        <div style="text-align:right;font-size:0.75rem;color:var(--accent);font-weight:600;margin-top:4px;" id="habitScore">65 / 100</div>
+    </div>
 
-        <!-- Seed Export & Presets -->
-        <div class="d-flex" style="gap:5px; margin-bottom: 1rem;">
-            <input type="text" id="seedDisplay" class="form-control text-xs" readonly style="background:var(--bg-glass); border:1px solid rgba(255,255,255,0.1); color:#fff;" placeholder="Seed">
-            <button class="btn btn-secondary btn-sm" id="btnCopySeed" title="Copy Seed">📋</button>
+    <!-- Controls Panel (Right) -->
+    <div class="planet-controls" style="padding:1.25rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <span style="font-size:1rem;font-weight:700;color:#f1f5f9;">🌍 Planet Generator</span>
+        </div>
+
+        <div class="action-row">
+            <button class="btn-glass btn-glass-primary" id="btnRandomize">🎲 Randomize</button>
+            <button class="btn-glass" id="btnScreenshot" title="Save as PNG">📸 Export</button>
+        </div>
+
+        <div class="seed-row">
+            <input type="text" id="seedDisplay" class="seed-input" readonly placeholder="Seed">
+            <button class="btn-glass" id="btnCopySeed" style="flex:0 0 36px;padding:6px;" title="Copy Seed">📋</button>
         </div>
         
-        <label class="form-label text-xs">Biome Presets</label>
-        <div class="d-flex" style="gap:5px; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstEarth">Earth</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstMars">Mars</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstIce">Ice</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1" id="btnPrstDesert">Desert</button>
+        <div class="section-title">Biome Presets</div>
+        <div class="preset-grid">
+            <button class="preset-btn" id="btnPrstEarth">🌍 Earth</button>
+            <button class="preset-btn" id="btnPrstMars">🔴 Mars</button>
+            <button class="preset-btn" id="btnPrstIce">🧊 Ice</button>
+            <button class="preset-btn" id="btnPrstDesert">🏜️ Desert</button>
+            <button class="preset-btn" id="btnPrstVolcanic">🌋 Volcanic</button>
+            <button class="preset-btn" id="btnPrstOcean">🌊 Ocean</button>
+            <button class="preset-btn" id="btnPrstGasGiant">💨 Gas</button>
+            <button class="preset-btn" id="btnPrstFrozen">❄️ Tundra</button>
         </div>
 
-        <label class="form-label text-xs d-flex justify-content-between">
-            Water Level <span id="valWater">0.5</span>
-        </label>
-        <input type="range" class="form-range mb-3" id="optWater" min="0" max="1" step="0.05" value="0.5">
+        <div class="section-title">Parameters</div>
+        <div class="slider-label"><span>💧 Water Level</span><span class="slider-val" id="valWater">0.50</span></div>
+        <input type="range" class="form-range" id="optWater" min="0" max="1" step="0.01" value="0.5" style="margin-bottom:10px;">
 
-        <label class="form-label text-xs d-flex justify-content-between">
-            Temperature <span id="valTemp">0.5</span>
-        </label>
-        <input type="range" class="form-range mb-3" id="optTemp" min="0" max="1" step="0.05" value="0.5">
+        <div class="slider-label"><span>🌡️ Temperature</span><span class="slider-val" id="valTemp">0.50</span></div>
+        <input type="range" class="form-range" id="optTemp" min="0" max="1" step="0.01" value="0.5" style="margin-bottom:10px;">
 
-        <label class="form-label text-xs d-flex justify-content-between">
-            Atmosphere Density <span id="valAtmo">0.3</span>
-        </label>
-        <input type="range" class="form-range mb-3" id="optAtmo" min="0" max="1" step="0.05" value="0.3">
+        <div class="slider-label"><span>☁️ Atmosphere</span><span class="slider-val" id="valAtmo">0.30</span></div>
+        <input type="range" class="form-range" id="optAtmo" min="0" max="1" step="0.01" value="0.3" style="margin-bottom:10px;">
 
-        <h4 class="text-xs text-muted mt-4 border-bottom pb-2">Biome Distribution</h4>
-        <div class="d-flex justify-content-between mt-2 text-xs">
-            <span style="color:#3b82f6">Oceans</span>
-            <span style="color:#22c55e">Forests</span>
-            <span style="color:#eab308">Deserts</span>
-            <span style="color:#f8fafc">Ice</span>
+        <div class="slider-label"><span>🔄 Rotation Speed</span><span class="slider-val" id="valRotation">1.0</span></div>
+        <input type="range" class="form-range" id="optRotation" min="0" max="5" step="0.1" value="1.0" style="margin-bottom:10px;">
+
+        <div class="slider-label"><span>☀️ Light Angle</span><span class="slider-val" id="valLight">45°</span></div>
+        <input type="range" class="form-range" id="optLight" min="0" max="360" step="1" value="45" style="margin-bottom:10px;">
+
+        <div class="section-title">Biome Distribution</div>
+        <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:4px;">
+            <span style="color:#3b82f6">🌊 Ocean</span>
+            <span style="color:#22c55e">🌲 Forest</span>
+            <span style="color:#eab308">🏜️ Desert</span>
+            <span style="color:#e2e8f0">🧊 Ice</span>
         </div>
-        <div class="progress mt-1" style="height: 6px;">
-            <div id="barWater" class="progress-bar" style="width: 50%; background:#3b82f6;"></div>
-            <div id="barForest" class="progress-bar" style="width: 25%; background:#22c55e;"></div>
-            <div id="barDesert" class="progress-bar" style="width: 15%; background:#eab308;"></div>
-            <div id="barIce" class="progress-bar" style="width: 10%; background:#f8fafc;"></div>
+        <div class="biome-bar">
+            <div id="barWater" style="background:#3b82f6;width:50%;"></div>
+            <div id="barForest" style="background:#22c55e;width:25%;"></div>
+            <div id="barDesert" style="background:#eab308;width:15%;"></div>
+            <div id="barIce" style="background:#e2e8f0;width:10%;"></div>
         </div>
     </div>
 
