@@ -8,8 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
-MAX_PARALLEL = 1  # Deploy up to 1 project at once (Avoid CF 429 Too Many Requests)
-
+MAX_PARALLEL = 4  # Increased parallelism to optimize deploy speed
 
 def get_projects_config():
     try:
@@ -139,8 +138,6 @@ def main():
                 success += 1
             else:
                 failed.append(name)
-            import time
-            time.sleep(10)
 
     print(f"\n📊 Deployment: {success}/{len(deploy_list)} succeeded")
     if failed:
