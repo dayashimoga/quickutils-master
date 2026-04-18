@@ -1,154 +1,248 @@
+/* ═══════════════════════════════════════════════
+   Logic Simulator — Premium Glassmorphism
+   ═══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
 :root {
-    --bg-color: #0f172a;
-    --grid-col: #1e293b;
+    --bg-color: #0a0f1a;
+    --grid-col: rgba(30, 41, 59, 0.5);
     --wire-low: #ef4444;
     --wire-high: #10b981;
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(255,255,255,0.08);
+    --accent: #3b82f6;
 }
 
 body.logic-bg {
     background-color: var(--bg-color);
-    margin: 0;
-    overflow: hidden;
-    font-family: 'JetBrains Mono', monospace;
+    margin: 0; overflow: hidden;
+    font-family: 'Inter', sans-serif;
     color: #e2e8f0;
 }
 
+/* ─── Glassmorphism Toolbox ─── */
 .toolbox {
-    position: absolute;
-    top: 80px;
-    left: 20px;
-    width: 250px;
-    z-index: 100;
+    position: absolute; top: 75px; left: 15px;
+    width: 240px; z-index: 100;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: slideInLeft 0.4s ease-out;
+}
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-15px); } }
+
+.toolbox-title {
+    font-size: 0.72rem; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 10px;
 }
 
 .gate-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 6px;
 }
 
 .btn-tool {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: bold;
-    transition: all 0.2s;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    color: #cbd5e1; padding: 8px 6px;
+    border-radius: 8px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; font-weight: 600;
+    transition: all 0.2s; text-align: center;
 }
-.btn-tool:hover { background: rgba(59, 130, 246, 0.5); }
-.btn-tool:active { transform: scale(0.95); }
+.btn-tool:hover {
+    background: rgba(59,130,246,0.12);
+    border-color: var(--accent); color: var(--accent);
+    transform: translateY(-1px);
+}
+.btn-tool:active { transform: scale(0.96); }
+.btn-tool.active {
+    background: rgba(59,130,246,0.15);
+    border-color: var(--accent); color: var(--accent);
+}
 
+/* ─── Action Buttons ─── */
+.toolbox-actions {
+    display: flex; gap: 6px; margin-top: 10px;
+    padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.04);
+}
+.btn-action {
+    flex: 1; padding: 6px 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    color: #94a3b8; border-radius: 6px;
+    cursor: pointer; font-family: inherit;
+    font-size: 0.72rem; font-weight: 500;
+    transition: all 0.15s;
+}
+.btn-action:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+.btn-action.primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none; color: white;
+}
+
+/* ─── Component Count Stats ─── */
+.comp-stats {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+}
+.comp-stat {
+    text-align: center; padding: 4px;
+    background: rgba(0,0,0,0.2); border-radius: 6px;
+}
+.comp-stat-val { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+.comp-stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
+
+/* ─── Workspace ─── */
 .workspace {
-    position: absolute;
-    top: 0; left: 0;
+    position: absolute; top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background-image: 
-        radial-gradient(var(--grid-col) 1px, transparent 1px);
-    background-size: 20px 20px;
-    z-index: 0;
+    background-image: radial-gradient(var(--grid-col) 1px, transparent 1px);
+    background-size: 20px 20px; z-index: 0;
 }
 
+/* ─── Wire Layer ─── */
 .wire-layer {
-    position: absolute;
-    top: 0; left: 0;
+    position: absolute; top: 0; left: 0;
     width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 10;
+    pointer-events: none; z-index: 10;
 }
-
 .wire {
-    fill: none;
-    stroke-width: 4;
-    pointer-events: stroke;
-    cursor: pointer;
-    transition: stroke 0.1s;
+    fill: none; stroke-width: 3;
+    pointer-events: stroke; cursor: pointer;
+    transition: stroke 0.15s, filter 0.15s;
+}
+.wire[data-state="0"] { stroke: var(--wire-low); opacity: 0.5; }
+.wire[data-state="1"] { stroke: var(--wire-high); filter: drop-shadow(0 0 6px var(--wire-high)); }
+
+/* ─── Signal Pulse Animation ─── */
+@keyframes signalPulse {
+    0% { stroke-dashoffset: 20; }
+    100% { stroke-dashoffset: 0; }
+}
+.wire.pulsing {
+    stroke-dasharray: 8 4;
+    animation: signalPulse 0.3s linear infinite;
 }
 
-.wire[data-state="0"] { stroke: var(--wire-low); opacity: 0.6; }
-.wire[data-state="1"] { stroke: var(--wire-high); filter: drop-shadow(0 0 4px var(--wire-high)); }
-
-/* Components */
+/* ─── Component Nodes ─── */
 .comp-node {
     position: absolute;
-    background: #1e293b;
+    background: rgba(15, 23, 42, 0.9);
     border: 2px solid #334155;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-    z-index: 20;
-    user-select: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    z-index: 20; user-select: none;
     min-width: 80px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.comp-node.selected { border-color: #3b82f6; }
+.comp-node:hover {
+    border-color: rgba(59,130,246,0.3);
+    box-shadow: 0 4px 16px rgba(59,130,246,0.1);
+}
+.comp-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
 
 .comp-controls {
-    position: absolute;
-    top: -25px; right: 0;
-    display: flex; gap: 5px;
-    display: none;
+    position: absolute; top: -28px; right: 0;
+    display: flex; gap: 4px; display: none;
 }
 .comp-node:hover .comp-controls { display: flex; }
 .btn-del {
-    background: #ef4444; color: white; border: none; border-radius: 3px; font-size: 0.7rem; padding: 2px 5px; cursor: pointer;
+    background: #ef4444; color: white; border: none;
+    border-radius: 4px; font-size: 0.7rem;
+    padding: 3px 6px; cursor: pointer;
+    transition: filter 0.15s;
 }
+.btn-del:hover { filter: brightness(1.2); }
 
 .comp-label {
-    flex: 1;
-    text-align: center;
-    font-weight: bold;
-    padding: 0 10px;
-    cursor: grab;
+    flex: 1; text-align: center;
+    font-weight: 600; padding: 0 10px;
+    cursor: grab; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; color: #e2e8f0;
 }
 .comp-label:active { cursor: grabbing; }
 
-.ports-in, .ports-out {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+.ports-in, .ports-out { display: flex; flex-direction: column; gap: 8px; }
 
 .port {
     width: 12px; height: 12px;
-    background: #0f172a;
-    border: 2px solid #64748b;
-    border-radius: 50%;
-    cursor: crosshair;
+    background: #0f172a; border: 2px solid #475569;
+    border-radius: 50%; cursor: crosshair;
+    transition: all 0.15s;
 }
-.port:hover { background: #fff; }
-.port[data-state="1"] { background: var(--wire-high); border-color: #fff; }
+.port:hover { background: #fff; transform: scale(1.2); }
+.port[data-state="1"] {
+    background: var(--wire-high); border-color: #fff;
+    box-shadow: 0 0 6px var(--wire-high);
+}
 
-/* Specific Components */
+/* ─── Bulb ─── */
 .comp-bulb .bulb-indicator {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #333;
-    border: 2px solid #555;
-    transition: all 0.1s;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #1e293b; border: 2px solid #475569;
+    transition: all 0.2s;
 }
 .comp-bulb[data-on="1"] .bulb-indicator {
-    background: #facc15;
-    border-color: #fff;
-    box-shadow: 0 0 15px #facc15;
+    background: #facc15; border-color: #fff;
+    box-shadow: 0 0 20px rgba(250,204,21,0.5);
 }
 
+/* ─── Switch ─── */
 .comp-switch { cursor: pointer; }
 .comp-switch .switch-btn {
-    width: 30px; height: 15px;
-    background: #444; border-radius: 8px;
+    width: 32px; height: 16px;
+    background: #334155; border-radius: 8px;
     position: relative; transition: background 0.2s;
 }
 .comp-switch .switch-btn::after {
     content: ''; position: absolute;
-    width: 15px; height: 15px;
-    background: #888; border-radius: 50%;
-    left: 0; top: 0; transition: left 0.2s;
+    width: 16px; height: 16px;
+    background: #64748b; border-radius: 50%;
+    left: 0; top: 0; transition: all 0.2s;
 }
 .comp-switch[data-on="1"] .switch-btn { background: var(--wire-high); }
-.comp-switch[data-on="1"] .switch-btn::after { left: 15px; background: #fff; }
+.comp-switch[data-on="1"] .switch-btn::after { left: 16px; background: #fff; box-shadow: 0 0 6px var(--wire-high); }
+
+/* ─── Truth Table Panel ─── */
+.truth-table-panel {
+    position: absolute; top: 75px; right: 15px;
+    width: 280px; max-height: calc(100vh - 120px);
+    overflow-y: auto; z-index: 100;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.truth-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+.truth-table th {
+    padding: 6px 8px; text-align: center;
+    color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-weight: 600;
+}
+.truth-table td {
+    padding: 4px 8px; text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.truth-table td.high { color: var(--wire-high); font-weight: 700; }
+.truth-table td.low { color: var(--wire-low); opacity: 0.7; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .toolbox { width: calc(100% - 30px); left: 15px; top: auto; bottom: 15px; }
+    .truth-table-panel { width: calc(100% - 30px); right: 15px; }
+    .gate-grid { grid-template-columns: repeat(4, 1fr); }
+}
