@@ -28,7 +28,9 @@ def assign_domains():
             
             # Using try-except block securely
             try:
-                cmd = ["npx.cmd", "wrangler@latest", "pages", "domain", "add", domain, "--project-name", foldername]
+                import os
+                npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
+                cmd = [npx_cmd, "wrangler@latest", "pages", "domain", "add", domain, "--project-name", foldername]
                 subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
                 count += 1
                 print(f"  [SUCCESS] -> {domain}")
