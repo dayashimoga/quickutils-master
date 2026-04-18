@@ -111,6 +111,9 @@ jobs:
           # Deploy changed projects immediately (parallel, 4 at a time)
           python scripts/redeploy_cloudflare.py
           
+          # Assign custom domains automatically 
+          python scripts/assign_domains_bulk.py
+          
           # Wait for cancel to finish
           wait $CANCEL_PID 2>/dev/null || true
 
