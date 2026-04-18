@@ -1,4 +1,35 @@
 [run]
-include =
+omit =
+    scripts/apply_features.py
+    scripts/apply_seo.py
+    scripts/assign_domains_bulk.py
+    scripts/build_all_local.py
+    scripts/build_directory.py
+    scripts/build_interactive.py
+    scripts/cancel_cf_builds.py
+    scripts/cf_extinguisher.py
+    scripts/check_links.py
+    scripts/cleanup.py
+    scripts/distribute_pin_tests.py
+    scripts/fetch_data.py
+    scripts/fix_slugs.py
+    scripts/fix_syntax.py
+    scripts/generate_pins.py
+    scripts/generate_projects_json.py
+    scripts/generate_social_images.py
+    scripts/generate_sitemap.py
+    scripts/github_distribute.py
+    scripts/github_restore.py
+    scripts/indexnow_submit.py
+    scripts/mass_enhance.py
+    scripts/pinterest_automation.py
+    scripts/post_pinterest.py
+    scripts/post_social.py
+    scripts/redeploy_cloudflare.py
+    scripts/run_global_tests.py
+    scripts/smoke_test.py
+    scripts/sync_project_scripts.py
+    scripts/update_docs.py
     scripts/utils.py
-    scripts/__init__.py
+    scripts/verify_links_local.py
+    scripts/verify_repos.py

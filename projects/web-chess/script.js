@@ -464,8 +464,6 @@ function renderPosition() {
 
     // Remove captured pieces (anything still marked stale)
     document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     updateCapturedPieces();
     updateMovesList();
     checkGameEnd();
@@ -661,6 +659,10 @@ function showPromotionPicker(from, to) {
 // MOVE COMMIT & HISTORY
 // ═══════════════════════════════════════════════════
 function commitMove(move) {
+    if (typeof window !== 'undefined' && window.clearTheoryHighlights) {
+        window.clearTheoryHighlights(); // using window reference to avoid undefined if order matters
+    }
+
     lastMoveSquares = [move.from, move.to];
 
     // Truncate future history if we're branching
@@ -717,6 +719,9 @@ function playSound(move) {
 }
 
 function jumpToMove(idx) {
+    if (typeof window !== 'undefined' && window.clearTheoryHighlights) {
+        window.clearTheoryHighlights();
+    }
     if (idx < -1 || idx >= moveHistory.length) return;
     currentMoveIdx = idx;
 
@@ -1476,7 +1481,10 @@ function clearTheoryArrow() {
 
 function clearTheoryHighlights() {
     document.querySelectorAll('.theory-highlight').forEach(el => el.classList.remove('theory-highlight'));
-    clearTheoryArrow();
+    clearTheoryArrow(); // clear old system
+    // also clear SVG overlay arrows
+    const svgOvl = document.getElementById('arrowOverlay');
+    if (svgOvl) svgOvl.querySelectorAll('line').forEach(l => l.remove());
 }
 
 function checkAcademyProgress() {
@@ -2009,19 +2017,6 @@ function drawArrowRaw(fromSq, toSq, colorStr, markerId) {
     svg.appendChild(line);
 }
 
-function clearTheoryHighlights() {
-    document.querySelectorAll('.theory-highlight').forEach(el => el.classList.remove('theory-highlight'));
-    const svg = document.getElementById('arrowOverlay');
-    if (svg) {
-        const lines = svg.querySelectorAll('line');
-        lines.forEach(l => l.remove());
-    }
-}
-
-window.drawTheoryArrow = function(fromSq, toSq) {
-    drawArrowRaw(fromSq, toSq, 'rgba(99,102,241,0.85)', 'arrowhead-green');
-}
-
 const _origOnEngineMessage = onEngineMessage;
 onEngineMessage = function(event) {
     const line = event.data;
@@ -2050,14 +2045,5 @@ onEngineMessage = function(event) {
     
     _origOnEngineMessage(event);
 };
-
-const _origJumpToMove = jumpToMove;
-jumpToMove = function(idx) {
-    clearTheoryHighlights();
-    _origJumpToMove(idx);
-};
-const _origCommitMove2 = commitMove;
-commitMove = function(move) {
-    clearTheoryHighlights();
-    _origCommitMove2(move);
-};
+// Engine worker uses the new intercepting handler
+if (engine) engine.onmessage = onEngineMessage;

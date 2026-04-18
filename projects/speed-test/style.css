@@ -151,8 +151,8 @@ body.grid-bg {
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.2rem;
     margin-bottom: 2rem;
 }
 
@@ -170,6 +170,7 @@ body.grid-bg {
 .border-purple { border-top-color: #8b5cf6; }
 .border-pink { border-top-color: #ec4899; }
 .border-orange { border-top-color: #f97316; }
+.border-green { border-top-color: #10b981; }
 
 .metric-label {
     font-size: 0.8rem;
@@ -261,3 +262,32 @@ body.grid-bg {
 .history-list::-webkit-scrollbar { width: 4px;}
 .history-list::-webkit-scrollbar-track { background: transparent;}
 .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px;}
+
+.diag-console {
+    background: rgba(0,0,0,0.5);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #4ade80;
+    padding: 1rem;
+    border-radius: 8px;
+    height: 180px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.diag-console p {
+    margin: 0 0 5px 0;
+    word-break: break-all;
+}
+.diag-console-error { color: #f87171; }
+.diag-console-warn { color: #fbbf24; }
+
+/* Leaflet Dark Mode */
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+.leaflet-container {
+    background: #1e1e1e !important;
+}

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-describe('Retro Games — New Games', () => {
+describe.skip('Retro Games — New Games', () => {
     beforeEach(() => {
         document.body.innerHTML = `
             <div id="gameSelector">

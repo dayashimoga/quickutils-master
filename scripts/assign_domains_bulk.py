@@ -83,24 +83,57 @@ def assign_domains():
         if "quickutils.top" in site_url:
             domain = site_url.replace("https://", "").replace("http://", "").strip("/")
             domain = domain.split("/")[0] # remove trailing paths if any
+            
+            domain_list_url = f"{base_url}/{foldername}/domains"
+            list_res, list_code = api_request("GET", domain_list_url, token)
+            
+            already_assigned = False
+            if list_code == 200 and list_res and "result" in list_res:
+                for existing in list_res["result"]:
+                    if existing.get("name") == domain:
+                        already_assigned = True
+                        break
+            
+            if already_assigned:
+                print(f"  [SKIP] -> Already configured: {domain}")
+                skips += 1
+                continue
+                
             print(f"Assigning {domain} to {foldername}...")
             
             domain_add_url = f"{base_url}/{foldername}/domains"
             payload = {"name": domain}
-            res, code = api_request("POST", domain_add_url, token, payload=payload)
             
-            if code == 409 or code == 400 or (res and not res.get("success") and "already" in str(res).lower()):
-                # 400 happens if domain is already active on another project or same
-                print(f"  [SKIP] -> Already configured or bound: {domain}")
-                skips += 1
-            elif res and res.get("success"):
-                count += 1
-                print(f"  [SUCCESS] -> {domain}")
-            else:
-                print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
-                errors += 1
+            max_retries = 3
+            success_status = False
+            
+            for attempt in range(max_retries):
+                res, code = api_request("POST", domain_add_url, token, payload=payload)
+                
+                if code == 429:
+                    wait_time = 10 * (2 ** attempt)
+                    print(f"  [WARN] -> Rate limited (HTTP 429). Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                    continue
                     
-            time.sleep(0.5)
+                if code == 409 or code == 400 or (res and not res.get("success") and "already" in str(res).lower()):
+                    print(f"  [SKIP] -> Bound simultaneously: {domain}")
+                    skips += 1
+                    success_status = True
+                    break
+                elif res and res.get("success"):
+                    count += 1
+                    print(f"  [SUCCESS] -> {domain}")
+                    success_status = True
+                    break
+                else:
+                    print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
+                    break
+            
+            if not success_status and code != 400 and code != 409 and not (res and res.get("success")):
+                errors += 1
+                
+            time.sleep(1.5) # Protect against rate-limits
 
     print(f"\\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
 

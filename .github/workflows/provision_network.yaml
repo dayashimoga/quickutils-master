@@ -104,18 +104,14 @@ jobs:
           # Free CF 100-limit slots by extinguishing orphaned projects first
           python scripts/cf_extinguisher.py
           
-          # Cancel old builds in background while deploying new ones
-          python scripts/cancel_cf_builds.py &
-          CANCEL_PID=$!
+          # Cancel old builds synchronously before deploying new ones
+          python scripts/cancel_cf_builds.py
           
           # Deploy changed projects immediately (parallel, 4 at a time)
           python scripts/redeploy_cloudflare.py
           
           # Assign custom domains automatically 
           python scripts/assign_domains_bulk.py
-          
-          # Wait for cancel to finish
-          wait $CANCEL_PID 2>/dev/null || true
 
       - name: Skip - No Changes
         if: steps.changes.outputs.projects == 'NONE'
