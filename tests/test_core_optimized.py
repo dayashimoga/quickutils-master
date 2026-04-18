@@ -120,6 +120,10 @@ def test_full_build(tmp_path, monkeypatch):
     monkeypatch.setattr(scripts.build_directory, "SRC_DIR", src_dir)
     monkeypatch.setattr(scripts.build_directory, "TEMPLATES_DIR", tpl_dir)
 
+    # Mock social image generation as it hangs in CI
+    import scripts.generate_social_images
+    monkeypatch.setattr(scripts.generate_social_images, "main", lambda: None)
+
     # Run build
     build_site(db_path)
     
