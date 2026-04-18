@@ -37,6 +37,9 @@ def test_expand_data_logic():
          patch("builtins.open", mock_open()) as m_open, \
          patch("builtins.print"):
         
+        import sys
+        if 'scripts.expand_data' in sys.modules:
+            del sys.modules['scripts.expand_data']
         import scripts.expand_data
         
     m_open().write.assert_called()
@@ -91,6 +94,9 @@ def test_update_docs_logic():
          patch("builtins.print"):
         
         # Avoid reloading if already imported, but for coverage we want to run at least once
+        import sys
+        if 'scripts.update_docs' in sys.modules:
+            del sys.modules['scripts.update_docs']
         import scripts.update_docs
     assert m_open.called
 
