@@ -139,22 +139,40 @@ def assign_domains():
                     
                 time.sleep(1.5) # Protect against rate-limits
 
-            # DNS CNAME Provisioning
+            # DNS CNAME Provisioning (Proxy MUST be True to avoid Error 1014 CNAME Cross-User Banned)
             if zone_id: # Always check and provision DNS, even if already bound to Pages
                 dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
-                if dns_res and dns_res.get("success") and len(dns_res.get("result", [])) == 0:
-                    cname_payload = {
-                        "type": "CNAME",
-                        "name": domain,
-                        "content": f"{foldername}.pages.dev",
-                        "proxied": False,
-                        "comment": "Auto-provisioned by QuickUtils network orchestrator"
-                    }
-                    dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
-                    if dns_code == 200 or dns_code == 201:
-                        print(f"    [DNS OK] -> Created CNAME {domain} -> {foldername}.pages.dev")
+                
+                target_content = f"{foldername}.pages.dev"
+                cname_payload = {
+                    "type": "CNAME",
+                    "name": domain,
+                    "content": target_content,
+                    "proxied": True,
+                    "comment": "Auto-provisioned by QuickUtils network orchestrator"
+                }
+
+                if dns_res and dns_res.get("success"):
+                    records = dns_res.get("result", [])
+                    if len(records) == 0:
+                        # Create new record
+                        dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
+                        if dns_code in [200, 201]:
+                            print(f"    [DNS OK] -> Created proxied CNAME {domain} -> {target_content}")
+                        else:
+                            print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
                     else:
-                        print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
+                        # Update existing record if it's unproxied or points to the wrong target
+                        existing_record = records[0]
+                        if not existing_record.get("proxied") or existing_record.get("content") != target_content:
+                            record_id = existing_record["id"]
+                            dns_put, dns_code = api_request("PUT", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record_id}", token, payload=cname_payload)
+                            if dns_code in [200, 201]:
+                                print(f"    [DNS OK] -> Updated existing CNAME {domain} to be proxied -> {target_content}")
+                            else:
+                                print(f"    [DNS ERROR] -> Failed to update existing CNAME for {domain}")
+                        else:
+                            print(f"    [DNS SKIP] -> CNAME {domain} is already correctly proxied to {target_content}")
 
     print(f"\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
 
