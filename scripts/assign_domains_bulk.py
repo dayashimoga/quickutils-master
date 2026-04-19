@@ -138,25 +138,6 @@ def assign_domains():
                     errors += 1
                     
                 time.sleep(1.5) # Protect against rate-limits
-                
-            # DNS CNAME Provisioning
-            if success_status and zone_id:
-                dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
-                if dns_res and dns_res.get("success") and len(dns_res.get("result", [])) == 0:
-                    cname_payload = {
-                        "type": "CNAME",
-                        "name": domain,
-                        "content": f"{foldername}.pages.dev",
-                        "proxied": True,
-                        "comment": "Auto-provisioned by QuickUtils network orchestrator"
-                    }
-                    dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
-                    if dns_code == 200 or dns_code == 201:
-                        print(f"    [DNS SUCCESS] -> Created CNAME {domain} -> {foldername}.pages.dev")
-                    else:
-                        print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
-                elif dns_res and dns_res.get("result"):
-                    pass # CNAME already exists
 
     print(f"\\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
 

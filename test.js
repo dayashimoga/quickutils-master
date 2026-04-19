@@ -1,4 +1,4 @@
-import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.8/+esm';
+
 
 // ═══════════════════════════════════════════════════
 // PIECE IMAGE URLS (lichess cburnett set via jsDelivr)
@@ -145,7 +145,7 @@ let engineReady = false;
 async function initEngine() {
     try {
         // Cross-origin workers need a blob URL wrapper
-        const workerCode = `importScripts("${STOCKFISH_CDN}");`;
+        const workerCode = ``;
         const blob = new Blob([workerCode], { type: 'application/javascript' });
         const blobUrl = URL.createObjectURL(blob);
         engine = new Worker(blobUrl);
@@ -1837,7 +1837,7 @@ if (btnAnalyzeGame) {
         batchAnalysisResults = [];
         
         if (!analysisEngine) {
-            const workerCode = `importScripts("${STOCKFISH_CDN}");`;
+            const workerCode = ``;
             analysisEngine = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' })));
             analysisEngine.postMessage('uci');
         }
@@ -2006,6 +2006,6 @@ function drawArrowRaw(fromSq, toSq, colorStr, markerId) {
     line.setAttribute('stroke', colorStr);
     line.setAttribute('stroke-width', '6');
     line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('marker-end', `url(#${markerId})`);
+    line.setAttribute('marker-end', \`url(#\${markerId})\`);
     svg.appendChild(line);
 }
