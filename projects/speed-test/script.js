@@ -295,7 +295,7 @@
                     try {
                         await fetch('https://speed.cloudflare.com/__up', {
                             method: 'POST', body: buf, cache: 'no-store',
-                            headers: { 'Content-Type': 'application/octet-stream' }
+                            headers: { 'Content-Type': 'text/plain' }
                         });
                         totalBytes += CHUNK;
                     } catch {}

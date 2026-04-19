@@ -107,7 +107,7 @@ body {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 14px;
-    padding: 1.1rem;
+    padding: 0.85rem;
     backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 }
@@ -289,7 +289,7 @@ body {
 
 /* ─── Moves List ─── */
 .moves-list {
-    flex-grow: 1; overflow-y: auto; max-height: 220px;
+    flex-grow: 1; overflow-y: auto; max-height: 150px;
     display: flex; flex-wrap: wrap; gap: 1px;
     font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
     padding: 2px;

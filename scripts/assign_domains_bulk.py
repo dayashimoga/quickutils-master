@@ -75,6 +75,12 @@ def assign_domains():
             print("❌ Could not fetch Account ID from API. Please set CLOUDFLARE_ACCOUNT_ID.")
             sys.exit(1)
 
+    # Pre-fetch zone ID for quickutils.top
+    zones_res, _ = api_request("GET", "https://api.cloudflare.com/client/v4/zones?name=quickutils.top", token)
+    zone_id = None
+    if zones_res and zones_res.get("success") and zones_res.get("result"):
+        zone_id = zones_res["result"][0]["id"]
+
     base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
     print(f"Loaded {len(projects)} projects from config. Initiating bulk domain REST API assignment...")
     
@@ -94,46 +100,63 @@ def assign_domains():
                         already_assigned = True
                         break
             
-            if already_assigned:
-                print(f"  [SKIP] -> Already configured: {domain}")
-                skips += 1
-                continue
-                
-            print(f"Assigning {domain} to {foldername}...")
-            
-            domain_add_url = f"{base_url}/{foldername}/domains"
-            payload = {"name": domain}
-            
-            max_retries = 3
             success_status = False
-            
-            for attempt in range(max_retries):
-                res, code = api_request("POST", domain_add_url, token, payload=payload)
+            if already_assigned:
+                print(f"  [SKIP] -> Already configured in Pages: {domain}")
+                skips += 1
+                success_status = True
+            else:
+                print(f"Assigning {domain} to {foldername}...")
+                domain_add_url = f"{base_url}/{foldername}/domains"
+                payload = {"name": domain}
+                max_retries = 3
                 
-                if code == 429:
-                    wait_time = 10 * (2 ** attempt)
-                    print(f"  [WARN] -> Rate limited (HTTP 429). Retrying in {wait_time}s...")
-                    time.sleep(wait_time)
-                    continue
+                for attempt in range(max_retries):
+                    res, code = api_request("POST", domain_add_url, token, payload=payload)
                     
-                if code == 409 or code == 400 or (res and not res.get("success") and "already" in str(res).lower()):
-                    print(f"  [SKIP] -> Bound simultaneously: {domain}")
-                    skips += 1
-                    success_status = True
-                    break
-                elif res and res.get("success"):
-                    count += 1
-                    print(f"  [SUCCESS] -> {domain}")
-                    success_status = True
-                    break
-                else:
-                    print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
-                    break
-            
-            if not success_status and code != 400 and code != 409 and not (res and res.get("success")):
-                errors += 1
+                    if code == 429:
+                        wait_time = 10 * (2 ** attempt)
+                        print(f"  [WARN] -> Rate limited (HTTP 429). Retrying in {wait_time}s...")
+                        time.sleep(wait_time)
+                        continue
+                        
+                    if code == 409 or code == 400 or (res and not res.get("success") and "already" in str(res).lower()):
+                        print(f"  [SKIP] -> Bound simultaneously: {domain}")
+                        skips += 1
+                        success_status = True
+                        break
+                    elif res and res.get("success"):
+                        count += 1
+                        print(f"  [SUCCESS] -> {domain}")
+                        success_status = True
+                        break
+                    else:
+                        print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
+                        break
                 
-            time.sleep(1.5) # Protect against rate-limits
+                if not success_status and code != 400 and code != 409 and not (res and res.get("success")):
+                    errors += 1
+                    
+                time.sleep(1.5) # Protect against rate-limits
+                
+            # DNS CNAME Provisioning
+            if success_status and zone_id:
+                dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
+                if dns_res and dns_res.get("success") and len(dns_res.get("result", [])) == 0:
+                    cname_payload = {
+                        "type": "CNAME",
+                        "name": domain,
+                        "content": f"{foldername}.pages.dev",
+                        "proxied": True,
+                        "comment": "Auto-provisioned by QuickUtils network orchestrator"
+                    }
+                    dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
+                    if dns_code == 200 or dns_code == 201:
+                        print(f"    [DNS SUCCESS] -> Created CNAME {domain} -> {foldername}.pages.dev")
+                    else:
+                        print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
+                elif dns_res and dns_res.get("result"):
+                    pass # CNAME already exists
 
     print(f"\\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
 
