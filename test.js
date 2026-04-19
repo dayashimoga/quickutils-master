@@ -2006,6 +2006,8 @@ function drawArrowRaw(fromSq, toSq, colorStr, markerId) {
     line.setAttribute('stroke', colorStr);
     line.setAttribute('stroke-width', '6');
     line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('marker-end', \`url(#\${markerId})\`);
+    line.setAttribute('marker-end', `url(#${markerId})`);
     svg.appendChild(line);
 }
+ 
+ 

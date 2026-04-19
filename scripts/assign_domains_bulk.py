@@ -147,7 +147,7 @@ def assign_domains():
                         "type": "CNAME",
                         "name": domain,
                         "content": f"{foldername}.pages.dev",
-                        "proxied": True,
+                        "proxied": False,
                         "comment": "Auto-provisioned by QuickUtils network orchestrator"
                     }
                     dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
@@ -156,7 +156,7 @@ def assign_domains():
                     else:
                         print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
 
-    print(f"\\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
+    print(f"\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
 
 if __name__ == "__main__":
     assign_domains()
