@@ -1,6 +1,7 @@
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 
 // Full detailed dataset of all 118 elements
 const elements = [
@@ -1304,6 +1305,17 @@ const elements = [
     }
 ];
 
+// Fix lanthanide/actinide grid positions for separate rows
+elements.forEach(el => {
+    if (el.c === 'lanthanide') {
+        el.period = 8;
+        el.group = 3 + (el.n - 57);
+    } else if (el.c === 'actinide') {
+        el.period = 9;
+        el.group = 3 + (el.n - 89);
+    }
+});
+
 
 const CATEGORIES = {
     alkali_metal: { name: 'Alkali Metal', color: 'var(--c-alkali)' },
@@ -1493,6 +1505,8 @@ $('#tempInput').addEventListener('input', (e) => {
     currentTemp = parseInt(e.target.value);
     $('#tempVal').textContent = currentTemp + ' K';
     applyFilters();
+    // Update phase legend counts (function defined later, available at call time)
+    if (typeof updatePhaseLegend === 'function') updatePhaseLegend(currentTemp);
 });
 
 $('#sensitivityBtn').addEventListener('click', () => {
@@ -1503,23 +1517,14 @@ $('#sensitivityBtn').addEventListener('click', () => {
 });
 
 function getPhase(n, temp) {
-    // Highly simplified melting/boiling model for demonstration
-    // Noble gases (gas at room temp, liquify very low)
-    const noble = [2, 10, 18, 36, 54, 86];
-    if(noble.includes(n)) return temp < 100 ? (temp < 10 ? 'solid' : 'liquid') : 'gas';
-    
-    // Halogens / Nonmetals
-    const nonMetals = [1, 7, 8, 9, 17, 35, 53];
-    if(nonMetals.includes(n)) return temp < 200 ? 'solid' : (temp < 300 && n===35 ? 'liquid' : 'gas');
-
-    // Liquids at room temp
-    if(n === 80) return temp < 234 ? 'solid' : (temp > 630 ? 'gas' : 'liquid'); // Mercury
-    
-    // High melt solids
-    const meltingPt = 600 + (n * 10);
-    const boilingPt = meltingPt + 1500;
-    if(temp > boilingPt) return 'gas';
-    if(temp > meltingPt) return 'liquid';
+    // Use real phase data (PHASE_DATA defined later in same scope, initialized by call time)
+    if (typeof PHASE_DATA !== 'undefined' && PHASE_DATA[n]) {
+        const pd = PHASE_DATA[n];
+        if (temp >= pd.b) return 'gas';
+        if (temp >= pd.m) return 'liquid';
+        return 'solid';
+    }
+    // Fallback for safety
     return 'solid';
 }
 
@@ -1552,13 +1557,29 @@ function applyFilters() {
             cell.style.transform = 'scale(0.9)';
             cell.style.filter = 'grayscale(100%)';
             cell.style.boxShadow = 'none';
+            cell.style.borderColor = '';
         } else {
-            cell.style.opacity = '1';
-            cell.style.transform = 'scale(1)';
-            
-            // Apply Physical State Visuals via CSS classes
+            // Apply Physical State Visuals
             cell.classList.remove('phase-solid', 'phase-liquid', 'phase-gas');
             cell.classList.add('phase-' + phase);
+            cell.dataset.phase = phase;
+            
+            if (phase === 'liquid') {
+                cell.style.opacity = '0.85';
+                cell.style.boxShadow = '0 0 12px rgba(0, 150, 255, 0.6)';
+                cell.style.transform = 'scale(0.97)';
+                cell.style.borderColor = 'rgba(0, 150, 255, 0.5)';
+            } else if (phase === 'gas') {
+                cell.style.opacity = '0.35';
+                cell.style.boxShadow = 'none';
+                cell.style.transform = 'scale(0.93)';
+                cell.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            } else {
+                cell.style.opacity = '1';
+                cell.style.boxShadow = '';
+                cell.style.transform = 'scale(1)';
+                cell.style.borderColor = '';
+            }
             
             if (sensitivityMode) {
                 cell.style.filter = 'drop-shadow(0 0 10px var(--c-alkali))';
@@ -1730,47 +1751,8 @@ showDetails = function(id) {
         return 'solid';
     }
 
-    // Hook into the actual HTML temperature slider (#tempInput)
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
-    
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            if (tempVal) tempVal.textContent = temp + ' K';
-            
-            // FIXED: Target .element-cell (actual DOM class), not .element-card
-            document.querySelectorAll('.element-cell').forEach(cell => {
-                const id = cell.dataset.id;
-                const elData = elements.find(x => x.n === parseInt(id));
-                if (!elData) return;
-                
-                const state = getStateAtTemp(elData, temp);
-                // Add phase state indicator
-                cell.dataset.phase = state;
-                
-                if (state === 'liquid') {
-                    cell.style.opacity = '0.85';
-                    cell.style.boxShadow = '0 0 12px rgba(0, 150, 255, 0.6)';
-                    cell.style.transform = 'scale(0.97)';
-                    cell.style.borderColor = 'rgba(0, 150, 255, 0.5)';
-                } else if (state === 'gas') {
-                    cell.style.opacity = '0.35';
-                    cell.style.boxShadow = 'none';
-                    cell.style.transform = 'scale(0.93)';
-                    cell.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                } else {
-                    cell.style.opacity = '1';
-                    cell.style.boxShadow = '';
-                    cell.style.transform = 'scale(1)';
-                    cell.style.borderColor = '';
-                }
-            });
-            
-            // Update phase legend counts
-            updatePhaseLegend(temp);
-        });
-    }
+    // Temperature slider is handled by the unified tempInput listener above
+    // which calls applyFilters() + updatePhaseLegend() with real PHASE_DATA
 
     function updatePhaseLegend(temp) {
         let solid = 0, liquid = 0, gas = 0;
