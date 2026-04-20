@@ -44,13 +44,16 @@
         </div>
     </div></nav>
     <main class="container" style="margin-top:1.5rem">
-        <div class="tabs glass-card" id="toolTabs">
+        <div class="tabs glass-card" id="toolTabs" style="flex-wrap:wrap;">
             <button class="tab-btn active" data-tool="ipinfo">🔍 IP Info</button>
-            <button class="tab-btn" data-tool="subnet">📐 Subnet Calc</button>
-            <button class="tab-btn" data-tool="dns">🌍 DNS Lookup</button>
-            <button class="tab-btn" data-tool="ports">🚪 Port Reference</button>
-            <button class="tab-btn" data-tool="cidr">📊 CIDR Calc</button>
+            <button class="tab-btn" data-tool="subnet">📐 Subnet</button>
+            <button class="tab-btn" data-tool="dns">🌍 DNS</button>
+            <button class="tab-btn" data-tool="ports">🚪 Ports</button>
+            <button class="tab-btn" data-tool="cidr">📊 CIDR</button>
             <button class="tab-btn" data-tool="headers">📋 Headers</button>
+            <button class="tab-btn" data-tool="ipv6">🌐 IPv6</button>
+            <button class="tab-btn" data-tool="mac">📡 MAC</button>
+            <button class="tab-btn" data-tool="bandwidth">⚡ Bandwidth</button>
         </div>
         <!-- IP Info -->
         <div class="tool-panel glass-card" id="panel-ipinfo">
@@ -91,6 +94,30 @@
             <h2>📋 HTTP Header Reference</h2>
             <input type="search" id="headerSearch" placeholder="Search headers...">
             <div id="headerList"></div>
+        </div>
+        <!-- IPv6 -->
+        <div class="tool-panel glass-card hidden" id="panel-ipv6">
+            <h2>🌐 IPv6 Tools</h2>
+            <div class="input-group"><input type="text" id="ipv6Input" placeholder="Enter IPv6 (e.g. 2001:0db8::1)"><button class="btn btn-primary" id="ipv6Btn">Analyze</button></div>
+            <div id="ipv6Results" class="results-grid"></div>
+        </div>
+        <!-- MAC -->
+        <div class="tool-panel glass-card hidden" id="panel-mac">
+            <h2>📡 MAC Address Lookup</h2>
+            <div class="input-group"><input type="text" id="macInput" placeholder="Enter MAC (e.g. AA:BB:CC:DD:EE:FF)"><button class="btn btn-primary" id="macBtn">Lookup</button></div>
+            <div id="macResults" class="results-grid"></div>
+        </div>
+        <!-- Bandwidth -->
+        <div class="tool-panel glass-card hidden" id="panel-bandwidth">
+            <h2>⚡ Bandwidth Calculator</h2>
+            <div class="input-row" style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <div class="input-group" style="flex:1; min-width:150px;"><label>File Size</label><input type="number" id="bwSize" value="1" step="any"></div>
+                <div class="input-group" style="flex:1; min-width:120px;"><label>Size Unit</label><select id="bwSizeUnit"><option value="B">Bytes</option><option value="KB">KB</option><option value="MB" selected>MB</option><option value="GB">GB</option><option value="TB">TB</option></select></div>
+                <div class="input-group" style="flex:1; min-width:150px;"><label>Speed</label><input type="number" id="bwSpeed" value="100" step="any"></div>
+                <div class="input-group" style="flex:1; min-width:120px;"><label>Speed Unit</label><select id="bwSpeedUnit"><option value="Kbps">Kbps</option><option value="Mbps" selected>Mbps</option><option value="Gbps">Gbps</option></select></div>
+            </div>
+            <button class="btn btn-primary" id="bwCalcBtn" style="margin-top:0.5rem;">Calculate</button>
+            <div id="bwResults" class="results-grid" style="margin-top:1rem;"></div>
         </div>
     </main>
     <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>

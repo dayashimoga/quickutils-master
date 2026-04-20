@@ -80,15 +80,23 @@
             <button class="btn-tool gate-btn" data-type="xor">XOR</button>
             <button class="btn-tool gate-btn" data-type="nand">NAND</button>
             <button class="btn-tool gate-btn" data-type="nor">NOR</button>
+            <button class="btn-tool gate-btn" data-type="xnor">XNOR</button>
+            <button class="btn-tool gate-btn" data-type="buffer">BUF</button>
         </div>
 
         <h4 class="mb-3 mt-3 text-uppercase text-xs text-muted">Advanced</h4>
-        <div class="d-flex gap-2">
-            <button class="btn-tool bg-hover flex-grow-1" data-type="dff">D-FlipFlop</button>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-tool bg-hover flex-grow-1" data-type="dff">D-FF</button>
             <button class="btn-tool bg-hover flex-grow-1" data-type="seg7">7-Seg</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="mux">MUX</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="srlatch">SR Latch</button>
+            <button class="btn-tool bg-hover flex-grow-1" data-type="jkff">JK-FF</button>
         </div>
+
+        <h4 class="mb-3 mt-3 text-uppercase text-xs text-muted">Preset Circuits</h4>
+        <div id="presetBtns" class="d-flex gap-2 flex-wrap"></div>
         
-        <p class="text-xs text-muted mt-4">Drag from OUT nodes (circle right) to IN nodes (circle left) to wire. Green wires = High (1), Red wires = Low (0).</p>
+        <p class="text-xs text-muted mt-4">Drag from OUT (right) to IN (left) to wire. Click wire to delete. Green=High, Red=Low.</p>
     </div>
 
     <!-- Canvas Area -->

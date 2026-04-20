@@ -1673,236 +1673,324 @@ showDetails = function(id) {
     }
 };
 
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
+    // ═══════════════════════════════════════════════════
+    // ENHANCED TEMPERATURE LOGIC (Fixed: targets .element-cell)
+    // ═══════════════════════════════════════════════════
     
-    // Fallback pseudo-melting/boiling thresholds if missing\n\n
+    // Real melting/boiling points in Kelvin for all 118 elements
+    const PHASE_DATA = {
+        1:{m:14,b:20},2:{m:1,b:4},3:{m:454,b:1603},4:{m:1560,b:2742},5:{m:2349,b:4200},
+        6:{m:3823,b:4098},7:{m:63,b:77},8:{m:54,b:90},9:{m:53,b:85},10:{m:25,b:27},
+        11:{m:371,b:1156},12:{m:923,b:1363},13:{m:933,b:2792},14:{m:1687,b:3538},
+        15:{m:317,b:554},16:{m:388,b:718},17:{m:172,b:239},18:{m:84,b:87},
+        19:{m:337,b:1032},20:{m:1115,b:1757},21:{m:1814,b:3109},22:{m:1941,b:3560},
+        23:{m:2183,b:3680},24:{m:2180,b:2944},25:{m:1519,b:2334},26:{m:1811,b:3134},
+        27:{m:1768,b:3200},28:{m:1728,b:3186},29:{m:1358,b:2835},30:{m:693,b:1180},
+        31:{m:303,b:2477},32:{m:1211,b:3106},33:{m:1090,b:887},34:{m:494,b:958},
+        35:{m:266,b:332},36:{m:116,b:120},37:{m:312,b:961},38:{m:1050,b:1655},
+        39:{m:1799,b:3609},40:{m:2128,b:4682},41:{m:2750,b:5017},42:{m:2896,b:4912},
+        43:{m:2430,b:4538},44:{m:2607,b:4423},45:{m:2237,b:3968},46:{m:1828,b:3236},
+        47:{m:1235,b:2435},48:{m:594,b:1040},49:{m:430,b:2345},50:{m:505,b:2875},
+        51:{m:904,b:1860},52:{m:723,b:1261},53:{m:387,b:457},54:{m:161,b:165},
+        55:{m:302,b:944},56:{m:1000,b:2170},57:{m:1193,b:3737},58:{m:1068,b:3716},
+        59:{m:1208,b:3793},60:{m:1297,b:3347},61:{m:1315,b:3273},62:{m:1345,b:2067},
+        63:{m:1099,b:1802},64:{m:1585,b:3546},65:{m:1629,b:3503},66:{m:1680,b:2840},
+        67:{m:1734,b:2993},68:{m:1802,b:3141},69:{m:1818,b:2223},70:{m:1097,b:1469},
+        71:{m:1925,b:3675},72:{m:2506,b:4876},73:{m:3290,b:5731},74:{m:3695,b:5828},
+        75:{m:3459,b:5869},76:{m:3306,b:5285},77:{m:2719,b:4701},78:{m:2041,b:4098},
+        79:{m:1337,b:3129},80:{m:234,b:630},81:{m:577,b:1746},82:{m:601,b:2022},
+        83:{m:544,b:1837},84:{m:527,b:1235},85:{m:575,b:610},86:{m:202,b:211},
+        87:{m:300,b:950},88:{m:973,b:2010},89:{m:1323,b:3471},90:{m:2115,b:5061},
+        91:{m:1841,b:4300},92:{m:1405,b:4404},93:{m:917,b:4175},94:{m:913,b:3501},
+        95:{m:1449,b:2880},96:{m:1613,b:3383},97:{m:1259,b:2900},98:{m:1173,b:1743},
+        99:{m:1133,b:1269},100:{m:1800,b:1800},101:{m:1100,b:1100},102:{m:1100,b:1100},
+        103:{m:1900,b:1900},104:{m:2400,b:5800},105:{m:2400,b:5800},106:{m:2400,b:5800},
+        107:{m:2400,b:5800},108:{m:2400,b:5800},109:{m:2400,b:5800},110:{m:2400,b:5800},
+        111:{m:2400,b:5800},112:{m:340,b:357},113:{m:700,b:1400},114:{m:340,b:420},
+        115:{m:700,b:1400},116:{m:709,b:883},117:{m:623,b:883},118:{m:325,b:450}
+    };
+
     function getStateAtTemp(el, currentTemp) {
         if (!el) return 'solid';
-        // Simplified Phase logic based on melting/boiling points
         const temp = parseFloat(currentTemp);
-        let melt = 300; let boil = 1000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 50; }
-        if (el.c === 'halogen') { melt = 200; boil = 300; }
-        if (el.c === 'nonmetal') { melt = 250; boil = 400; }
-        if (temp > boil) return 'gas';
-        if (temp > melt) return 'liquid';
+        const pd = PHASE_DATA[el.n];
+        if (pd) {
+            if (temp >= pd.b) return 'gas';
+            if (temp >= pd.m) return 'liquid';
+            return 'solid';
+        }
+        // Fallback based on category
+        let melt = 1000, boil = 3000;
+        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
+        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
+        else if (el.c === 'alkali_metal') { melt = 350; boil = 1000; }
+        else if (el.c === 'alkaline_earth') { melt = 900; boil = 1800; }
+        if (temp >= boil) return 'gas';
+        if (temp >= melt) return 'liquid';
         return 'solid';
     }
 
-    const slider = document.getElementById('tempSlider');
-    const valDisplay = document.getElementById('tempValueDisplay');
-    if (slider && valDisplay) {
-        slider.addEventListener('input', (e) => {
-            const temp = e.target.value;
-            valDisplay.textContent = temp + ' K';
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.2';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
+    // Hook into the actual HTML temperature slider (#tempInput)
+    const tempInput = document.getElementById('tempInput');
+    const tempVal = document.getElementById('tempVal');
+    
+    if (tempInput) {
+        tempInput.addEventListener('input', (e) => {
+            const temp = parseInt(e.target.value);
+            if (tempVal) tempVal.textContent = temp + ' K';
+            
+            // FIXED: Target .element-cell (actual DOM class), not .element-card
+            document.querySelectorAll('.element-cell').forEach(cell => {
+                const id = cell.dataset.id;
+                const elData = elements.find(x => x.n === parseInt(id));
+                if (!elData) return;
+                
+                const state = getStateAtTemp(elData, temp);
+                // Add phase state indicator
+                cell.dataset.phase = state;
+                
+                if (state === 'liquid') {
+                    cell.style.opacity = '0.85';
+                    cell.style.boxShadow = '0 0 12px rgba(0, 150, 255, 0.6)';
+                    cell.style.transform = 'scale(0.97)';
+                    cell.style.borderColor = 'rgba(0, 150, 255, 0.5)';
+                } else if (state === 'gas') {
+                    cell.style.opacity = '0.35';
+                    cell.style.boxShadow = 'none';
+                    cell.style.transform = 'scale(0.93)';
+                    cell.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                } else {
+                    cell.style.opacity = '1';
+                    cell.style.boxShadow = '';
+                    cell.style.transform = 'scale(1)';
+                    cell.style.borderColor = '';
                 }
             });
+            
+            // Update phase legend counts
+            updatePhaseLegend(temp);
         });
+    }
+
+    function updatePhaseLegend(temp) {
+        let solid = 0, liquid = 0, gas = 0;
+        elements.forEach(el => {
+            const state = getStateAtTemp(el, temp);
+            if (state === 'solid') solid++;
+            else if (state === 'liquid') liquid++;
+            else gas++;
+        });
+        const legend = document.getElementById('phaseLegend');
+        if (legend) {
+            legend.innerHTML = `
+                <span style="color:#60a5fa;">● Solid: ${solid}</span>
+                <span style="color:#06b6d4;">● Liquid: ${liquid}</span>
+                <span style="color:rgba(255,255,255,0.4);">● Gas: ${gas}</span>
+            `;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // ELEMENT COMBINING LAB
+    // ═══════════════════════════════════════════════════
+    const REACTIONS_DB = [
+        { reactants: [1,8], product: 'H₂O', name: 'Water', ratio: '2H₂ + O₂', conditions: 'Spark/flame', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [1,17], product: 'HCl', name: 'Hydrochloric acid', ratio: 'H₂ + Cl₂', conditions: 'UV light or heat', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [11,17], product: 'NaCl', name: 'Table salt', ratio: '2Na + Cl₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [6,8], product: 'CO₂', name: 'Carbon dioxide', ratio: 'C + O₂', conditions: 'Combustion (heat)', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [26,8], product: 'Fe₂O₃', name: 'Iron(III) oxide (Rust)', ratio: '4Fe + 3O₂', conditions: 'Moisture + O₂', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [12,8], product: 'MgO', name: 'Magnesium oxide', ratio: '2Mg + O₂', conditions: 'Burning (bright flame)', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [13,8], product: 'Al₂O₃', name: 'Aluminum oxide', ratio: '4Al + 3O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [7,1], product: 'NH₃', name: 'Ammonia', ratio: 'N₂ + 3H₂', conditions: 'Haber process (450°C, catalyst)', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [16,8], product: 'SO₂', name: 'Sulfur dioxide', ratio: 'S + O₂', conditions: 'Combustion', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [20,6], product: 'CaCO₃', name: 'Calcium carbonate (Limestone)', ratio: 'Ca + C + 3O', conditions: 'Natural formation', type: 'Synthesis', bond: 'Ionic/Covalent' },
+        { reactants: [19,35], product: 'KBr', name: 'Potassium bromide', ratio: '2K + Br₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [14,8], product: 'SiO₂', name: 'Silicon dioxide (Quartz)', ratio: 'Si + O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [29,16], product: 'CuS', name: 'Copper sulfide', ratio: 'Cu + S', conditions: 'Heat', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [30,8], product: 'ZnO', name: 'Zinc oxide', ratio: '2Zn + O₂', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [15,8], product: 'P₂O₅', name: 'Phosphorus pentoxide', ratio: '4P + 5O₂', conditions: 'Burning in air', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [11,8], product: 'Na₂O', name: 'Sodium oxide', ratio: '4Na + O₂', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [3,7], product: 'Li₃N', name: 'Lithium nitride', ratio: '6Li + N₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [20,17], product: 'CaCl₂', name: 'Calcium chloride', ratio: 'Ca + Cl₂', conditions: 'Direct combination', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [1,16], product: 'H₂S', name: 'Hydrogen sulfide', ratio: 'H₂ + S', conditions: 'Heat', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [6,1], product: 'CH₄', name: 'Methane', ratio: 'C + 2H₂', conditions: 'High pressure/temp', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [47,16], product: 'Ag₂S', name: 'Silver sulfide (Tarnish)', ratio: '2Ag + S', conditions: 'Air exposure', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [22,17], product: 'TiCl₄', name: 'Titanium tetrachloride', ratio: 'Ti + 2Cl₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [50,8], product: 'SnO₂', name: 'Tin dioxide', ratio: 'Sn + O₂', conditions: 'Heating in air', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [82,16], product: 'PbS', name: 'Lead sulfide (Galena)', ratio: 'Pb + S', conditions: 'Heat', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [19,8], product: 'K₂O', name: 'Potassium oxide', ratio: '4K + O₂', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [56,8], product: 'BaO', name: 'Barium oxide', ratio: '2Ba + O₂', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [25,8], product: 'MnO₂', name: 'Manganese dioxide', ratio: 'Mn + O₂', conditions: 'Natural oxidation', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [24,8], product: 'Cr₂O₃', name: 'Chromium(III) oxide', ratio: '4Cr + 3O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [74,6], product: 'WC', name: 'Tungsten carbide', ratio: 'W + C', conditions: '1400-1600°C', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [28,8], product: 'NiO', name: 'Nickel oxide', ratio: '2Ni + O₂', conditions: 'Heating in air', type: 'Synthesis', bond: 'Ionic' }
+    ];
+    
+    window.findReactions = function(el1Num, el2Num) {
+        return REACTIONS_DB.filter(r => 
+            (r.reactants.includes(el1Num) && r.reactants.includes(el2Num))
+        );
+    };
+
+    // Combine elements UI — triggered from a "Combine" button
+    window.openCombineLab = function() {
+        let panel = document.getElementById('combineLab');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'combineLab';
+            panel.className = 'glass-card';
+            panel.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; padding:1.5rem; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; background:rgba(10,15,30,0.95); border:1px solid var(--accent); border-radius:16px;';
+            document.body.appendChild(panel);
+        }
+        
+        panel.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; color:var(--accent);">⚗️ Element Combining Lab</h3>
+                <button onclick="document.getElementById('combineLab').remove()" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <select id="combineEl1" style="flex:1; min-width:120px; padding:0.5rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
+                    ${elements.map(e => `<option value="${e.n}">${e.n}. ${e.name} (${e.s})</option>`).join('')}
+                </select>
+                <span style="color:var(--accent); font-size:1.5rem; align-self:center;">+</span>
+                <select id="combineEl2" style="flex:1; min-width:120px; padding:0.5rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
+                    ${elements.map(e => `<option value="${e.n}" ${e.n===8?'selected':''}>${e.n}. ${e.name} (${e.s})</option>`).join('')}
+                </select>
+                <button onclick="performCombine()" class="btn btn-primary" style="padding:0.5rem 1.2rem;">Combine</button>
+            </div>
+            <div id="combineResults" style="min-height:80px;"></div>
+        `;
+    };
+    
+    window.performCombine = function() {
+        const el1 = parseInt(document.getElementById('combineEl1').value);
+        const el2 = parseInt(document.getElementById('combineEl2').value);
+        const results = findReactions(el1, el2);
+        const container = document.getElementById('combineResults');
+        
+        const el1Data = elements.find(x => x.n === el1);
+        const el2Data = elements.find(x => x.n === el2);
+        
+        if (results.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-muted);">
+                <div style="font-size:2rem; margin-bottom:0.5rem;">🔬</div>
+                No known common reaction between <strong>${el1Data?.name || el1}</strong> and <strong>${el2Data?.name || el2}</strong>.<br>
+                <span style="font-size:0.8rem;">Try combining metals with non-metals, or check elements like H, O, C, Na, Cl.</span>
+            </div>`;
+            return;
+        }
+        
+        container.innerHTML = results.map(r => `
+            <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h4 style="margin:0; color:#4ade80; font-size:1.1rem;">${r.product} — ${r.name}</h4>
+                    <span style="font-size:0.75rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.15); color:var(--accent);">${r.type}</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.85rem;">
+                    <div><strong style="color:var(--text-muted);">Equation:</strong> ${r.ratio} → ${r.product}</div>
+                    <div><strong style="color:var(--text-muted);">Bond Type:</strong> ${r.bond}</div>
+                    <div style="grid-column:1/-1;"><strong style="color:var(--text-muted);">Conditions:</strong> ${r.conditions}</div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // ═══════════════════════════════════════════════════
+    // COMPARISON MODE
+    // ═══════════════════════════════════════════════════
+    window.openCompareMode = function() {
+        let panel = document.getElementById('comparePanel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'comparePanel';
+            panel.className = 'glass-card';
+            panel.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; padding:1.5rem; max-width:700px; width:90%; max-height:80vh; overflow-y:auto; background:rgba(10,15,30,0.95); border:1px solid var(--accent); border-radius:16px;';
+            document.body.appendChild(panel);
+        }
+        
+        panel.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; color:var(--accent);">⚖️ Element Comparison</h3>
+                <button onclick="document.getElementById('comparePanel').remove()" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                <select id="cmpEl1" onchange="doCompare()" style="flex:1; padding:0.5rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
+                    ${elements.map(e => `<option value="${e.n}">${e.n}. ${e.name}</option>`).join('')}
+                </select>
+                <span style="color:var(--text-muted); align-self:center;">vs</span>
+                <select id="cmpEl2" onchange="doCompare()" style="flex:1; padding:0.5rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
+                    ${elements.map(e => `<option value="${e.n}" ${e.n===79?'selected':''}>${e.n}. ${e.name}</option>`).join('')}
+                </select>
+            </div>
+            <div id="cmpResults"></div>
+        `;
+        doCompare();
+    };
+
+    window.doCompare = function() {
+        const n1 = parseInt(document.getElementById('cmpEl1').value);
+        const n2 = parseInt(document.getElementById('cmpEl2').value);
+        const e1 = elements.find(x => x.n === n1);
+        const e2 = elements.find(x => x.n === n2);
+        if (!e1 || !e2) return;
+        
+        const pd1 = PHASE_DATA[n1] || {m:'?',b:'?'};
+        const pd2 = PHASE_DATA[n2] || {m:'?',b:'?'};
+        
+        const props = [
+            ['Symbol', e1.s, e2.s],
+            ['Atomic Number', e1.n, e2.n],
+            ['Category', e1.c?.replace(/_/g,' '), e2.c?.replace(/_/g,' ')],
+            ['Period', e1.period || '?', e2.period || '?'],
+            ['Group', e1.group || '?', e2.group || '?'],
+            ['Melting Point', pd1.m+'K', pd2.m+'K'],
+            ['Boiling Point', pd1.b+'K', pd2.b+'K'],
+            ['Electronegativity', e1.electronegativity || '?', e2.electronegativity || '?'],
+            ['Density', e1.density || '?', e2.density || '?']
+        ];
+        
+        document.getElementById('cmpResults').innerHTML = `
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead><tr style="border-bottom:2px solid rgba(99,102,241,0.3);">
+                    <th style="text-align:left; padding:6px; color:var(--text-muted);">Property</th>
+                    <th style="text-align:center; padding:6px; color:#4ade80;">${e1.name}</th>
+                    <th style="text-align:center; padding:6px; color:#60a5fa;">${e2.name}</th>
+                </tr></thead>
+                <tbody>${props.map(([prop,v1,v2]) => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:6px; color:var(--text-muted);">${prop}</td>
+                        <td style="padding:6px; text-align:center; font-weight:600;">${v1}</td>
+                        <td style="padding:6px; text-align:center; font-weight:600;">${v2}</td>
+                    </tr>
+                `).join('')}</tbody>
+            </table>
+        `;
+    };
+
+    // Inject Combine & Compare buttons
+    const modeToggles = document.querySelector('.mode-toggles');
+    if (modeToggles) {
+        const combineBtn = document.createElement('button');
+        combineBtn.className = 'btn btn-secondary btn-sm';
+        combineBtn.textContent = '⚗️ Combine Elements';
+        combineBtn.onclick = openCombineLab;
+        modeToggles.appendChild(combineBtn);
+        
+        const compareBtn = document.createElement('button');
+        compareBtn.className = 'btn btn-secondary btn-sm';
+        compareBtn.textContent = '⚖️ Compare';
+        compareBtn.onclick = openCompareMode;
+        modeToggles.appendChild(compareBtn);
+    }
+
+    // Add phase legend element
+    const phaseControls = document.querySelector('.phase-controls');
+    if (phaseControls) {
+        const legend = document.createElement('div');
+        legend.id = 'phaseLegend';
+        legend.style.cssText = 'display:flex; gap:1rem; font-size:0.8rem; margin-top:0.5rem; justify-content:center;';
+        phaseControls.appendChild(legend);
+        updatePhaseLegend(298);
     }
 
 })();
-
-
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
-    
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
-        
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
-
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
-            
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
-                }
-            });
-        });
-    }
-
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
-    
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
-        
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
-
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
-            
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
-                }
-            });
-        });
-    }
-
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
-    
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
-        
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
-
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
-            
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
-                }
-            });
-        });
-    }
-
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
-    
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
-        
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
-
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
-            
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
-                }
-            });
-        });
-    }

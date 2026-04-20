@@ -23,6 +23,8 @@
         xor: (inps) => (inps[0] ^ inps[1]) ? 1 : 0,
         nand:(inps) => !(inps[0] && inps[1]) ? 1 : 0,
         nor: (inps) => !(inps[0] || inps[1]) ? 1 : 0,
+        xnor:(inps) => (inps[0] ^ inps[1]) ? 0 : 1,
+        buffer:(inps) => inps[0] ? 1 : 0,
     };
 
     function addComponent(type, x, y, forceId) {
@@ -37,11 +39,16 @@
         let inC = 2, outC = 1;
         let isSpecial = false;
 
-        if(type === 'not') inC = 1;
+        if(type === 'not' || type === 'buffer') inC = 1;
         if(type === 'switch' || type === 'clock') { inC = 0; outC = 1; isSpecial = true; }
         if(type === 'bulb') { inC = 1; outC = 0; isSpecial = true; }
         if(type === 'dff') { inC = 2; outC = 2; name = "D-FF"; } // Data, Clock -> Q, !Q
         if(type === 'seg7') { inC = 4; outC = 0; name = "7-SEG"; }
+        if(type === 'mux') { inC = 3; outC = 1; name = "MUX"; } // A, B, Sel -> Out
+        if(type === 'srlatch') { inC = 2; outC = 2; name = "SR"; } // S, R -> Q, !Q
+        if(type === 'jkff') { inC = 3; outC = 2; name = "JK-FF"; } // J, K, Clk -> Q, !Q
+        if(type === 'xnor') name = 'XNOR';
+        if(type === 'buffer') name = 'BUF';
 
         let inHTML = '', outHTML = '';
         for(let i=0; i<inC; i++) inHTML += `<div class="port port-in" data-cid="${id}" data-pid="${i}" data-state="0"></div>`;
@@ -218,6 +225,28 @@
                 let val = c.ins[0]*8 + c.ins[1]*4 + c.ins[2]*2 + c.ins[3]*1;
                 c.el.querySelector('.comp-label').textContent = val.toString(16).toUpperCase();
             }
+            else if(c.type === 'mux') {
+                // 2:1 MUX: sel=ins[2], A=ins[0], B=ins[1]
+                c.outs[0] = c.ins[2] ? c.ins[1] : c.ins[0];
+            }
+            else if(c.type === 'srlatch') {
+                // SR Latch: S=ins[0], R=ins[1]
+                if(c.ins[0] && !c.ins[1]) c.mem = 1;
+                else if(!c.ins[0] && c.ins[1]) c.mem = 0;
+                // S=R=1 is invalid, keep previous state
+                c.outs[0] = c.mem;
+                c.outs[1] = c.mem ? 0 : 1;
+            }
+            else if(c.type === 'jkff') {
+                // JK Flip-Flop: J=ins[0], K=ins[1], Clk=ins[2]
+                if(c.ins[2] === 1) { // Clock high
+                    if(c.ins[0] && !c.ins[1]) c.mem = 1;       // Set
+                    else if(!c.ins[0] && c.ins[1]) c.mem = 0;   // Reset
+                    else if(c.ins[0] && c.ins[1]) c.mem = c.mem ? 0 : 1; // Toggle
+                }
+                c.outs[0] = c.mem;
+                c.outs[1] = c.mem ? 0 : 1;
+            }
             // Update out ports DOM
             let outPorts = c.el.querySelectorAll('.port-out');
             outPorts.forEach((p, i) => p.dataset.state = c.outs[i]);
@@ -358,5 +387,97 @@
             btn.onclick = () => addComponent(btn.dataset.type, window.innerWidth/2, window.innerHeight/2);
         }
     });
+
+    // ── PRESET CIRCUITS ──
+    const PRESETS = {
+        halfAdder: {
+            name: 'Half Adder',
+            comps: [
+                {id:'c_100',type:'switch',x:100,y:200},
+                {id:'c_101',type:'switch',x:100,y:350},
+                {id:'c_102',type:'xor',x:350,y:200},
+                {id:'c_103',type:'and',x:350,y:350},
+                {id:'c_104',type:'bulb',x:600,y:200},
+                {id:'c_105',type:'bulb',x:600,y:350}
+            ],
+            wires: [
+                {sc:'c_100',sp:'0',dc:'c_102',dp:'0'},
+                {sc:'c_101',sp:'0',dc:'c_102',dp:'1'},
+                {sc:'c_100',sp:'0',dc:'c_103',dp:'0'},
+                {sc:'c_101',sp:'0',dc:'c_103',dp:'1'},
+                {sc:'c_102',sp:'0',dc:'c_104',dp:'0'},
+                {sc:'c_103',sp:'0',dc:'c_105',dp:'0'}
+            ]
+        },
+        srLatch: {
+            name: 'SR Latch (NOR)',
+            comps: [
+                {id:'c_200',type:'switch',x:100,y:200},
+                {id:'c_201',type:'switch',x:100,y:400},
+                {id:'c_202',type:'srlatch',x:350,y:280},
+                {id:'c_203',type:'bulb',x:600,y:230},
+                {id:'c_204',type:'bulb',x:600,y:370}
+            ],
+            wires: [
+                {sc:'c_200',sp:'0',dc:'c_202',dp:'0'},
+                {sc:'c_201',sp:'0',dc:'c_202',dp:'1'},
+                {sc:'c_202',sp:'0',dc:'c_203',dp:'0'},
+                {sc:'c_202',sp:'1',dc:'c_204',dp:'0'}
+            ]
+        },
+        notGateDemo: {
+            name: 'NOT Gate Demo',
+            comps: [
+                {id:'c_300',type:'switch',x:150,y:300},
+                {id:'c_301',type:'not',x:350,y:300},
+                {id:'c_302',type:'bulb',x:550,y:300}
+            ],
+            wires: [
+                {sc:'c_300',sp:'0',dc:'c_301',dp:'0'},
+                {sc:'c_301',sp:'0',dc:'c_302',dp:'0'}
+            ]
+        }
+    };
+
+    function loadPreset(key) {
+        const preset = PRESETS[key];
+        if (!preset) return;
+        $('#btnClear').onclick(); // clear first
+        compIdCounter = 500;
+        preset.comps.forEach(c => {
+            addComponent(c.type, c.x, c.y, c.id);
+        });
+        setTimeout(() => {
+            preset.wires.forEach(w => {
+                let sComp = components[w.sc]; let dComp = components[w.dc];
+                if(sComp && dComp) {
+                    let sPort = sComp.el.querySelectorAll('.port-out')[w.sp];
+                    let dPort = dComp.el.querySelectorAll('.port-in')[w.dp];
+                    if(sPort && dPort) {
+                        let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('class', 'wire');
+                        svg.appendChild(path);
+                        let wObj = { sc:w.sc, sp:w.sp, dc:w.dc, dp:w.dp, sel:sPort, del:dPort, el:path, state:0 };
+                        path.onclick = () => { path.remove(); wires = wires.filter(wx=>wx!==wObj); components[wObj.dc].ins[wObj.dp] = 0; };
+                        wires.push(wObj);
+                    }
+                }
+            });
+            updateWires();
+        }, 80);
+    }
+    window._loadPreset = loadPreset;
+
+    // Inject preset buttons if container exists
+    const presetContainer = $('#presetBtns');
+    if (presetContainer) {
+        Object.entries(PRESETS).forEach(([key, p]) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-tool';
+            btn.textContent = '📋 ' + p.name;
+            btn.onclick = () => loadPreset(key);
+            presetContainer.appendChild(btn);
+        });
+    }
 
 })();
