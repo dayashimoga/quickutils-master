@@ -8,6 +8,15 @@
         "custom_domain": "apistatus.quickutils.top",
         "root_dir": "projects/apistatus-directory"
     },
+    "unit-converter": {
+        "directory": "projects/unit-converter",
+        "repo_name": "unit-converter",
+        "project_type": "unit-converter",
+        "root_dir": "projects/unit-converter",
+        "custom_domain": "units.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
     "boilerplates": {
         "directory": "projects/boilerplates-directory",
         "repo_name": "boilerplates-directory",

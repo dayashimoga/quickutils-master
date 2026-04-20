@@ -60,7 +60,7 @@ def main():
         # Default projects to extinguish to free slots
         target_projects = [
             "emoji-kitchen", "garden-planner", "ai-prompt-builder",
-            "unit-converter", "meditation-journey", "dailyfacts",
+            "meditation-journey", "dailyfacts",
             "meal-planner", "keyboard-tester", "color-palette",
             "password-fortress", "quickutils-master"
         ]
