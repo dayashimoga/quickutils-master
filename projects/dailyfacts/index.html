@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Facts Generator | QuickUtils</title>
+    <meta name="description" content="Discover random interesting daily facts with our generator tool. Learn something new every day across science, history, nature, and more.">
+    <link rel="canonical" href="https://facts.quickutils.top/">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0e1a; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        .hero-banner { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1)); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4rem 1rem; text-align: center; }
+        .hero-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .fact-card { max-width: 600px; margin: -2rem auto 2rem; background: rgba(20,25,40,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 2.5rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .fact-text { font-size: 1.25rem; line-height: 1.6; margin: 1.5rem 0; font-weight: 500; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+        .fact-category { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(99,102,241,0.2); color: #818cf8; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .btn-generate { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99,102,241,0.4); }
+        .btn-copy { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; width: 48px; }
+        .btn-copy:hover { background: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <nav class="navbar glass-nav px-4" style="background: rgba(10,14,26,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem;">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="https://quickutils.top" class="brand holo-text fw-bold text-decoration-none" style="color: #fff; font-size: 1.25rem;">✨ Daily Facts</a>
+        </div>
+    </nav>
+    <main>
+        <div class="hero-banner">
+            <h1 class="hero-title">Discover Something New</h1>
+            <p style="color: #94a3b8; max-width: 500px; margin: 0 auto;">Generate random interesting facts across science, history, space, and nature.</p>
+        </div>
+        <div class="container px-3">
+            <div class="fact-card">
+                <div id="category" class="fact-category">General</div>
+                <div id="factDisplay" class="fact-text">Click the button below to generate a new interesting fact.</div>
+                <div class="actions">
+                    <button id="generateBtn" class="btn-generate">Generate Random Fact</button>
+                    <button id="copyBtn" class="btn-copy" title="Copy to clipboard">📋</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="quickutils-core.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
