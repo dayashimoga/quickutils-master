@@ -97,9 +97,14 @@ def assign_domains():
             if list_code == 200 and list_res and "result" in list_res:
                 for existing in list_res["result"]:
                     if existing.get("name") == domain:
-                        already_assigned = True
+                        if existing.get("status") == "active":
+                            already_assigned = True
+                        else:
+                            print(f"  [FORCE REBIND] -> Domain {domain} is stuck in state: {existing.get('status')}. Deleting...")
+                            api_request("DELETE", f"{base_url}/{foldername}/domains/{domain}", token)
+                            time.sleep(1) # give CF time to detach
                         break
-            
+
             success_status = False
             if already_assigned:
                 print(f"  [SKIP] -> Already configured in Pages: {domain}")
