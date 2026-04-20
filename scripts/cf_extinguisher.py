@@ -58,12 +58,7 @@ def main():
     target_projects = sys.argv[1:]
     if not target_projects:
         # Default projects to extinguish to free slots
-        target_projects = [
-            "emoji-kitchen", "garden-planner", "ai-prompt-builder",
-            "meditation-journey", "dailyfacts",
-            "meal-planner", "keyboard-tester", "color-palette",
-            "password-fortress", "quickutils-master"
-        ]
+        target_projects = []
 
     token = find_wrangler_token()
     if not token:

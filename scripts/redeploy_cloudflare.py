@@ -44,7 +44,7 @@ def run_build_and_deploy(project_key, config):
         dist_path = full_cwd
 
     deploy_cmd = [
-        "npx", "wrangler@latest", "pages", "deploy",
+        "npx", "wrangler@3", "pages", "deploy",
         str(dist_path),
         "--project-name", repo_name,
         "--branch", "main",
@@ -70,7 +70,7 @@ def run_build_and_deploy(project_key, config):
                     print(f"⚠️ [{repo_name}] Project not found on Cloudflare — creating it...")
                     try:
                         create_cmd = [
-                            "npx", "wrangler@latest", "pages", "project", "create",
+                            "npx", "wrangler@3", "pages", "project", "create",
                             repo_name, "--production-branch", "main"
                         ]
                         subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)

@@ -17,6 +17,15 @@
         "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
         "destination_dir": "dist"
     },
+    "dailyfacts": {
+        "directory": "projects/dailyfacts",
+        "repo_name": "dailyfacts",
+        "project_type": "dailyfacts",
+        "root_dir": "projects/dailyfacts",
+        "custom_domain": "facts.quickutils.top",
+        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist"
+    },
     "boilerplates": {
         "directory": "projects/boilerplates-directory",
         "repo_name": "boilerplates-directory",
