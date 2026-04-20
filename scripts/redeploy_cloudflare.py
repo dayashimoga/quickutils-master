@@ -44,7 +44,7 @@ def run_build_and_deploy(project_key, config):
         dist_path = full_cwd
 
     deploy_cmd = [
-        "npx", "wrangler@3", "pages", "deploy",
+        "wrangler", "pages", "deploy",
         str(dist_path),
         "--project-name", repo_name,
         "--branch", "main",
