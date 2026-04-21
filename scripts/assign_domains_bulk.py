@@ -63,7 +63,7 @@ def assign_domains():
 
     token = find_wrangler_token()
     if not token:
-        print("❌ Could not find active Wrangler OAuth token. Please login via wrangler or set CLOUDFLARE_API_TOKEN.")
+        print("ERROR: Could not find active Wrangler OAuth token. Please login via wrangler or set CLOUDFLARE_API_TOKEN.")
         sys.exit(1)
 
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
@@ -72,7 +72,7 @@ def assign_domains():
         if accounts_res and accounts_res.get("success") and accounts_res.get("result"):
             account_id = accounts_res["result"][0]["id"]
         else:
-            print("❌ Could not fetch Account ID from API. Please set CLOUDFLARE_ACCOUNT_ID.")
+            print("ERROR: Could not fetch Account ID from API. Please set CLOUDFLARE_ACCOUNT_ID.")
             sys.exit(1)
 
     # Pre-fetch zone ID for quickutils.top
