@@ -61,6 +61,8 @@ function updateStatsUI() {
     $('#bestTime').textContent = stats.bestTime;
 }
 
+let editor;
+
 function loadChallenge(index) {
     if (index >= CHALLENGES.length) index = 0;
     currentChallengeIndex = index;
@@ -72,7 +74,14 @@ function loadChallenge(index) {
     diffEl.className = `difficulty ${c.difficulty}`;
     $('#challengePoints').textContent = `${c.points} pts`;
     $('#challengeDesc').innerHTML = c.desc;
-    $('#codeEditor').value = c.initial;
+    
+    if (editor) {
+        editor.setValue(c.initial);
+    } else {
+        // Fallback or wait
+        setTimeout(() => { if (editor) editor.setValue(c.initial); }, 500);
+    }
+    
     $('#testResults').innerHTML = '';
     
     startTimer();
@@ -106,7 +115,8 @@ function updateTimerUI() {
 }
 
 $('#runBtn').addEventListener('click', () => {
-    const code = $('#codeEditor').value;
+    if (!editor) return;
+    const code = editor.getValue();
     const c = CHALLENGES[currentChallengeIndex];
     const resultsContainer = $('#testResults');
     resultsContainer.innerHTML = 'Running...';
@@ -203,18 +213,28 @@ else {
     if (localStorage.getItem('theme') === 'light') { document.documentElement.dataset.theme = 'light'; $('#themeBtn').textContent = '☀️'; }
 }
 
-updateStatsUI();
-loadChallenge(0);
+// Load Monaco Editor
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs' }});
+require(['vs/editor/editor.main'], function() {
+    editor = monaco.editor.create(document.getElementById('editorContainer'), {
+        value: CHALLENGES[0].initial,
+        language: 'javascript',
+        theme: document.documentElement.dataset.theme === 'dark' ? 'vs-dark' : 'vs',
+        minimap: { enabled: false },
+        automaticLayout: true,
+        fontSize: 14,
+        fontFamily: 'JetBrains Mono, monospace'
+    });
+    
+    updateStatsUI();
+    loadChallenge(0);
+});
 
-// Basic tab support in editor
-$('#codeEditor').addEventListener('keydown', function(e) {
-  if (e.key == 'Tab') {
-    e.preventDefault();
-    var start = this.selectionStart;
-    var end = this.selectionEnd;
-    this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
-    this.selectionStart = this.selectionEnd = start + 1;
-  }
+// Theme update for monaco
+$('#themeBtn').addEventListener('click', () => {
+    if (editor) {
+        monaco.editor.setTheme(document.documentElement.dataset.theme === 'dark' ? 'vs-dark' : 'vs');
+    }
 });
 
 })();

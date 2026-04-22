@@ -235,87 +235,93 @@
     }
 
     // ═══════════════════════════════════════════════════
-    // TEMPERATURE CHART (Canvas)
+    // TEMPERATURE CHART (Chart.js)
     // ═══════════════════════════════════════════════════
+    let tempChartInstance = null;
     function drawTempChart(data) {
         if (!data.hourly) return;
         const canvas = document.getElementById('tempChart');
         const ctx = canvas.getContext('2d');
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-        const w = rect.width, h = rect.height;
-        ctx.clearRect(0, 0, w, h);
 
+        if (tempChartInstance) tempChartInstance.destroy();
+
+        const hours48 = data.hourly.time.slice(0, 48);
         const temps = data.hourly.temperature_2m.slice(0, 48);
-        const maxT = Math.max(...temps) + 2;
-        const minT = Math.min(...temps) - 2;
-        const range = maxT - minT || 1;
-        const padL = 40, padR = 20, padT = 20, padB = 30;
-        const chartW = w - padL - padR;
-        const chartH = h - padT - padB;
+        const precip = data.hourly.precipitation ? data.hourly.precipitation.slice(0, 48) : new Array(48).fill(0);
+        const labels = hours48.map(t => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
-        // Grid
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i <= 4; i++) {
-            const y = padT + (i / 4) * chartH;
-            ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
-            ctx.fillStyle = '#7a8baa';
-            ctx.font = '10px Inter';
-            ctx.textAlign = 'right';
-            ctx.fillText(Math.round(maxT - (i / 4) * range) + '°', padL - 5, y + 3);
-        }
-
-        // Time labels
-        ctx.fillStyle = '#7a8baa';
-        ctx.font = '10px Inter';
-        ctx.textAlign = 'center';
-        for (let i = 0; i < temps.length; i += 6) {
-            const x = padL + (i / (temps.length - 1)) * chartW;
-            const t = new Date(data.hourly.time[i]);
-            ctx.fillText(t.toLocaleTimeString([], { hour: '2-digit' }), x, h - 5);
-        }
-
-        // Gradient fill
-        const grad = ctx.createLinearGradient(0, padT, 0, h - padB);
-        grad.addColorStop(0, 'rgba(59,130,246,0.3)');
-        grad.addColorStop(1, 'rgba(59,130,246,0)');
-        ctx.beginPath();
-        ctx.moveTo(padL, h - padB);
-        temps.forEach((t, i) => {
-            const x = padL + (i / (temps.length - 1)) * chartW;
-            const y = padT + ((maxT - t) / range) * chartH;
-            ctx.lineTo(x, y);
+        tempChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Temperature (°C)',
+                        data: temps,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: '#3b82f6',
+                        borderWidth: 2.5,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Precipitation (mm)',
+                        data: precip,
+                        type: 'bar',
+                        backgroundColor: 'rgba(99,102,241,0.35)',
+                        borderColor: 'rgba(99,102,241,0.6)',
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                animation: { duration: 900, easing: 'easeInOutQuart' },
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 18 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15,23,42,0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#94a3b8',
+                        borderColor: 'rgba(99,102,241,0.4)',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 8,
+                        titleFont: { family: 'Inter', weight: '600' },
+                        bodyFont: { family: 'JetBrains Mono', size: 12 }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#64748b', font: { family: 'Inter', size: 10 }, maxRotation: 45, maxTicksLimit: 12 },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    y: {
+                        position: 'left',
+                        ticks: { color: '#3b82f6', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '°' },
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        title: { display: true, text: 'Temp (°C)', color: '#64748b', font: { size: 10 } }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        ticks: { color: '#6366f1', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + 'mm' },
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'Precip (mm)', color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
         });
-        ctx.lineTo(padL + chartW, h - padB);
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // Line
-        ctx.beginPath();
-        temps.forEach((t, i) => {
-            const x = padL + (i / (temps.length - 1)) * chartW;
-            const y = padT + ((maxT - t) / range) * chartH;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Dots at 6h intervals
-        for (let i = 0; i < temps.length; i += 6) {
-            const x = padL + (i / (temps.length - 1)) * chartW;
-            const y = padT + ((maxT - temps[i]) / range) * chartH;
-            ctx.fillStyle = '#3b82f6';
-            ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
-        }
     }
 
     // ═══════════════════════════════════════════════════

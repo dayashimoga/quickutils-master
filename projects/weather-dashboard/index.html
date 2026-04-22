@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="theme-color" content="#ffffff">
 </head>
 <body>
@@ -98,8 +99,10 @@
         </div>
 
         <div class="glass-card" style="margin-top:20px;">
-            <h3 class="card-title">🌡️ Temperature Chart</h3>
-            <canvas id="tempChart" width="800" height="250"></canvas>
+            <h3 class="card-title">🌡️ Temperature &amp; Precipitation Chart</h3>
+            <div style="position:relative; height:280px;">
+                <canvas id="tempChart"></canvas>
+            </div>
         </div>
 
         <div class="glass-card" style="margin-top:20px;">

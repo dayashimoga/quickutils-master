@@ -123,32 +123,75 @@
         return num.toString(2).padStart(padding, '0');
     }
 
+    let probChartInstance = null;
     function renderVis(state) {
-        const pContainer = $('#probChart');
-        pContainer.innerHTML = '';
         let vecStr = '';
+        const labels = [];
+        const probs = [];
+        const barColors = [];
 
         state.forEach((amp, idx) => {
             const prob = amp.magSq();
             const bin = getBinaryString(idx, numQubits);
-            
-            // Vector text
+            labels.push(`|${bin}⟩`);
+            probs.push(parseFloat((prob * 100).toFixed(2)));
+            // Neon gradient: green to purple based on index
+            const hue = 140 + (idx / state.length) * 180;
+            barColors.push(`hsla(${hue}, 80%, 55%, 0.75)`);
+
             if (prob > 0.0001) {
                 vecStr += `|${bin}⟩: ${amp.toString()} <br>`;
             }
-
-            // Chart bar
-            const row = document.createElement('div');
-            row.className = 'prob-row';
-            row.innerHTML = `
-                <div class="prob-label">|${bin}⟩</div>
-                <div class="prob-bar-container">
-                    <div class="prob-bar" style="width: ${(prob*100).toFixed(1)}%"></div>
-                </div>
-                <div class="prob-val">${(prob*100).toFixed(1)}%</div>
-            `;
-            pContainer.appendChild(row);
         });
+
+        // Chart.js
+        const canvas = document.getElementById('probChartCanvas');
+        if (canvas && typeof Chart !== 'undefined') {
+            const ctx = canvas.getContext('2d');
+            if (probChartInstance) probChartInstance.destroy();
+            probChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: probs,
+                        backgroundColor: barColors,
+                        borderColor: barColors.map(c => c.replace('0.75', '1')),
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 400, easing: 'easeOutQuart' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10,10,30,0.9)',
+                            titleColor: '#7af0c8',
+                            bodyColor: '#ccc',
+                            bodyFont: { family: 'Space Grotesk', size: 12 },
+                            cornerRadius: 6,
+                            callbacks: { label: ctx => `${ctx.parsed.y.toFixed(1)}%` }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#64748b', font: { family: 'Space Grotesk', size: 10 }, callback: v => v + '%' },
+                            grid: { color: 'rgba(255,255,255,0.04)' }
+                        },
+                        x: {
+                            ticks: { color: '#7af0c8', font: { family: 'Space Grotesk', size: 10, weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
 
         $('#stateVector').innerHTML = vecStr || "Invalid State";
         

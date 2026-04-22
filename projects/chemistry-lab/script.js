@@ -49,6 +49,44 @@ const REACTIONS = [
 // ── State ──
 let beakerContents = [];
 let temperature = 25;
+let reactionChart = null;
+
+// ── Chart Initialization ──
+function initChart() {
+    const ctx = document.getElementById('reactionChart').getContext('2d');
+    reactionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['0s'],
+            datasets: [
+                { label: 'Temperature (°C)', data: [25], borderColor: '#f59e0b', yAxisID: 'y' },
+                { label: 'pH Level', data: [7.0], borderColor: '#06b6d4', yAxisID: 'y1' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { type: 'linear', display: true, position: 'left', title: {display:true, text:'Temp (°C)', color:'#888'}, min: 0, max: 1000 },
+                y1: { type: 'linear', display: true, position: 'right', title: {display:true, text:'pH', color:'#888'}, min: 0, max: 14, grid: {drawOnChartArea: false} }
+            },
+            plugins: { legend: { labels: { color: '#fff' } } }
+        }
+    });
+}
+function updateChart(temp, ph) {
+    if (!reactionChart) return;
+    const timeLabel = (reactionChart.data.labels.length * 2) + 's';
+    reactionChart.data.labels.push(timeLabel);
+    reactionChart.data.datasets[0].data.push(temp);
+    reactionChart.data.datasets[1].data.push(ph);
+    if(reactionChart.data.labels.length > 20) {
+        reactionChart.data.labels.shift();
+        reactionChart.data.datasets[0].data.shift();
+        reactionChart.data.datasets[1].data.shift();
+    }
+    reactionChart.update();
+}
 
 // ── Render Element Chips ──
 function renderElements() {
@@ -164,8 +202,30 @@ function react() {
     anim.innerHTML = Array.from({length: 8}, (_, i) =>
       `<div class="spark" style="background:${['#ef4444', '#f59e0b', '#eab308'][i % 3]};animation-delay:${i * 0.1}s"></div>`
     ).join('');
+    
+    // Animate temp spike on graph
+    let currentTemp = temperature;
+    let targetTemp = temperature + 200;
+    let step = 0;
+    const interval = setInterval(() => {
+        currentTemp += (targetTemp - currentTemp) * 0.2;
+        updateChart(currentTemp, reaction.ph);
+        step++;
+        if(step > 10) clearInterval(interval);
+    }, 200);
+
   } else {
     anim.innerHTML = '<span style="font-size:2rem">🧊</span>';
+    // Animate temp drop on graph
+    let currentTemp = temperature;
+    let targetTemp = Math.max(0, temperature - 15);
+    let step = 0;
+    const interval = setInterval(() => {
+        currentTemp += (targetTemp - currentTemp) * 0.2;
+        updateChart(currentTemp, reaction.ph);
+        step++;
+        if(step > 10) clearInterval(interval);
+    }, 200);
   }
   
   result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -195,12 +255,41 @@ function updatePh(ph) {
 $('#tempSlider').addEventListener('input', e => {
   temperature = parseInt(e.target.value);
   $('#tempDisplay').textContent = temperature + '°C';
+  updateChart(temperature, parseFloat($('#phDisplay').textContent));
 });
 
 $('#heatBtn').addEventListener('click', () => {
   temperature = Math.min(1000, temperature + 50);
   $('#tempSlider').value = temperature;
   $('#tempDisplay').textContent = temperature + '°C';
+  
+  // Show visual flame under beaker
+  const beaker = $('#beaker');
+  let flame = $('#burnerFlame');
+  if(!flame) {
+      flame = document.createElement('div');
+      flame.id = 'burnerFlame';
+      flame.style.cssText = 'position:absolute; bottom:-30px; left:50%; transform:translateX(-50%); width:40px; height:40px; background:radial-gradient(circle, #f59e0b 20%, #ef4444 60%, transparent 100%); filter:blur(4px); border-radius:50% 50% 20% 20%; animation:flicker 0.2s infinite alternate; opacity:0.8; transition: opacity 0.5s; pointer-events:none; z-index:10;';
+      beaker.appendChild(flame);
+      // add keyframes dynamically if not exists
+      if(!$('#flameStyles')) {
+          const style = document.createElement('style');
+          style.id = 'flameStyles';
+          style.textContent = `@keyframes flicker { 0% { transform:translateX(-50%) scaleY(1); opacity:0.8; } 100% { transform:translateX(-50%) scaleY(1.3) scaleX(0.9); opacity:1; } }`;
+          document.head.appendChild(style);
+      }
+  } else {
+      flame.style.opacity = '1';
+  }
+  
+  // Fade out flame after a bit
+  clearTimeout(window.flameTimeout);
+  window.flameTimeout = setTimeout(() => {
+      if(flame) flame.style.opacity = '0';
+  }, 2000);
+
+  updateChart(temperature, parseFloat($('#phDisplay').textContent));
+
   if (beakerContents.length >= 2) react();
 });
 
@@ -294,4 +383,5 @@ else {
 renderElements();
 renderPhScale();
 updatePh(7);
+if (document.getElementById('reactionChart')) initChart();
 })();

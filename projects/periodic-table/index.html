@@ -90,7 +90,7 @@
     </main>
 
     <!-- Side Panel for Element Details -->
-    <div class="element-panel glass-panel" id="elementPanel" style="width: 400px; max-width:90vw;">
+    <div class="element-panel glass-panel" id="elementPanel" style="width: 400px; max-width:90vw; z-index:1005;">
         <div class="panel-header" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
             <div class="panel-tabs" style="display:flex; gap:0.5rem;">
                 <button class="btn btn-sm btn-primary" id="tabInfo">Info</button>
@@ -98,7 +98,7 @@
             </div>
             <button class="icon-btn" id="closePanelBtn">❌</button>
         </div>
-        <div class="panel-content" id="panelContent" style="position:relative; min-height:400px;">
+        <div class="panel-content" id="panelContent" style="position:relative; min-height:400px; max-height: 60vh; overflow-y:auto;">
             <div id="infoView">
                 <div class="text-center text-muted" style="padding: 2rem">Select an element to view details.</div>
             </div>

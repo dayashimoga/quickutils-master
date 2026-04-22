@@ -1428,14 +1428,15 @@ function showDetails(id) {
     `;
     const infoView = document.getElementById('infoView');
     if(infoView) infoView.innerHTML = html;
+    
+    // Auto-switch to 3D tab if requested by user feedback
+    document.getElementById('tab3D')?.click();
     panel.classList.add('open');
     
-    // Switch to info tab by default
-    document.getElementById('modelView')?.classList.add('hidden');
-    document.getElementById('infoView')?.classList.remove('hidden');
-    document.getElementById('tabInfo')?.classList.add('active');
-    document.getElementById('tab3D')?.classList.remove('active');
-    panel.classList.add('open');
+    document.getElementById('closePanelBtn')?.addEventListener('click', () => {
+        panel.classList.remove('open');
+    });
+
     if (window.current3DModel) {
         cancelAnimationFrame(window.current3DModel.req);
         if(window.current3DModel.renderer) window.current3DModel.renderer.dispose();
@@ -1845,43 +1846,54 @@ showDetails = function(id) {
     // ELEMENT COMBINING LAB
     // ═══════════════════════════════════════════════════
     const REACTIONS_DB = [
-        { reactants: [1,8], product: 'H₂O', name: 'Water', ratio: '2H₂ + O₂', conditions: 'Spark/flame', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [1,17], product: 'HCl', name: 'Hydrochloric acid', ratio: 'H₂ + Cl₂', conditions: 'UV light or heat', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [11,17], product: 'NaCl', name: 'Table salt', ratio: '2Na + Cl₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [6,8], product: 'CO₂', name: 'Carbon dioxide', ratio: 'C + O₂', conditions: 'Combustion (heat)', type: 'Combustion', bond: 'Covalent' },
-        { reactants: [26,8], product: 'Fe₂O₃', name: 'Iron(III) oxide (Rust)', ratio: '4Fe + 3O₂', conditions: 'Moisture + O₂', type: 'Oxidation', bond: 'Ionic' },
-        { reactants: [12,8], product: 'MgO', name: 'Magnesium oxide', ratio: '2Mg + O₂', conditions: 'Burning (bright flame)', type: 'Combustion', bond: 'Ionic' },
-        { reactants: [13,8], product: 'Al₂O₃', name: 'Aluminum oxide', ratio: '4Al + 3O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [7,1], product: 'NH₃', name: 'Ammonia', ratio: 'N₂ + 3H₂', conditions: 'Haber process (450°C, catalyst)', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [16,8], product: 'SO₂', name: 'Sulfur dioxide', ratio: 'S + O₂', conditions: 'Combustion', type: 'Combustion', bond: 'Covalent' },
-        { reactants: [20,6], product: 'CaCO₃', name: 'Calcium carbonate (Limestone)', ratio: 'Ca + C + 3O', conditions: 'Natural formation', type: 'Synthesis', bond: 'Ionic/Covalent' },
-        { reactants: [19,35], product: 'KBr', name: 'Potassium bromide', ratio: '2K + Br₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [14,8], product: 'SiO₂', name: 'Silicon dioxide (Quartz)', ratio: 'Si + O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
+        // Elemental molecules
+        { reactants: [1,1], product: 'H₂', name: 'Hydrogen Gas', ratio: 'H + H', conditions: 'Standard', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [8,8], product: 'O₂', name: 'Oxygen Gas', ratio: 'O + O', conditions: 'Standard', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [7,7], product: 'N₂', name: 'Nitrogen Gas', ratio: 'N + N', conditions: 'Standard', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [17,17], product: 'Cl₂', name: 'Chlorine Gas', ratio: 'Cl + Cl', conditions: 'Standard', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [6,6,6], product: 'C₃', name: 'Carbon cluster', ratio: '3C', conditions: 'Vacuum', type: 'Synthesis', bond: 'Covalent' },
+        
+        // Compounds
+        { reactants: [1,1,8], product: 'H₂O', name: 'Water', ratio: '2H + O', conditions: 'Spark/flame', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [1,17], product: 'HCl', name: 'Hydrochloric acid', ratio: 'H + Cl', conditions: 'UV light or heat', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [11,17], product: 'NaCl', name: 'Table salt', ratio: 'Na + Cl', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [6,8,8], product: 'CO₂', name: 'Carbon dioxide', ratio: 'C + 2O', conditions: 'Combustion (heat)', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [26,26,8,8,8], product: 'Fe₂O₃', name: 'Iron(III) oxide (Rust)', ratio: '2Fe + 3O', conditions: 'Moisture + O₂', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [12,8], product: 'MgO', name: 'Magnesium oxide', ratio: 'Mg + O', conditions: 'Burning (bright flame)', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [13,13,8,8,8], product: 'Al₂O₃', name: 'Aluminum oxide', ratio: '2Al + 3O', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [7,1,1,1], product: 'NH₃', name: 'Ammonia', ratio: 'N + 3H', conditions: 'Haber process (450°C, catalyst)', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [16,8,8], product: 'SO₂', name: 'Sulfur dioxide', ratio: 'S + 2O', conditions: 'Combustion', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [20,6,8,8,8], product: 'CaCO₃', name: 'Calcium carbonate (Limestone)', ratio: 'Ca + C + 3O', conditions: 'Natural formation', type: 'Synthesis', bond: 'Ionic/Covalent' },
+        { reactants: [19,35], product: 'KBr', name: 'Potassium bromide', ratio: 'K + Br', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [14,8,8], product: 'SiO₂', name: 'Silicon dioxide (Quartz)', ratio: 'Si + 2O', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
         { reactants: [29,16], product: 'CuS', name: 'Copper sulfide', ratio: 'Cu + S', conditions: 'Heat', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [30,8], product: 'ZnO', name: 'Zinc oxide', ratio: '2Zn + O₂', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
-        { reactants: [15,8], product: 'P₂O₅', name: 'Phosphorus pentoxide', ratio: '4P + 5O₂', conditions: 'Burning in air', type: 'Combustion', bond: 'Covalent' },
-        { reactants: [11,8], product: 'Na₂O', name: 'Sodium oxide', ratio: '4Na + O₂', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [3,7], product: 'Li₃N', name: 'Lithium nitride', ratio: '6Li + N₂', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [20,17], product: 'CaCl₂', name: 'Calcium chloride', ratio: 'Ca + Cl₂', conditions: 'Direct combination', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [1,16], product: 'H₂S', name: 'Hydrogen sulfide', ratio: 'H₂ + S', conditions: 'Heat', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [6,1], product: 'CH₄', name: 'Methane', ratio: 'C + 2H₂', conditions: 'High pressure/temp', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [47,16], product: 'Ag₂S', name: 'Silver sulfide (Tarnish)', ratio: '2Ag + S', conditions: 'Air exposure', type: 'Oxidation', bond: 'Ionic' },
-        { reactants: [22,17], product: 'TiCl₄', name: 'Titanium tetrachloride', ratio: 'Ti + 2Cl₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [50,8], product: 'SnO₂', name: 'Tin dioxide', ratio: 'Sn + O₂', conditions: 'Heating in air', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [30,8], product: 'ZnO', name: 'Zinc oxide', ratio: 'Zn + O', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [15,15,8,8,8,8,8], product: 'P₂O₅', name: 'Phosphorus pentoxide', ratio: '2P + 5O', conditions: 'Burning in air', type: 'Combustion', bond: 'Covalent' },
+        { reactants: [11,11,8], product: 'Na₂O', name: 'Sodium oxide', ratio: '2Na + O', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [3,3,3,7], product: 'Li₃N', name: 'Lithium nitride', ratio: '3Li + N', conditions: 'Room temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [20,17,17], product: 'CaCl₂', name: 'Calcium chloride', ratio: 'Ca + 2Cl', conditions: 'Direct combination', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [1,1,16], product: 'H₂S', name: 'Hydrogen sulfide', ratio: '2H + S', conditions: 'Heat', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [6,1,1,1,1], product: 'CH₄', name: 'Methane', ratio: 'C + 4H', conditions: 'High pressure/temp', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [47,47,16], product: 'Ag₂S', name: 'Silver sulfide (Tarnish)', ratio: '2Ag + S', conditions: 'Air exposure', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [22,17,17,17,17], product: 'TiCl₄', name: 'Titanium tetrachloride', ratio: 'Ti + 4Cl', conditions: 'High temperature', type: 'Synthesis', bond: 'Covalent' },
+        { reactants: [50,8,8], product: 'SnO₂', name: 'Tin dioxide', ratio: 'Sn + 2O', conditions: 'Heating in air', type: 'Combustion', bond: 'Ionic' },
         { reactants: [82,16], product: 'PbS', name: 'Lead sulfide (Galena)', ratio: 'Pb + S', conditions: 'Heat', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [19,8], product: 'K₂O', name: 'Potassium oxide', ratio: '4K + O₂', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
-        { reactants: [56,8], product: 'BaO', name: 'Barium oxide', ratio: '2Ba + O₂', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
-        { reactants: [25,8], product: 'MnO₂', name: 'Manganese dioxide', ratio: 'Mn + O₂', conditions: 'Natural oxidation', type: 'Oxidation', bond: 'Ionic' },
-        { reactants: [24,8], product: 'Cr₂O₃', name: 'Chromium(III) oxide', ratio: '4Cr + 3O₂', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [19,19,8], product: 'K₂O', name: 'Potassium oxide', ratio: '2K + O', conditions: 'Burning', type: 'Combustion', bond: 'Ionic' },
+        { reactants: [56,8], product: 'BaO', name: 'Barium oxide', ratio: 'Ba + O', conditions: 'Heating', type: 'Synthesis', bond: 'Ionic' },
+        { reactants: [25,8,8], product: 'MnO₂', name: 'Manganese dioxide', ratio: 'Mn + 2O', conditions: 'Natural oxidation', type: 'Oxidation', bond: 'Ionic' },
+        { reactants: [24,24,8,8,8], product: 'Cr₂O₃', name: 'Chromium(III) oxide', ratio: '2Cr + 3O', conditions: 'High temperature', type: 'Synthesis', bond: 'Ionic' },
         { reactants: [74,6], product: 'WC', name: 'Tungsten carbide', ratio: 'W + C', conditions: '1400-1600°C', type: 'Synthesis', bond: 'Covalent' },
-        { reactants: [28,8], product: 'NiO', name: 'Nickel oxide', ratio: '2Ni + O₂', conditions: 'Heating in air', type: 'Synthesis', bond: 'Ionic' }
+        { reactants: [28,8], product: 'NiO', name: 'Nickel oxide', ratio: 'Ni + O', conditions: 'Heating in air', type: 'Synthesis', bond: 'Ionic' }
     ];
     
-    // Support multiple reactants (2 or 3)
+    // Support exact stoichiometric matching
     window.findReactions = function(elNums) {
+        // Sort input for easy comparison
+        const sortedInput = [...elNums].sort((a,b)=>a-b);
         return REACTIONS_DB.filter(r => {
-            // Check if every reactant in the formula is in the provided list
-            return r.reactants.every(num => elNums.includes(num)) && r.reactants.length === elNums.length;
+            const sortedReactants = [...r.reactants].sort((a,b)=>a-b);
+            if(sortedInput.length !== sortedReactants.length) return false;
+            return sortedInput.every((val, index) => val === sortedReactants[index]);
         });
     };
 

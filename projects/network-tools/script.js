@@ -445,4 +445,137 @@ $('#bwCalcBtn')?.addEventListener('click', () => {
   $('#bwResults').innerHTML = results.map(r=>`<div class="result-card"><div class="rc-label">${r.label}</div><div class="rc-value${r.hl?' highlight':''}">${r.value}</div></div>`).join('');
 });
 
+// ── LATENCY MONITOR ──
+let latencyChartInst = null;
+let latencyInterval = null;
+const latencyData = { labels: [], values: [] };
+
+function measureLatency() {
+    const t0 = performance.now();
+    // Ping by fetching a tiny resource with cache-busting
+    fetch('https://httpbin.org/status/200', { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
+        .then(() => {
+            const latency = Math.round(performance.now() - t0);
+            addLatencyPoint(latency);
+        })
+        .catch(() => {
+            // Simulate on failure (CORS may block, use timing)
+            const latency = Math.round(performance.now() - t0);
+            addLatencyPoint(latency);
+        });
+}
+
+function addLatencyPoint(ms) {
+    const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    latencyData.labels.push(now);
+    latencyData.values.push(ms);
+    
+    // Keep rolling window of 30
+    if (latencyData.labels.length > 30) {
+        latencyData.labels.shift();
+        latencyData.values.shift();
+    }
+    
+    updateLatencyChart();
+    updateLatencyStats();
+}
+
+function updateLatencyChart() {
+    const canvas = document.getElementById('latencyChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    const ctx = canvas.getContext('2d');
+    
+    if (latencyChartInst) {
+        latencyChartInst.data.labels = latencyData.labels;
+        latencyChartInst.data.datasets[0].data = latencyData.values;
+        latencyChartInst.update('none');
+        return;
+    }
+    
+    latencyChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyData.labels,
+            datasets: [{
+                label: 'Latency (ms)',
+                data: latencyData.values,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: '#10b981',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#10b981',
+                    bodyFont: { family: 'monospace', size: 13 },
+                    cornerRadius: 6,
+                    callbacks: { label: c => c.parsed.y + ' ms' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + 'ms' },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                x: {
+                    ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 8 },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function updateLatencyStats() {
+    const vals = latencyData.values;
+    if (vals.length === 0) return;
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const avg = Math.round(vals.reduce((a,b) => a+b, 0) / vals.length);
+    const statsEl = document.getElementById('latencyStats');
+    if (statsEl) {
+        statsEl.innerHTML = `
+            <div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Min</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#10b981;">${min}ms</div>
+            </div>
+            <div style="background:rgba(99,102,241,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Avg</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#6366f1;">${avg}ms</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Max</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#ef4444;">${max}ms</div>
+            </div>
+        `;
+    }
+}
+
+$('#startLatencyBtn').addEventListener('click', () => {
+    if (latencyInterval) return;
+    $('#startLatencyBtn').disabled = true;
+    $('#stopLatencyBtn').disabled = false;
+    measureLatency();
+    latencyInterval = setInterval(measureLatency, 2000);
+});
+
+$('#stopLatencyBtn').addEventListener('click', () => {
+    clearInterval(latencyInterval);
+    latencyInterval = null;
+    $('#startLatencyBtn').disabled = false;
+    $('#stopLatencyBtn').disabled = true;
+});
+
 })();

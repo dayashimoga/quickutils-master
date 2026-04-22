@@ -35,6 +35,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5193703345853377" crossorigin="anonymous"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FOCUS000001"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-FOCUS000001');</script>
@@ -151,12 +152,9 @@
                 </div>
 
                 <div class="weekly-chart mt-4">
-                    <h4 style="margin-bottom:0.5rem; font-size:0.9rem;">Weekly Activity (Pomos)</h4>
-                    <div class="chart-bars" id="weeklyChart" style="display:flex; align-items:flex-end; justify-content:space-between; height:100px; padding:10px 0; border-bottom:1px solid var(--border);">
-                        <!-- Injected by JS -->
-                    </div>
-                    <div class="chart-labels" id="weeklyLabels" style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:5px;">
-                        <!-- Injected by JS -->
+                    <h4 style="margin-bottom:0.5rem; font-size:0.9rem;">📊 7-Day Productivity</h4>
+                    <div style="position:relative; height:160px;">
+                        <canvas id="weeklyChartCanvas"></canvas>
                     </div>
                 </div>
 

@@ -277,28 +277,65 @@ function renderGamification() {
     const pct = Math.min(100, (s.stats.dailyPomos / goal) * 100);
     $('#dailyGoalProgress').style.width = pct + '%';
     
-    // Render chart
-    const chart = $('#weeklyChart');
-    const labels = $('#weeklyLabels');
-    chart.innerHTML = ''; labels.innerHTML = '';
-    
-    // Last 7 days
-    let maxVal = 1;
-    const historyData = [];
+    // Render chart via Chart.js
+    const historyLabels = [];
+    const historyVals = [];
     for (let i=6; i>=0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dStr = d.toISOString().split('T')[0];
         const val = s.stats.history[dStr] || 0;
-        historyData.push({ day: d.toLocaleDateString('en-US',{weekday:'short'}).substring(0,1), val });
-        if (val > maxVal) maxVal = val;
+        historyLabels.push(d.toLocaleDateString('en-US',{weekday:'short'}));
+        historyVals.push(val);
     }
-    
-    historyData.forEach(hd => {
-        const hPct = (hd.val / maxVal) * 100;
-        chart.innerHTML += `<div style="width:12%; background:var(--accent); height:${hPct}%; border-radius:2px 2px 0 0; min-height:4px;" title="${hd.val} pomodoros"></div>`;
-        labels.innerHTML += `<span>${hd.day}</span>`;
-    });
+
+    const canvas = document.getElementById('weeklyChartCanvas');
+    if (canvas && typeof Chart !== 'undefined') {
+        const ctx = canvas.getContext('2d');
+        if (window._weeklyChartInst) window._weeklyChartInst.destroy();
+        window._weeklyChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: historyLabels,
+                datasets: [{
+                    label: 'Pomodoros',
+                    data: historyVals,
+                    backgroundColor: historyVals.map((v,i) => i === 6 ? 'rgba(239,68,68,0.7)' : 'rgba(99,102,241,0.5)'),
+                    borderColor: historyVals.map((v,i) => i === 6 ? '#ef4444' : '#6366f1'),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 600, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15,23,42,0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#94a3b8',
+                        cornerRadius: 8,
+                        bodyFont: { family: 'Inter', size: 12 },
+                        callbacks: { label: ctx => `${ctx.parsed.y} pomodoro${ctx.parsed.y !== 1 ? 's' : ''}` }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#64748b', font: { family: 'Inter', size: 10 }, stepSize: 1 },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    x: {
+                        ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
     
     // Render achievements
     const achGrid = $('#achGrid');

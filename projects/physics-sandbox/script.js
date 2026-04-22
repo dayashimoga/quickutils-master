@@ -2,260 +2,272 @@
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
+
+// Matter.js aliases
+const Engine = Matter.Engine,
+      Render = Matter.Render,
+      Runner = Matter.Runner,
+      Composite = Matter.Composite,
+      Composites = Matter.Composites,
+      Constraint = Matter.Constraint,
+      MouseConstraint = Matter.MouseConstraint,
+      Mouse = Matter.Mouse,
+      Bodies = Matter.Bodies,
+      Body = Matter.Body;
+
 const canvas = $('#physCanvas');
-const ctx = canvas.getContext('2d');
 let W = canvas.width, H = canvas.height;
 
-let objects = [];
-let running = false;
-let lastTime = 0;
-let nextId = 1;
-let gravity = 9.81;
-let friction = 0.3;
-let bounciness = 0.6;
-let timeScale = 1.0;
-let showVectors = true;
-let showTrails = false;
-let trails = [];
+// Engine setup
+const engine = Engine.create();
+const world = engine.world;
 
-// ── Object Factory ──
-function createCircle(x, y, r, vx = 0, vy = 0) {
-    objects.push({ id: nextId++, type: 'circle', x, y, r, vx, vy, ax: 0, ay: 0, mass: r * 0.5, color: randomColor(), fixed: false, trail: [] });
-    updateCount();
-}
-function createBox(x, y, w, h, vx = 0, vy = 0) {
-    objects.push({ id: nextId++, type: 'box', x, y, w, h, vx, vy, ax: 0, ay: 0, mass: (w*h)*0.01, color: randomColor(), fixed: false, trail: [] });
-    updateCount();
-}
-function createPlatform(x, y, w) {
-    objects.push({ id: nextId++, type: 'box', x, y, w, h: 10, vx: 0, vy: 0, ax: 0, ay: 0, mass: 999, color: '#4b5563', fixed: true, trail: [] });
-    updateCount();
-}
+const render = Render.create({
+    canvas: canvas,
+    engine: engine,
+    options: {
+        width: W,
+        height: H,
+        background: 'transparent',
+        wireframes: false,
+        showVelocity: false,
+        showAngleIndicator: false
+    }
+});
+
+Render.run(render);
+const runner = Runner.create();
+Runner.run(runner, engine);
+
+let isPlaying = true;
+let trails = [];
+let showTrails = false;
+
+// Base physics settings
+let gravityScale = 1;
+let currentFriction = 0.3;
+let currentBounce = 0.6;
+let timeScale = 1.0;
+
+// Mouse interaction
+const mouse = Mouse.create(render.canvas);
+const mConstraint = MouseConstraint.create(engine, {
+    mouse: mouse,
+    constraint: { stiffness: 0.2, render: { visible: false } }
+});
+Composite.add(world, mConstraint);
+render.mouse = mouse;
+
 function randomColor() {
     const colors = ['#ef4444','#f97316','#facc15','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4'];
     return colors[Math.floor(Math.random()*colors.length)];
 }
-function updateCount() { $('#objCount').textContent = `Objects: ${objects.length}`; }
 
-// ── Physics Update ──
-function update(dt) {
-    dt *= timeScale;
-    const g = gravity * 50; // Scale for pixels
-    for (const obj of objects) {
-        if (obj.fixed) continue;
-        // Gravity
-        obj.vy += g * dt;
-        // Apply velocity
-        obj.x += obj.vx * dt;
-        obj.y += obj.vy * dt;
-        // Floor collision
-        const bottom = obj.type === 'circle' ? obj.y + obj.r : obj.y + obj.h;
-        if (bottom >= H) {
-            if (obj.type === 'circle') obj.y = H - obj.r;
-            else obj.y = H - obj.h;
-            obj.vy *= -bounciness;
-            obj.vx *= (1 - friction);
-            if (Math.abs(obj.vy) < 1) obj.vy = 0;
-        }
-        // Wall collisions
-        if (obj.type === 'circle') {
-            if (obj.x - obj.r < 0) { obj.x = obj.r; obj.vx *= -bounciness; }
-            if (obj.x + obj.r > W) { obj.x = W - obj.r; obj.vx *= -bounciness; }
-            if (obj.y - obj.r < 0) { obj.y = obj.r; obj.vy *= -bounciness; }
-        } else {
-            if (obj.x < 0) { obj.x = 0; obj.vx *= -bounciness; }
-            if (obj.x + obj.w > W) { obj.x = W - obj.w; obj.vx *= -bounciness; }
-            if (obj.y < 0) { obj.y = 0; obj.vy *= -bounciness; }
-        }
-        // Trail
-        if (showTrails) {
-            obj.trail.push({ x: obj.x, y: obj.y });
-            if (obj.trail.length > 100) obj.trail.shift();
-        }
-    }
-    // Circle-circle collisions
-    for (let i = 0; i < objects.length; i++) {
-        for (let j = i + 1; j < objects.length; j++) {
-            const a = objects[i], b = objects[j];
-            if (a.type === 'circle' && b.type === 'circle') {
-                const dx = b.x - a.x, dy = b.y - a.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                const minDist = a.r + b.r;
-                if (dist < minDist && dist > 0) {
-                    const nx = dx/dist, ny = dy/dist;
-                    const overlap = minDist - dist;
-                    if (!a.fixed) { a.x -= nx * overlap * 0.5; a.y -= ny * overlap * 0.5; }
-                    if (!b.fixed) { b.x += nx * overlap * 0.5; b.y += ny * overlap * 0.5; }
-                    const dvx = a.vx - b.vx, dvy = a.vy - b.vy;
-                    const dot = dvx * nx + dvy * ny;
-                    if (dot > 0) {
-                        const m = 2 * dot / (a.mass + b.mass);
-                        if (!a.fixed) { a.vx -= m * b.mass * nx * bounciness; a.vy -= m * b.mass * ny * bounciness; }
-                        if (!b.fixed) { b.vx += m * a.mass * nx * bounciness; b.vy += m * a.mass * ny * bounciness; }
-                    }
-                }
-            }
-            // Circle-Box
-            if ((a.type === 'circle' && b.type === 'box') || (a.type === 'box' && b.type === 'circle')) {
-                const circ = a.type === 'circle' ? a : b;
-                const box = a.type === 'box' ? a : b;
-                const cx = Math.max(box.x, Math.min(circ.x, box.x + box.w));
-                const cy = Math.max(box.y, Math.min(circ.y, box.y + box.h));
-                const dx = circ.x - cx, dy = circ.y - cy;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < circ.r && dist > 0) {
-                    const nx = dx/dist, ny = dy/dist;
-                    const overlap = circ.r - dist;
-                    if (!circ.fixed) { circ.x += nx * overlap; circ.y += ny * overlap; }
-                    const dot = circ.vx * nx + circ.vy * ny;
-                    if (dot < 0 && !circ.fixed) {
-                        circ.vx -= 2 * dot * nx * bounciness;
-                        circ.vy -= 2 * dot * ny * bounciness;
-                        circ.vx *= (1 - friction * 0.5);
-                    }
-                }
-            }
-        }
-    }
+function updateCount() {
+    const objCount = Composite.allBodies(world).length;
+    $('#objCount').textContent = `Objects: ${objCount}`;
 }
 
-// ── Render ──
-function render() {
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f0f14';
-    ctx.fillRect(0, 0, W, H);
-    // Trails
-    if (showTrails) {
-        for (const obj of objects) {
-            if (obj.trail.length < 2) continue;
-            ctx.strokeStyle = obj.color + '40';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(obj.trail[0].x, obj.trail[0].y);
-            for (const p of obj.trail) ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-    }
-    // Objects
-    for (const obj of objects) {
-        ctx.fillStyle = obj.color;
-        if (obj.type === 'circle') {
-            ctx.beginPath(); ctx.arc(obj.x, obj.y, obj.r, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.stroke();
-        } else {
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-        }
-        // Velocity vectors
-        if (showVectors && !obj.fixed && (Math.abs(obj.vx) > 1 || Math.abs(obj.vy) > 1)) {
-            const cx = obj.type === 'circle' ? obj.x : obj.x + obj.w/2;
-            const cy = obj.type === 'circle' ? obj.y : obj.y + obj.h/2;
-            const scale = 0.1;
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + obj.vx * scale, cy + obj.vy * scale);
-            ctx.stroke();
-            // Arrowhead
-            const angle = Math.atan2(obj.vy, obj.vx);
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.moveTo(cx + obj.vx*scale, cy + obj.vy*scale);
-            ctx.lineTo(cx + obj.vx*scale - 6*Math.cos(angle-0.4), cy + obj.vy*scale - 6*Math.sin(angle-0.4));
-            ctx.lineTo(cx + obj.vx*scale - 6*Math.cos(angle+0.4), cy + obj.vy*scale - 6*Math.sin(angle+0.4));
-            ctx.fill();
-        }
-    }
+// ── Object Factory ──
+function createCircle(x, y, r, vx=0, vy=0) {
+    const body = Bodies.circle(x, y, r, {
+        restitution: currentBounce,
+        friction: currentFriction,
+        render: { fillStyle: randomColor() }
+    });
+    Body.setVelocity(body, {x: vx, y: vy});
+    Composite.add(world, body);
+    updateCount();
 }
 
-// ── Game Loop ──
-let frameCount = 0, fpsTime = 0;
-function loop(ts) {
-    if (!running) return;
-    const dt = Math.min((ts - lastTime) / 1000, 0.05);
-    lastTime = ts;
-    update(dt);
-    render();
-    frameCount++;
-    if (ts - fpsTime > 1000) { $('#fpsCounter').textContent = `FPS: ${frameCount}`; frameCount = 0; fpsTime = ts; }
-    requestAnimationFrame(loop);
+function createBox(x, y, w, h, vx=0, vy=0) {
+    const body = Bodies.rectangle(x, y, w, h, {
+        restitution: currentBounce,
+        friction: currentFriction,
+        render: { fillStyle: randomColor() }
+    });
+    Body.setVelocity(body, {x: vx, y: vy});
+    Composite.add(world, body);
+    updateCount();
 }
 
+function createPlatform(x, y, w) {
+    // centered x, y
+    const body = Bodies.rectangle(x + w/2, y + 10, w, 20, {
+        isStatic: true,
+        render: { fillStyle: '#4b5563' }
+    });
+    Composite.add(world, body);
+    updateCount();
+}
+
+function clearWorld() {
+    Composite.clear(world);
+    Engine.clear(engine);
+    trails = [];
+    // Re-add mouse constraint
+    Composite.add(world, mConstraint);
+    
+    // Bounds to keep things inside
+    const bounds = [
+        Bodies.rectangle(W/2, -50, W, 100, { isStatic: true }),
+        Bodies.rectangle(W/2, H+50, W, 100, { isStatic: true }),
+        Bodies.rectangle(-50, H/2, 100, H, { isStatic: true }),
+        Bodies.rectangle(W+50, H/2, 100, H, { isStatic: true })
+    ];
+    Composite.add(world, bounds);
+    updateCount();
+}
+
+// ── UI Controls ──
 $('#playBtn').addEventListener('click', () => {
-    running = !running;
-    $('#playBtn').textContent = running ? '⏸ Pause' : '▶ Play';
-    if (running) { lastTime = performance.now(); requestAnimationFrame(loop); }
+    isPlaying = !isPlaying;
+    $('#playBtn').textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+    runner.enabled = isPlaying;
 });
 
 $('#resetBtn').addEventListener('click', () => {
-    objects = []; running = false; $('#playBtn').textContent = '▶ Play'; updateCount(); render();
+    clearWorld();
 });
 
-// ── Controls ──
-$('#addCircle').addEventListener('click', () => { createCircle(100 + Math.random()*600, 50 + Math.random()*100, 15 + Math.random()*25, (Math.random()-0.5)*200, 0); render(); });
-$('#addBox').addEventListener('click', () => { createBox(100 + Math.random()*600, 50 + Math.random()*100, 30 + Math.random()*40, 30 + Math.random()*40); render(); });
-$('#addPlatform').addEventListener('click', () => { createPlatform(100 + Math.random()*400, 200 + Math.random()*300, 120 + Math.random()*100); render(); });
+$('#addCircle').addEventListener('click', () => { createCircle(100 + Math.random()*600, 50 + Math.random()*100, 15 + Math.random()*25); });
+$('#addBox').addEventListener('click', () => { createBox(100 + Math.random()*600, 50 + Math.random()*100, 30 + Math.random()*40, 30 + Math.random()*40); });
+$('#addPlatform').addEventListener('click', () => { createPlatform(100 + Math.random()*400, 200 + Math.random()*300, 120 + Math.random()*100); });
 
-$('#gravity').addEventListener('input', e => { gravity = parseFloat(e.target.value); $('#gravVal').textContent = gravity.toFixed(1); });
-$('#friction').addEventListener('input', e => { friction = parseFloat(e.target.value); $('#fricVal').textContent = friction.toFixed(2); });
-$('#bounce').addEventListener('input', e => { bounciness = parseFloat(e.target.value); $('#bounceVal').textContent = bounciness.toFixed(2); });
-$('#timeScale').addEventListener('input', e => { timeScale = parseFloat(e.target.value); $('#timeVal').textContent = timeScale.toFixed(1); });
-$('#showVectors').addEventListener('change', e => { showVectors = e.target.checked; render(); });
-$('#showTrails').addEventListener('change', e => { showTrails = e.target.checked; if (!showTrails) objects.forEach(o => o.trail = []); render(); });
+$('#gravity').addEventListener('input', e => { 
+    const v = parseFloat(e.target.value);
+    $('#gravVal').textContent = v.toFixed(1);
+    engine.gravity.y = (v / 9.81) * gravityScale;
+});
+
+$('#friction').addEventListener('input', e => { 
+    currentFriction = parseFloat(e.target.value);
+    $('#fricVal').textContent = currentFriction.toFixed(2);
+});
+
+$('#bounce').addEventListener('input', e => { 
+    currentBounce = parseFloat(e.target.value);
+    $('#bounceVal').textContent = currentBounce.toFixed(2);
+});
+
+$('#timeScale').addEventListener('input', e => { 
+    timeScale = parseFloat(e.target.value);
+    $('#timeVal').textContent = timeScale.toFixed(1);
+    engine.timing.timeScale = timeScale;
+});
+
+$('#showTrails').addEventListener('change', e => { showTrails = e.target.checked; trails = []; });
+
+$('#envSelect').addEventListener('change', e => {
+    const val = e.target.value;
+    engine.gravity.y = 1; 
+    gravityScale = 1;
+    world.gravity.scale = 0.001;
+    
+    // Reset drag
+    Composite.allBodies(world).forEach(b => {
+        b.frictionAir = 0.01;
+    });
+
+    if (val === 'earth') {
+        engine.gravity.y = 1;
+        $('#gravity').value = 9.81;
+    } else if (val === 'moon') {
+        engine.gravity.y = 0.165; // 1.62 / 9.81
+        $('#gravity').value = 1.62;
+    } else if (val === 'zero-g') {
+        engine.gravity.y = 0;
+        $('#gravity').value = 0;
+    } else if (val === 'underwater') {
+        engine.gravity.y = 0.5;
+        $('#gravity').value = 4.9;
+        // High drag
+        Composite.allBodies(world).forEach(b => {
+            b.frictionAir = 0.05;
+        });
+    }
+    $('#gravVal').textContent = $('#gravity').value;
+});
 
 // ── Demos ──
 $('#demoPendulum').addEventListener('click', () => {
-    objects = [];
-    createPlatform(350, 100, 100);
-    for (let i = 0; i < 5; i++) createCircle(370 + i*20, 100 + (i+1)*40, 12);
-    render();
-});
-$('#demoProjectile').addEventListener('click', () => {
-    objects = [];
-    createPlatform(0, H - 20, W);
-    createCircle(80, H - 50, 15, 300, -400);
-    render();
-});
-$('#demoCradle').addEventListener('click', () => {
-    objects = [];
-    createPlatform(0, H - 20, W);
-    for (let i = 0; i < 5; i++) createCircle(320 + i*32, H - 40, 15, 0, 0);
-    objects[0].vx = -250;
-    render();
-});
-$('#demoStack').addEventListener('click', () => {
-    objects = [];
-    createPlatform(250, H - 20, 300);
-    for (let i = 0; i < 6; i++) createBox(340, H - 60 - i*45, 40, 40);
-    createCircle(200, 100, 20, 250, 0);
-    render();
+    clearWorld();
+    createPlatform(300, 50, 200);
+    const pendulum = Bodies.circle(400, 250, 25, { restitution: 0.9, render:{fillStyle:'#facc15'} });
+    const constraint = Constraint.create({
+        pointA: { x: 400, y: 70 },
+        bodyB: pendulum,
+        stiffness: 0.9,
+        render: { strokeStyle: '#fff' }
+    });
+    Body.translate(pendulum, {x: 150, y: -100});
+    Composite.add(world, [pendulum, constraint]);
+    updateCount();
 });
 
-// ── Mouse interaction (drag to launch) ──
-let mouseDown = false, mouseStart = null;
-canvas.addEventListener('mousedown', e => {
-    const rect = canvas.getBoundingClientRect();
-    mouseStart = { x: (e.clientX-rect.left)*(W/rect.width), y: (e.clientY-rect.top)*(H/rect.height) };
-    mouseDown = true;
+$('#demoProjectile').addEventListener('click', () => {
+    clearWorld();
+    createPlatform(0, H - 20, W);
+    createCircle(50, H - 50, 20, 20, -25);
 });
-canvas.addEventListener('mouseup', e => {
-    if (!mouseDown || !mouseStart) return;
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX-rect.left)*(W/rect.width), my = (e.clientY-rect.top)*(H/rect.height);
-    const vx = (mouseStart.x - mx) * 3, vy = (mouseStart.y - my) * 3;
-    createCircle(mouseStart.x, mouseStart.y, 15 + Math.random()*15, vx, vy);
-    mouseDown = false; mouseStart = null;
-    render();
+
+$('#demoCradle').addEventListener('click', () => {
+    clearWorld();
+    const cradle = Composites.newtonsCradle(250, 100, 5, 20, 160);
+    Body.translate(cradle.bodies[0], { x: -140, y: -100 });
+    Composite.add(world, cradle);
+    updateCount();
 });
+
+$('#demoStack').addEventListener('click', () => {
+    clearWorld();
+    createPlatform(150, H - 20, 500);
+    const stack = Composites.stack(200, H - 400, 6, 6, 0, 0, function(x, y) {
+        return Bodies.rectangle(x, y, 40, 40, { render: {fillStyle: randomColor()} });
+    });
+    Composite.add(world, stack);
+    createCircle(50, H - 150, 30, 25, -5);
+    updateCount();
+});
+
+// Trails render event
+Matter.Events.on(render, 'afterRender', function() {
+    const ctx = render.context;
+    if (showTrails) {
+        ctx.beginPath();
+        const bodies = Composite.allBodies(world).filter(b => !b.isStatic);
+        bodies.forEach((b, i) => {
+            if(!trails[i]) trails[i] = [];
+            trails[i].push({x: b.position.x, y: b.position.y});
+            if(trails[i].length > 50) trails[i].shift();
+            
+            ctx.moveTo(trails[i][0].x, trails[i][0].y);
+            for(let j=1; j<trails[i].length; j++) {
+                ctx.lineTo(trails[i][j].x, trails[i][j].y);
+            }
+        });
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.stroke();
+    }
+    
+    // FPS
+    if(frameCount % 30 === 0) {
+        $('#fpsCounter').textContent = `FPS: ${Math.round(runner.fps)}`;
+    }
+    frameCount++;
+});
+
+let frameCount = 0;
 
 // Theme
 $('#themeBtn').addEventListener('click', () => {
     const html = document.documentElement; const isDark = html.dataset.theme === 'dark';
     html.dataset.theme = isDark ? 'light' : 'dark';
     $('#themeBtn').textContent = isDark ? '☀️' : '🌙';
-    localStorage.setItem('theme', html.dataset.theme); render();
+    localStorage.setItem('theme', html.dataset.theme);
 });
 if (localStorage.getItem('theme') === 'light') { document.documentElement.dataset.theme = 'light'; $('#themeBtn').textContent = '☀️'; }
 
-render();
+clearWorld();
 })();

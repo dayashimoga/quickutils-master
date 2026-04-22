@@ -145,7 +145,7 @@ def assign_domains():
                 time.sleep(1.5) # Protect against rate-limits
 
             # DNS CNAME Provisioning (Proxy MUST be True to avoid Error 1014 CNAME Cross-User Banned)
-            if zone_id: # Always check and provision DNS, even if already bound to Pages
+            if zone_id and success_status: # ONLY provision DNS if successfully added to Pages
                 dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
                 
                 target_content = f"{foldername}.pages.dev"
