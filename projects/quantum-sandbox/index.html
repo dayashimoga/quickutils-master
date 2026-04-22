@@ -32,9 +32,12 @@
     <link rel="stylesheet" href="../../quickutils-core.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <meta name="theme-color" content="#ffffff">
 </head>
 <body class="quantum-bg">
+    <div id="cloudContainer" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:-1; pointer-events:none;"></div>
     <nav class="navbar glass-nav">
         <div class="container nav-inner">
             <a href="../../index.html" class="brand holo-text">⚛️ Quantum Sandbox</a>
@@ -90,8 +93,8 @@
                     <!-- JS generated bars -->
                 </div>
 
-                <h3 class="mb-2 text-neon-purple text-xs text-uppercase">Bloch Sphere (Q0)</h3>
-                <canvas id="blochSphere" width="200" height="200" style="display:block; margin:0 auto; background:rgba(0,0,0,0.2); border-radius:50%; margin-bottom:1rem;"></canvas>
+                <h3 class="mb-2 text-neon-purple text-xs text-uppercase">Bloch Sphere (Q0) 3D</h3>
+                <div id="blochContainer" style="width:220px; height:220px; margin:0 auto; background:rgba(0,0,0,0.2); border-radius:50%; margin-bottom:1rem; overflow:hidden; position:relative; cursor:grab;"></div>
                 
                 <div class="mt-2 text-center" id="blochStats" style="font-size:0.75rem; color:#aaccff;"></div>
 

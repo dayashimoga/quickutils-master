@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-CONFIG_PATH = ROOT_DIR / "project_config.json"
+CONFIG_PATH = ROOT_DIR / "terraform" / "projects.json"
 
 WRANGLER_PATHS = [
     Path(os.environ.get("APPDATA", "C:/")) / ".wrangler" / "config" / "default.toml",
@@ -54,9 +54,8 @@ def assign_domains():
         return
 
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        master_config = json.load(f)
+        projects = json.load(f)
 
-    projects = master_config.get("projects", {})
     count = 0
     errors = 0
     skips = 0
@@ -84,10 +83,11 @@ def assign_domains():
     base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
     print(f"Loaded {len(projects)} projects from config. Initiating bulk domain REST API assignment...")
     
-    for foldername, cfg in projects.items():
-        site_url = cfg.get("SITE_URL", "")
-        if "quickutils.top" in site_url:
-            domain = site_url.replace("https://", "").replace("http://", "").strip("/")
+    for arch_key, cfg in projects.items():
+        foldername = cfg.get("repo_name", arch_key)
+        domain_raw = cfg.get("custom_domain", "")
+        if "quickutils.top" in domain_raw:
+            domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             domain = domain.split("/")[0] # remove trailing paths if any
             
             domain_list_url = f"{base_url}/{foldername}/domains"

@@ -78,7 +78,15 @@
         </div>
         <!-- Ports -->
         <div class="tool-panel glass-card hidden" id="panel-ports">
-            <h2>🚪 Common Port Reference</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+                <h2 style="margin:0;">🚪 Port Scanner & Reference</h2>
+                <div class="input-group" style="margin:0; width:auto; flex-wrap:wrap;">
+                    <input type="text" id="scanTarget" placeholder="Target (e.g. localhost)" style="width:180px;">
+                    <button class="btn btn-primary" id="scanPortsBtn">Scan</button>
+                    <button class="btn btn-outline" id="exportScanBtn" title="Export JSON">📥 Export</button>
+                </div>
+            </div>
+            <p class="text-muted text-small mt-1 mb-3">Note: Browser-based port scanning uses concurrent fetch requests and timing heuristics. It is much faster but limited by browser security.</p>
             <input type="search" id="portSearch" placeholder="Search ports by number or service...">
             <div class="port-filters"><button class="filter-btn active" data-cat="all">All</button><button class="filter-btn" data-cat="web">Web</button><button class="filter-btn" data-cat="email">Email</button><button class="filter-btn" data-cat="file">File Transfer</button><button class="filter-btn" data-cat="db">Database</button><button class="filter-btn" data-cat="remote">Remote</button></div>
             <div id="portTable"></div>

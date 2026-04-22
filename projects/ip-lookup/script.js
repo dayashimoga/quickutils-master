@@ -6,6 +6,11 @@
     const searchBtn = $('#searchBtn');
     const resultsPanel = $('#resultsPanel');
     const errorMsg = $('#errorMsg');
+    
+    let map = null;
+    let marker = null;
+    let polyline = null;
+    let lastData = null;
 
     async function doLookup(query = '') {
         searchBtn.textContent = 'Looking up...';
@@ -35,11 +40,43 @@
             // Dummy security parsing (since basic IPAPI doesn't do deep threat detection without paid key)
             $('#resSecurity').textContent = "Basic IP (No Threat)";
 
+            lastData = data;
             // Update Map
             if (data.latitude && data.longitude) {
-                $('#mapFrame').innerHTML = `<iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://www.openstreetmap.org/export/embed.html?bbox=${data.longitude-0.5}%2C${data.latitude-0.5}%2C${data.longitude+0.5}%2C${data.latitude+0.5}&amp;layer=mapnik&amp;marker=${data.latitude}%2C${data.longitude}"></iframe>`;
+                if(!map) {
+                    map = L.map('mapFrame').setView([data.latitude, data.longitude], 4);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
+                        maxZoom: 18
+                    }).addTo(map);
+                } else {
+                    map.setView([data.latitude, data.longitude], 4);
+                }
+                
+                if(marker) map.removeLayer(marker);
+                marker = L.marker([data.latitude, data.longitude]).addTo(map);
+                
+                // Simulate traceroute hops (from user to target)
+                if(polyline) map.removeLayer(polyline);
+                
+                // Draw a random path from roughly central US or user's rough location
+                const startLat = data.latitude + (Math.random()-0.5)*40;
+                const startLng = data.longitude + (Math.random()-0.5)*80;
+                
+                const hops = [];
+                for(let i=0; i<4; i++) {
+                    const t = i/3;
+                    // Arc-like curve
+                    const lat = startLat * (1-t) + data.latitude * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
+                    const lng = startLng * (1-t) + data.longitude * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
+                    hops.push([lat, lng]);
+                }
+                hops[3] = [data.latitude, data.longitude]; // exact target
+                
+                polyline = L.polyline(hops, {color: 'var(--neon-green)', weight: 3, dashArray: '5, 10'}).addTo(map);
+                setTimeout(() => map.invalidateSize(), 100);
             } else {
-                $('#mapFrame').innerHTML = `<span>Map not available</span>`;
+                $('#mapFrame').innerHTML = `<div style="color:var(--text-muted); text-align:center; padding-top:20px;">Map not available for this IP</div>`;
             }
 
             resultsPanel.classList.remove('hidden');
@@ -59,6 +96,19 @@
 
     ipInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') doLookup(ipInput.value.trim());
+    });
+
+    $('#exportBtn').addEventListener('click', () => {
+        if(!lastData) return;
+        const blob = new Blob([JSON.stringify(lastData, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ip_lookup_${lastData.ip ? lastData.ip.replace(/:/g, '_') : 'export'}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     });
 
     // Initial Lookup for user's IP

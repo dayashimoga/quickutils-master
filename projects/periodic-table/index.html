@@ -40,6 +40,8 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ELEMENTS001"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-ELEMENTS001');</script>
     <meta name="theme-color" content="#ffffff">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
     <nav class="navbar"><div class="container nav-inner">
@@ -88,14 +90,49 @@
     </main>
 
     <!-- Side Panel for Element Details -->
-    <div class="element-panel glass-panel" id="elementPanel">
-        <div class="panel-header">
+    <div class="element-panel glass-panel" id="elementPanel" style="width: 400px; max-width:90vw;">
+        <div class="panel-header" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div class="panel-tabs" style="display:flex; gap:0.5rem;">
+                <button class="btn btn-sm btn-primary" id="tabInfo">Info</button>
+                <button class="btn btn-sm btn-outline" id="tab3D">3D Model</button>
+            </div>
             <button class="icon-btn" id="closePanelBtn">❌</button>
         </div>
-        <div class="panel-content" id="panelContent">
-            <div class="text-center text-muted" style="padding: 2rem">Select an element to view details.</div>
+        <div class="panel-content" id="panelContent" style="position:relative; min-height:400px;">
+            <div id="infoView">
+                <div class="text-center text-muted" style="padding: 2rem">Select an element to view details.</div>
+            </div>
+            <div id="modelView" class="hidden" style="width:100%; height:350px; background:#000; border-radius:8px; overflow:hidden; position:relative; margin-top:1rem;">
+                <div id="threeContainer" style="width:100%; height:100%;"></div>
+                <div style="position:absolute; bottom:5px; right:5px; font-size:0.7rem; color:var(--text-muted); pointer-events:none;">Drag to rotate, scroll to zoom</div>
+            </div>
         </div>
     </div>
+
+    <!-- Alchemy Lab Bottom Panel -->
+    <div class="alchemy-lab glass-card" id="alchemyLab" style="position:fixed; bottom:0; left:0; right:0; height:180px; z-index:100; transform:translateY(100%); transition:transform 0.3s ease; display:flex; flex-direction:column; padding:0;">
+        <div style="display:flex; justify-content:space-between; padding:0.5rem 1rem; background:rgba(0,0,0,0.6); align-items:center; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:1.1rem; color:var(--accent);">⚗️ Alchemy Lab Sandbox</h3>
+            <div>
+                <button class="btn btn-sm btn-primary" id="combineBtn">⚡ Combine</button>
+                <button class="btn btn-sm btn-outline" id="clearLabBtn">Clear</button>
+                <button class="icon-btn" id="toggleLabBtn" style="margin-left:1rem;">▼</button>
+            </div>
+        </div>
+        <div id="alchemyDropzone" style="flex:1; padding:1rem; display:flex; gap:1rem; align-items:center; overflow-x:auto; min-width:0; background:rgba(20,20,20,0.8);">
+            <div id="dropText" class="text-muted text-sm w-100 text-center" style="font-style:italic;">Click elements in the table to add them here, then click Combine!</div>
+        </div>
+        <div id="alchemyResult" style="position:absolute; bottom:190px; left:50%; transform:translateX(-50%); width:350px; height:400px; background:rgba(10,10,10,0.95); border:1px solid var(--accent); border-radius:12px; display:none; flex-direction:column; z-index:101; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+            <div style="display:flex; justify-content:space-between; padding:0.75rem; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.5);">
+                <span id="resultTitle" style="font-weight:bold; color:var(--neon-green); font-size:1.1rem;">Reaction Result</span>
+                <button class="icon-btn" id="closeResultBtn" style="font-size:0.8rem;">❌</button>
+            </div>
+            <div id="result3DContainer" style="flex:1; width:100%; position:relative;"></div>
+            <div id="resultDesc" style="padding:0.75rem; font-size:0.85rem; color:var(--text); border-top:1px solid var(--border); background:rgba(0,0,0,0.3); min-height:60px;"></div>
+        </div>
+    </div>
+    
+    <button class="btn btn-primary" id="openLabBtn" style="position:fixed; bottom:20px; right:20px; z-index:90; box-shadow:0 4px 15px rgba(0,0,0,0.4); border-radius:30px; padding:10px 20px;">⚗️ Open Alchemy Lab</button>
 
     <footer class="footer"><div class="container footer-inner">
         <div class="footer-brand"><span>🧪 Periodic Table</span><p>Part of <a href="https://quickutils.top">QuickUtils</a></p></div>

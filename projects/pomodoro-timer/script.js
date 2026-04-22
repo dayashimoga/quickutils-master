@@ -10,12 +10,13 @@ let s = {
     isRunning: false,
     timer: null,
     settings: {
-        pomodoro: 25,
-        shortBreak: 5,
-        longBreak: 15,
-        interval: 4,
-        autoStartBreak: false,
-        autoStartPomodoro: false
+        pomodoro: parseInt(localStorage.getItem('focus_set_pomo')) || 25,
+        shortBreak: parseInt(localStorage.getItem('focus_set_sb')) || 5,
+        longBreak: parseInt(localStorage.getItem('focus_set_lb')) || 15,
+        interval: parseInt(localStorage.getItem('focus_set_int')) || 4,
+        autoStartBreak: localStorage.getItem('focus_set_ab') === 'true',
+        autoStartPomodoro: localStorage.getItem('focus_set_ap') === 'true',
+        strictMode: localStorage.getItem('focus_strict') === 'true'
     },
     stats: {
         pomodoros: parseInt(localStorage.getItem('focus_pomodoros') || '0'),
@@ -116,8 +117,21 @@ function toggleTimer() {
     if (s.isRunning) {
         clearInterval(s.timer);
         startBtn.innerHTML = '▶ Start';
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(e => console.log(e));
+        }
     } else {
         startBtn.innerHTML = '⏸ Pause';
+        
+        if (s.mode === 'pomodoro' && s.settings.strictMode) {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            }
+        }
+
         s.timer = setInterval(() => {
             s.timeLeft--;
             if (s.timeLeft <= 0) completeSession();
@@ -347,6 +361,16 @@ $('#saveSettings').addEventListener('click', () => {
     s.settings.interval = parseInt($('#setInterval').value) || 4;
     s.settings.autoStartBreak = $('#setAutoBreak').checked;
     s.settings.autoStartPomodoro = $('#setAutoPomodoro').checked;
+    s.settings.strictMode = $('#setStrictMode').checked;
+    
+    localStorage.setItem('focus_set_pomo', s.settings.pomodoro);
+    localStorage.setItem('focus_set_sb', s.settings.shortBreak);
+    localStorage.setItem('focus_set_lb', s.settings.longBreak);
+    localStorage.setItem('focus_set_int', s.settings.interval);
+    localStorage.setItem('focus_set_ab', s.settings.autoStartBreak);
+    localStorage.setItem('focus_set_ap', s.settings.autoStartPomodoro);
+    localStorage.setItem('focus_strict', s.settings.strictMode);
+
     $('#settingsModal').classList.remove('active');
     switchMode(s.mode); // Reset timer with new settings
 });
@@ -359,11 +383,32 @@ $('#themeBtn').addEventListener('click', () => {
     localStorage.setItem('theme', html.dataset.theme);
 });
 
+// Strict Mode Tab Switching Interceptor
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && s.isRunning && s.mode === 'pomodoro' && s.settings.strictMode) {
+        if (Notification.permission === "granted") {
+            new Notification("🚨 Get back to work!", {
+                body: "Strict Mode is enabled. Don't switch tabs while the Pomodoro is running!"
+            });
+        }
+        alarmSound.currentTime = 0;
+        alarmSound.play().catch(e=>console.log("Audio play failed on hidden:", e));
+    }
+});
+
 // Init
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.dataset.theme = 'light';
     $('#themeBtn').textContent = '☀️';
 }
+$('#setPomodoro').value = s.settings.pomodoro;
+$('#setShortBreak').value = s.settings.shortBreak;
+$('#setLongBreak').value = s.settings.longBreak;
+$('#setInterval').value = s.settings.interval;
+$('#setAutoBreak').checked = s.settings.autoStartBreak;
+$('#setAutoPomodoro').checked = s.settings.autoStartPomodoro;
+$('#setStrictMode').checked = s.settings.strictMode;
+
 switchMode('pomodoro');
 renderTasks();
 updateStats();

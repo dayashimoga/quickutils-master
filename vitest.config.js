@@ -13,7 +13,13 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['projects/**/*.js', 'shared/**/*.js'],
-      exclude: ['**/dist/**', '**/tests/**', '**/*.test.js', '**/package.json', '**/README.md']
+      exclude: ['**/dist/**', '**/tests/**', '**/*.test.js', '**/package.json', '**/README.md'],
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        branches: 90,
+        statements: 90
+      }
     },
     deps: {
       inline: [/quickutils/]

@@ -169,38 +169,169 @@
         const x = 2 * r01.r;
         const y = -2 * r01.i;
         const z = r00 - r11;
-        drawBlochSphere(x, y, z);
+        updateBloch3D(x, y, z);
+        updateProbabilityClouds(state);
     }
 
-    function drawBlochSphere(x, y, z) {
-        const c = $('#blochSphere');
-        if(!c) return;
-        const ctx = c.getContext('2d');
-        const w = c.width, h = c.height;
-        ctx.clearRect(0,0,w,h);
+    // --- Three.js Setup (Bloch Sphere & Probability Clouds) ---
+    let blochScene, blochCamera, blochRenderer, blochVector;
+    function initBloch3D() {
+        const container = $('#blochContainer');
+        if(!container || typeof THREE === 'undefined') return;
+        blochScene = new THREE.Scene();
+        blochCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        blochCamera.position.set(2, 1.5, 3);
         
-        const r = w/2 * 0.8;
-        const cx = w/2, cy = h/2;
+        blochRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        blochRenderer.setSize(container.clientWidth, container.clientHeight);
+        blochRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(blochRenderer.domElement);
         
-        ctx.strokeStyle = '#444';
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(cx, cy, r, r*0.3, 0, 0, Math.PI*2); ctx.stroke();
+        const controls = new THREE.OrbitControls(blochCamera, blochRenderer.domElement);
+        controls.enablePan = false;
+        controls.enableZoom = false;
+
+        // Sphere
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x44aa88, wireframe: true, transparent: true, opacity: 0.15 });
+        blochScene.add(new THREE.Mesh(geometry, material));
+
+        // Axes (X, Y, Z in Three.js terms)
+        const axesHelper = new THREE.AxesHelper(1.2);
+        blochScene.add(axesHelper);
+
+        // Vector
+        const dir = new THREE.Vector3(0, 1, 0); // pointing up
+        const origin = new THREE.Vector3(0, 0, 0);
+        blochVector = new THREE.ArrowHelper(dir, origin, 1, 0x00ffcc, 0.2, 0.15);
+        blochScene.add(blochVector);
+
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();
+            blochRenderer.render(blochScene, blochCamera);
+        };
+        animate();
+    }
+
+    function updateBloch3D(x, y, z) {
+        if(!blochVector) return;
+        // Bloch standard: Z is Up, X is front, Y is right
+        // Three.js: Y is Up, Z is front, X is right
+        const dir = new THREE.Vector3(y, z, x).normalize();
         
-        ctx.strokeStyle = '#333';
-        ctx.beginPath(); ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.stroke();
-
-        const px = cx + (y * r) + (x * r * -0.3);
-        const py = cy - (z * r) + (x * r * 0.3);
-
-        ctx.strokeStyle = 'var(--neon-purple)';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
-        ctx.fillStyle = 'var(--neon-green)';
-        ctx.beginPath(); ctx.arc(px,py, 4, 0, Math.PI*2); ctx.fill();
-
+        if (Math.abs(x)<0.01 && Math.abs(y)<0.01 && Math.abs(z)<0.01) {
+            blochVector.visible = false;
+        } else {
+            blochVector.visible = true;
+            blochVector.setDirection(dir);
+            blochVector.setLength(Math.sqrt(x*x + y*y + z*z));
+        }
         const st = $('#blochStats');
         if(st) st.textContent = `x: ${x.toFixed(2)}  y: ${y.toFixed(2)}  z: ${z.toFixed(2)}`;
+    }
+
+    let cloudScene, cloudCamera, cloudRenderer, particles;
+    let cloudGeo;
+    function initProbabilityClouds() {
+        const container = $('#cloudContainer');
+        if(!container || typeof THREE === 'undefined') return;
+        cloudScene = new THREE.Scene();
+        cloudCamera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cloudCamera.position.z = 60;
+
+        cloudRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        cloudRenderer.setSize(window.innerWidth, window.innerHeight);
+        cloudRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(cloudRenderer.domElement);
+
+        cloudGeo = new THREE.BufferGeometry();
+        const count = 6000;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        
+        cloudGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        cloudGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const mat = new THREE.PointsMaterial({ 
+            size: 1.5, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.6, 
+            blending: THREE.AdditiveBlending 
+        });
+        particles = new THREE.Points(cloudGeo, mat);
+        cloudScene.add(particles);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.001;
+            particles.rotation.x += 0.0005;
+            cloudRenderer.render(cloudScene, cloudCamera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            if(!cloudRenderer) return;
+            cloudCamera.aspect = window.innerWidth/window.innerHeight;
+            cloudCamera.updateProjectionMatrix();
+            cloudRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    function updateProbabilityClouds(state) {
+        if(!cloudGeo) return;
+        const count = 6000;
+        const positions = cloudGeo.attributes.position.array;
+        const colors = cloudGeo.attributes.color.array;
+
+        let pIdx = 0;
+        const nBasis = state.length;
+        
+        state.forEach((amp, idx) => {
+            const prob = amp.magSq();
+            const alloc = Math.floor(prob * count);
+            if(alloc <= 0) return;
+            
+            // Assign color based on basis state
+            const hue = (idx / nBasis) * 0.8 + 0.1; // spread across spectrum
+            const color = new THREE.Color().setHSL(hue, 1, 0.6);
+
+            // Assign a cluster center
+            // Random fixed angle per index for stability
+            const angle1 = idx * Math.PI * 0.6180339887 * 2; 
+            const angle2 = idx * Math.PI * 1.41421356 * 2;
+            const radius = 25;
+            const cx = radius * Math.cos(angle1) * Math.sin(angle2);
+            const cy = radius * Math.sin(angle1) * Math.sin(angle2);
+            const cz = radius * Math.cos(angle2);
+
+            for(let i=0; i<alloc; i++) {
+                if(pIdx >= count) break;
+                // Add noise
+                positions[pIdx*3] = cx + (Math.random()-0.5)*20;
+                positions[pIdx*3+1] = cy + (Math.random()-0.5)*20;
+                positions[pIdx*3+2] = cz + (Math.random()-0.5)*20;
+                
+                colors[pIdx*3] = color.r;
+                colors[pIdx*3+1] = color.g;
+                colors[pIdx*3+2] = color.b;
+                pIdx++;
+            }
+        });
+        
+        // Hide unused
+        for(; pIdx < count; pIdx++) {
+            positions[pIdx*3] = 0;
+            positions[pIdx*3+1] = 0;
+            positions[pIdx*3+2] = 0;
+            colors[pIdx*3] = 0;
+            colors[pIdx*3+1] = 0;
+            colors[pIdx*3+2] = 0;
+        }
+
+        cloudGeo.attributes.position.needsUpdate = true;
+        cloudGeo.attributes.color.needsUpdate = true;
     }
 
     // --- UI & Drag-Drop Logic ---
@@ -376,6 +507,8 @@
         simulate();
     };
 
+    initBloch3D();
+    initProbabilityClouds();
     initCircuit();
 
 })();

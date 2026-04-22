@@ -151,11 +151,83 @@ const PORTS = [
 function renderPorts(filter='all',search='') {
   const s = search.toLowerCase();
   const filtered = PORTS.filter(p=>(filter==='all'||p.cat===filter)&&(s===''||p.port.toString().includes(s)||p.service.toLowerCase().includes(s)||p.desc.toLowerCase().includes(s)));
-  $('#portTable').innerHTML = `<div class="port-row port-header"><span>Port</span><span>Service</span><span>Protocol</span><span>Description</span></div>`+filtered.map(p=>`<div class="port-row"><span class="port-num">${p.port}</span><span>${p.service}</span><span class="port-proto">${p.proto}</span><span class="port-desc">${p.desc}</span></div>`).join('');
+  $('#portTable').innerHTML = `<div class="port-row port-header"><span>Port</span><span>Service</span><span>Protocol</span><span>Description</span><span>Status</span></div>`+filtered.map(p=>`<div class="port-row"><span class="port-num">${p.port}</span><span>${p.service}</span><span class="port-proto">${p.proto}</span><span class="port-desc">${p.desc}</span><span class="port-status" id="pstat-${p.port}" style="font-weight:bold; color:var(--text-muted)">-</span></div>`).join('');
 }
 renderPorts();
 $$('.filter-btn').forEach(b=>b.addEventListener('click',()=>{$$('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderPorts(b.dataset.cat,$('#portSearch').value);}));
 $('#portSearch').addEventListener('input',()=>{const active=document.querySelector('.filter-btn.active');renderPorts(active?active.dataset.cat:'all',$('#portSearch').value);});
+
+// Scan Ports
+let scanResults = [];
+async function scanPort(target, port, timeout = 1500) {
+    const start = performance.now();
+    try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        await fetch(`http://${target}:${port}`, { mode: 'no-cors', signal: controller.signal });
+        clearTimeout(id);
+        return { port, status: 'Open', ms: Math.round(performance.now() - start) };
+    } catch(e) {
+        const ms = Math.round(performance.now() - start);
+        if (e.name === 'AbortError' || ms >= timeout - 50) {
+            return { port, status: 'Filtered', ms };
+        } else {
+            return { port, status: 'Closed', ms };
+        }
+    }
+}
+
+$('#scanPortsBtn')?.addEventListener('click', async () => {
+    let target = $('#scanTarget').value.trim();
+    if(!target) {
+        if(typeof QU !== 'undefined') QU.showToast('Please enter a target IP or domain','error');
+        return;
+    }
+    target = target.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    
+    scanResults = [];
+    $('#scanPortsBtn').disabled = true;
+    $('#scanPortsBtn').textContent = 'Scanning...';
+    
+    PORTS.forEach(p => {
+        const el = $(`#pstat-${p.port}`);
+        if(el) { el.textContent = '...'; el.style.color = 'var(--accent)'; }
+    });
+    
+    // Concurrent scanning
+    const promises = PORTS.map(async (p) => {
+        const res = await scanPort(target, p.port);
+        scanResults.push(res);
+        const el = $(`#pstat-${p.port}`);
+        if(el) {
+            el.textContent = `${res.status} (${res.ms}ms)`;
+            if(res.status === 'Open') el.style.color = 'var(--neon-green)';
+            else if(res.status === 'Closed') el.style.color = '#ef4444';
+            else el.style.color = 'var(--text-muted)';
+        }
+    });
+    
+    await Promise.allSettled(promises);
+    $('#scanPortsBtn').disabled = false;
+    $('#scanPortsBtn').textContent = 'Scan';
+    if(typeof QU !== 'undefined') QU.showToast('Port scan complete', 'success');
+});
+
+$('#exportScanBtn')?.addEventListener('click', () => {
+    if(scanResults.length === 0) {
+        if(typeof QU !== 'undefined') QU.showToast('No scan results to export', 'error');
+        return;
+    }
+    const blob = new Blob([JSON.stringify({ target: $('#scanTarget').value.trim(), results: scanResults }, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `port_scan_${$('#scanTarget').value.trim().replace(/[^a-z0-9]/gi, '_') || 'export'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
 
 // ── CIDR ──
 $('#cidrCalcBtn').addEventListener('click',()=>{

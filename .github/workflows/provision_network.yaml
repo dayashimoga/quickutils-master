@@ -144,12 +144,13 @@ jobs:
           zone_id = zr['result'][0]['id']
           print(f'Zone: {zone_id}')
 
-          with open('project_config.json') as f:
+          with open('terraform/projects.json') as f:
               cfg = json.load(f)
 
           created = updated = skipped = 0
-          for folder, proj in cfg.get('projects', {}).items():
-              url = proj.get('SITE_URL', '')
+          for arch_key, proj in cfg.items():
+              url = proj.get('custom_domain', '')
+              folder = proj.get('repo_name', arch_key)
               if 'quickutils.top' not in url: continue
               domain = url.replace('https://','').replace('http://','').strip('/').split('/')[0]
               target = f'{folder}.pages.dev'

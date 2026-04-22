@@ -89,12 +89,15 @@
                     <button class="sound-btn" data-sound="cafe">☕ Cafe</button>
                     <button class="sound-btn" data-sound="fire">🔥 Fire</button>
                     <button class="sound-btn" data-sound="forest">🌲 Forest</button>
+                    <button class="sound-btn" data-sound="lofi" style="grid-column: span 2;">📻 Lo-Fi Beats</button>
                 </div>
                 <!-- Need actual audio sources or synthesize them -->
                 <audio id="audio-rain" src="https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2393.mp3" loop></audio>
                 <audio id="audio-cafe" src="https://assets.mixkit.co/sfx/preview/mixkit-restaurant-crowd-ambience-443.mp3" loop></audio>
                 <audio id="audio-fire" src="https://assets.mixkit.co/sfx/preview/mixkit-camp-fire-burning-loop-238.mp3" loop></audio>
                 <audio id="audio-forest" src="https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-and-insects-170.mp3" loop></audio>
+                <!-- A generic lofi beat loop proxy/placeholder -->
+                <audio id="audio-lofi" src="https://assets.mixkit.co/music/preview/mixkit-chill-bro-894.mp3" loop></audio>
                 <audio id="alarm-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-digital-clock-digital-alarm-buzzer-992.mp3"></audio>
             </div>
         </div>
@@ -202,6 +205,12 @@
                     <label class="toggle-label">
                         <span>Auto-start Pomodoros</span>
                         <input type="checkbox" id="setAutoPomodoro">
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label class="toggle-label" title="Enforces full screen and sends notifications if you switch tabs">
+                        <span>Strict Mode 🚨</span>
+                        <input type="checkbox" id="setStrictMode">
                     </label>
                 </div>
             </div>
