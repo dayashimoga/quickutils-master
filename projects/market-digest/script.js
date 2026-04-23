@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    // 2. Setup Tab Navigation
-    setupTabNavigation();
+    // Removed Tab Navigation Setup
 
     // 3. Initialize Charts & Data
     initializeDashboard();
@@ -25,42 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Setup Refresh Logic
     setupRefreshLogic();
 });
-
-// ─── Tab Navigation System ───
-function setupTabNavigation() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-
-            // Deactivate all
-            tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-            panels.forEach(p => p.classList.remove('active'));
-
-            // Activate selected
-            tab.classList.add('active');
-            tab.setAttribute('aria-selected', 'true');
-            document.getElementById('panel-' + target).classList.add('active');
-
-            // Lazy init charts when Charts tab is first shown
-            if (target === 'charts' && !chartsInitialized && cachedMarketData && cachedMacroData) {
-                setTimeout(() => renderCharts(cachedMarketData, cachedMacroData), 50);
-                chartsInitialized = true;
-            }
-
-            // Update URL hash without scrolling
-            history.replaceState(null, '', '#' + target);
-        });
-    });
-
-    // Restore tab from hash
-    const hash = window.location.hash.replace('#', '');
-    if (hash && document.getElementById('tab-' + hash)) {
-        document.getElementById('tab-' + hash).click();
-    }
-}
 
 // ─── Ticker Bar ───
 function renderTickerBar(marketData, macroData) {
@@ -173,13 +136,10 @@ async function initializeDashboard() {
         renderInvestmentSignals(marketData, macroData);
         renderPaperTrading(marketData, macroData);
 
-        // Only render charts if the charts tab is currently active
-        const chartsPanel = document.getElementById('panel-charts');
-        if (chartsPanel && chartsPanel.classList.contains('active')) {
-            chartsInitialized = true;
+        // Render charts unconditionally for dashboard
+        if (!chartsInitialized) {
             renderCharts(marketData, macroData);
-        } else {
-            chartsInitialized = false;
+            chartsInitialized = true;
         }
         
     } catch (error) {

@@ -578,4 +578,91 @@ $('#stopLatencyBtn').addEventListener('click', () => {
     $('#stopLatencyBtn').disabled = true;
 });
 
+// ── TERMINAL SIMULATOR ──
+const termInput = $('#termInput');
+const termOutput = $('#termOutput');
+
+function printTerm(text, color = '#a5d6ff') {
+    const span = document.createElement('span');
+    span.style.color = color;
+    span.textContent = text;
+    termOutput.appendChild(span);
+    termOutput.appendChild(document.createElement('br'));
+    termOutput.scrollTop = termOutput.scrollHeight;
+}
+
+const commands = {
+    help: () => {
+        printTerm("Available commands:");
+        printTerm("  help         - Show this message");
+        printTerm("  clear        - Clear terminal output");
+        printTerm("  ping <host>  - Simulate pinging a host");
+        printTerm("  traceroute <host> - Simulate tracing route to a host");
+        printTerm("  whois <host> - Simulate WHOIS lookup");
+    },
+    clear: () => {
+        termOutput.innerHTML = '';
+        printTerm("QuickUtils Network Terminal v1.0.0", "#3fb950");
+        printTerm("Type 'help' for a list of available commands.");
+        printTerm("");
+    },
+    ping: async (args) => {
+        if(!args[0]) return printTerm("Usage: ping <host>", "#ff5f56");
+        const host = args[0];
+        printTerm(`PING ${host} (${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}) 56(84) bytes of data.`);
+        for(let i=1; i<=4; i++) {
+            await new Promise(r => setTimeout(r, 800));
+            printTerm(`64 bytes from ${host}: icmp_seq=${i} ttl=${Math.floor(Math.random()*20)+40} time=${(Math.random()*50 + 10).toFixed(1)} ms`);
+        }
+        printTerm(`--- ${host} ping statistics ---`);
+        printTerm(`4 packets transmitted, 4 received, 0% packet loss, time 3004ms`);
+    },
+    traceroute: async (args) => {
+        if(!args[0]) return printTerm("Usage: traceroute <host>", "#ff5f56");
+        const host = args[0];
+        printTerm(`traceroute to ${host}, 30 hops max, 60 byte packets`);
+        const hops = Math.floor(Math.random() * 8) + 5;
+        let msBase = 2;
+        for(let i=1; i<=hops; i++) {
+            await new Promise(r => setTimeout(r, 600));
+            const ip = i === hops ? host : `10.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+            const times = Array.from({length:3}, () => (msBase + Math.random()*15).toFixed(3) + ' ms').join('  ');
+            printTerm(`${String(i).padStart(2, ' ')}  ${ip}  ${times}`);
+            msBase += Math.random() * 10;
+        }
+        printTerm(`Trace complete.`);
+    },
+    whois: async (args) => {
+        if(!args[0]) return printTerm("Usage: whois <host>", "#ff5f56");
+        printTerm(`Simulating WHOIS query for ${args[0]}...`);
+        await new Promise(r => setTimeout(r, 1000));
+        printTerm(`Domain Name: ${args[0].toUpperCase()}`);
+        printTerm(`Registry Domain ID: ${Math.floor(Math.random()*1000000000)}_DOMAIN_COM-VRSN`);
+        printTerm(`Registrar WHOIS Server: whois.markmonitor.com`);
+        printTerm(`Registrar URL: http://www.markmonitor.com`);
+        printTerm(`Updated Date: 2024-01-01T00:00:00Z`);
+        printTerm(`Creation Date: 1997-09-15T04:00:00Z`);
+        printTerm(`Registry Expiry Date: 2028-09-14T04:00:00Z`);
+    }
+};
+
+termInput?.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+        const val = termInput.value.trim();
+        termInput.value = '';
+        if(!val) return;
+        printTerm(`guest@net~$ ${val}`, '#fff');
+        const [cmd, ...args] = val.split(' ');
+        
+        termInput.disabled = true;
+        if(commands[cmd]) {
+            await commands[cmd](args);
+        } else {
+            printTerm(`Command not found: ${cmd}`, '#ff5f56');
+        }
+        termInput.disabled = false;
+        termInput.focus();
+    }
+});
+
 })();

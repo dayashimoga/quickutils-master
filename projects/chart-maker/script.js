@@ -58,6 +58,8 @@ function generateChart() {
     let bgColors = [];
     for(let i=0; i<data.length; i++) bgColors.push(currentColors[i % currentColors.length]);
 
+    const res = parseInt($('#exportRes')?.value || "1");
+
     currentChart = new Chart(ctx, {
         type: activeType,
         data: {
@@ -75,6 +77,7 @@ function generateChart() {
             }]
         },
         options: {
+            devicePixelRatio: window.devicePixelRatio * res,
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -112,10 +115,62 @@ $('#downloadChartBtn').addEventListener('click', () => {
 // Watch for inputs to update chart dynamically
 ['chartTitle', 'chartLabels', 'chartValues'].forEach(id => {
     $('#' + id).addEventListener('input', () => {
-        // Debounce slightly
         clearTimeout(window.chartTimer);
         window.chartTimer = setTimeout(generateChart, 500);
     });
+});
+
+$('#exportRes')?.addEventListener('change', generateChart);
+
+$('#importDataBtn')?.addEventListener('click', () => {
+    const raw = $('#dataImportBox').value.trim();
+    if(!raw) {
+        if(typeof QU !== 'undefined') QU.showToast('Please enter data to import', 'error');
+        return;
+    }
+    let parsedLabels = [];
+    let parsedValues = [];
+    try {
+        if(raw.startsWith('[') || raw.startsWith('{')) {
+            const data = JSON.parse(raw);
+            if(Array.isArray(data)) {
+                data.forEach(item => {
+                    if(Array.isArray(item)) { parsedLabels.push(item[0]); parsedValues.push(item[1]); }
+                    else if(typeof item === 'object') {
+                        const keys = Object.keys(item);
+                        parsedLabels.push(item[keys[0]] || 'Unlabeled');
+                        parsedValues.push(item[keys[1]] || 0);
+                    } else {
+                        parsedLabels.push('Item');
+                        parsedValues.push(parseFloat(item) || 0);
+                    }
+                });
+            } else {
+                Object.entries(data).forEach(([k,v]) => { parsedLabels.push(k); parsedValues.push(parseFloat(v) || 0); });
+            }
+        } else {
+            const lines = raw.split('\n');
+            lines.forEach((line, i) => {
+                const parts = line.split(',');
+                if(parts.length >= 2) {
+                    const l = parts[0].trim();
+                    const v = parseFloat(parts[1].trim());
+                    if(!isNaN(v)) { parsedLabels.push(l); parsedValues.push(v); }
+                    else if (i !== 0) { parsedLabels.push(l); parsedValues.push(0); }
+                }
+            });
+        }
+        if(parsedLabels.length > 0) {
+            $('#chartLabels').value = parsedLabels.join(', ');
+            $('#chartValues').value = parsedValues.join(', ');
+            generateChart();
+            if(typeof QU !== 'undefined') QU.showToast('Data imported successfully');
+        } else {
+            if(typeof QU !== 'undefined') QU.showToast('Could not parse data', 'error');
+        }
+    } catch(e) {
+        if(typeof QU !== 'undefined') QU.showToast('Error parsing data: ' + e.message, 'error');
+    }
 });
 
 // Theme

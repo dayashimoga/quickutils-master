@@ -198,39 +198,39 @@ header {
     background: rgba(59, 130, 246, 0.05);
 }
 
-/* ─── Tab Panels ─── */
-.tab-panel {
-    display: none;
-    padding: 20px 0;
-    animation: fadeIn 0.3s ease;
-}
-
-.tab-panel.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Overview Grid (2-column) ─── */
-.overview-grid {
+/* ─── Dashboard Grid Layout ─── */
+.dashboard-container {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
+    padding-top: 10px;
 }
 
 @media (min-width: 1024px) {
-    .overview-grid {
-        grid-template-columns: 3fr 2fr;
+    .dashboard-container {
+        grid-template-columns: 25% 50% 25%;
     }
 }
 
-.overview-left, .overview-right {
+.dashboard-col {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.dashboard-row-split {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-row-split {
+        flex-direction: row;
+    }
+    .dashboard-row-split > * {
+        flex: 1;
+    }
 }
 
 /* ─── Signals Layout ─── */
@@ -300,8 +300,16 @@ header {
 }
 
 /* ─── News Scroll Container ─── */
+.full-height {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .news-scroll-container {
-    max-height: 500px;
+    flex: 1;
+    min-height: 400px;
+    max-height: 800px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.1) transparent;

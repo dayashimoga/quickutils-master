@@ -56,6 +56,7 @@
             <button class="tab-btn" data-tool="mac">📡 MAC</button>
             <button class="tab-btn" data-tool="bandwidth">⚡ Bandwidth</button>
             <button class="tab-btn" data-tool="latency">📈 Latency</button>
+            <button class="tab-btn" data-tool="terminal">💻 Terminal</button>
         </div>
         <!-- IP Info -->
         <div class="tool-panel glass-card" id="panel-ipinfo">
@@ -142,10 +143,31 @@
             </div>
             <div id="latencyStats" style="margin-top:1rem; display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; font-size:0.85rem;"></div>
         </div>
+        <!-- Terminal & Trace Route -->
+        <div class="tool-panel glass-card hidden" id="panel-terminal" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; background: #000; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="background: #1e1e1e; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; gap: 6px;">
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f;"></span>
+                </div>
+                <span style="color: #888; font-family: monospace; font-size: 0.8rem;">guest@quickutils:~</span>
+                <div></div>
+            </div>
+            <div id="termOutput" style="flex: 1; padding: 15px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #a5d6ff; overflow-y: auto; height: 400px; white-space: pre-wrap; line-height: 1.4;"><span style="color: #3fb950;">QuickUtils Network Terminal v1.0.0</span><br>Type 'help' for a list of available commands.<br><br></div>
+            <div style="padding: 10px 15px; background: #0d1117; display: flex; align-items: center; font-family: 'JetBrains Mono', monospace; color: #fff;">
+                <span style="color: #3fb950; margin-right: 8px;">guest@net~$</span>
+                <input type="text" id="termInput" autocomplete="off" spellcheck="false" style="background: transparent; border: none; color: #fff; font-family: inherit; font-size: 0.9rem; flex: 1; outline: none;">
+            </div>
+        </div>
     </main>
     <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
+
+
+
+
 
 
 
@@ -237,6 +259,7 @@
       <a href="https://proteins.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Protein Visualizer</a>
       <a href="https://qr.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">QR Studio</a>
       <a href="https://quantumsandbox.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Quantum Sandbox</a>
+      <a href="https://directory.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">QuickUtils Master Directory</a>
       <a href="https://quiz.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Quiz Master</a>
       <a href="https://regex.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Regex Playground</a>
       <a href="https://resume.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Resume Builder</a>
@@ -269,6 +292,10 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
+
+
+
+
 
 
 

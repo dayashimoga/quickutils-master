@@ -133,10 +133,13 @@ def assign_domains():
                         break
 
             success_status = False
+            domain_is_active = False
+            
             if already_assigned:
-                print(f"  [SKIP] -> Already configured in Pages: {domain}")
+                print(f"  [SKIP] -> Already configured and ACTIVE in Pages: {domain}")
                 skips += 1
                 success_status = True
+                domain_is_active = True
             else:
                 print(f"Assigning {domain} to {foldername}...")
                 domain_add_url = f"{base_url}/{foldername}/domains"
@@ -171,8 +174,33 @@ def assign_domains():
                     
                 time.sleep(1.5) # Protect against rate-limits
 
+                # Verify domain is ACTIVE before creating DNS record
+                if success_status:
+                    print(f"  [WAIT] Polling for {domain} to become active...")
+                    for _ in range(10):
+                        chk_res, chk_code = api_request("GET", f"{base_url}/{foldername}/domains/{domain}", token)
+                        if chk_code == 200 and chk_res and chk_res.get("success"):
+                            status = chk_res["result"].get("status")
+                            if status == "active":
+                                domain_is_active = True
+                                print(f"  [READY] -> {domain} is active in Pages!")
+                                break
+                            elif status in ["pending_validation", "verifying", "pending"]:
+                                print(f"    - Status: {status}, waiting 5s...")
+                                time.sleep(5)
+                            else:
+                                print(f"    - Unexpected status: {status}, waiting 5s...")
+                                time.sleep(5)
+                        elif chk_code == 429:
+                            time.sleep(10)
+                        else:
+                            time.sleep(3)
+                    
+                    if not domain_is_active:
+                        print(f"  [WARN] -> {domain} did not become active in time. Skipping DNS provisioning to prevent Error 1014.")
+
             # DNS CNAME Provisioning (Proxy MUST be True to avoid Error 1014 CNAME Cross-User Banned)
-            if zone_id and success_status: # ONLY provision DNS if successfully added to Pages
+            if zone_id and domain_is_active: # ONLY provision DNS if successfully added and ACTIVE in Pages
                 dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
                 
                 target_content = f"{foldername}.pages.dev"
