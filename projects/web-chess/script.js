@@ -19,16 +19,114 @@ Object.values(PIECE_URLS).forEach(url => { const img = new Image(); img.src = ur
 // ═══════════════════════════════════════════════════
 let chess = new Chess();
 let flipped = false;
-let mode = 'play';      // 'play' | 'analyze'
+let mode = 'play';      // 'play' | 'analyze' | 'academy' | 'multiplayer'
 let aiColor = 'b';
 let aiLevel = 5;
 let selectedSquare = null;
 let validMovesForSelected = [];
 let lastMoveSquares = [];
 
+// Multiplayer State
+let peer = null;
+let peerConnection = null;
+let mpColor = null; // 'w' or 'b'
+let isHost = false;
+
 // Move history tracking
 let moveHistory = [];    // [{san, from, to, fen}, ...]
 let currentMoveIdx = -1; // -1 = starting position
+
+// ═══════════════════════════════════════════════════
+// ACADEMY DATABASE & STATE
+// ═══════════════════════════════════════════════════
+const ACADEMY_DB = {
+    openings: [
+        { id: 'op1', idx: 'I', title: 'Ruy López', expected: ['e4','e5','Nf3','Nc6','Bb5'] },
+        { id: 'op2', idx: 'I', title: 'Italian Game', expected: ['e4','e5','Nf3','Nc6','Bc4'] },
+        { id: 'op3', idx: 'I', title: 'Petroff Defense', expected: ['e4','e5','Nf3','Nf6'] },
+        { id: 'op4', idx: 'I', title: 'Sicilian Defense', expected: ['e4','c5'] },
+        { id: 'op5', idx: 'I', title: 'Sicilian Open', expected: ['e4','c5','Nf3','d6','d4'] },
+        { id: 'op6', idx: 'I', title: 'Sicilian Two Knights', expected: ['e4','c5','Nf3','Nc6'] },
+        { id: 'op7', idx: 'I', title: 'French Defense', expected: ['e4','e6'] },
+        { id: 'op8', idx: 'I', title: 'Caro-Kann Defense', expected: ['e4','c6'] },
+        { id: 'op9', idx: 'I', title: 'Scandinavian Defense', expected: ['e4','d5'] },
+        { id: 'op10', idx: 'I', title: "Queen's Gambit", expected: ['d4','d5','c4'] },
+        { id: 'op11', idx: 'I', title: "Queen's Gambit Declined", expected: ['d4','d5','c4','e6'] },
+        { id: 'op12', idx: 'I', title: "Queen's Gambit Accepted", expected: ['d4','d5','c4','dxc4'] },
+        { id: 'op13', idx: 'I', title: "King's Indian Defense", expected: ['d4','Nf6','c4','g6'] },
+        { id: 'op14', idx: 'I', title: 'Nimzo-Indian Defense', expected: ['d4','Nf6','c4','e6','Nc3','Bb4'] },
+        { id: 'op15', idx: 'I', title: "King's Gambit", expected: ['e4','e5','f4'] },
+        { id: 'op16', idx: 'I', title: 'Scotch Game', expected: ['e4','e5','Nf3','Nc6','d4'] },
+        { id: 'op17', idx: 'I', title: 'Réti Opening', expected: ['Nf3','d5','c4'] },
+        { id: 'op18', idx: 'I', title: 'English Opening', expected: ['c4'] },
+        { id: 'op19', idx: 'I', title: 'Open Game', expected: ['e4','e5'] },
+        { id: 'op20', idx: 'I', title: 'Closed Game', expected: ['d4','d5'] }
+    ],
+    tactics: [
+        { id: 'tac1', idx: 'II', title: 'Mate in 2', desc: 'Find the forcing sequence to checkmate.', fen: 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4', expected: ['Nxe4', 'Qh5#'], isBlack: true },
+        { id: 'tac2', idx: 'II', title: 'Classic Fork', desc: 'Attack two pieces at once with your knight.', fen: 'rnbqkbnr/ppp2ppp/8/3pp3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 3', expected: ['Nxe5', 'dxe4', 'Qe2'], isBlack: false },
+        { id: 'tac3', idx: 'II', title: 'Back Rank Mate', desc: 'Exploit the weakness of an unprotected back rank.', fen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1', expected: ['Re8#'], isBlack: false },
+        { id: 'tac4', idx: 'II', title: 'Discovered Attack', desc: 'Move one piece to reveal an attack from another.', fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQ1RK1 w kq - 4 6', expected: ['Nxe5', 'Nxe5', 'd4'], isBlack: false },
+        { id: 'tac5', idx: 'II', title: 'Pin to Win', desc: 'Pin a piece against the king to win material.', fen: '2r3k1/5ppp/p7/1p6/4Q3/P6P/1q3PP1/4R1K1 w - - 0 25', expected: ['Qe8+', 'Rxe8', 'Rxe8#'], isBlack: false },
+        { id: 'tac6', idx: 'II', title: "Morphy's Opera Sac", desc: 'A brilliant sacrifice from the famous Opera Game.', fen: '1n2kb1r/p4ppp/4q3/4p1B1/4P3/8/PPP2PPP/2KR4 w k - 1 17', expected: ['Rd8#'], isBlack: false },
+        { id: 'tac7', idx: 'II', title: "The Greek Gift", desc: 'The classic bishop sacrifice on h7.', fen: 'r1bq1rk1/ppp1nppp/2n5/3pP3/1bB5/2N2N2/PP3PPP/R1BQR1K1 w - - 0 10', expected: ['Bxh7+', 'Kxh7', 'Ng5+'], isBlack: false },
+        { id: 'tac8', idx: 'II', title: "Smothered Mate", desc: 'Use a knight to deliver mate to a trapped king.', fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2N/4P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5', expected: ['Nxh5', 'Qxh5', 'g6'], isBlack: true },
+        { id: 'tac9', idx: 'II', title: "Légal Trap", desc: 'A famous opening trap that punishes greedy play.', fen: 'r1bqkb1r/ppp2ppp/2n2n2/3pp3/4P3/5N2/PPPPBPPP/RNBQ1RK1 w kq - 0 6', expected: ['Nxe5', 'Bxd1', 'Bxf7+', 'Ke7', 'Nd5#'], isBlack: false },
+        { id: 'tac10', idx: 'II', title: "Double Attack", desc: 'Attack two targets at once, forcing material gain.', fen: 'r1bqkbnr/pppppppp/2n5/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3', expected: ['d4'], isBlack: false },
+        { id: 'tac11', idx: 'II', title: "Deflection", desc: 'Force a defending piece away from its duty.', fen: '6k1/5p1p/6p1/8/8/8/r4PPP/3R2K1 w - - 0 1', expected: ['Rd8+'], isBlack: false },
+        { id: 'tac12', idx: 'II', title: "Zwischenzug", desc: 'An in-between move that changes everything.', fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3', expected: ['Ng5'], isBlack: false },
+        { id: 'tac13', idx: 'II', title: "Overloaded Piece", desc: 'Exploit a piece with too many defensive tasks.', fen: '3r2k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1', expected: ['Re8+', 'Rxe8', 'Rxe8#'], isBlack: false },
+        { id: 'tac14', idx: 'II', title: "X-Ray Attack", desc: 'Attack through one piece to hit a target behind.', fen: '4r1k1/5ppp/8/8/8/8/5PPP/R3R1K1 w - - 0 1', expected: ['Re8+','Rxe8','Rxe8#'], isBlack: false },
+        { id: 'tac15', idx: 'II', title: "Skewer Tactic", desc: 'Attack a valuable piece, revealing a target behind.', fen: '8/8/8/8/8/1B6/1k6/1K5r w - - 0 1', expected: ['Ba4+'], isBlack: false }
+    ],
+    endgame: [
+        { id: 'end1', idx: 'III', title: 'Lucena Position', desc: 'The most important rook endgame position.', fen: '1K6/P7/8/8/8/8/1r6/k7 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end2', idx: 'III', title: 'Philidor Position', desc: 'Defensive drawing technique in rook endgames.', fen: '8/8/8/8/8/4k3/4p3/4K3 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end3', idx: 'III', title: 'King & Pawn vs King', desc: 'Learn the key squares and opposition.', fen: '8/8/8/8/3K4/3P4/8/3k4 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end4', idx: 'III', title: 'King & Rook vs King', desc: 'Systematic technique to deliver checkmate.', fen: '8/8/8/8/8/8/3R4/K1k5 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end5', idx: 'III', title: 'Queen vs Pawn (7th)', desc: 'Technique to stop a pawn and deliver mate.', fen: '8/8/8/8/8/8/p7/K1Q5 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end6', idx: 'III', title: 'Vancura Position', desc: 'A rook vs passed pawn drawing technique.', fen: '8/8/8/8/8/p1K5/7R/k7 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end7', idx: 'III', title: 'Pawn Square Rule', desc: 'Can your king catch a passed pawn?', fen: '8/8/8/8/6p1/8/8/K1k5 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end8', idx: 'III', title: 'Rook & Bishop vs Rook', desc: 'A complex theoretical endgame.', fen: '8/8/8/8/8/R1B5/8/K1k4r w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end9', idx: 'III', title: 'Queen vs Rook', desc: 'Convert the queen advantage to victory.', fen: '8/8/8/8/8/1Q6/8/K1k4r w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end10', idx: 'III', title: 'Two Bishops Mate', desc: 'Coordinate two bishops to checkmate.', fen: '8/8/8/8/8/1BB5/8/K1k5 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end11', idx: 'III', title: 'Opposition', desc: 'The key concept in king and pawn endgames.', fen: '8/8/4k3/8/4K3/4P3/8/8 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end12', idx: 'III', title: 'Fortress Draw', desc: 'Set up an impregnable defensive position.', fen: '8/8/8/8/8/1k6/1p6/1K1R4 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end13', idx: 'III', title: 'Stalemate Trick', desc: 'Escape a lost position with a stalemate trap.', fen: '5k2/5P2/5K2/8/8/8/8/8 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end14', idx: 'III', title: 'Active Rook Endgame', desc: 'Activity wins in rook endgames.', fen: '8/8/8/R7/1k6/1p6/1K6/8 w - - 0 1', expected: null, playVsEngine: true },
+        { id: 'end15', idx: 'III', title: 'Bishop vs Knight', desc: 'When bishops dominate and when knights shine.', fen: '8/8/8/3B4/8/1k6/2n5/1K6 w - - 0 1', expected: null, playVsEngine: true }
+    ],
+    strategy: [
+        { id: 'str1', idx: 'IV', title: 'Pawn Structure', desc: 'Doubled, isolated, and backward pawns — weaknesses to exploit.', expected: ['e4','e5','d4','exd4','Nf3','Nc6','Nxd4'], isBlack: false },
+        { id: 'str2', idx: 'IV', title: 'Piece Activity', desc: 'Active pieces win games. Develop with tempo!', expected: ['e4','e5','Nf3','Nc6','Bc4','Nf6','d3'], isBlack: false },
+        { id: 'str3', idx: 'IV', title: 'The Outpost', desc: 'Place a knight on a square that cannot be attacked by pawns.', fen: 'r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5', expected: ['d4', 'exd4', 'Nd5'], isBlack: false },
+        { id: 'str4', idx: 'IV', title: 'Weak Squares', desc: 'Target squares your opponent cannot protect with pawns.', expected: ['e4','d6','d4','Nf6','Nc3','g6','f4'], isBlack: false },
+        { id: 'str5', idx: 'IV', title: 'The Bishop Pair', desc: 'Two bishops working together are a powerful weapon.', expected: ['e4','e5','Nf3','Nc6','Bc4','Bc5','d3','d6','Bg5'], isBlack: false },
+        { id: 'str6', idx: 'IV', title: 'Rook on the 7th Rank', desc: 'A rook on the 7th attacks pawns and restricts the king.', fen: '3r2k1/pp3ppp/8/8/8/8/PP3PPP/3R2K1 w - - 0 1', expected: ['Rd7'], isBlack: false },
+        { id: 'str7', idx: 'IV', title: 'Doubled Rooks', desc: 'Stack rooks on an open file for maximum pressure.', fen: '8/pp3ppp/8/8/8/8/PP3PPP/R2R2K1 w - - 0 1', expected: ['Rac1'], isBlack: false },
+        { id: 'str8', idx: 'IV', title: 'Minority Attack', desc: 'Use fewer pawns to attack the opponent pawn structure.', expected: ['d4','d5','c4','e6','Nc3','Nf6','Bg5','Be7','e3'], isBlack: false },
+        { id: 'str9', idx: 'IV', title: 'Prophylactic Thinking', desc: 'Prevent what your opponent wants to do.', expected: ['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','a6','Be2'], isBlack: false },
+        { id: 'str10', idx: 'IV', title: 'Space Advantage', desc: 'Control more squares and restrict opponent pieces.', expected: ['e4','e6','d4','d5','e5'], isBlack: false }
+    ],
+    fundamentals: [
+        { id: 'fund1', idx: '0', title: 'Piece Movement: Pawns', desc: 'Pawns move forward 1 square, capture diagonally. First move can be 2 squares.', expected: ['e4','d5','exd5'], isBlack: false },
+        { id: 'fund2', idx: '0', title: 'Piece Movement: Knights', desc: 'Knights move in an L-shape and can jump over pieces.', fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1', expected: ['Nf3','Nc6','Nc3'], isBlack: false },
+        { id: 'fund3', idx: '0', title: 'Piece Movement: Bishops', desc: 'Bishops move diagonally any number of squares.', fen: 'rnbqkbnr/pppp1ppp/4p3/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 2', expected: ['Bc4'], isBlack: false },
+        { id: 'fund4', idx: '0', title: 'How to Castle', desc: 'Castling moves King 2 squares toward a Rook. King and Rook must not have moved.', fen: 'rnbqk2r/pppp1ppp/4pn2/8/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', expected: ['O-O'], isBlack: false },
+        { id: 'fund5', idx: '0', title: 'En Passant Capture', desc: 'When a pawn moves 2 squares beside your pawn, capture it "in passing".', fen: 'rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3', expected: ['exd6'], isBlack: false },
+        { id: 'fund6', idx: '0', title: 'What is Check?', desc: 'Check means the King is under attack. You must escape.', fen: 'rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2', expected: ['Qh4+'], isBlack: true },
+        { id: 'fund7', idx: '0', title: "Scholar's Mate", desc: 'The fastest checkmate in 4 moves.', expected: ['e4','e5','Bc4','Nc6','Qh5','Nf6','Qxf7#'], isBlack: false },
+        { id: 'fund8', idx: '0', title: 'The Pin Tactic', desc: 'A pin restricts a piece from moving — it would expose a valuable piece.', fen: 'rnbqkb1r/pppppppp/5n2/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2', expected: ['Bg5'], isBlack: false },
+        { id: 'fund9', idx: '0', title: 'The Fork Tactic', desc: 'A fork attacks two or more pieces simultaneously.', fen: 'r1bqkb1r/pppppppp/2n2n2/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3', expected: ['d4'], isBlack: false },
+        { id: 'fund10', idx: '0', title: 'Controlling the Center', desc: 'The center (d4,d5,e4,e5) is the most important area.', expected: ['e4','e5','d4','exd4','Nf3'], isBlack: false },
+    ]
+};
+
+
+let academyProgress = JSON.parse(localStorage.getItem('chessAcademyXP') || '{"xp":0,"completed":[]}');
+let activeLesson = null;
+let activeLessonStep = 0;
+let academyMode = 'theory'; // theory or practice
 
 // ═══════════════════════════════════════════════════
 // DOM REFERENCES
@@ -79,15 +177,55 @@ function onEngineMessage(event) {
         setEngineStatus('ready', 'Engine Ready');
     } else if (typeof line === 'string' && line.startsWith('bestmove')) {
         const match = line.match(/^bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
-        if (match && mode === 'play') {
-            // Delay AI move slightly for realistic feel and readability
-            setTimeout(() => { executeEngineMove(match[1]); }, 1200);
+        if (match && (mode === 'play' || (mode === 'academy' && activeLesson && activeLesson.playVsEngine))) {
+            const isHuman = mode === 'academy' && activeLesson && activeLesson.playVsEngine && chess.turn() === (activeLesson.isBlack ? 'b' : 'w');
+            if (!isHuman) {
+                // Delay AI move significantly for realistic feel, giving 0.5s for previous animations to finish
+                setTimeout(() => { executeEngineMove(match[1]); }, typeof engineDelay !== 'undefined' ? Math.max(engineDelay, 1500) : 1500);
+            }
         }
-        if (mode === 'analyze') {
+        if (mode === 'analyze' || (mode === 'academy' && activeLesson && !activeLesson.playVsEngine)) {
             setEngineStatus('ready', 'Analysis complete');
+        } else if (mode === 'academy' && activeLesson && activeLesson.playVsEngine) {
+            const isHuman = chess.turn() === (activeLesson.isBlack ? 'b' : 'w');
+            if (isHuman) setEngineStatus('ready', 'Awaiting your move...');
         }
     } else if (typeof line === 'string' && line.includes('score')) {
         parseEvalFromInfo(line);
+        const pvMatch = line.match(/pv ([a-h][1-8])([a-h][1-8])[qrbn]?/);
+        
+        // --- Interactive Coach Branch ---
+        if (pvMatch && mode === 'play' && typeof coachModeEnabled !== 'undefined' && coachModeEnabled && chess.turn() !== aiColor) {
+            const hintDiv = document.getElementById('coachHintHud');
+            const hintText = document.getElementById('coachHintText');
+            if (hintDiv) hintDiv.classList.add('active');
+            
+            const evalStr = document.getElementById('evalText') ? document.getElementById('evalText').textContent : '';
+            const evalBadge = `<span style="padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05); font-family:'JetBrains Mono', monospace; border:1px solid rgba(255,255,255,0.1);">${evalStr}</span>`;
+            
+            const opText = currentOpeningText || "Standard Position";
+            if (hintText) hintText.innerHTML = `<strong>Opening:</strong> ${opText}<br><div style="margin-top:6px; display:flex; align-items:center; gap:8px;"><strong>Eval:</strong> ${evalBadge}</div><div style="margin-top:6px;"><strong>Suggestion:</strong> Play <span class="text-neon-blue" style="font-weight:700;">${pvMatch[1]} &rarr; ${pvMatch[2]}</span></div>`;
+            
+            clearTheoryHighlights();
+            const fromEl = document.getElementById(`sq-${pvMatch[1]}`);
+            const toEl = document.getElementById(`sq-${pvMatch[2]}`);
+            if (fromEl) fromEl.classList.add('theory-highlight');
+            if (toEl) toEl.classList.add('theory-highlight');
+            drawTheoryArrow(pvMatch[1], pvMatch[2]);
+        }
+        // --- Academy Theory Branch ---
+        else if (pvMatch && mode === 'academy' && academyMode === 'theory' && activeLesson && activeLesson.playVsEngine) {
+            const isHuman = chess.turn() === (activeLesson.isBlack ? 'b' : 'w');
+            if (isHuman) {
+                document.getElementById('academyHintText').innerHTML = `Theory Mode Guidance: Play to <strong class="text-neon-blue">${pvMatch[2]}</strong>`;
+                clearTheoryHighlights();
+                const fromEl = document.getElementById(`sq-${pvMatch[1]}`);
+                const toEl = document.getElementById(`sq-${pvMatch[2]}`);
+                if (fromEl) fromEl.classList.add('theory-highlight');
+                if (toEl) toEl.classList.add('theory-highlight');
+                drawTheoryArrow(pvMatch[1], pvMatch[2]);
+            }
+        }
     }
 }
 
@@ -136,13 +274,29 @@ function requestEngineAnalysis(depthOverride) {
     engine.postMessage('stop');
     engine.postMessage('position fen ' + chess.fen());
 
-    if (mode === 'play' && chess.turn() === aiColor) {
-        setEngineStatus('thinking', 'AI thinking...');
-        engine.postMessage('go depth ' + aiLevel);
+    if (mode === 'play') {
+        if (chess.turn() === aiColor) {
+            setEngineStatus('thinking', 'AI thinking...');
+            engine.postMessage('go depth ' + aiLevel);
+        } else if (typeof coachModeEnabled !== 'undefined' && coachModeEnabled) {
+            evalContainer.classList.remove('hidden');
+            setEngineStatus('thinking', 'Coach analyzing...');
+            engine.postMessage('go depth 12');
+        }
     } else if (mode === 'analyze') {
         evalContainer.classList.remove('hidden');
         setEngineStatus('thinking', 'Analyzing...');
         engine.postMessage('go depth ' + (depthOverride || 18));
+    } else if (mode === 'academy') {
+        if (activeLesson && activeLesson.playVsEngine) {
+            const isHuman = chess.turn() === (activeLesson.isBlack ? 'b' : 'w');
+            if (!isHuman) {
+                setEngineStatus('thinking', 'AI thinking...');
+                engine.postMessage('go depth 20');
+            } else if (academyMode === 'theory') {
+                engine.postMessage('go depth 12');
+            }
+        }
     }
 }
 
@@ -205,7 +359,7 @@ function buildBoard() {
 }
 
 function renderPosition() {
-    // Instead of deleting all pieces, we mark them for diffing to allow CSS transitions
+    // Mark all existing pieces as stale for diff-based rendering
     const existingPieces = Array.from(document.querySelectorAll('.piece'));
     existingPieces.forEach(p => p.dataset.stale = 'true');
 
@@ -236,8 +390,10 @@ function renderPosition() {
         }
     }
 
-    // Draw pieces
+    // Draw pieces — two-pass approach to prevent scrambling
     const board = chess.board();
+
+    // PASS 1: Claim pieces already on the correct square (these never move in the DOM)
     for (let r = 0; r < 8; r++) {
         for (let f = 0; f < 8; f++) {
             const p = board[r][f];
@@ -246,28 +402,75 @@ function renderPosition() {
                 const sqEl = document.getElementById('sq-' + sq);
                 if (sqEl) {
                     const pieceId = `${p.color}${p.type}`;
-                    // Find a stale piece of same type to move
-                    let pieceEl = existingPieces.find(el => el.dataset.stale === 'true' && el.dataset.pieceType === pieceId);
-                    if (pieceEl) {
-                        pieceEl.dataset.stale = 'false';
-                        if (pieceEl.parentElement !== sqEl) {
-                            sqEl.appendChild(pieceEl); // Move it
-                        }
-                    } else {
-                        // Create new
-                        pieceEl = document.createElement('div');
-                        pieceEl.className = 'piece animate-in-piece';
-                        pieceEl.dataset.pieceType = pieceId;
-                        pieceEl.style.backgroundImage = `url(${PIECE_URLS[pieceId]})`;
-                        sqEl.appendChild(pieceEl);
-                        // Force reflow for transition
-                        void pieceEl.offsetWidth;
+                    const resident = existingPieces.find(el =>
+                        el.dataset.stale === 'true' &&
+                        el.parentElement === sqEl &&
+                        el.dataset.pieceType === pieceId
+                    );
+                    if (resident) {
+                        resident.dataset.stale = 'false';
                     }
                 }
             }
         }
     }
 
+    // PASS 2: For squares that still need a piece, grab any remaining stale piece of that type and move it
+    for (let r = 0; r < 8; r++) {
+        for (let f = 0; f < 8; f++) {
+            const p = board[r][f];
+            if (p) {
+                const sq = 'abcdefgh'[f] + (8 - r);
+                const sqEl = document.getElementById('sq-' + sq);
+                if (sqEl) {
+                    // Check if this square already has a claimed piece
+                    const alreadyClaimed = sqEl.querySelector('.piece:not([data-stale="true"])');
+                    if (alreadyClaimed) continue;
+
+                    const pieceId = `${p.color}${p.type}`;
+                    let pieceEl = existingPieces.find(el =>
+                        el.dataset.stale === 'true' && el.dataset.pieceType === pieceId
+                    );
+                    if (pieceEl) {
+                        pieceEl.dataset.stale = 'false';
+                        
+                        // FLIP Physics Animation
+                        const beforeRect = pieceEl.getBoundingClientRect();
+                        sqEl.appendChild(pieceEl);
+                        const afterRect = pieceEl.getBoundingClientRect();
+                        
+                        if (beforeRect.left !== 0 && beforeRect.top !== 0 && (beforeRect.left !== afterRect.left || beforeRect.top !== afterRect.top)) {
+                            const dx = beforeRect.left - afterRect.left;
+                            const dy = beforeRect.top - afterRect.top;
+                            
+                            pieceEl.style.transition = 'none';
+                            pieceEl.style.transform = `translate(${dx}px, ${dy}px)`;
+                            
+                            // Force reflow
+                            pieceEl.getBoundingClientRect();
+                            
+                            pieceEl.style.transition = 'transform 0.55s cubic-bezier(0.25, 1, 0.5, 1)';
+                            pieceEl.style.transform = 'translate(0, 0)';
+                        } else {
+                            pieceEl.style.transition = 'none';
+                            pieceEl.style.transform = 'none';
+                        }
+                    } else {
+                        // Create brand new piece element
+                        pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        pieceEl.dataset.pieceType = pieceId;
+                        pieceEl.style.backgroundImage = `url(${PIECE_URLS[pieceId]})`;
+                        sqEl.appendChild(pieceEl);
+                    }
+                }
+            }
+        }
+    }
+
+    // Remove captured pieces (anything still marked stale)
+    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
+    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     updateCapturedPieces();
@@ -337,6 +540,18 @@ function onSquareClick(e) {
 
     // In play mode, block clicks when it's AI's turn
     if (mode === 'play' && chess.turn() === aiColor && !chess.isGameOver()) return;
+    
+    // In multiplayer mode, block clicks if it's not our turn
+    if (mode === 'multiplayer' && mpColor && chess.turn() !== mpColor && !chess.isGameOver()) return;
+    
+    // In academy mode, block clicks if it's the AI's expected turn
+    if (mode === 'academy') {
+        if (activeLesson && activeLesson.expected) {
+            const isHumanTurn = activeLesson.isBlack ? (activeLessonStep % 2 !== 0) : (activeLessonStep % 2 === 0);
+            if (!isHumanTurn) return; // Wait for engine to auto-play this step
+        }
+        if (activeLesson && activeLesson.playVsEngine && chess.turn() !== (activeLesson.isBlack ? 'b' : 'w')) return;
+    }
 
     // If browsing history in analyze mode, jump to latest before allowing moves
     if (mode === 'analyze' && currentMoveIdx < moveHistory.length - 1) {
@@ -354,8 +569,73 @@ function onSquareClick(e) {
                 // Pawn promotion
                 showPromotionPicker(targetMove.from, targetMove.to);
             } else {
-                const move = chess.move({ from: targetMove.from, to: targetMove.to });
-                if (move) commitMove(move);
+                if (window.isReviewMode) {
+                    const testMove = chess.move({ from: targetMove.from, to: targetMove.to, promotion: targetMove.promotion || 'q' });
+                    if (testMove) {
+                        const mistakeObj = window.reviewMistakesList[window.currentReviewIdx];
+                        const expectedUci = mistakeObj.bestMoveUci;
+                        const userUci = testMove.from + testMove.to + (testMove.promotion || '');
+                        if (userUci === expectedUci) {
+                            document.getElementById('snd-success')?.play().catch(()=>{});
+                            
+                            // Visual update for board!
+                            buildBoard();
+                            
+                            let continuationHtml = '';
+                            if (mistakeObj.pv) {
+                                // Just show the first 3-4 moves of PV for readability
+                                const pvMoves = mistakeObj.pv.split(' ').slice(1, 4).join(' ');
+                                continuationHtml = `<div style="font-size:0.75rem; color:#94a3b8; margin-top:6px; background:rgba(0,0,0,0.2); padding:6px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);"><strong>Continuation:</strong> ${pvMoves}...</div>`;
+                            }
+                            
+                            const uT = document.getElementById('coachHudText');
+                            uT.innerHTML = `<strong style="color:#22c55e; font-size:1.1rem;">Excellent!</strong><br><span style="color:#e8ecf4;">You found the best move.</span> ${continuationHtml}`;
+                            
+                            const reasonBox = document.getElementById('coachReasonText');
+                            if (reasonBox && mistakeObj.reason && mistakeObj.reason.whyBetter) {
+                                reasonBox.innerHTML = `<strong>Why it's good:</strong> ${mistakeObj.reason.whyBetter}`;
+                                reasonBox.style.display = 'block';
+                            }
+                            
+                            // Wait for reading, then proceed
+                            setTimeout(() => {
+                                chess.undo();
+                                window.coachSkipMistake();
+                            }, 3500);
+                        } else {
+                            chess.undo();
+                            document.getElementById('snd-error')?.play().catch(()=>{});
+                            const pEl = document.querySelector(`#sq-${targetMove.from} .piece`);
+                            if(pEl) {
+                                pEl.classList.remove('shake-error');
+                                void pEl.offsetWidth; // Trigger reflow
+                                pEl.classList.add('shake-error');
+                            }
+                        }
+                    }
+                } else if (mode === 'academy' && activeLesson && activeLesson.expected) {
+                    const testMove = chess.move({ from: targetMove.from, to: targetMove.to });
+                    if (testMove) {
+                        if (testMove.san === activeLesson.expected[activeLessonStep]) {
+                            document.getElementById('snd-success')?.play().catch(()=>{});
+                            activeLessonStep++;
+                            commitMove(testMove);
+                            checkAcademyProgress();
+                        } else {
+                            chess.undo();
+                            document.getElementById('snd-error')?.play().catch(()=>{});
+                            const pEl = document.querySelector(`#sq-${targetMove.from} .piece`);
+                            if(pEl) {
+                                pEl.classList.remove('shake-error');
+                                void pEl.offsetWidth; // Trigger reflow for reset
+                                pEl.classList.add('shake-error');
+                            }
+                        }
+                    }
+                } else {
+                    const move = chess.move({ from: targetMove.from, to: targetMove.to });
+                    if (move) commitMove(move);
+                }
             }
             clearSelection();
             return;
@@ -435,6 +715,10 @@ function showPromotionPicker(from, to) {
 // MOVE COMMIT & HISTORY
 // ═══════════════════════════════════════════════════
 function commitMove(move) {
+    if (typeof window !== 'undefined' && window.clearTheoryHighlights) {
+        window.clearTheoryHighlights(); // using window reference to avoid undefined if order matters
+    }
+
     lastMoveSquares = [move.from, move.to];
 
     // Truncate future history if we're branching
@@ -454,7 +738,25 @@ function commitMove(move) {
     // Play sound based on move characteristics
     playSound(move);
 
+    if (move.captured) {
+        const sqEl = document.getElementById('sq-' + move.to);
+        if (sqEl) {
+            const ripple = document.createElement('div');
+            ripple.className = 'capture-ripple';
+            sqEl.appendChild(ripple);
+            setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 600);
+        }
+    }
+
     renderPosition();
+
+    // Broadcast move if in multiplayer mode
+    if (mode === 'multiplayer' && peerConnection && peerConnection.open) {
+        // Since we just moved, chess.turn() is now the opponent's color
+        if (chess.turn() !== mpColor) {
+            peerConnection.send({ type: 'move', fen: chess.fen(), moveHistory: moveHistory });
+        }
+    }
 
     // Request engine analysis or AI move
     if (!chess.isGameOver()) {
@@ -481,6 +783,9 @@ function playSound(move) {
 }
 
 function jumpToMove(idx) {
+    if (typeof window !== 'undefined' && window.clearTheoryHighlights) {
+        window.clearTheoryHighlights();
+    }
     if (idx < -1 || idx >= moveHistory.length) return;
     currentMoveIdx = idx;
 
@@ -521,9 +826,14 @@ function updateMovesList() {
     }
     movesListEl.innerHTML = html;
 
-    // Scroll active move into view
+    // Scroll natively within the container itself to avoid scrolling the whole webpage!
     const active = movesListEl.querySelector('.move-btn.active');
-    if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (active) {
+        movesListEl.scrollTo({
+            top: active.offsetTop - movesListEl.offsetTop - (movesListEl.clientHeight / 2) + (active.clientHeight / 2),
+            behavior: 'smooth'
+        });
+    }
 
     // Bind click handlers
     movesListEl.querySelectorAll('.move-btn').forEach(btn => {
@@ -678,6 +988,7 @@ document.getElementById('btnNext').onclick  = () => jumpToMove(currentMoveIdx + 
 document.getElementById('btnEnd').onclick   = () => jumpToMove(moveHistory.length - 1);
 
 let autoPlayTimer = null;
+let replaySpeed = 1200;
 const btnAutoPlay = document.getElementById('btnAutoPlay');
 if (btnAutoPlay) {
     btnAutoPlay.onclick = () => {
@@ -695,9 +1006,118 @@ if (btnAutoPlay) {
                 } else {
                     jumpToMove(currentMoveIdx + 1);
                 }
-            }, 1000);
+            }, replaySpeed);
         }
     };
+}
+
+// ═══════════════════════════════════════════════════
+// DIFFICULTY LEVEL DESCRIPTIONS
+// ═══════════════════════════════════════════════════
+const DIFF_DESCS = {
+    '1': '🟢 Perfect for absolute beginners. AI makes mistakes and plays slowly.',
+    '5': '🟡 Intermediate level. AI plays reasonable moves with occasional blunders.',
+    '10': '🟠 Club-level strength. Good for improving players (1600-1800 Elo).',
+    '15': '🔴 Expert strength. Tactical and positional play near master level.',
+    '20': '⚫ Full Grandmaster strength. Stockfish at maximum depth — extremely hard.'
+};
+document.getElementById('aiLevel')?.addEventListener('change', (e) => {
+    const desc = document.getElementById('difficultyDesc');
+    if (desc) desc.textContent = DIFF_DESCS[e.target.value] || '';
+});
+
+// ═══════════════════════════════════════════════════
+// PGN FILE UPLOAD
+// ═══════════════════════════════════════════════════
+document.getElementById('pgnFileInput')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const pgnText = evt.target.result;
+        document.getElementById('pgnInput').value = pgnText;
+        document.getElementById('loadPgnBtn').click();
+        // Auto start replay from beginning 
+        setTimeout(() => {
+            jumpToMove(-1);
+            setTimeout(() => {
+                startAutoReplay();
+            }, 500);
+        }, 300);
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset so same file can be re-uploaded
+});
+
+// ═══════════════════════════════════════════════════
+// PGN FILE DOWNLOAD
+// ═══════════════════════════════════════════════════
+document.getElementById('downloadPgnBtn')?.addEventListener('click', () => {
+    let pgn = '';
+    for (let i = 0; i < moveHistory.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        pgn += moveNum + '. ' + moveHistory[i].san;
+        if (moveHistory[i + 1]) pgn += ' ' + moveHistory[i + 1].san + ' ';
+        else pgn += ' ';
+    }
+    if (!pgn.trim()) { alert('No moves to download.'); return; }
+    
+    const header = `[Event "Web Chess Game"]\n[Site "chess.quickutils.top"]\n[Date "${new Date().toISOString().split('T')[0]}"]\n[White "Player"]\n[Black "Stockfish AI"]\n[Result "*"]\n\n`;
+    const blob = new Blob([header + pgn.trim()], { type: 'application/x-chess-pgn' });
+    const link = document.createElement('a');
+    link.download = 'chess_game_' + Date.now() + '.pgn';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+});
+
+// ═══════════════════════════════════════════════════
+// AUTO-REPLAY WITH SMOOTH ANIMATIONS
+// ═══════════════════════════════════════════════════
+function startAutoReplay() {
+    if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+    }
+    const btn = document.getElementById('btnAutoPlay') || document.getElementById('autoReplayBtn');
+    if (btn) btn.classList.add('active');
+    
+    autoPlayTimer = setInterval(() => {
+        if (currentMoveIdx >= moveHistory.length - 1) {
+            clearInterval(autoPlayTimer);
+            autoPlayTimer = null;
+            if (btn) btn.classList.remove('active');
+        } else {
+            jumpToMove(currentMoveIdx + 1);
+        }
+    }, replaySpeed);
+}
+
+document.getElementById('autoReplayBtn')?.addEventListener('click', () => {
+    if (moveHistory.length === 0) return;
+    if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        document.getElementById('autoReplayBtn')?.classList.remove('active');
+    } else {
+        if (currentMoveIdx >= moveHistory.length - 1) jumpToMove(-1);
+        startAutoReplay();
+    }
+});
+
+// Replay speed slider
+const replaySlider = document.getElementById('replaySpeedSlider');
+if (replaySlider) {
+    replaySlider.addEventListener('input', (e) => {
+        replaySpeed = parseInt(e.target.value);
+        const label = document.getElementById('replaySpeedVal');
+        if (label) label.textContent = (replaySpeed / 1000).toFixed(1) + 's';
+        // If auto-replaying, restart with new speed
+        if (autoPlayTimer) {
+            clearInterval(autoPlayTimer);
+            startAutoReplay();
+        }
+    });
 }
 
 // Keyboard shortcuts
@@ -771,6 +1191,8 @@ const OPENINGS = [
     { moves: 'd4 d5', name: 'Closed Game' },
 ];
 
+let currentOpeningText = '';
+
 function detectOpening() {
     const history = chess.history();
     const movesStr = history.join(' ');
@@ -780,8 +1202,9 @@ function detectOpening() {
             bestMatch = op;
         }
     }
+    currentOpeningText = bestMatch ? bestMatch.name : '';
     const el = document.getElementById('openingName');
-    if (el) el.textContent = bestMatch ? bestMatch.name : '';
+    if (el) el.textContent = currentOpeningText;
 }
 
 // ═══════════════════════════════════════════════════
@@ -823,8 +1246,20 @@ document.getElementById('copyFen').addEventListener('click', () => {
 });
 
 document.getElementById('flipBoard').addEventListener('click', () => {
-    flipped = !flipped;
-    buildBoard();
+    const wrap = document.querySelector('.board-wrapper');
+    if (wrap) {
+        wrap.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        wrap.style.transform = flipped ? 'rotateY(-180deg)' : 'rotateY(180deg)';
+        setTimeout(() => {
+            flipped = !flipped;
+            buildBoard();
+            wrap.style.transition = 'none';
+            wrap.style.transform = 'none';
+        }, 300);
+    } else {
+        flipped = !flipped;
+        buildBoard();
+    }
 });
 
 // ═══════════════════════════════════════════════════
@@ -837,6 +1272,16 @@ let dragGhost = null;
 function onPieceDragStart(e) {
     if (!promotionModal.classList.contains('hidden')) return;
     if (mode === 'play' && chess.turn() === aiColor && !chess.isGameOver()) return;
+    
+    // In academy mode, block clicks if it's the AI's expected turn
+    if (mode === 'academy') {
+        if (activeLesson && activeLesson.expected) {
+            const isHumanTurn = activeLesson.isBlack ? (activeLessonStep % 2 !== 0) : (activeLessonStep % 2 === 0);
+            if (!isHumanTurn) return; // Engine is moving
+        }
+        if (activeLesson && activeLesson.playVsEngine && chess.turn() !== (activeLesson.isBlack ? 'b' : 'w')) return;
+    }
+
     if (mode === 'analyze' && currentMoveIdx < moveHistory.length - 1) {
         jumpToMove(moveHistory.length - 1);
     }
@@ -895,8 +1340,29 @@ function onPieceDragEnd(e) {
             if (targetMove.flags.includes('p')) {
                 showPromotionPicker(targetMove.from, targetMove.to);
             } else {
-                const move = chess.move({ from: targetMove.from, to: targetMove.to });
-                if (move) commitMove(move);
+                if (mode === 'academy' && activeLesson && activeLesson.expected) {
+                    const testMove = chess.move({ from: targetMove.from, to: targetMove.to });
+                    if (testMove) {
+                        if (testMove.san === activeLesson.expected[activeLessonStep]) {
+                            document.getElementById('snd-success')?.play().catch(()=>{});
+                            activeLessonStep++;
+                            commitMove(testMove);
+                            checkAcademyProgress();
+                        } else {
+                            chess.undo();
+                            document.getElementById('snd-error')?.play().catch(()=>{});
+                            const pEl = document.querySelector(`#sq-${targetMove.from} .piece`);
+                            if(pEl) {
+                                pEl.classList.remove('shake-error');
+                                void pEl.offsetWidth; // Trigger reflow
+                                pEl.classList.add('shake-error');
+                            }
+                        }
+                    }
+                } else {
+                    const move = chess.move({ from: targetMove.from, to: targetMove.to });
+                    if (move) commitMove(move);
+                }
             }
         }
     }
@@ -928,7 +1394,1646 @@ commitMove = function(move) {
 };
 
 // ═══════════════════════════════════════════════════
+// BOARD THEMES
+// ═══════════════════════════════════════════════════
+const BOARD_THEMES = {
+    classic:  { light: '#f0d9b5', dark: '#b58863' },
+    emerald:  { light: '#eeeed2', dark: '#769656' },
+    midnight: { light: '#dee3e6', dark: '#4b7399' },
+    marble:   { light: '#e8e0d0', dark: '#8b7d6b' },
+};
+
+document.getElementById('boardTheme').addEventListener('change', (e) => {
+    const theme = BOARD_THEMES[e.target.value];
+    if (theme) {
+        document.documentElement.style.setProperty('--board-light', theme.light);
+        document.documentElement.style.setProperty('--board-dark', theme.dark);
+    }
+});
+
+// ═══════════════════════════════════════════════════
+// MOVE TIMING SLIDER
+// ═══════════════════════════════════════════════════
+let engineDelay = 1200;
+document.getElementById('moveTimingSlider').addEventListener('input', (e) => {
+    engineDelay = parseInt(e.target.value);
+    document.getElementById('moveTimingVal').textContent = (engineDelay / 1000).toFixed(1) + 's';
+});
+
+// ═══════════════════════════════════════════════════
+// ACADEMY LOGIC & CURRICULUM
+// ═══════════════════════════════════════════════════
+
+function saveAcademyProgress() {
+    localStorage.setItem('chessAcademyXP', JSON.stringify(academyProgress));
+    updateAcademyUI();
+}
+
+function updateAcademyUI() {
+    document.getElementById('academyXp').textContent = academyProgress.xp;
+    document.getElementById('academyStreak').textContent = calculateStreak();
+    
+    // Calculate Elo based on completed
+    let elo = 800 + (academyProgress.completed.length * 25);
+    document.getElementById('academyElo').textContent = academyProgress.completed.length === 0 ? "Unranked" : Math.min(elo, 2500);
+
+    const ops = ACADEMY_DB.openings.length;
+    const tacs = ACADEMY_DB.tactics.length;
+    const ends = ACADEMY_DB.endgame.length;
+    const funds = ACADEMY_DB.fundamentals.length;
+    const strs = ACADEMY_DB.strategy.length;
+
+    const compOps = academyProgress.completed.filter(id => id.startsWith('op')).length;
+    const compTacs = academyProgress.completed.filter(id => id.startsWith('tac')).length;
+    const compEnds = academyProgress.completed.filter(id => id.startsWith('end')).length;
+    const compFunds = academyProgress.completed.filter(id => id.startsWith('fund')).length;
+    const compStrs = academyProgress.completed.filter(id => id.startsWith('str')).length;
+
+    document.getElementById('ac-prog-ops').textContent = Math.round((compOps / ops) * 100) + '%';
+    document.getElementById('ac-prog-tac').textContent = Math.round((compTacs / tacs) * 100) + '%';
+    document.getElementById('ac-prog-end').textContent = Math.round((compEnds / ends) * 100) + '%';
+    const fundEl = document.getElementById('ac-prog-fund');
+    if (fundEl) fundEl.textContent = Math.round((compFunds / funds) * 100) + '%';
+    const strEl = document.getElementById('ac-prog-str');
+    if (strEl) strEl.textContent = Math.round((compStrs / strs) * 100) + '%';
+}
+
+function calculateStreak() {
+    const today = new Date().toDateString();
+    if (academyProgress.lastActive === today) return academyProgress.streak || 1;
+    
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (academyProgress.lastActive === yesterday.toDateString()) {
+        academyProgress.streak = (academyProgress.streak || 0) + 1;
+        academyProgress.lastActive = today;
+        return academyProgress.streak;
+    }
+    
+    academyProgress.streak = 1;
+    academyProgress.lastActive = today;
+    return 1;
+}
+
+function drawTheoryArrow(fromMove, toMove) {
+    const board = document.getElementById('board');
+    let svg = document.getElementById('theory-svg');
+    if (!svg) {
+        svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.id = "theory-svg";
+        svg.style.position = "absolute";
+        svg.style.top = "0";
+        svg.style.left = "0";
+        svg.style.width = "100%";
+        svg.style.height = "100%";
+        svg.style.pointerEvents = "none";
+        svg.style.zIndex = "100";
+        
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.id = "arrowhead";
+        marker.setAttribute("markerWidth", "6");
+        marker.setAttribute("markerHeight", "5");
+        marker.setAttribute("refX", "4.5");
+        marker.setAttribute("refY", "2.5");
+        marker.setAttribute("orient", "auto");
+        const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        polygon.setAttribute("points", "0 0, 6 2.5, 0 5");
+        polygon.setAttribute("fill", "rgba(59, 130, 246, 0.8)"); // Premium Blue
+
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+        board.appendChild(svg);
+        board.style.position = "relative";
+        
+        window.addEventListener('resize', () => { if(document.getElementById('theory-arrow-line')) clearTheoryArrow(); });
+    }
+    
+    const fromEl = document.getElementById('sq-' + fromMove);
+    const toEl = document.getElementById('sq-' + toMove);
+    if (!fromEl || !toEl) return;
+    
+    // Account for board flipped state indirectly using bounding client layout
+    const boardRect = board.getBoundingClientRect();
+    const fromRect = fromEl.getBoundingClientRect();
+    const toRect = toEl.getBoundingClientRect();
+    
+    const x1 = fromRect.left - boardRect.left + (fromRect.width/2);
+    const y1 = fromRect.top - boardRect.top + (fromRect.height/2);
+    const x2 = toRect.left - boardRect.left + (toRect.width/2);
+    const y2 = toRect.top - boardRect.top + (toRect.height/2);
+    
+    let line = document.getElementById('theory-arrow-line');
+    if (!line) {
+        line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.id = 'theory-arrow-line';
+        line.setAttribute("stroke", "rgba(59, 130, 246, 0.8)"); // Premium Blue
+        line.setAttribute("stroke-width", "4.5");
+        line.setAttribute("stroke-linecap", "round");
+        line.setAttribute("stroke-opacity", "1");
+        line.setAttribute("marker-end", "url(#arrowhead)");
+        svg.appendChild(line);
+    }
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+}
+
+function clearTheoryArrow() {
+    const line = document.getElementById('theory-arrow-line');
+    if (line) line.remove();
+}
+
+function clearTheoryHighlights() {
+    document.querySelectorAll('.theory-highlight').forEach(el => el.classList.remove('theory-highlight'));
+    clearTheoryArrow(); // clear old system
+    // also clear SVG overlay arrows
+    const svgOvl = document.getElementById('arrowOverlay');
+    if (svgOvl) svgOvl.querySelectorAll('line').forEach(l => l.remove());
+}
+
+function checkAcademyProgress() {
+    clearTheoryHighlights();
+    if (!activeLesson || (!activeLesson.expected && !activeLesson.playVsEngine)) return;
+    
+    if (activeLesson.expected && activeLessonStep >= activeLesson.expected.length) {
+        document.getElementById('academyHintText').innerHTML = '<strong>Lesson Complete! 🎉</strong> +50 XP';
+        document.getElementById('snd-end')?.play().catch(()=>{});
+        
+        if (!academyProgress.completed.includes(activeLesson.id)) {
+            academyProgress.completed.push(activeLesson.id);
+            academyProgress.xp += 50;
+            saveAcademyProgress();
+            buildAcademyList();
+        }
+    } else if (activeLesson.expected) {
+        const isHumanTurn = activeLesson.isBlack ? (activeLessonStep % 2 !== 0) : (activeLessonStep % 2 === 0);
+        if (isHumanTurn) {
+            const nextMove = activeLesson.expected[activeLessonStep];
+            if (academyMode === 'theory') {
+                document.getElementById('academyHintText').innerHTML = `Theory Mode: Play <strong class="text-neon-blue" style="font-size: 1.1rem">${nextMove}</strong>`;
+                document.getElementById('btnAcademyHint')?.classList.add('hidden');
+                
+                // Highlight the specific engine squares natively
+                const movesList = chess.moves({ verbose: true });
+                const matchingMove = movesList.find(m => m.san === nextMove);
+                if (matchingMove) {
+                    const sqFrom = document.getElementById(`sq-${matchingMove.from}`);
+                    const sqTo = document.getElementById(`sq-${matchingMove.to}`);
+                    if (sqFrom) sqFrom.classList.add('theory-highlight');
+                    if (sqTo) sqTo.classList.add('theory-highlight');
+                    drawTheoryArrow(matchingMove.from, matchingMove.to);
+                }
+            } else {
+                document.getElementById('academyHintText').textContent = 'Your turn. Find the best move.';
+                document.getElementById('btnAcademyHint')?.classList.remove('hidden');
+            }
+        } else {
+            document.getElementById('academyHintText').textContent = 'Engine is responding...';
+            document.getElementById('btnAcademyHint')?.classList.add('hidden');
+            
+            // Auto play engine expected move
+            setTimeout(() => {
+                const testMove = chess.move(activeLesson.expected[activeLessonStep]);
+                if (testMove) {
+                    commitMove(testMove);
+                    activeLessonStep++;
+                    checkAcademyProgress();
+                }
+            }, 1500);
+        }
+    } else if (activeLesson.playVsEngine) {
+        document.getElementById('academyHintText').textContent = 'Beat Stockfish from this position!';
+        document.getElementById('btnAcademyHint')?.classList.add('hidden');
+    }
+}
+
+function loadLesson(lesson) {
+    activeLesson = lesson;
+    activeLessonStep = 0;
+    
+    document.getElementById('academyCategories').classList.add('hidden');
+    document.getElementById('academyActiveLesson').classList.remove('hidden');
+    
+    document.getElementById('al-title').textContent = lesson.title;
+    document.getElementById('al-desc').textContent = lesson.desc || "Follow the moves to complete the lesson.";
+    
+    document.getElementById('academyHintText').textContent = "Starting lesson...";
+    document.getElementById('btnAcademyHint')?.classList.add('hidden');
+
+    chess = new Chess();
+    if (lesson.pgn && typeof lesson.pgn === 'string') {
+        const temp = new Chess();
+        temp.loadPgn(lesson.pgn);
+        // Load partial history
+    } else if (lesson.fen) {
+        chess.load(lesson.fen);
+    }
+    
+    moveHistory = [];
+    currentMoveIdx = -1;
+    flipped = activeLesson.isBlack;
+    buildBoard();
+    
+    // Start engine if needed
+    if (activeLesson.playVsEngine) {
+        requestEngineAnalysis();
+    } else {
+        checkAcademyProgress();
+    }
+}
+
+document.getElementById('btnBackToAcademy')?.addEventListener('click', () => {
+    document.getElementById('academyActiveLesson').classList.add('hidden');
+    document.getElementById('academyCategories').classList.remove('hidden');
+    activeLesson = null;
+    activeLessonStep = 0;
+});
+
+document.querySelectorAll('.tab-btn[data-atab]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-btn[data-atab]').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        academyMode = e.target.dataset.atab;
+        checkAcademyProgress(); 
+    });
+});
+
+document.getElementById('btnAcademyHint')?.addEventListener('click', () => {
+    if (activeLesson && activeLesson.expected && activeLessonStep < activeLesson.expected.length) {
+        const m = activeLesson.expected[activeLessonStep];
+        document.getElementById('academyHintText').innerHTML = `Hint: The move is <strong>${m}</strong>`;
+        academyProgress.xp = Math.max(0, academyProgress.xp - 5); // Penalty
+        saveAcademyProgress();
+    }
+});
+
+function buildAcademyList() {
+    ['fundamentals', 'openings', 'tactics', 'endgame', 'strategy'].forEach(cat => {
+        const el = document.getElementById('ac-list-' + cat);
+        if (!el) return;
+        el.innerHTML = '';
+        ACADEMY_DB[cat].forEach(item => {
+            const div = document.createElement('div');
+            const isComp = academyProgress.completed.includes(item.id);
+            div.className = 'ac-item ' + (isComp ? 'completed' : '');
+            div.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:0.9rem;">${isComp ? '✅' : '⬜'}</span>
+                    <div>
+                        <span class="ac-item-title">${item.title}</span>
+                        ${item.desc ? `<p style="font-size:0.68rem;color:var(--text-muted);margin:2px 0 0 0;line-height:1.3;">${item.desc}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            div.onclick = () => loadLesson(item);
+            el.appendChild(div);
+        });
+    });
+    updateAcademyUI();
+}
+
+// ═══════════════════════════════════════════════════
+// SOUND TOGGLE
+// ═══════════════════════════════════════════════════
+let soundMuted = localStorage.getItem('chess_muted') === 'true';
+
+const btnSoundToggle = document.getElementById('btnSoundToggle');
+if (btnSoundToggle) {
+    if (soundMuted) btnSoundToggle.classList.add('muted');
+    btnSoundToggle.textContent = soundMuted ? '🔇' : '🔊';
+    btnSoundToggle.addEventListener('click', () => {
+        soundMuted = !soundMuted;
+        localStorage.setItem('chess_muted', soundMuted);
+        btnSoundToggle.textContent = soundMuted ? '🔇' : '🔊';
+        btnSoundToggle.classList.toggle('muted', soundMuted);
+    });
+}
+
+// Override playSound to respect mute
+const _originalPlaySound = playSound;
+playSound = function(move) {
+    if (soundMuted) return;
+    _originalPlaySound(move);
+};
+
+// ═══════════════════════════════════════════════════
+// FULLSCREEN MODE
+// ═══════════════════════════════════════════════════
+const btnFullscreen = document.getElementById('btnFullscreen');
+if (btnFullscreen) {
+    btnFullscreen.addEventListener('click', () => {
+        const boardWrap = document.querySelector('.board-wrapper');
+        if (!document.fullscreenElement) {
+            (boardWrap || document.documentElement).requestFullscreen?.().catch(() => {});
+            btnFullscreen.textContent = '⛶';
+        } else {
+            document.exitFullscreen?.();
+            btnFullscreen.textContent = '⛶';
+        }
+    });
+    document.addEventListener('fullscreenchange', () => {
+        btnFullscreen.textContent = document.fullscreenElement ? '✕' : '⛶';
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// GAME CLOCK (Fischer increment)
+// ═══════════════════════════════════════════════════
+let clockEnabled = false;
+let clockWhite = 600000;   // 10 minutes in ms
+let clockBlack = 600000;
+let clockIncrement = 0;    // ms
+let clockInterval = null;
+let clockLastTick = 0;
+
+const clockWhiteEl = document.getElementById('clockWhite');
+const clockBlackEl = document.getElementById('clockBlack');
+
+function formatClock(ms) {
+    if (ms <= 0) return '0:00';
+    const totalSec = Math.ceil(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+function updateClockDisplay() {
+    if (!clockWhiteEl || !clockBlackEl) return;
+    clockWhiteEl.textContent = formatClock(clockWhite);
+    clockBlackEl.textContent = formatClock(clockBlack);
+    
+    // Active side highlight
+    clockWhiteEl.classList.toggle('active-clock', chess.turn() === 'w' && !chess.isGameOver());
+    clockBlackEl.classList.toggle('active-clock', chess.turn() === 'b' && !chess.isGameOver());
+    
+    // Low time warning
+    clockWhiteEl.classList.toggle('low-time', clockWhite < 30000 && clockWhite > 0);
+    clockBlackEl.classList.toggle('low-time', clockBlack < 30000 && clockBlack > 0);
+}
+
+function tickClock() {
+    if (!clockEnabled || chess.isGameOver()) {
+        stopClock();
+        return;
+    }
+    const now = performance.now();
+    const dt = now - clockLastTick;
+    clockLastTick = now;
+    
+    if (chess.turn() === 'w') {
+        clockWhite -= dt;
+        if (clockWhite <= 0) {
+            clockWhite = 0;
+            gameResultEl.textContent = 'White lost on time! Black wins.';
+            gameResultEl.classList.remove('hidden');
+            stopClock();
+        }
+    } else {
+        clockBlack -= dt;
+        if (clockBlack <= 0) {
+            clockBlack = 0;
+            gameResultEl.textContent = 'Black lost on time! White wins.';
+            gameResultEl.classList.remove('hidden');
+            stopClock();
+        }
+    }
+    updateClockDisplay();
+}
+
+function startClock() {
+    if (clockInterval) clearInterval(clockInterval);
+    clockLastTick = performance.now();
+    clockInterval = setInterval(tickClock, 100);
+}
+
+function stopClock() {
+    if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+}
+
+// Hook into commitMove for clock increment
+const _origCommitMove = commitMove;
+commitMove = function(move) {
+    if (clockEnabled && mode === 'play') {
+        // Add increment for the side that just moved
+        const movingSide = move.color;
+        if (movingSide === 'w') clockWhite += clockIncrement;
+        else clockBlack += clockIncrement;
+        updateClockDisplay();
+    }
+    _origCommitMove(move);
+    // Note: detectOpening() is already called via the first monkey-patch (line ~1371)
+};
+
+// Clock control selector
+const clockSelect = document.getElementById('clockSelect');
+if (clockSelect) {
+    clockSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'none') {
+            clockEnabled = false;
+            stopClock();
+        } else {
+            clockEnabled = true;
+            const [baseMin, inc] = val.split('+').map(Number);
+            clockWhite = baseMin * 60000;
+            clockBlack = baseMin * 60000;
+            clockIncrement = (inc || 0) * 1000;
+        }
+        updateClockDisplay();
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// COACH MODE TOGGLE
+// ═══════════════════════════════════════════════════
+let coachModeEnabled = false;
+const coachToggleBtn = document.getElementById('coachToggleBtn');
+if (coachToggleBtn) {
+    coachToggleBtn.addEventListener('change', (e) => {
+        coachModeEnabled = e.target.checked;
+        const hintDiv = document.getElementById('coachHintHud');
+        if (!coachModeEnabled) {
+            if (hintDiv) hintDiv.classList.remove('active');
+            clearTheoryHighlights();
+            engine.postMessage('stop');
+        } else {
+            if (hintDiv) hintDiv.classList.add('active');
+            // Immediately request analysis if it's currently our turn
+            if (mode === 'play' && chess.turn() !== aiColor && !chess.isGameOver()) {
+                requestEngineAnalysis();
+            }
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════════
 // BOOTSTRAP
 // ═══════════════════════════════════════════════════
 initEngine();
 buildBoard();
+
+// ═══════════════════════════════════════════════════
+// WEBRTC MULTIPLAYER (PEERJS)
+// ═══════════════════════════════════════════════════
+function initMultiplayer() {
+    if (peer) return; // Already initialized
+    
+    const myPeerIdEl = document.getElementById('myPeerId');
+    const mpStatusText = document.getElementById('mpStatusText');
+    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
+    
+    // Initialize PeerJS
+    peer = new Peer();
+    
+    peer.on('open', (id) => {
+        myPeerIdEl.value = id;
+        mpStatusText.textContent = 'Ready (Waiting for connection...)';
+        statusDot.className = 'status-dot thinking'; // Orange waiting state
+    });
+    
+    // Handle incoming connections (We are the host)
+    peer.on('connection', (conn) => {
+        if (peerConnection) return; // Only allow one connection
+        peerConnection = conn;
+        isHost = true;
+        setupPeerConnection();
+    });
+    
+    peer.on('error', (err) => {
+        console.error('PeerJS Error:', err);
+        mpStatusText.textContent = 'Connection Error';
+        statusDot.className = 'status-dot error';
+    });
+}
+
+function setupPeerConnection() {
+    const mpStatusText = document.getElementById('mpStatusText');
+    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
+    const controls = document.getElementById('multiplayerControls');
+    
+    peerConnection.on('open', () => {
+        mpStatusText.textContent = 'Connected!';
+        statusDot.className = 'status-dot ready'; // Green
+        if (isHost) {
+            controls.classList.remove('hidden'); // Host can start the game
+        } else {
+            controls.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">Connected. Waiting for host to start game...</div>';
+            controls.classList.remove('hidden');
+        }
+    });
+    
+    peerConnection.on('data', (data) => {
+        if (data.type === 'start') {
+            // Host started the game
+            mpColor = data.color === 'w' ? 'b' : 'w';
+            flipped = (mpColor === 'b');
+            chess = new Chess();
+            moveHistory = [];
+            currentMoveIdx = -1;
+            lastMoveSquares = [];
+            evalContainer.classList.remove('hidden');
+            gameResultEl.classList.add('hidden');
+            buildBoard();
+            requestEngineAnalysis(); // First analysis
+            document.getElementById('snd-move')?.play().catch(()=>{});
+        } 
+        else if (data.type === 'move') {
+            // Receive opponent's move
+            chess.load(data.fen);
+            moveHistory = data.moveHistory;
+            currentMoveIdx = moveHistory.length - 1;
+            if (currentMoveIdx >= 0) {
+                lastMoveSquares = [moveHistory[currentMoveIdx].from, moveHistory[currentMoveIdx].to];
+            }
+            renderPosition();
+            playSound(moveHistory[currentMoveIdx]);
+            
+            if (moveHistory[currentMoveIdx].flags.includes('c') || moveHistory[currentMoveIdx].flags.includes('e')) {
+                 const sqEl = document.getElementById('sq-' + moveHistory[currentMoveIdx].to);
+                 if (sqEl) {
+                     const ripple = document.createElement('div');
+                     ripple.className = 'capture-ripple';
+                     sqEl.appendChild(ripple);
+                     setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 600);
+                 }
+            }
+            
+            if (!chess.isGameOver()) {
+                requestEngineAnalysis();
+            }
+        }
+    });
+    
+    peerConnection.on('close', () => {
+        mpStatusText.textContent = 'Disconnected';
+        statusDot.className = 'status-dot error';
+        peerConnection = null;
+        controls.classList.add('hidden');
+    });
+}
+
+// Connect as Guest
+document.getElementById('btnConnectFriend')?.addEventListener('click', () => {
+    const friendId = document.getElementById('friendPeerId').value.trim();
+    if (!friendId) return;
+    if (!peer) initMultiplayer();
+    
+    const mpStatusText = document.getElementById('mpStatusText');
+    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
+    mpStatusText.textContent = 'Connecting...';
+    statusDot.className = 'status-dot thinking';
+    
+    peerConnection = peer.connect(friendId);
+    isHost = false;
+    setupPeerConnection();
+});
+
+// Host starts game
+document.getElementById('btnMpStart')?.addEventListener('click', () => {
+    if (!peerConnection || !peerConnection.open) return;
+    
+    const colorSel = document.getElementById('mpPlayerColor').value;
+    if (colorSel === 'random') {
+        mpColor = Math.random() > 0.5 ? 'w' : 'b';
+    } else {
+        mpColor = colorSel;
+    }
+    
+    // Broadcast start game
+    peerConnection.send({ type: 'start', color: mpColor });
+    
+    flipped = (mpColor === 'b');
+    chess = new Chess();
+    moveHistory = [];
+    currentMoveIdx = -1;
+    lastMoveSquares = [];
+    evalContainer.classList.remove('hidden');
+    gameResultEl.classList.add('hidden');
+    buildBoard();
+    requestEngineAnalysis();
+});
+
+document.getElementById('btnCopyPeerId')?.addEventListener('click', () => {
+    const input = document.getElementById('myPeerId');
+    if (input.value) {
+        navigator.clipboard.writeText(input.value);
+        const btn = document.getElementById('btnCopyPeerId');
+        btn.textContent = '✅ Copied';
+        setTimeout(() => btn.textContent = '📋 Copy', 2000);
+    }
+});
+
+// Initialize PeerJS when switching to multiplayer tab
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'multiplayer') {
+            initMultiplayer();
+        }
+    });
+});
+buildAcademyList();
+updateClockDisplay();
+
+// ═══════════════════════════════════════════════════
+// POST-GAME INTERACTIVE ANALYSIS (Engine Batch Mode)
+// ═══════════════════════════════════════════════════
+let isBatchAnalyzing = false;
+let batchAnalysisResults = [];
+
+const btnAnalyzeGame = document.getElementById('btnAnalyzeGame');
+const analysisReportContainer = document.getElementById('analysisReportContainer');
+const btnCloseAnalysis = document.getElementById('btnCloseAnalysis');
+const analysisProgressBar = document.getElementById('analysisProgressBar');
+
+let analysisEngine = null;
+let analysisEngineReady = false;
+
+if (btnAnalyzeGame) {
+    btnAnalyzeGame.addEventListener('click', async () => {
+        if (moveHistory.length < 2) return;
+        
+        btnAnalyzeGame.disabled = true;
+        btnAnalyzeGame.textContent = '⏳ Analyzing...';
+        analysisReportContainer.classList.remove('hidden');
+        document.getElementById('analysisReportList').innerHTML = '<div class="text-center text-muted" style="padding:1rem;">Stockfish is evaluating your game...</div>';
+        
+        isBatchAnalyzing = true;
+        batchAnalysisResults = [];
+        
+        // Initialize analysis engine with proper UCI handshake
+        if (!analysisEngine) {
+            try {
+                const response = await fetch(STOCKFISH_CDN);
+                const code = await response.text();
+                analysisEngine = new Worker(URL.createObjectURL(new Blob([code], { type: 'application/javascript' })));
+            } catch(e) {
+                console.warn('analysisEngine fetch failed, trying importScripts', e);
+                const workerCode = `importScripts("${STOCKFISH_CDN}");`;
+                analysisEngine = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' })));
+            }
+            
+            // Wait for full UCI handshake before proceeding
+            await new Promise((resolve) => {
+                analysisEngine.onmessage = (e) => {
+                    const line = e.data;
+                    if (line === 'uciok') {
+                        analysisEngine.postMessage('isready');
+                    } else if (line === 'readyok') {
+                        analysisEngineReady = true;
+                        resolve();
+                    }
+                };
+                analysisEngine.postMessage('uci');
+                setTimeout(() => resolve(), 3000); // Failsafe timeout
+            });
+        } else {
+            // Engine exists — still confirm it's ready for a new batch
+            await new Promise((resolve) => {
+                analysisEngine.postMessage('stop');
+                const readyHandler = (e) => {
+                    if (e.data === 'readyok') {
+                        analysisEngine.removeEventListener('message', readyHandler);
+                        resolve();
+                    }
+                };
+                analysisEngine.addEventListener('message', readyHandler);
+                analysisEngine.postMessage('isready');
+                setTimeout(() => resolve(), 2000); // Failsafe timeout
+            });
+        }
+        
+        let pendingEval = null;
+        let pendingPv = '';
+        let resolveMove = null;
+        
+        // Now set the eval-tracking handler
+        analysisEngine.onmessage = (e) => {
+            const line = e.data;
+            if (typeof line === 'string' && line.includes('score')) {
+                const cpMatch = line.match(/score cp (-?\d+)/);
+                const mateMatch = line.match(/score mate (-?\d+)/);
+                let score = 0;
+                if (mateMatch) score = parseInt(mateMatch[1]) > 0 ? 9999 : -9999;
+                else if (cpMatch) score = parseInt(cpMatch[1]);
+                pendingEval = score;
+                
+                const pvMatch = line.match(/pv\s+(.*)/);
+                if (pvMatch) pendingPv = pvMatch[1];
+            } else if (typeof line === 'string' && line.startsWith('bestmove')) {
+                const match = line.match(/^bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
+                if (resolveMove) resolveMove({ bestMove: match ? match[1] : null, evalScore: pendingEval || 0, pv: pendingPv });
+            }
+        };
+
+        const evaluateFen = (fen) => {
+            return new Promise(resolve => {
+                pendingEval = null;
+                pendingPv = '';
+                resolveMove = resolve;
+                analysisEngine.postMessage('position fen ' + fen);
+                analysisEngine.postMessage('go depth 12');
+                setTimeout(() => resolve({bestMove: null, evalScore: pendingEval || 0, pv: pendingPv}), 8000);
+            });
+        };
+        
+        for (let i = 0; i <= moveHistory.length; i++) {
+            if (!isBatchAnalyzing) break;
+            
+            const pct = Math.round((i / Math.max(1, moveHistory.length)) * 100);
+            if(analysisProgressBar) analysisProgressBar.style.width = pct + '%';
+            
+            let fen = (i === 0) ? new Chess().fen() : moveHistory[i - 1].fen;
+            const res = await evaluateFen(fen);
+            
+            batchAnalysisResults.push({
+                idx: i,
+                score: res.evalScore,
+                bestMoveEngine: res.bestMove,
+                pv: res.pv,
+                isBlackTurn: (i % 2 === 1),
+                fen: fen
+            });
+        }
+        
+        if (isBatchAnalyzing) {
+            finishBatchAnalysis();
+        }
+    });
+}
+
+if (btnCloseAnalysis) {
+    btnCloseAnalysis.addEventListener('click', () => {
+        analysisReportContainer.classList.add('hidden');
+        if (isBatchAnalyzing) {
+            isBatchAnalyzing = false;
+            if(analysisEngine) analysisEngine.postMessage('stop');
+            btnAnalyzeGame.disabled = false;
+            btnAnalyzeGame.textContent = '🔍 Request Analysis';
+        }
+    });
+}
+
+function finishBatchAnalysis() {
+    isBatchAnalyzing = false;
+    btnAnalyzeGame.disabled = false;
+    btnAnalyzeGame.textContent = '🔍 Re-Analyze Game';
+    
+    if(analysisProgressBar) analysisProgressBar.style.width = '100%';
+    
+    let blunders = 0, mistakes = 0, inaccuracies = 0, goodMoves = 0, bestMoves = 0;
+    let brilliantMoves = 0;
+    let reportHtml = '';
+    window.reviewMistakesList = [];
+    
+    // CAPS (Computer Accuracy Percentage Score) — weighted accuracy
+    let capsScoreSum = 0;
+    let capsMovesCount = 0;
+    
+    // Move classification tracking for badges
+    const moveClassifications = [];
+    
+    // Pattern tracking for post-game improvement tips
+    const patternTracker = {
+        earlyQueenMoves: 0,
+        kingSafetyIssues: 0,
+        missedTactics: 0,
+        endgameErrors: 0,
+        openingPhaseErrors: 0, // moves 1-10
+        middlegameErrors: 0,   // moves 11-30
+        pawnStructureWeaknesses: 0,
+        missedCaptures: 0,
+        uncastled: true,
+        totalErrorDrop: 0,
+        worstMove: null,
+        worstDrop: 0
+    };
+    
+    // Determine which color's mistakes we actually care about so we don't coach the enemy!
+    let humanColor = 'w';
+    if (typeof mode !== 'undefined' && mode === 'play' && typeof aiColor !== 'undefined') {
+        humanColor = (aiColor === 'w') ? 'b' : 'w';
+    }
+    
+    for (let i = 1; i < batchAnalysisResults.length; i++) {
+        const prev = batchAnalysisResults[i - 1]; 
+        const curr = batchAnalysisResults[i];     
+        
+        const moveData = moveHistory[i - 1];
+        if (!moveData) continue;
+        
+        const colorMoved = i % 2 === 1 ? 'w' : 'b';
+        
+        let valBefore = prev.score; 
+        if (prev.isBlackTurn) valBefore = -valBefore; 
+        
+        let valAfter = curr.score;
+        if (curr.isBlackTurn) valAfter = -valAfter; 
+        
+        let errorDrop = colorMoved === 'w' ? (valBefore - valAfter) : (valAfter - valBefore);
+        
+        if (Math.abs(valBefore) > 9000 || Math.abs(valAfter) > 9000) {
+            errorDrop = 0; 
+        }
+        
+        const bestMv = prev.bestMoveEngine || '?';
+        const moveNumStr = Math.ceil(i / 2) + (colorMoved === 'w' ? '.' : '...');
+        
+        let bestSan = bestMv;
+        if (bestMv !== '?') {
+            try {
+                const tempChess = new Chess(prev.fen);
+                const tm = tempChess.move({ from: bestMv.substring(0,2), to: bestMv.substring(2,4), promotion: bestMv.substring(4) || 'q' });
+                if (tm) bestSan = tm.san;
+            } catch(e) {}
+        }
+        
+        // Generate human-readable reasoning
+        const reason = generateMoveReasoning(moveData, bestSan, errorDrop, valBefore, valAfter, colorMoved, prev, i);
+        
+        let flag = null;
+        let colorBox = '';
+        let emoji = '';
+        let badge = '✅';
+        
+        // Only classify and count blunders for the HUMAN player to avoiding guiding them on the engine's behalf
+        if (colorMoved === humanColor) {
+            // CAPS: Convert centipawn loss to a 0-100 accuracy score per move
+            // Formula: accuracy = max(0, 100 - (cpLoss^1.5 / 10))
+            const cpLoss = Math.max(0, errorDrop);
+            const moveAccuracy = Math.max(0, Math.min(100, 100 - (Math.pow(cpLoss, 1.5) / 10)));
+            capsScoreSum += moveAccuracy;
+            capsMovesCount++;
+            
+            if (errorDrop > 250) { 
+                flag = 'Blunder'; blunders++; colorBox = 'rgba(239,68,68,0.15)'; emoji = '❌'; badge = '❌';
+                patternTracker.totalErrorDrop += errorDrop;
+                if (errorDrop > patternTracker.worstDrop) {
+                    patternTracker.worstDrop = errorDrop;
+                    patternTracker.worstMove = { san: moveData.san, moveNum: moveNumStr, drop: errorDrop };
+                }
+            }
+            else if (errorDrop > 120) { 
+                flag = 'Mistake'; mistakes++; colorBox = 'rgba(249,115,22,0.15)'; emoji = '⚠️'; badge = '⚠️';
+                patternTracker.totalErrorDrop += errorDrop;
+            }
+            else if (errorDrop > 70) { 
+                flag = 'Inaccuracy'; inaccuracies++; colorBox = 'rgba(234,179,8,0.15)'; emoji = '❓'; badge = '❓';
+            }
+            else if (errorDrop < -50) { 
+                brilliantMoves++; badge = '💡'; bestMoves++; 
+            }
+            else if (errorDrop < -20) { bestMoves++; badge = '⭐'; }
+            else { goodMoves++; badge = '✅'; }
+            
+            // Track patterns for improvement tips
+            const san = moveData.san;
+            const movePhase = Math.ceil(i / 2);
+            if (flag && movePhase <= 10) patternTracker.openingPhaseErrors++;
+            if (flag && movePhase > 10 && movePhase <= 30) patternTracker.middlegameErrors++;
+            if (flag && movePhase > 30) patternTracker.endgameErrors++;
+            if (san.startsWith('Q') && movePhase <= 6) patternTracker.earlyQueenMoves++;
+            if (san.startsWith('K') && !san.startsWith('O')) patternTracker.kingSafetyIssues++;
+            if (san.startsWith('O')) patternTracker.uncastled = false;
+            if (flag && san.includes('x')) patternTracker.missedCaptures++;
+            if (flag && bestSan && bestSan.includes('x')) patternTracker.missedTactics++;
+            if (san.match(/^[a-h]/) && flag) patternTracker.pawnStructureWeaknesses++;
+        } else {
+             // For the opponent, just note best moves optionally but don't flag as mistakes for the user.
+            if (errorDrop < -20) { bestMoves++; badge = '⭐'; } else { goodMoves++; badge = '✅'; }
+        }
+        
+        // Store classification for move list badges
+        moveClassifications.push({ idx: i - 1, badge, flag, colorMoved });
+        
+        if (flag) {
+            // COACH: Inject into reviewMistakesList with reasoning
+            if (flag === 'Blunder' || flag === 'Mistake') {
+                window.reviewMistakesList.push({
+                    histIdx: i - 1,
+                    bestMoveUci: bestMv,
+                    bestMoveSan: bestSan,
+                    pv: prev.pv,
+                    flag: flag,
+                    badMoveSan: moveData.san,
+                    fenBefore: prev.fen,
+                    reason: reason,
+                    evalBefore: valBefore,
+                    evalAfter: valAfter,
+                    errorDrop: errorDrop
+                });
+            }
+
+            reportHtml += `
+                <div class="ac-item mb-1" style="background:${colorBox}; border:1px solid ${colorBox}; cursor:pointer; border-radius:8px; padding:0.6rem;" onclick="jumpToAnalysis(${i - 1}, '${bestMv}')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:4px;">
+                                <span style="font-size:1rem;">${emoji}</span>
+                                <span class="ac-item-title" style="font-weight:700;">${moveNumStr} ${moveData.san}</span>
+                                <span style="font-size:0.7rem; padding:1px 6px; border-radius:4px; background:${colorBox}; font-weight:600;">${flag}</span>
+                                <span style="font-size:0.7rem; color:var(--text-muted);">(${errorDrop > 0 ? '-' : '+'}${(Math.abs(errorDrop)/100).toFixed(1)})</span>
+                            </div>
+                            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px; line-height:1.4;">
+                                ${reason.whyBad}
+                            </div>
+                            <div style="font-size:0.78rem; color:#86efac; line-height:1.4;">
+                                <strong>Better:</strong> <span style="color:#4ade80; font-weight:600;">${bestSan !== '?' ? bestSan : 'N/A'}</span>
+                                ${reason.whyBetter ? ' — ' + reason.whyBetter : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (errorDrop < -50 && colorMoved === humanColor) {
+            // Brilliant move
+            reportHtml += `
+                <div class="ac-item mb-1" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15); border-radius:8px; padding:0.5rem; cursor:pointer;" onclick="jumpToAnalysis(${i - 1}, '${bestMv}')">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size:0.9rem;">💡</span>
+                        <span style="font-weight:600; font-size:0.85rem;">${moveNumStr} ${moveData.san}</span>
+                        <span style="font-size:0.68rem; padding:1px 6px; border-radius:4px; background:rgba(168,85,247,0.15); color:#c084fc; font-weight:600;">Brilliant</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:#c4b5fd; margin-top:3px;">${reason.whyGood || 'Exceptional move — better than the engine\'s top choice!'}</div>
+                </div>
+            `;
+        } else if (errorDrop < -20 && colorMoved === humanColor) {
+            reportHtml += `
+                <div class="ac-item mb-1" style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.12); border-radius:8px; padding:0.5rem; cursor:pointer;" onclick="jumpToAnalysis(${i - 1}, '${bestMv}')">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size:0.9rem;">⭐</span>
+                        <span style="font-weight:600; font-size:0.85rem;">${moveNumStr} ${moveData.san}</span>
+                        <span style="font-size:0.68rem; padding:1px 6px; border-radius:4px; background:rgba(34,197,94,0.15); color:#4ade80; font-weight:600;">Best Move</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:#86efac; margin-top:3px;">${reason.whyGood || 'Engine agrees — this was the optimal play.'}</div>
+                </div>
+            `;
+        }
+    }
+    
+    document.getElementById('ar-blunders').textContent = blunders;
+    document.getElementById('ar-mistakes').textContent = mistakes;
+    document.getElementById('ar-inaccuracies').textContent = inaccuracies;
+    
+    // Calculate CAPS (Computer Accuracy Percentage Score) — weighted accuracy
+    const capsAccuracy = capsMovesCount > 0 ? Math.round(capsScoreSum / capsMovesCount) : 100;
+    // Also keep simple accuracy for reference
+    const totalClassified = blunders + mistakes + inaccuracies + goodMoves + bestMoves;
+    const simpleAccuracy = totalClassified > 0 ? Math.round(((goodMoves + bestMoves) / totalClassified) * 100) : 100;
+    
+    const accEl = document.getElementById('analysisAccuracy');
+    const accValEl = document.getElementById('ar-accuracy');
+    if (accEl && accValEl) {
+        accValEl.textContent = capsAccuracy + '%';
+        accValEl.style.color = capsAccuracy >= 80 ? '#4ade80' : capsAccuracy >= 60 ? '#fbbf24' : capsAccuracy >= 40 ? '#f97316' : '#ef4444';
+        accEl.style.display = 'block';
+        // Show accuracy label clarification
+        const accLabelEl = document.getElementById('ar-accuracy-label');
+        if (accLabelEl) accLabelEl.textContent = 'CAPS Accuracy';
+    }
+    
+    // Save accuracy to game stats history
+    if (gameStats) {
+        gameStats.accuracyHistory.push(capsAccuracy);
+        saveGameStats();
+    }
+    
+    // Apply move classification badges to the move list UI
+    applyMoveBadges(moveClassifications);
+    
+    const btnCoach = document.getElementById('btnStartCoach');
+    if (window.reviewMistakesList && window.reviewMistakesList.length > 0) {
+        if(btnCoach) btnCoach.style.display = 'block';
+    } else {
+        if(btnCoach) btnCoach.style.display = 'none';
+    }
+    
+    // Generate structured improvement tips
+    const improvementTips = generateImprovementTips(patternTracker, blunders, mistakes, inaccuracies, bestMoves, brilliantMoves, capsAccuracy);
+    
+    // Build summary header with stats breakdown
+    let summaryHtml = `
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; justify-content:center;">
+            ${brilliantMoves > 0 ? `<span style="font-size:0.72rem; padding:2px 8px; border-radius:12px; background:rgba(168,85,247,0.15); color:#c084fc; font-weight:600;">💡 ${brilliantMoves} Brilliant</span>` : ''}
+            <span style="font-size:0.72rem; padding:2px 8px; border-radius:12px; background:rgba(34,197,94,0.1); color:#4ade80; font-weight:600;">⭐ ${bestMoves} Best</span>
+            <span style="font-size:0.72rem; padding:2px 8px; border-radius:12px; background:rgba(148,163,184,0.1); color:#94a3b8; font-weight:600;">✅ ${goodMoves} Good</span>
+        </div>
+    `;
+    
+    if (!reportHtml) {
+        reportHtml = '<div class="text-center text-neon-green" style="padding:1rem;">🏆 Perfect game! No significant mistakes detected.</div>';
+    }
+    
+    // Append improvement tips section
+    if (improvementTips.length > 0) {
+        reportHtml += `
+            <div style="margin-top:12px; background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.15); border-radius:10px; padding:10px;">
+                <div style="font-size:0.78rem; font-weight:700; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:4px;">🎯 Improvement Tips</div>
+                ${improvementTips.map(tip => `
+                    <div style="display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; font-size:0.76rem; line-height:1.45;">
+                        <span style="flex-shrink:0; font-size:0.85rem;">${tip.icon}</span>
+                        <div>
+                            <strong style="color:${tip.color};">${tip.title}:</strong>
+                            <span style="color:#94a3b8;">${tip.detail}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    document.getElementById('analysisReportList').innerHTML = summaryHtml + reportHtml;
+}
+
+// ═══════════════════════════════════════════════════
+// MOVE BADGE OVERLAY (Post-Analysis)
+// ═══════════════════════════════════════════════════
+function applyMoveBadges(classifications) {
+    const buttons = document.querySelectorAll('.move-btn');
+    classifications.forEach(c => {
+        if (c.flag && buttons[c.idx]) {
+            const btn = buttons[c.idx];
+            // Remove any existing badge
+            const existing = btn.querySelector('.move-badge');
+            if (existing) existing.remove();
+            
+            const badgeEl = document.createElement('span');
+            badgeEl.className = 'move-badge';
+            badgeEl.textContent = c.badge;
+            badgeEl.style.cssText = 'font-size:0.6rem; margin-left:2px; vertical-align:super;';
+            btn.appendChild(badgeEl);
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// POST-GAME IMPROVEMENT TIPS ENGINE
+// ═══════════════════════════════════════════════════
+function generateImprovementTips(tracker, blunders, mistakes, inaccuracies, bestMoves, brilliantMoves, accuracy) {
+    const tips = [];
+    
+    // Opening phase issues
+    if (tracker.openingPhaseErrors >= 2) {
+        tips.push({
+            icon: '📖',
+            title: 'Opening Theory',
+            detail: `You made ${tracker.openingPhaseErrors} errors in the opening (moves 1-10). Study the Academy\'s fundamentals and opening lessons to build a stronger foundation.`,
+            color: '#fbbf24'
+        });
+    }
+    
+    // Early queen development
+    if (tracker.earlyQueenMoves >= 2) {
+        tips.push({
+            icon: '👑',
+            title: 'Avoid Early Queen Moves',
+            detail: 'Moving your Queen too early wastes tempo and allows the opponent to develop with threats. Develop minor pieces (Knights, Bishops) first.',
+            color: '#f97316'
+        });
+    }
+    
+    // Castling check
+    if (tracker.uncastled && moveHistory.length > 20) {
+        tips.push({
+            icon: '🏰',
+            title: 'Castle Earlier',
+            detail: 'You didn\'t castle this game. Castling protects your King and connects your Rooks. Aim to castle within the first 10 moves.',
+            color: '#ef4444'
+        });
+    }
+    
+    // Missed tactics
+    if (tracker.missedTactics >= 2) {
+        tips.push({
+            icon: '⚔️',
+            title: 'Tactical Vision',
+            detail: `You missed ${tracker.missedTactics} tactical opportunities (captures/forks/pins). Practice puzzles in the Academy\'s Tactics section to sharpen your pattern recognition.`,
+            color: '#60a5fa'
+        });
+    }
+    
+    // Middlegame issues
+    if (tracker.middlegameErrors >= 3) {
+        tips.push({
+            icon: '♟️',
+            title: 'Middlegame Strategy',
+            detail: `${tracker.middlegameErrors} errors in the middlegame. Focus on piece coordination, controlling the center, and looking for tactical patterns before each move.`,
+            color: '#a78bfa'
+        });
+    }
+    
+    // Endgame issues
+    if (tracker.endgameErrors >= 2) {
+        tips.push({
+            icon: '🎯',
+            title: 'Endgame Technique',
+            detail: `${tracker.endgameErrors} errors in the endgame. Study King + Pawn endings and basic checkmate patterns in the Academy\'s Endgame section.`,
+            color: '#f472b6'
+        });
+    }
+    
+    // Pawn structure weaknesses
+    if (tracker.pawnStructureWeaknesses >= 3) {
+        tips.push({
+            icon: '🧱',
+            title: 'Pawn Structure',
+            detail: 'Several inaccurate pawn moves. Avoid creating isolated or doubled pawns. Each pawn move is permanent — think carefully before advancing.',
+            color: '#fbbf24'
+        });
+    }
+    
+    // Worst move callout
+    if (tracker.worstMove && tracker.worstDrop > 300) {
+        tips.push({
+            icon: '🔍',
+            title: 'Critical Moment',
+            detail: `Your worst move was ${tracker.worstMove.moveNum} ${tracker.worstMove.san} (lost ${(tracker.worstDrop/100).toFixed(1)} pawns). Click it in the analysis to see the better alternative and understand why.`,
+            color: '#ef4444'
+        });
+    }
+    
+    // Positive reinforcement
+    if (accuracy >= 85 && blunders === 0) {
+        tips.push({
+            icon: '🌟',
+            title: 'Excellent Play',
+            detail: 'Outstanding accuracy! You avoided blunders and made strong decisions. Challenge a harder AI level to keep improving.',
+            color: '#4ade80'
+        });
+    } else if (brilliantMoves > 0) {
+        tips.push({
+            icon: '💡',
+            title: 'Brilliant Finds',
+            detail: `You found ${brilliantMoves} brilliant move${brilliantMoves > 1 ? 's' : ''} that exceeded the engine\'s expectations. Great tactical instinct!`,
+            color: '#c084fc'
+        });
+    }
+    
+    return tips;
+}
+
+// ═══════════════════════════════════════════════════
+// MOVE REASONING ENGINE
+// ═══════════════════════════════════════════════════
+function generateMoveReasoning(moveData, bestMoveUci, errorDrop, evalBefore, evalAfter, colorMoved, prevAnalysis, moveIdx) {
+    const san = moveData.san;
+    const from = moveData.from;
+    const to = moveData.to;
+    
+    let whyBad = '';
+    let whyBetter = '';
+    let whyGood = '';
+    
+    const pieceChar = san.charAt(0);
+    const isPawnMove = pieceChar === pieceChar.toLowerCase() && !san.startsWith('O');
+    const isKingMove = san.startsWith('K');
+    const isQueenMove = san.startsWith('Q');
+    const isCastle = san.startsWith('O');
+    const isCapture = san.includes('x');
+    const isCheck = san.includes('+');
+    const isMate = san.includes('#');
+    
+    const cpLoss = Math.abs(errorDrop);
+    const losesMinor = cpLoss >= 280 && cpLoss < 450;
+    const losesRook = cpLoss >= 450 && cpLoss < 800;
+    const losesQueen = cpLoss >= 800;
+    
+    // === WHY BAD ===
+    if (errorDrop > 250) {
+        if (losesQueen) {
+            whyBad = `Loses major material — approximately a Queen's worth of advantage (${(cpLoss/100).toFixed(1)} pawns). `;
+        } else if (losesRook) {
+            whyBad = `Drops roughly a Rook's worth of material (${(cpLoss/100).toFixed(1)} pawns). `;
+        } else if (losesMinor) {
+            whyBad = `Loses the equivalent of a minor piece (${(cpLoss/100).toFixed(1)} pawns). `;
+        } else {
+            whyBad = `Significant position weakening (${(cpLoss/100).toFixed(1)} pawn disadvantage). `;
+        }
+        if (isKingMove && !isCastle) whyBad += 'Moving the King exposes it to threats.';
+        else if (isQueenMove && moveIdx < 12) whyBad += 'Early Queen development allows opponent to gain tempo.';
+        else if (isCapture) whyBad += 'This capture walks into a tactical refutation.';
+        else whyBad += 'This move overlooks an important tactical detail.';
+    } else if (errorDrop > 120) {
+        whyBad = `Weakens position by ${(cpLoss/100).toFixed(1)} pawns. `;
+        if (isPawnMove) whyBad += 'This pawn move creates structural weaknesses.';
+        else whyBad += 'A more active option was available.';
+    } else if (errorDrop > 70) {
+        whyBad = `Slightly inaccurate (${(cpLoss/100).toFixed(1)} pawn slip). The position becomes marginally worse.`;
+    }
+    
+    // === WHY BETTER ===
+    if (bestMoveUci && bestMoveUci !== '?' && bestMoveUci.length >= 4) {
+        const bestTo = bestMoveUci.substring(2, 4);
+        const isCentral = 'cdef'.includes(bestTo[0]) && '3456'.includes(bestTo[1]);
+        if (errorDrop > 250) {
+            whyBetter = isCentral ? 'Controls key central squares and maintains coordination.' : 'Maintains tactical advantage and keeps the position secure.';
+        } else if (errorDrop > 120) {
+            whyBetter = 'Improves piece activity while maintaining solid structure.';
+        } else {
+            whyBetter = 'Slightly more precise — optimizes piece placement.';
+        }
+    }
+    
+    // === WHY GOOD ===
+    if (errorDrop < -20) {
+        if (isCapture) whyGood = 'Wins material cleanly with proper tactical execution.';
+        else if (isCastle) whyGood = 'Excellent timing — secures King safety and activates the Rook.';
+        else if (isCheck) whyGood = 'Forcing check creates tempo and improves position.';
+        else if (isMate) whyGood = 'Checkmate! Game over.';
+        else whyGood = 'Strong positional move — engine agrees this was optimal.';
+    }
+    
+    return { whyBad, whyBetter, whyGood };
+}
+
+window.jumpToAnalysis = function(histIdx, bestMoveUci) {
+    jumpToMove(histIdx - 1);
+    const badMove = moveHistory[histIdx];
+    setTimeout(() => {
+        clearTheoryHighlights();
+        drawArrowRaw(badMove.from, badMove.to, 'rgba(239,68,68,0.85)', 'arrowhead-red');
+        if (bestMoveUci && bestMoveUci.length >= 4 && bestMoveUci !== '?') {
+            drawArrowRaw(bestMoveUci.substring(0, 2), bestMoveUci.substring(2, 4), 'rgba(34,197,94,0.85)', 'arrowhead-green');
+        }
+        const pieceEl = document.querySelector(`#sq-${badMove.from} .piece`) || document.querySelector(`#sq-${badMove.to} .piece`);
+        if (pieceEl) {
+            pieceEl.classList.add('shake-error');
+            setTimeout(()=> pieceEl.classList.remove('shake-error'), 500);
+        }
+    }, 150);
+}
+
+function drawArrowRaw(fromSq, toSq, colorStr, markerId) {
+    const svg = document.getElementById('arrowOverlay');
+    if(!svg) return;
+    const fEl = document.getElementById('sq-' + fromSq);
+    const tEl = document.getElementById('sq-' + toSq);
+    if (!fEl || !tEl) return;
+    const boardRect = boardEl.getBoundingClientRect();
+    const sfRect = fEl.getBoundingClientRect();
+    const stRect = tEl.getBoundingClientRect();
+    const x1 = sfRect.left + sfRect.width / 2 - boardRect.left;
+    const y1 = sfRect.top + sfRect.height / 2 - boardRect.top;
+    const x2 = stRect.left + stRect.width / 2 - boardRect.left;
+    const y2 = stRect.top + stRect.height / 2 - boardRect.top;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', colorStr);
+    line.setAttribute('stroke-width', '6');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('marker-end', `url(#${markerId})`);
+    svg.appendChild(line);
+}
+
+// ═══════════════════════════════════════════════════
+// INTERACTIVE COACH ENGINE (Enhanced with Reasoning)
+// ═══════════════════════════════════════════════════
+window.currentReviewIdx = -1;
+
+window.startInteractiveCoach = function() {
+    if (!window.reviewMistakesList || window.reviewMistakesList.length === 0) return;
+    document.querySelector('.tab-btn[data-tab="play"]').click();
+    window.currentReviewIdx = 0;
+    document.getElementById('controlsBox').style.display = 'none';
+    document.getElementById('interactiveCoachHud').classList.remove('hidden');
+    loadReviewMistake();
+};
+
+window.coachExitReview = function() {
+    document.getElementById('controlsBox').style.display = 'block';
+    document.getElementById('interactiveCoachHud').classList.add('hidden');
+    window.isReviewMode = false;
+    jumpToMove(moveHistory.length - 1);
+    clearTheoryHighlights();
+};
+
+window.coachSkipMistake = function() {
+    window.currentReviewIdx++;
+    if (window.currentReviewIdx >= window.reviewMistakesList.length) {
+        const hud = document.getElementById('coachHudText');
+        const reasonBox = document.getElementById('coachReasonText');
+        const progress = document.getElementById('coachProgress');
+        if (hud) hud.innerHTML = '<strong style="color:#4ade80;">🏆 All mistakes reviewed!</strong><br>Great job analyzing your game. Keep practicing!';
+        if (reasonBox) reasonBox.style.display = 'none';
+        if (progress) progress.textContent = 'Done!';
+        setTimeout(() => coachExitReview(), 3000);
+        return;
+    }
+    loadReviewMistake();
+};
+
+window.coachShowHint = function() {
+    const mistake = window.reviewMistakesList[window.currentReviewIdx];
+    if (mistake.bestMoveUci && mistake.bestMoveUci !== '?') {
+        const fm = mistake.bestMoveUci.substring(0, 2);
+        const tm = mistake.bestMoveUci.substring(2, 4);
+        clearTheoryHighlights();
+        drawArrowRaw(fm, tm, 'rgba(34,197,94,0.85)', 'arrowhead-green');
+        const fromEl = document.getElementById(`sq-${fm}`);
+        const toEl = document.getElementById(`sq-${tm}`);
+        if (fromEl) fromEl.classList.add('theory-highlight');
+        if (toEl) toEl.classList.add('theory-highlight');
+    }
+    const reasonBox = document.getElementById('coachReasonText');
+    if (reasonBox && mistake.reason) {
+        reasonBox.innerHTML = `<div style="margin-bottom:4px;"><strong style="color:#f97316;">Why your move was bad:</strong> ${mistake.reason.whyBad}</div>` +
+            `<div><strong style="color:#4ade80;">Why ${mistake.bestMoveSan || mistake.bestMoveUci} is better:</strong> ${mistake.reason.whyBetter || 'Maintains better evaluation.'}</div>`;
+        reasonBox.style.display = 'block';
+    }
+};
+
+window.loadReviewMistake = function() {
+    const mistake = window.reviewMistakesList[window.currentReviewIdx];
+    const total = window.reviewMistakesList.length;
+    jumpToMove(mistake.histIdx - 1);
+    window.isReviewMode = true;
+    
+    const progress = document.getElementById('coachProgress');
+    if (progress) progress.textContent = `${window.currentReviewIdx + 1}/${total}`;
+    
+    const uiText = document.getElementById('coachHudText');
+    const evalChange = mistake.errorDrop ? ` (${(mistake.errorDrop/100).toFixed(1)} pawns lost)` : '';
+    uiText.innerHTML = `<strong>Move ${Math.ceil((mistake.histIdx+1)/2)}:</strong> You played <strong style="color:#ef4444">${mistake.badMoveSan}</strong> — a <span style="color:${mistake.flag === 'Blunder' ? '#ef4444' : '#f97316'}; font-weight:700;">${mistake.flag}</span>${evalChange}.<br><span style="color:#94a3b8;">Can you find the engine's recommended move?</span>`;
+    
+    const reasonBox = document.getElementById('coachReasonText');
+    if (reasonBox && mistake.reason) {
+        reasonBox.innerHTML = `<strong style="color:#f97316;">💭 Why was this bad?</strong> ${mistake.reason.whyBad}`;
+        reasonBox.style.display = 'block';
+    }
+    clearTheoryHighlights();
+};
+
+// ═══════════════════════════════════════════════════
+// GAME STATISTICS TRACKER (Persistent)
+// ═══════════════════════════════════════════════════
+const gameStats = JSON.parse(localStorage.getItem('chess_game_stats') || '{"wins":0,"losses":0,"draws":0,"totalGames":0,"bestStreak":0,"currentStreak":0,"accuracyHistory":[],"gamesLog":[]}');
+
+function saveGameStats() {
+    // Keep only last 50 games in log
+    if (gameStats.gamesLog.length > 50) gameStats.gamesLog = gameStats.gamesLog.slice(-50);
+    if (gameStats.accuracyHistory.length > 50) gameStats.accuracyHistory = gameStats.accuracyHistory.slice(-50);
+    localStorage.setItem('chess_game_stats', JSON.stringify(gameStats));
+    updateStatsDisplay();
+}
+
+function recordGameResult(result, aiLvl) {
+    gameStats.totalGames++;
+    if (result === 'win') {
+        gameStats.wins++;
+        gameStats.currentStreak++;
+        if (gameStats.currentStreak > gameStats.bestStreak) gameStats.bestStreak = gameStats.currentStreak;
+    } else if (result === 'loss') {
+        gameStats.losses++;
+        gameStats.currentStreak = 0;
+    } else {
+        gameStats.draws++;
+    }
+    gameStats.gamesLog.push({
+        date: new Date().toISOString().split('T')[0],
+        result,
+        aiLevel: aiLvl,
+        moves: moveHistory.length,
+        timestamp: Date.now()
+    });
+    saveGameStats();
+}
+
+function updateStatsDisplay() {
+    const el = document.getElementById('statsDisplay');
+    if (!el) return;
+    const winRate = gameStats.totalGames > 0 ? Math.round((gameStats.wins / gameStats.totalGames) * 100) : 0;
+    el.innerHTML = `
+        <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;font-size:0.72rem;">
+            <span style="color:#4ade80;">W: <strong>${gameStats.wins}</strong></span>
+            <span style="color:#ef4444;">L: <strong>${gameStats.losses}</strong></span>
+            <span style="color:#94a3b8;">D: <strong>${gameStats.draws}</strong></span>
+            <span style="color:var(--accent);">Win: <strong>${winRate}%</strong></span>
+            <span style="color:#fbbf24;">🔥 ${gameStats.currentStreak}</span>
+        </div>`;
+}
+
+// Hook game end to track result
+const _origGameResult = gameResultEl;
+if (gameResultEl) {
+    const observer = new MutationObserver(() => {
+        const text = gameResultEl.textContent.toLowerCase();
+        if (gameResultEl.classList.contains('hidden') || !text) return;
+        if (text.includes('checkmate')) {
+            const sideWon = text.includes('white wins') ? 'w' : 'b';
+            recordGameResult(sideWon !== aiColor ? 'win' : 'loss', aiLevel);
+        } else if (text.includes('draw') || text.includes('stalemate') || text.includes('repetition') || text.includes('insufficient')) {
+            recordGameResult('draw', aiLevel);
+        } else if (text.includes('lost on time')) {
+            const sideWon = text.includes('white wins') ? 'w' : 'b';
+            recordGameResult(sideWon !== aiColor ? 'win' : 'loss', aiLevel);
+        }
+    });
+    observer.observe(gameResultEl, { childList: true, characterData: true, subtree: true });
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY PUZZLE OF THE DAY
+// ═══════════════════════════════════════════════════
+const DAILY_PUZZLES = [
+    { fen: 'r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 0 1', solution: ['Nf6+', 'gxf6', 'Bxf7#'], title: 'Smothered Discovery', difficulty: '⭐⭐⭐' },
+    { fen: '6k1/pp4p1/2p5/2bp4/8/P5Pb/1P3rrP/2BRRK2 b - - 0 1', solution: ['Rf1+'], title: 'Heavy Piece Tactics', difficulty: '⭐⭐' },
+    { fen: 'r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1', solution: ['Bc5+', 'Kxe5', 'Qf4#'], title: 'King Hunt', difficulty: '⭐⭐⭐' },
+    { fen: 'r3k2r/ppp2Npp/1b5n/4P2b/2B1P3/8/PPP2PPP/RNB1K2R b KQkq - 0 1', solution: ['Kd7'], title: 'Defensive Resource', difficulty: '⭐⭐' },
+    { fen: '6k1/5ppp/8/8/8/8/r4PPP/3R2K1 w - - 0 1', solution: ['Rd8+', 'Kh7'], title: 'Back Rank Pressure', difficulty: '⭐' },
+    { fen: 'r1bqkbnr/pppppppp/2n5/1B6/4P3/8/PPPP1PPP/RNBQK1NR b KQkq - 0 2', solution: ['a6', 'Ba4', 'Nf6'], title: 'Morphy Defense', difficulty: '⭐' },
+    { fen: '2kr3r/p1ppqpb1/bn2Pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQ - 0 1', solution: ['Qxe6'], title: 'Complex Tactics', difficulty: '⭐⭐⭐' },
+    { fen: '1rb4r/pkPp3p/1b1P3n/1Q6/N3Pp2/8/P1P3PP/7K w - - 0 1', solution: ['Qd5+', 'Ka6', 'cxb8=N#'], title: 'Underpromotion Mate', difficulty: '⭐⭐⭐⭐' },
+    { fen: 'r3r1k1/pppb1ppp/8/3pN3/3Pn1q1/2PB4/PP4PP/R1BQ1RK1 w - - 0 1', solution: ['Nxf7'], title: 'Discovered Attack', difficulty: '⭐⭐' },
+    { fen: '4rrk1/pppb4/7p/3P2pq/3Q4/2P5/PP3RPP/R5K1 w - - 0 1', solution: ['Qxg7#'], title: 'Queen Sacrifice', difficulty: '⭐' },
+    { fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', solution: ['c3', 'd6', 'd4'], title: 'Italian Opening Theory', difficulty: '⭐' },
+    { fen: 'r2qr1k1/ppp2ppp/2np1n2/2b1p1B1/2B1P1b1/2NP1N2/PPP2PPP/R2QR1K1 w - - 0 1', solution: ['Nd5'], title: 'Central Knight Domination', difficulty: '⭐⭐' },
+    { fen: '8/8/p1p5/1p5p/1P5k/8/PPP2K1P/8 w - - 0 1', solution: ['a4'], title: 'Pawn Breakthrough', difficulty: '⭐⭐' },
+    { fen: '5rk1/1p3ppp/pq3b2/8/8/1P1Q1N2/P4PPP/3R2K1 w - - 0 1', solution: ['Qd6'], title: 'Queen Trade Advantage', difficulty: '⭐⭐' },
+    { fen: 'r4rk1/pp3ppp/2p2n2/3p4/3P4/2PB1N2/PP3PPP/R4RK1 w - - 0 1', solution: ['Bxh7+', 'Nxh7', 'Ng5'], title: 'Classic Greek Gift', difficulty: '⭐⭐⭐' },
+    { fen: 'r1bq1rk1/pppnn1pp/4p3/3pPp2/1b1P4/2NB3N/PPP2PPP/R1BQK2R w KQ - 0 1', solution: ['Bxf5'], title: 'Pawn Storm Preparation', difficulty: '⭐⭐' },
+    { fen: '8/5pk1/6p1/8/p3P3/8/1r3PPP/4R1K1 w - - 0 1', solution: ['e5'], title: 'Passed Pawn Push', difficulty: '⭐' },
+    { fen: 'r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 0 5', solution: ['cxd5', 'exd5', 'Bg5'], title: 'QGD Exchange Variation', difficulty: '⭐⭐' },
+    { fen: '8/8/8/2K5/8/1Q6/1k6/8 w - - 0 1', solution: ['Qb4+'], title: 'King & Queen Technique', difficulty: '⭐' },
+    { fen: 'r2q1rk1/pp2ppbp/2p2np1/6B1/3PP1b1/2N2N2/PPQ2PPP/R3KB1R w KQ - 0 1', solution: ['e5', 'Nd5', 'Qd2'], title: 'Central Pawn Advance', difficulty: '⭐⭐' },
+];
+
+function getDailyPuzzle() {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    return DAILY_PUZZLES[dayOfYear % DAILY_PUZZLES.length];
+}
+
+function loadDailyPuzzle() {
+    const puzzle = getDailyPuzzle();
+    chess = new Chess(puzzle.fen);
+    moveHistory = [];
+    currentMoveIdx = -1;
+    buildBoard();
+    updateMovesUI();
+    
+    const hud = document.getElementById('coachHintHud');
+    const hintText = document.getElementById('coachHintText');
+    if (hud) hud.classList.add('active');
+    if (hintText) {
+        hintText.innerHTML = `<div style="margin-bottom:4px;"><strong style="color:#fbbf24;">🧩 Daily Puzzle: ${puzzle.title}</strong> <span style="font-size:0.7rem;">${puzzle.difficulty}</span></div>
+            <div style="font-size:0.8rem;color:#94a3b8;">Find the best continuation. ${chess.turn() === 'w' ? 'White' : 'Black'} to move.</div>`;
+    }
+    
+    // Track if user solves it
+    window._dailyPuzzleSolution = puzzle.solution;
+    window._dailyPuzzleStep = 0;
+    window._dailyPuzzleActive = true;
+}
+
+// Inject daily puzzle button into the Play tab
+const newGameBtn = document.getElementById('newGameBtn');
+if (newGameBtn) {
+    const puzzleBtn = document.createElement('button');
+    puzzleBtn.className = 'btn btn-secondary w-100';
+    puzzleBtn.style.cssText = 'margin-top:0.4rem;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;';
+    puzzleBtn.innerHTML = '🧩 Daily Puzzle';
+    puzzleBtn.addEventListener('click', loadDailyPuzzle);
+    newGameBtn.parentNode.insertBefore(puzzleBtn, newGameBtn.nextSibling);
+}
+
+// ═══════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+    // Don't fire shortcuts when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    
+    switch(e.key) {
+        case 'ArrowLeft':
+            e.preventDefault();
+            document.getElementById('btnPrev')?.click();
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            document.getElementById('btnNext')?.click();
+            break;
+        case 'Home':
+            e.preventDefault();
+            document.getElementById('btnStart')?.click();
+            break;
+        case 'End':
+            e.preventDefault();
+            document.getElementById('btnEnd')?.click();
+            break;
+        case 'f':
+        case 'F':
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                document.getElementById('flipBoard')?.click();
+            }
+            break;
+        case 'n':
+        case 'N':
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                document.getElementById('newGameBtn')?.click();
+            }
+            break;
+        case 'a':
+        case 'A':
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                document.getElementById('btnAnalyzeGame')?.click();
+            }
+            break;
+        case 'Escape':
+            if (window.isReviewMode) {
+                window.coachExitReview?.();
+            }
+            break;
+        case '?':
+            showShortcutsHelp();
+            break;
+    }
+});
+
+function showShortcutsHelp() {
+    const existing = document.getElementById('shortcutsOverlay');
+    if (existing) { existing.remove(); return; }
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'shortcutsOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+        <div style="background:var(--glass-bg,#1e1e28);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.5rem;max-width:380px;width:90%;color:var(--text,#e8ecf4);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="margin:0;font-size:1rem;">⌨️ Keyboard Shortcuts</h3>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;">
+                ${[
+                    ['← →', 'Navigate moves'],
+                    ['Home / End', 'First / Last move'],
+                    ['F', 'Flip board'],
+                    ['N', 'New game'],
+                    ['A', 'Analyze game'],
+                    ['Esc', 'Exit coach mode'],
+                    ['?', 'Toggle this help'],
+                ].map(([key,desc]) => `<div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">${desc}</span><kbd style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:1px 8px;border-radius:4px;font-size:0.75rem;font-family:monospace;">${key}</kbd></div>`).join('')}
+            </div>
+        </div>`;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+
+// ═══════════════════════════════════════════════════
+// STATS DISPLAY — Inject below New Game button
+// ═══════════════════════════════════════════════════
+if (newGameBtn) {
+    const statsDiv = document.createElement('div');
+    statsDiv.id = 'statsDisplay';
+    statsDiv.style.cssText = 'margin-top:0.5rem;padding:6px;background:rgba(0,0,0,0.15);border-radius:8px;border:1px solid rgba(255,255,255,0.04);';
+    newGameBtn.parentNode.insertBefore(statsDiv, newGameBtn.nextSibling.nextSibling);
+    updateStatsDisplay();
+}
+
+// ═══════════════════════════════════════════════════
+// MATERIAL BALANCE BAR
+// ═══════════════════════════════════════════════════
+function calculateMaterialBalance() {
+    const values = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+    const board = chess.board();
+    let white = 0, black = 0;
+    for (const row of board) {
+        for (const sq of row) {
+            if (!sq) continue;
+            const val = values[sq.type] || 0;
+            if (sq.color === 'w') white += val;
+            else black += val;
+        }
+    }
+    return { white, black, advantage: white - black };
+}
+
+// Update captured pieces to show material advantage
+const _origBuildBoard = buildBoard;
+buildBoard = function() {
+    _origBuildBoard();
+    const bal = calculateMaterialBalance();
+    const advEl = document.getElementById('materialAdvantage');
+    if (!advEl) {
+        const label = document.createElement('span');
+        label.id = 'materialAdvantage';
+        label.style.cssText = 'font-size:0.7rem;font-weight:700;margin-left:4px;';
+        const whiteCapt = document.getElementById('capturedWhite');
+        if (whiteCapt) whiteCapt.parentElement?.appendChild(label);
+    }
+    const mEl = document.getElementById('materialAdvantage');
+    if (mEl) {
+        if (bal.advantage > 0) mEl.textContent = `+${bal.advantage}`;
+        else if (bal.advantage < 0) mEl.textContent = `${bal.advantage}`;
+        else mEl.textContent = '=';
+        mEl.style.color = bal.advantage > 0 ? '#4ade80' : bal.advantage < 0 ? '#ef4444' : '#94a3b8';
+    }
+};
+
+

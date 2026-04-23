@@ -8,8 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
-MAX_PARALLEL = 1  # Deploy up to 1 project at once (Avoid CF 429 Too Many Requests)
-
+MAX_PARALLEL = 4  # Increased parallelism to optimize deploy speed
 
 def get_projects_config():
     try:
@@ -40,68 +39,61 @@ def run_build_and_deploy(project_key, config):
         return repo_name, False
 
     # 2. Deploy
-    try:
-        dist_path = full_cwd / out_dir
-        if not dist_path.exists():
-            dist_path = full_cwd
+    dist_path = full_cwd / out_dir
+    if not dist_path.exists():
+        dist_path = full_cwd
 
-        deploy_cmd = [
-            "npx", "wrangler@latest", "pages", "deploy",
-            str(dist_path),
-            "--project-name", repo_name,
-            "--branch", "main",
-            "--commit-dirty=true"
-        ]
+    deploy_cmd = [
+        "wrangler", "pages", "deploy",
+        str(dist_path),
+        "--project-name", repo_name,
+        "--branch", "main",
+        "--commit-dirty=true"
+    ]
 
-        result = subprocess.run(deploy_cmd, check=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                timeout=120)
-                                
-        # Attempt to map custom domain if specified in config
-        custom_domain = config.get("custom_domain")
-        if custom_domain:
-            try:
-                domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
-                subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
-            except Exception:
-                pass
-                
-        print(f"✅ [{repo_name}] Deployed successfully")
-        return repo_name, True
-    except subprocess.CalledProcessError as e:
-        stderr = e.stderr.decode() if e.stderr else ""
-        # Wrangler auto-creates projects, but may fail on first attempt
-        if "could not find" in stderr.lower() or "project not found" in stderr.lower():
-            print(f"⚠️ [{repo_name}] Project not found on Cloudflare — creating it...")
-            try:
-                create_cmd = [
-                    "npx", "wrangler@latest", "pages", "project", "create",
-                    repo_name, "--production-branch", "main"
-                ]
-                subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
-                # Retry deploy
-                result = subprocess.run(deploy_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
-                
-                # Attempt to map custom domain if specified in config
-                custom_domain = config.get("custom_domain")
-                if custom_domain:
+    max_retries = 8
+    for attempt in range(max_retries):
+        try:
+            result = subprocess.run(deploy_cmd, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    timeout=120)
+            print(f"✅ [{repo_name}] Deployed successfully")
+            return repo_name, True
+            
+        except subprocess.CalledProcessError as e:
+            stderr = e.stderr.decode() if e.stderr else ""
+            stdout = e.stdout.decode() if e.stdout else ""
+            
+            # Auto-create if project missing
+            if "could not find" in stderr.lower() or "project not found" in stderr.lower():
+                if attempt == 0:
+                    print(f"⚠️ [{repo_name}] Project not found on Cloudflare — creating it...")
                     try:
-                        domain_cmd = ["npx", "wrangler@latest", "pages", "domain", "add", custom_domain, "--project-name", repo_name]
-                        subprocess.run(domain_cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
-                    except Exception:
-                        pass
-                
-                print(f"✅ [{repo_name}] Created & deployed successfully")
-                return repo_name, True
-            except Exception as e2:
-                print(f"❌ [{repo_name}] Create+deploy failed: {e2}")
-                return repo_name, False
-        stdout = e.stdout.decode() if e.stdout else ""
-        print(f"❌ [{repo_name}] Deploy failed.\nSTDOUT:\n{stdout[-1000:]}\nSTDERR:\n{stderr[-1000:]}")
-        return repo_name, False
-    except subprocess.TimeoutExpired:
-        print(f"❌ [{repo_name}] Deploy timed out after 120s")
-        return repo_name, False
+                        create_cmd = [
+                            "npx", "wrangler@3", "pages", "project", "create",
+                            repo_name, "--production-branch", "main"
+                        ]
+                        subprocess.run(create_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+                        continue # Native retry
+                    except Exception as e2:
+                        print(f"❌ [{repo_name}] Create failed: {e2}")
+                        return repo_name, False
+                        
+            # Cloudflare 429 Rate Limit Interception
+            if "429" in stderr or "too many requests" in stderr.lower() or "429 Too Many Requests" in stdout:
+                if attempt < max_retries - 1:
+                    wait_time = 120 + (attempt * 60)
+                    print(f"⏳ [{repo_name}] Rate limited by Cloudflare (429). Sleeping for {wait_time}s...")
+                    import time
+                    time.sleep(wait_time)
+                    continue
+                    
+            print(f"❌ [{repo_name}] Deploy failed.\nSTDOUT:\n{stdout[-1000:]}\nSTDERR:\n{stderr[-1000:]}")
+            return repo_name, False
+            
+        except subprocess.TimeoutExpired:
+            print(f"❌ [{repo_name}] Deploy timed out after 120s")
+            return repo_name, False
 
 
 def main():
@@ -146,8 +138,6 @@ def main():
                 success += 1
             else:
                 failed.append(name)
-            import time
-            time.sleep(10)
 
     print(f"\n📊 Deployment: {success}/{len(deploy_list)} succeeded")
     if failed:
@@ -157,3 +147,4 @@ def main():
 if __name__ == "__main__":
     main()
 # Trigger Redeploy
+# Trigger redeploy

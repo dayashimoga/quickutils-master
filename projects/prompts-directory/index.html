@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompts Directory | QuickUtils</title>
+    <meta name="description" content="AI prompt templates for ChatGPT, Claude, and more">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://prompts.quickutils.top/">
+    <meta property="og:title" content="Prompts Directory | QuickUtils">
+    <meta property="og:description" content="AI prompt templates for ChatGPT, Claude, and more">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        :root {
+            --bg: #0a0a0f; --bg-card: rgba(18,18,30,0.85); --text: #e8e8f0;
+            --text-muted: #888; --accent: #6366f1; --border: rgba(255,255,255,0.08);
+            --radius: 12px;
+        }
+        [data-theme="light"] {
+            --bg: #f5f5fa; --bg-card: rgba(255,255,255,0.9); --text: #1a1a2e;
+            --text-muted: #666; --border: rgba(0,0,0,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        .navbar { background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0.75rem 0; position:sticky; top:0; z-index:100; }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; }
+        .brand { text-decoration:none; color:var(--text); font-weight:700; font-size:1.25rem; }
+        .hero { text-align:center; padding:2.5rem 0 1.5rem; }
+        .hero h1 { font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; margin-bottom:0.5rem; }
+        .hero p { color:var(--text-muted); max-width:500px; margin:0 auto; }
+        .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .controls { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; align-items:center; }
+        .controls input, .controls select { padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:0.9rem; outline:none; }
+        .controls input { flex:1; min-width:200px; }
+        .controls input:focus, .controls select:focus { border-color:var(--accent); }
+        .count-badge { padding:0.4rem 1rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:20px; font-size:0.85rem; color:var(--accent); font-weight:600; }
+        .dir-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin:1.5rem 0 3rem; }
+        .dir-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; transition:all 0.3s; }
+        .dir-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(99,102,241,0.15); }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.5rem; }
+        .card-top h3 { font-size:1rem; font-weight:600; }
+        .card-top a { color:var(--text); text-decoration:none; }
+        .card-top a:hover { color:var(--accent); }
+        .card-category { font-size:0.7rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.1); color:var(--accent); white-space:nowrap; }
+        .card-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
+        .card-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+        .badge { padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; }
+        .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+        .footer a { color:var(--accent); text-decoration:none; }
+        .empty-state { text-align:center; padding:3rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">💬 Prompts Directory</a>
+    <a href="https://quickutils.top" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">QuickUtils ↗</a>
+</div></nav>
+
+<main class="container">
+    <section class="hero">
+        <h1>💬 <span class="gradient-text">Prompts Directory</span></h1>
+        <p>AI prompt templates for ChatGPT, Claude, and more</p>
+    </section>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search 55 entries..." oninput="filterCards()">
+        <select id="categoryFilter" onchange="filterCards()">
+            <option value="">All Categories</option>
+            <option value="Art">Art</option>
+            <option value="Branding">Branding</option>
+            <option value="Career">Career</option>
+            <option value="Data Science">Data Science</option>
+            <option value="Design">Design</option>
+            <option value="Development">Development</option>
+            <option value="Education">Education</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Writing">Writing</option>
+        </select>
+        <span class="count-badge" id="countBadge">55 items</span>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-copywriting" target="_blank" rel="noopener">ChatGPT Copywriting Master</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">High-conversion sales copy prompts for SaaS and E-commerce.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-v6-cinematic" target="_blank" rel="noopener">Midjourney Cinematic Lighting</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for ultra-realistic cinematic photography.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sdxl-anime-style" target="_blank" rel="noopener">SDXL Anime Master</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Highly detailed anime style prompts for Stable Diffusion XL.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-code-architect" target="_blank" rel="noopener">Claude Coding Assistant</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Deep architecture and refactoring prompts for Claude 3.5.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=prompt-engineering-guide" target="_blank" rel="noopener">Chain-of-Thought Master</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Prompts for complex logical reasoning and multi-step tasks.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=dalle3-flat-illustration" target="_blank" rel="noopener">DALL-E 3 Flat Illustration</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Clean, colorful flat design illustrations for web headers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-python-debug" target="_blank" rel="noopener">Python Debugger Pro</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Specific prompts for finding race conditions and memory leaks.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Branding">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-logo-design" target="_blank" rel="noopener">Minimalist Logo Prompt</a></h3>
+                <span class="card-category">Branding</span>
+            </div>
+            <p class="card-desc">Vector-style minimalist corporate logo prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-legal-analyzer" target="_blank" rel="noopener">Legal Document Review</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Prompts for summarizing T&C and identifying red flags.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-language-tutor" target="_blank" rel="noopener">Personal Language Tutor</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Immersion-style conversation prompts for language learning.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-architecture" target="_blank" rel="noopener">Modern Interior Design</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for photorealistic interior architecture renders.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-ui-ux-mockups" target="_blank" rel="noopener">UI/UX Layout Generator</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Interface layout and wireframe inspiration prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-seo-optimizer" target="_blank" rel="noopener">SEO Keyword Strategist</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">Prompts for generating semantic keywords and content clusters.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Writing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-creative-writer" target="_blank" rel="noopener">Creative Fiction Writing</a></h3>
+                <span class="card-category">Writing</span>
+            </div>
+            <p class="card-desc">Detailed world-building and character development prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-fashion" target="_blank" rel="noopener">Avant-Garde Fashion Design</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">High-fashion concept photography prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-textile-patterns" target="_blank" rel="noopener">Seamless Textile Patterns</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for creating repeatable fabric and wall patterns.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-excel-formula" target="_blank" rel="noopener">Excel Formula Wizard</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Natural language to complex Excel/Sheets formula prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-research-summary" target="_blank" rel="noopener">Scientific Paper Summarizer</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Prompts for extracting key data points from academic papers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-poster-art" target="_blank" rel="noopener">1970s Retro Poster Art</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Vintage grainy poster style prompts for aesthetic prints.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-pixel-art" target="_blank" rel="noopener">Game Pixel Art Prompt</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Indie game sprite and landscape pixel art prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-email-cold" target="_blank" rel="noopener">Cold Outreach Cold Email</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">High-response rate B2B sales email prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-sql-expert" target="_blank" rel="noopener">SQL Query Optimization</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Prompts for optimizing complex joins and index usage.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-food-photo" target="_blank" rel="noopener">Gourmet Food Photography</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">Prompts for high-end restaurant menu photography.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-character-sheet" target="_blank" rel="noopener">D&D Character Concept</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Front, side, and back view character design prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Career">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-interview-prep" target="_blank" rel="noopener">FAANG Interview Coach</a></h3>
+                <span class="card-category">Career</span>
+            </div>
+            <p class="card-desc">Mock interview and behavioral question prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Data Science">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-data-cleaner" target="_blank" rel="noopener">Pandas Data Cleaning</a></h3>
+                <span class="card-category">Data Science</span>
+            </div>
+            <p class="card-desc">Prompts for handling missing values and outlier detection.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-street-photo" target="_blank" rel="noopener">Cyberpunk Street Photography</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Neon-lit night street photography prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-watercolor-landscape" target="_blank" rel="noopener">Traditional Watercolor Art</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Soft, bleeding watercolor landscape prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-blog-ideas" target="_blank" rel="noopener">Viral Blog Headline Generator</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">Click-worthy headline and outline prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-typescript-strict" target="_blank" rel="noopener">Strict TS Type Master</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Prompts for complex generic and utility type definitions.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-v6-cinematic-pro-1" target="_blank" rel="noopener">Midjourney Cinematic Lighting Pro 1</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for ultra-realistic cinematic photography.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sdxl-anime-style-pro-2" target="_blank" rel="noopener">SDXL Anime Master Pro 2</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Highly detailed anime style prompts for Stable Diffusion XL.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-code-architect-pro-3" target="_blank" rel="noopener">Claude Coding Assistant Pro 3</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Deep architecture and refactoring prompts for Claude 3.5.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=prompt-engineering-guide-pro-4" target="_blank" rel="noopener">Chain-of-Thought Master Pro 4</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Prompts for complex logical reasoning and multi-step tasks.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=dalle3-flat-illustration-pro-5" target="_blank" rel="noopener">DALL-E 3 Flat Illustration Pro 5</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Clean, colorful flat design illustrations for web headers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-python-debug-pro-6" target="_blank" rel="noopener">Python Debugger Pro Pro 6</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Specific prompts for finding race conditions and memory leaks.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Branding">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-logo-design-pro-7" target="_blank" rel="noopener">Minimalist Logo Prompt Pro 7</a></h3>
+                <span class="card-category">Branding</span>
+            </div>
+            <p class="card-desc">Vector-style minimalist corporate logo prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-legal-analyzer-pro-8" target="_blank" rel="noopener">Legal Document Review Pro 8</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Prompts for summarizing T&C and identifying red flags.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-language-tutor-pro-9" target="_blank" rel="noopener">Personal Language Tutor Pro 9</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Immersion-style conversation prompts for language learning.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-architecture-pro-10" target="_blank" rel="noopener">Modern Interior Design Pro 10</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for photorealistic interior architecture renders.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-ui-ux-mockups-pro-11" target="_blank" rel="noopener">UI/UX Layout Generator Pro 11</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Interface layout and wireframe inspiration prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-seo-optimizer-pro-12" target="_blank" rel="noopener">SEO Keyword Strategist Pro 12</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">Prompts for generating semantic keywords and content clusters.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Writing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-creative-writer-pro-13" target="_blank" rel="noopener">Creative Fiction Writing Pro 13</a></h3>
+                <span class="card-category">Writing</span>
+            </div>
+            <p class="card-desc">Detailed world-building and character development prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-fashion-pro-14" target="_blank" rel="noopener">Avant-Garde Fashion Design Pro 14</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">High-fashion concept photography prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-textile-patterns-pro-15" target="_blank" rel="noopener">Seamless Textile Patterns Pro 15</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Prompts for creating repeatable fabric and wall patterns.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-excel-formula-pro-16" target="_blank" rel="noopener">Excel Formula Wizard Pro 16</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Natural language to complex Excel/Sheets formula prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-research-summary-pro-17" target="_blank" rel="noopener">Scientific Paper Summarizer Pro 17</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Prompts for extracting key data points from academic papers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-poster-art-pro-18" target="_blank" rel="noopener">1970s Retro Poster Art Pro 18</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Vintage grainy poster style prompts for aesthetic prints.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-pixel-art-pro-19" target="_blank" rel="noopener">Game Pixel Art Prompt Pro 19</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Indie game sprite and landscape pixel art prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-email-cold-pro-20" target="_blank" rel="noopener">Cold Outreach Cold Email Pro 20</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">High-response rate B2B sales email prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-sql-expert-pro-21" target="_blank" rel="noopener">SQL Query Optimization Pro 21</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Prompts for optimizing complex joins and index usage.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Marketing">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=midjourney-food-photo-pro-22" target="_blank" rel="noopener">Gourmet Food Photography Pro 22</a></h3>
+                <span class="card-category">Marketing</span>
+            </div>
+            <p class="card-desc">Prompts for high-end restaurant menu photography.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Art">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=sd-character-sheet-pro-23" target="_blank" rel="noopener">D&D Character Concept Pro 23</a></h3>
+                <span class="card-category">Art</span>
+            </div>
+            <p class="card-desc">Front, side, and back view character design prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Career">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=chatgpt-interview-prep-pro-24" target="_blank" rel="noopener">FAANG Interview Coach Pro 24</a></h3>
+                <span class="card-category">Career</span>
+            </div>
+            <p class="card-desc">Mock interview and behavioral question prompts.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Data Science">
+            <div class="card-top">
+                <h3><a href="https://google.com/search?q=claude-data-cleaner-pro-25" target="_blank" rel="noopener">Pandas Data Cleaning Pro 25</a></h3>
+                <span class="card-category">Data Science</span>
+            </div>
+            <p class="card-desc">Prompts for handling missing values and outlier detection.</p>
+            <div class="card-badges"></div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><div class="container">
+    <p>Part of <a href="https://quickutils.top">QuickUtils</a> — 90+ free web tools</p>
+</div></footer>
+
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('categoryFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.dir-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardCat = card.dataset.category;
+        const show = text.includes(q) && (cat === '' || cardCat === cat);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('countBadge').textContent = visible + ' items';
+}
+</script>
+</body>
+</html>

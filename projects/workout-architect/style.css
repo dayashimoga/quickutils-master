@@ -1,2 +1,7 @@
-/* style.css */
+/* Workout Architect + Rhythm Trainer Styles */
 .feature-page { margin-top: var(--space-xl); min-height: 70vh; }
+.hit-feedback{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:800;opacity:0;transition:all 0.3s;pointer-events:none}
+.hit-feedback.perfect{opacity:1;color:#10b981;text-shadow:0 0 20px rgba(16,185,129,0.5)}
+.hit-feedback.good{opacity:1;color:#f59e0b;text-shadow:0 0 20px rgba(245,158,11,0.5)}
+.hit-feedback.miss{opacity:1;color:#ef4444;text-shadow:0 0 20px rgba(239,68,68,0.5)}
+.btn-sm{padding:0.3rem 0.6rem;font-size:0.8rem}

@@ -10,12 +10,13 @@ let s = {
     isRunning: false,
     timer: null,
     settings: {
-        pomodoro: 25,
-        shortBreak: 5,
-        longBreak: 15,
-        interval: 4,
-        autoStartBreak: false,
-        autoStartPomodoro: false
+        pomodoro: parseInt(localStorage.getItem('focus_set_pomo')) || 25,
+        shortBreak: parseInt(localStorage.getItem('focus_set_sb')) || 5,
+        longBreak: parseInt(localStorage.getItem('focus_set_lb')) || 15,
+        interval: parseInt(localStorage.getItem('focus_set_int')) || 4,
+        autoStartBreak: localStorage.getItem('focus_set_ab') === 'true',
+        autoStartPomodoro: localStorage.getItem('focus_set_ap') === 'true',
+        strictMode: localStorage.getItem('focus_strict') === 'true'
     },
     stats: {
         pomodoros: parseInt(localStorage.getItem('focus_pomodoros') || '0'),
@@ -116,8 +117,21 @@ function toggleTimer() {
     if (s.isRunning) {
         clearInterval(s.timer);
         startBtn.innerHTML = '▶ Start';
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(e => console.log(e));
+        }
     } else {
         startBtn.innerHTML = '⏸ Pause';
+        
+        if (s.mode === 'pomodoro' && s.settings.strictMode) {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            }
+        }
+
         s.timer = setInterval(() => {
             s.timeLeft--;
             if (s.timeLeft <= 0) completeSession();
@@ -263,28 +277,65 @@ function renderGamification() {
     const pct = Math.min(100, (s.stats.dailyPomos / goal) * 100);
     $('#dailyGoalProgress').style.width = pct + '%';
     
-    // Render chart
-    const chart = $('#weeklyChart');
-    const labels = $('#weeklyLabels');
-    chart.innerHTML = ''; labels.innerHTML = '';
-    
-    // Last 7 days
-    let maxVal = 1;
-    const historyData = [];
+    // Render chart via Chart.js
+    const historyLabels = [];
+    const historyVals = [];
     for (let i=6; i>=0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dStr = d.toISOString().split('T')[0];
         const val = s.stats.history[dStr] || 0;
-        historyData.push({ day: d.toLocaleDateString('en-US',{weekday:'short'}).substring(0,1), val });
-        if (val > maxVal) maxVal = val;
+        historyLabels.push(d.toLocaleDateString('en-US',{weekday:'short'}));
+        historyVals.push(val);
     }
-    
-    historyData.forEach(hd => {
-        const hPct = (hd.val / maxVal) * 100;
-        chart.innerHTML += `<div style="width:12%; background:var(--accent); height:${hPct}%; border-radius:2px 2px 0 0; min-height:4px;" title="${hd.val} pomodoros"></div>`;
-        labels.innerHTML += `<span>${hd.day}</span>`;
-    });
+
+    const canvas = document.getElementById('weeklyChartCanvas');
+    if (canvas && typeof Chart !== 'undefined') {
+        const ctx = canvas.getContext('2d');
+        if (window._weeklyChartInst) window._weeklyChartInst.destroy();
+        window._weeklyChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: historyLabels,
+                datasets: [{
+                    label: 'Pomodoros',
+                    data: historyVals,
+                    backgroundColor: historyVals.map((v,i) => i === 6 ? 'rgba(239,68,68,0.7)' : 'rgba(99,102,241,0.5)'),
+                    borderColor: historyVals.map((v,i) => i === 6 ? '#ef4444' : '#6366f1'),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 600, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15,23,42,0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#94a3b8',
+                        cornerRadius: 8,
+                        bodyFont: { family: 'Inter', size: 12 },
+                        callbacks: { label: ctx => `${ctx.parsed.y} pomodoro${ctx.parsed.y !== 1 ? 's' : ''}` }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#64748b', font: { family: 'Inter', size: 10 }, stepSize: 1 },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    x: {
+                        ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
     
     // Render achievements
     const achGrid = $('#achGrid');
@@ -347,6 +398,16 @@ $('#saveSettings').addEventListener('click', () => {
     s.settings.interval = parseInt($('#setInterval').value) || 4;
     s.settings.autoStartBreak = $('#setAutoBreak').checked;
     s.settings.autoStartPomodoro = $('#setAutoPomodoro').checked;
+    s.settings.strictMode = $('#setStrictMode').checked;
+    
+    localStorage.setItem('focus_set_pomo', s.settings.pomodoro);
+    localStorage.setItem('focus_set_sb', s.settings.shortBreak);
+    localStorage.setItem('focus_set_lb', s.settings.longBreak);
+    localStorage.setItem('focus_set_int', s.settings.interval);
+    localStorage.setItem('focus_set_ab', s.settings.autoStartBreak);
+    localStorage.setItem('focus_set_ap', s.settings.autoStartPomodoro);
+    localStorage.setItem('focus_strict', s.settings.strictMode);
+
     $('#settingsModal').classList.remove('active');
     switchMode(s.mode); // Reset timer with new settings
 });
@@ -359,11 +420,32 @@ $('#themeBtn').addEventListener('click', () => {
     localStorage.setItem('theme', html.dataset.theme);
 });
 
+// Strict Mode Tab Switching Interceptor
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && s.isRunning && s.mode === 'pomodoro' && s.settings.strictMode) {
+        if (Notification.permission === "granted") {
+            new Notification("🚨 Get back to work!", {
+                body: "Strict Mode is enabled. Don't switch tabs while the Pomodoro is running!"
+            });
+        }
+        alarmSound.currentTime = 0;
+        alarmSound.play().catch(e=>console.log("Audio play failed on hidden:", e));
+    }
+});
+
 // Init
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.dataset.theme = 'light';
     $('#themeBtn').textContent = '☀️';
 }
+$('#setPomodoro').value = s.settings.pomodoro;
+$('#setShortBreak').value = s.settings.shortBreak;
+$('#setLongBreak').value = s.settings.longBreak;
+$('#setInterval').value = s.settings.interval;
+$('#setAutoBreak').checked = s.settings.autoStartBreak;
+$('#setAutoPomodoro').checked = s.settings.autoStartPomodoro;
+$('#setStrictMode').checked = s.settings.strictMode;
+
 switchMode('pomodoro');
 renderTasks();
 updateStats();

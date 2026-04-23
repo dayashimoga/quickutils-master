@@ -26,10 +26,17 @@ def apply():
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             
             # Resilient static site build command caching all dependencies and global core styles
+            if project_id.endswith("-directory"):
+                build_cmd = f"python ../../scripts/build_directory.py --type {project_id.replace('-directory', '')} && mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true"
+            elif project_id == "market-digest":
+                build_cmd = "python fetch_data.py && mkdir -p dist && cp -r * dist/ || true"
+            else:
+                build_cmd = "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true"
+                
             arch[project_id] = {
                 "directory": f"projects/{project_id}",
                 "repo_name": project_id,
-                "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+                "build_command": build_cmd,
                 "destination_dir": "dist",
                 "custom_domain": domain,
                 "root_dir": f"projects/{project_id}"
@@ -46,6 +53,12 @@ def apply():
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             if domain:
                 arch[arch_key]["custom_domain"] = domain
+                
+        # Update build commands for directories and market-digest
+        if arch_key.endswith("-directory"):
+            arch[arch_key]["build_command"] = f"python ../../scripts/build_directory.py --type {arch_key.replace('-directory', '')} && mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true"
+        elif arch_key == "market-digest":
+            arch[arch_key]["build_command"] = "python fetch_data.py && mkdir -p dist && cp -r * dist/ || true"
                 
     # 4. Dump back to original terraform/projects.json safely
     with open(TERRAFORM_PROJECTS_DEST, "w", encoding="utf-8") as f:

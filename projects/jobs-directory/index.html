@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs Directory | QuickUtils</title>
+    <meta name="description" content="Remote developer job boards and career resources">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://jobs.quickutils.top/">
+    <meta property="og:title" content="Jobs Directory | QuickUtils">
+    <meta property="og:description" content="Remote developer job boards and career resources">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        :root {
+            --bg: #0a0a0f; --bg-card: rgba(18,18,30,0.85); --text: #e8e8f0;
+            --text-muted: #888; --accent: #6366f1; --border: rgba(255,255,255,0.08);
+            --radius: 12px;
+        }
+        [data-theme="light"] {
+            --bg: #f5f5fa; --bg-card: rgba(255,255,255,0.9); --text: #1a1a2e;
+            --text-muted: #666; --border: rgba(0,0,0,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        .navbar { background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0.75rem 0; position:sticky; top:0; z-index:100; }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; }
+        .brand { text-decoration:none; color:var(--text); font-weight:700; font-size:1.25rem; }
+        .hero { text-align:center; padding:2.5rem 0 1.5rem; }
+        .hero h1 { font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; margin-bottom:0.5rem; }
+        .hero p { color:var(--text-muted); max-width:500px; margin:0 auto; }
+        .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .controls { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; align-items:center; }
+        .controls input, .controls select { padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:0.9rem; outline:none; }
+        .controls input { flex:1; min-width:200px; }
+        .controls input:focus, .controls select:focus { border-color:var(--accent); }
+        .count-badge { padding:0.4rem 1rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:20px; font-size:0.85rem; color:var(--accent); font-weight:600; }
+        .dir-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin:1.5rem 0 3rem; }
+        .dir-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; transition:all 0.3s; }
+        .dir-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(99,102,241,0.15); }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.5rem; }
+        .card-top h3 { font-size:1rem; font-weight:600; }
+        .card-top a { color:var(--text); text-decoration:none; }
+        .card-top a:hover { color:var(--accent); }
+        .card-category { font-size:0.7rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.1); color:var(--accent); white-space:nowrap; }
+        .card-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
+        .card-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+        .badge { padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; }
+        .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+        .footer a { color:var(--accent); text-decoration:none; }
+        .empty-state { text-align:center; padding:3rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">💼 Jobs Directory</a>
+    <a href="https://quickutils.top" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">QuickUtils ↗</a>
+</div></nav>
+
+<main class="container">
+    <section class="hero">
+        <h1>💼 <span class="gradient-text">Jobs Directory</span></h1>
+        <p>Remote developer job boards and career resources</p>
+    </section>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search 55 entries..." oninput="filterCards()">
+        <select id="categoryFilter" onchange="filterCards()">
+            <option value="">All Categories</option>
+            <option value="Corporate">Corporate</option>
+            <option value="Crypto">Crypto</option>
+            <option value="Design">Design</option>
+            <option value="Diversity">Diversity</option>
+            <option value="Freelance">Freelance</option>
+            <option value="General">General</option>
+            <option value="Government">Government</option>
+            <option value="Graduate">Graduate</option>
+            <option value="Internship">Internship</option>
+            <option value="Language Specific">Language Specific</option>
+            <option value="Professional">Professional</option>
+            <option value="Remote">Remote</option>
+            <option value="Startup">Startup</option>
+            <option value="Tech">Tech</option>
+        </select>
+        <span class="count-badge" id="countBadge">55 items</span>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+
+        <div class="dir-card" data-category="Remote">
+            <div class="card-top">
+                <h3><a href="https://weworkremotely.com/" target="_blank" rel="noopener">We Work Remotely</a></h3>
+                <span class="card-category">Remote</span>
+            </div>
+            <p class="card-desc">The largest remote work community in the world.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://hn.algolia.com/?query=Who%20is%20hiring" target="_blank" rel="noopener">HN 'Who is Hiring'</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Monthly thread of top Silicon Valley tech jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Startup">
+            <div class="card-top">
+                <h3><a href="https://otta.com/" target="_blank" rel="noopener">Otta</a></h3>
+                <span class="card-category">Startup</span>
+            </div>
+            <p class="card-desc">Personalized job discovery for the best tech startups.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Remote">
+            <div class="card-top">
+                <h3><a href="https://remoteok.com/" target="_blank" rel="noopener">Remote OK</a></h3>
+                <span class="card-category">Remote</span>
+            </div>
+            <p class="card-desc">Global remote jobs in tech, design, and marketing.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Startup">
+            <div class="card-top">
+                <h3><a href="https://wellfound.com/" target="_blank" rel="noopener">Wellfound (AngelList)</a></h3>
+                <span class="card-category">Startup</span>
+            </div>
+            <p class="card-desc">Hire and get hired at startups and top crypto firms.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Professional">
+            <div class="card-top">
+                <h3><a href="https://www.flexjobs.com/" target="_blank" rel="noopener">FlexJobs</a></h3>
+                <span class="card-category">Professional</span>
+            </div>
+            <p class="card-desc">Verified remote and flexible jobs across 50 categories.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Corporate">
+            <div class="card-top">
+                <h3><a href="https://www.glassdoor.com/" target="_blank" rel="noopener">Glassdoor</a></h3>
+                <span class="card-category">Corporate</span>
+            </div>
+            <p class="card-desc">Job listings with verified salary and culture data.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="General">
+            <div class="card-top">
+                <h3><a href="https://www.indeed.com/" target="_blank" rel="noopener">Indeed</a></h3>
+                <span class="card-category">General</span>
+            </div>
+            <p class="card-desc">The most visited job board globally for all sectors.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Professional">
+            <div class="card-top">
+                <h3><a href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener">LinkedIn Jobs</a></h3>
+                <span class="card-category">Professional</span>
+            </div>
+            <p class="card-desc">Professional networking and job matching.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Crypto">
+            <div class="card-top">
+                <h3><a href="https://cryptojobslist.com/" target="_blank" rel="noopener">Crypto Jobs List</a></h3>
+                <span class="card-category">Crypto</span>
+            </div>
+            <p class="card-desc">Niche jobs in Web3, DeFi, and NFTs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://dribbble.com/jobs" target="_blank" rel="noopener">Dribbble Jobs</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Exclusive design roles at top agencies and startups.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://www.python.org/jobs/" target="_blank" rel="noopener">Python.org Jobs</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Official Python software foundation job board.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://jsremotely.com/" target="_blank" rel="noopener">JS Remotely</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Curated JavaScript and Frontend remote jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://rubyonremote.com/" target="_blank" rel="noopener">Ruby On Remote</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Remote Ruby and Rails developer jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://golangprojects.com/" target="_blank" rel="noopener">Golang Projects</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Exclusive remote jobs for Go developers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://www.dice.com/" target="_blank" rel="noopener">Dice</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Tech-focused job search engine for contractors.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://hired.com/" target="_blank" rel="noopener">Hired</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Reverse job board where companies apply to you.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.toptal.com/" target="_blank" rel="noopener">Toptal</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">Exclusive network of the top 3% of freelancers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.upwork.com/" target="_blank" rel="noopener">Upwork</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">The world's work marketplace for freelancers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.fiverr.com/" target="_blank" rel="noopener">Fiverr Pro</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">High-end marketplace for creative services.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://www.behance.net/joblist" target="_blank" rel="noopener">Behance Jobs</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Adobe's creative portfolio and job network.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Graduate">
+            <div class="card-top">
+                <h3><a href="https://www.gradcracker.com/" target="_blank" rel="noopener">Gradcracker</a></h3>
+                <span class="card-category">Graduate</span>
+            </div>
+            <p class="card-desc">STEM careers for graduates and interns in the UK.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Internship">
+            <div class="card-top">
+                <h3><a href="https://www.internships.com/" target="_blank" rel="noopener">Internships.com</a></h3>
+                <span class="card-category">Internship</span>
+            </div>
+            <p class="card-desc">The largest database of student internships.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Diversity">
+            <div class="card-top">
+                <h3><a href="https://remotewoman.com/" target="_blank" rel="noopener">Remote Woman</a></h3>
+                <span class="card-category">Diversity</span>
+            </div>
+            <p class="card-desc">Female-friendly remote jobs from top companies.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Diversity">
+            <div class="card-top">
+                <h3><a href="https://powertofly.com/" target="_blank" rel="noopener">PowerToFly</a></h3>
+                <span class="card-category">Diversity</span>
+            </div>
+            <p class="card-desc">Connects multi-cultural talent to tech roles.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://authenticjobs.com/" target="_blank" rel="noopener">Authentic Jobs</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Jobs for designers, developers, and creatives.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://www.smashingmagazine.com/jobs/" target="_blank" rel="noopener">Smashing Jobs</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Quality job postings from Smashing Magazine.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Startup">
+            <div class="card-top">
+                <h3><a href="https://www.crunchboard.com/" target="_blank" rel="noopener">CrunchBoard</a></h3>
+                <span class="card-category">Startup</span>
+            </div>
+            <p class="card-desc">The official job board of TechCrunch.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Government">
+            <div class="card-top">
+                <h3><a href="https://www.usajobs.gov/" target="_blank" rel="noopener">USAJobs (IT)</a></h3>
+                <span class="card-category">Government</span>
+            </div>
+            <p class="card-desc">Official US government tech job listings.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Remote">
+            <div class="card-top">
+                <h3><a href="https://nodesk.co/" target="_blank" rel="noopener">NoDesk</a></h3>
+                <span class="card-category">Remote</span>
+            </div>
+            <p class="card-desc">Curated collection of remote work and tech jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://hn.algolia.com/?query=Who%20is%20hiring" target="_blank" rel="noopener">HN 'Who is Hiring' Pro 1</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Monthly thread of top Silicon Valley tech jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Startup">
+            <div class="card-top">
+                <h3><a href="https://otta.com/" target="_blank" rel="noopener">Otta Pro 2</a></h3>
+                <span class="card-category">Startup</span>
+            </div>
+            <p class="card-desc">Personalized job discovery for the best tech startups.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Remote">
+            <div class="card-top">
+                <h3><a href="https://remoteok.com/" target="_blank" rel="noopener">Remote OK Pro 3</a></h3>
+                <span class="card-category">Remote</span>
+            </div>
+            <p class="card-desc">Global remote jobs in tech, design, and marketing.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Startup">
+            <div class="card-top">
+                <h3><a href="https://wellfound.com/" target="_blank" rel="noopener">Wellfound (AngelList) Pro 4</a></h3>
+                <span class="card-category">Startup</span>
+            </div>
+            <p class="card-desc">Hire and get hired at startups and top crypto firms.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Professional">
+            <div class="card-top">
+                <h3><a href="https://www.flexjobs.com/" target="_blank" rel="noopener">FlexJobs Pro 5</a></h3>
+                <span class="card-category">Professional</span>
+            </div>
+            <p class="card-desc">Verified remote and flexible jobs across 50 categories.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Corporate">
+            <div class="card-top">
+                <h3><a href="https://www.glassdoor.com/" target="_blank" rel="noopener">Glassdoor Pro 6</a></h3>
+                <span class="card-category">Corporate</span>
+            </div>
+            <p class="card-desc">Job listings with verified salary and culture data.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="General">
+            <div class="card-top">
+                <h3><a href="https://www.indeed.com/" target="_blank" rel="noopener">Indeed Pro 7</a></h3>
+                <span class="card-category">General</span>
+            </div>
+            <p class="card-desc">The most visited job board globally for all sectors.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Professional">
+            <div class="card-top">
+                <h3><a href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener">LinkedIn Jobs Pro 8</a></h3>
+                <span class="card-category">Professional</span>
+            </div>
+            <p class="card-desc">Professional networking and job matching.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Crypto">
+            <div class="card-top">
+                <h3><a href="https://cryptojobslist.com/" target="_blank" rel="noopener">Crypto Jobs List Pro 9</a></h3>
+                <span class="card-category">Crypto</span>
+            </div>
+            <p class="card-desc">Niche jobs in Web3, DeFi, and NFTs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://dribbble.com/jobs" target="_blank" rel="noopener">Dribbble Jobs Pro 10</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Exclusive design roles at top agencies and startups.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://www.python.org/jobs/" target="_blank" rel="noopener">Python.org Jobs Pro 11</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Official Python software foundation job board.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://jsremotely.com/" target="_blank" rel="noopener">JS Remotely Pro 12</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Curated JavaScript and Frontend remote jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://rubyonremote.com/" target="_blank" rel="noopener">Ruby On Remote Pro 13</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Remote Ruby and Rails developer jobs.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Language Specific">
+            <div class="card-top">
+                <h3><a href="https://golangprojects.com/" target="_blank" rel="noopener">Golang Projects Pro 14</a></h3>
+                <span class="card-category">Language Specific</span>
+            </div>
+            <p class="card-desc">Exclusive remote jobs for Go developers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://www.dice.com/" target="_blank" rel="noopener">Dice Pro 15</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Tech-focused job search engine for contractors.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Tech">
+            <div class="card-top">
+                <h3><a href="https://hired.com/" target="_blank" rel="noopener">Hired Pro 16</a></h3>
+                <span class="card-category">Tech</span>
+            </div>
+            <p class="card-desc">Reverse job board where companies apply to you.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.toptal.com/" target="_blank" rel="noopener">Toptal Pro 17</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">Exclusive network of the top 3% of freelancers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.upwork.com/" target="_blank" rel="noopener">Upwork Pro 18</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">The world's work marketplace for freelancers.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Freelance">
+            <div class="card-top">
+                <h3><a href="https://www.fiverr.com/" target="_blank" rel="noopener">Fiverr Pro Pro 19</a></h3>
+                <span class="card-category">Freelance</span>
+            </div>
+            <p class="card-desc">High-end marketplace for creative services.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://www.behance.net/joblist" target="_blank" rel="noopener">Behance Jobs Pro 20</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Adobe's creative portfolio and job network.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Graduate">
+            <div class="card-top">
+                <h3><a href="https://www.gradcracker.com/" target="_blank" rel="noopener">Gradcracker Pro 21</a></h3>
+                <span class="card-category">Graduate</span>
+            </div>
+            <p class="card-desc">STEM careers for graduates and interns in the UK.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Internship">
+            <div class="card-top">
+                <h3><a href="https://www.internships.com/" target="_blank" rel="noopener">Internships.com Pro 22</a></h3>
+                <span class="card-category">Internship</span>
+            </div>
+            <p class="card-desc">The largest database of student internships.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Diversity">
+            <div class="card-top">
+                <h3><a href="https://remotewoman.com/" target="_blank" rel="noopener">Remote Woman Pro 23</a></h3>
+                <span class="card-category">Diversity</span>
+            </div>
+            <p class="card-desc">Female-friendly remote jobs from top companies.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Diversity">
+            <div class="card-top">
+                <h3><a href="https://powertofly.com/" target="_blank" rel="noopener">PowerToFly Pro 24</a></h3>
+                <span class="card-category">Diversity</span>
+            </div>
+            <p class="card-desc">Connects multi-cultural talent to tech roles.</p>
+            <div class="card-badges"></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://authenticjobs.com/" target="_blank" rel="noopener">Authentic Jobs Pro 25</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Jobs for designers, developers, and creatives.</p>
+            <div class="card-badges"></div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><div class="container">
+    <p>Part of <a href="https://quickutils.top">QuickUtils</a> — 90+ free web tools</p>
+</div></footer>
+
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('categoryFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.dir-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardCat = card.dataset.category;
+        const show = text.includes(q) && (cat === '' || cardCat === cat);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('countBadge').textContent = visible + ' items';
+}
+</script>
+</body>
+</html>

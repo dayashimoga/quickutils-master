@@ -17,6 +17,7 @@ def test_generate_social_images_logic():
         
         # Mocking Image behavior
         mock_img = MagicMock()
+        mock_img.resize.return_value = mock_img
         mock_new.return_value = mock_img
         
         from scripts.generate_social_images import main

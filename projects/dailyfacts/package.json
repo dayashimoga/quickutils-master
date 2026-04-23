@@ -1,0 +1,56 @@
+{
+    "name": "dailyfacts",
+    "version": "1.0.0",
+    "description": "Daily WTF Facts — 1000+ mind-blowing facts refreshed daily. Static site with search, categories, and fun tools.",
+    "main": "scripts/build.js",
+    "scripts": {
+        "build": "node scripts/build.js",
+        "dev": "npx serve dist -l 3001",
+        "test": "jest --runInBand --verbose --forceExit --detectOpenHandles 2>&1",
+        "test:coverage": "jest --runInBand --coverage --verbose --forceExit --detectOpenHandles 2>&1"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "roots": [
+            "<rootDir>/tests"
+        ],
+        "testMatch": [
+            "**/*.test.js"
+        ],
+        "collectCoverageFrom": [
+            "scripts/**/*.js",
+            "src/js/**/*.js",
+            "src/tools/**/*.js"
+        ],
+        "coverageDirectory": "coverage",
+        "coverageReporters": [
+            "text",
+            "text-summary",
+            "lcov"
+        ],
+        "coverageThreshold": {
+            "global": {
+                "branches": 90,
+                "functions": 90,
+                "lines": 90,
+                "statements": 90
+            }
+        }
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
+        "cheerio": "^1.1.0"
+    },
+    "keywords": [
+        "facts",
+        "wtf-facts",
+        "daily-facts",
+        "trivia",
+        "static-site"
+    ],
+    "license": "MIT",
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

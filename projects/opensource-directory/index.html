@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Source Directory | QuickUtils</title>
+    <meta name="description" content="Discover popular open source projects and libraries">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://opensource.quickutils.top/">
+    <meta property="og:title" content="Open Source Directory | QuickUtils">
+    <meta property="og:description" content="Discover popular open source projects and libraries">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        :root {
+            --bg: #0a0a0f; --bg-card: rgba(18,18,30,0.85); --text: #e8e8f0;
+            --text-muted: #888; --accent: #6366f1; --border: rgba(255,255,255,0.08);
+            --radius: 12px;
+        }
+        [data-theme="light"] {
+            --bg: #f5f5fa; --bg-card: rgba(255,255,255,0.9); --text: #1a1a2e;
+            --text-muted: #666; --border: rgba(0,0,0,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        .navbar { background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0.75rem 0; position:sticky; top:0; z-index:100; }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; }
+        .brand { text-decoration:none; color:var(--text); font-weight:700; font-size:1.25rem; }
+        .hero { text-align:center; padding:2.5rem 0 1.5rem; }
+        .hero h1 { font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; margin-bottom:0.5rem; }
+        .hero p { color:var(--text-muted); max-width:500px; margin:0 auto; }
+        .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .controls { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; align-items:center; }
+        .controls input, .controls select { padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:0.9rem; outline:none; }
+        .controls input { flex:1; min-width:200px; }
+        .controls input:focus, .controls select:focus { border-color:var(--accent); }
+        .count-badge { padding:0.4rem 1rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:20px; font-size:0.85rem; color:var(--accent); font-weight:600; }
+        .dir-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin:1.5rem 0 3rem; }
+        .dir-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; transition:all 0.3s; }
+        .dir-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(99,102,241,0.15); }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.5rem; }
+        .card-top h3 { font-size:1rem; font-weight:600; }
+        .card-top a { color:var(--text); text-decoration:none; }
+        .card-top a:hover { color:var(--accent); }
+        .card-category { font-size:0.7rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.1); color:var(--accent); white-space:nowrap; }
+        .card-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
+        .card-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+        .badge { padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; }
+        .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+        .footer a { color:var(--accent); text-decoration:none; }
+        .empty-state { text-align:center; padding:3rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">📦 Open Source Directory</a>
+    <a href="https://quickutils.top" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">QuickUtils ↗</a>
+</div></nav>
+
+<main class="container">
+    <section class="hero">
+        <h1>📦 <span class="gradient-text">Open Source Directory</span></h1>
+        <p>Discover popular open source projects and libraries</p>
+    </section>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search 74 entries..." oninput="filterCards()">
+        <select id="categoryFilter" onchange="filterCards()">
+            <option value="">All Categories</option>
+            <option value="Analytics">Analytics</option>
+            <option value="Automation">Automation</option>
+            <option value="CMS & Website Builders">CMS & Website Builders</option>
+            <option value="CRM">CRM</option>
+            <option value="Communication">Communication</option>
+            <option value="Database / Backend">Database / Backend</option>
+            <option value="Design">Design</option>
+            <option value="DevOps">DevOps</option>
+            <option value="Developer Tools">Developer Tools</option>
+            <option value="Development">Development</option>
+            <option value="File Storage">File Storage</option>
+            <option value="Free Software">Free Software</option>
+            <option value="Machine Learning">Machine Learning</option>
+            <option value="Media">Media</option>
+            <option value="Operating Systems">Operating Systems</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Project Management">Project Management</option>
+            <option value="Security / Passwords">Security / Passwords</option>
+        </select>
+        <span class="count-badge" id="countBadge">74 items</span>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://code.visualstudio.com/" target="_blank" rel="noopener">Visual Studio Code</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">A powerful, lightweight source code editor with built-in Git support.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Operating Systems">
+            <div class="card-top">
+                <h3><a href="https://www.kernel.org/" target="_blank" rel="noopener">Linux Kernel</a></h3>
+                <span class="card-category">Operating Systems</span>
+            </div>
+            <p class="card-desc">The open-source core of the Linux operating system.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://reactjs.org/" target="_blank" rel="noopener">React</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">A declarative, efficient, and flexible JavaScript library for building UI.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://vuejs.org/" target="_blank" rel="noopener">Vue.js</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">The Progressive JavaScript Framework.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Developer Tools">
+            <div class="card-top">
+                <h3><a href="https://www.djangoproject.com/" target="_blank" rel="noopener">Django</a></h3>
+                <span class="card-category">Developer Tools</span>
+            </div>
+            <p class="card-desc">The Web framework for perfectionists with deadlines.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Developer Tools">
+            <div class="card-top">
+                <h3><a href="https://flask.palletsprojects.com/" target="_blank" rel="noopener">Flask</a></h3>
+                <span class="card-category">Developer Tools</span>
+            </div>
+            <p class="card-desc">A lightweight WSGI web application framework.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Developer Tools">
+            <div class="card-top">
+                <h3><a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener">FastAPI</a></h3>
+                <span class="card-category">Developer Tools</span>
+            </div>
+            <p class="card-desc">A modern, fast web framework for building APIs with Python.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="DevOps">
+            <div class="card-top">
+                <h3><a href="https://www.docker.com/" target="_blank" rel="noopener">Docker CE</a></h3>
+                <span class="card-category">DevOps</span>
+            </div>
+            <p class="card-desc">Empowers developers to build, share, and run applications anywhere.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="DevOps">
+            <div class="card-top">
+                <h3><a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a></h3>
+                <span class="card-category">DevOps</span>
+            </div>
+            <p class="card-desc">Production-Grade Container Scheduling and Management.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="DevOps">
+            <div class="card-top">
+                <h3><a href="https://www.ansible.com/" target="_blank" rel="noopener">Ansible</a></h3>
+                <span class="card-category">DevOps</span>
+            </div>
+            <p class="card-desc">A radically simple IT automation system.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Database / Backend">
+            <div class="card-top">
+                <h3><a href="https://www.postgresql.org/" target="_blank" rel="noopener">PostgreSQL</a></h3>
+                <span class="card-category">Database / Backend</span>
+            </div>
+            <p class="card-desc">The world's most advanced open source relational database.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Database / Backend">
+            <div class="card-top">
+                <h3><a href="https://www.mysql.com/" target="_blank" rel="noopener">MySQL</a></h3>
+                <span class="card-category">Database / Backend</span>
+            </div>
+            <p class="card-desc">The world's most popular open source database.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Database / Backend">
+            <div class="card-top">
+                <h3><a href="https://redis.io/" target="_blank" rel="noopener">Redis</a></h3>
+                <span class="card-category">Database / Backend</span>
+            </div>
+            <p class="card-desc">An in-memory data structure store, used as a database, cache.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Database / Backend">
+            <div class="card-top">
+                <h3><a href="https://www.mongodb.com/" target="_blank" rel="noopener">MongoDB</a></h3>
+                <span class="card-category">Database / Backend</span>
+            </div>
+            <p class="card-desc">A document-based, distributed database built for modern developers.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="DevOps">
+            <div class="card-top">
+                <h3><a href="https://nginx.org/" target="_blank" rel="noopener">NGINX</a></h3>
+                <span class="card-category">DevOps</span>
+            </div>
+            <p class="card-desc">A high performance load balancer, web server, and reverse proxy.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="DevOps">
+            <div class="card-top">
+                <h3><a href="https://httpd.apache.org/" target="_blank" rel="noopener">Apache HTTP Server</a></h3>
+                <span class="card-category">DevOps</span>
+            </div>
+            <p class="card-desc">The number one HTTP server on the Internet.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CMS & Website Builders">
+            <div class="card-top">
+                <h3><a href="https://wordpress.org/" target="_blank" rel="noopener">WordPress</a></h3>
+                <span class="card-category">CMS & Website Builders</span>
+            </div>
+            <p class="card-desc">A free and open-source content management system.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CMS & Website Builders">
+            <div class="card-top">
+                <h3><a href="https://ghost.org/" target="_blank" rel="noopener">Ghost</a></h3>
+                <span class="card-category">CMS & Website Builders</span>
+            </div>
+            <p class="card-desc">The creator economy platform.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CMS & Website Builders">
+            <div class="card-top">
+                <h3><a href="https://strapi.io/" target="_blank" rel="noopener">Strapi</a></h3>
+                <span class="card-category">CMS & Website Builders</span>
+            </div>
+            <p class="card-desc">The leading open-source headless CMS.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="File Storage">
+            <div class="card-top">
+                <h3><a href="https://nextcloud.com/" target="_blank" rel="noopener">Nextcloud</a></h3>
+                <span class="card-category">File Storage</span>
+            </div>
+            <p class="card-desc">A safe home for all your data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="File Storage">
+            <div class="card-top">
+                <h3><a href="https://owncloud.com/" target="_blank" rel="noopener">ownCloud</a></h3>
+                <span class="card-category">File Storage</span>
+            </div>
+            <p class="card-desc">Your files, where you need them.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://jellyfin.org/" target="_blank" rel="noopener">Jellyfin</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">The Free Software Media System.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://www.videolan.org/vlc/" target="_blank" rel="noopener">VLC Media Player</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">A free and open source cross-platform multimedia player.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://obsproject.com/" target="_blank" rel="noopener">OBS Studio</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">Free and open source software for video recording and live streaming.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://www.blender.org/" target="_blank" rel="noopener">Blender</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">The free and open source 3D creation suite.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://www.gimp.org/" target="_blank" rel="noopener">GIMP</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">The Free and Open Source Image Editor.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://inkscape.org/" target="_blank" rel="noopener">Inkscape</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">Draw Freely.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://github.com/audacity/audacity" target="_blank" rel="noopener">Audacity</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">Free, open source, cross-platform audio software.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Media">
+            <div class="card-top">
+                <h3><a href="https://kdenlive.org/" target="_blank" rel="noopener">Kdenlive</a></h3>
+                <span class="card-category">Media</span>
+            </div>
+            <p class="card-desc">Open source video editor.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://www.libreoffice.org/" target="_blank" rel="noopener">LibreOffice</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">A powerful office suite.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Security / Passwords">
+            <div class="card-top">
+                <h3><a href="https://bitwarden.com/" target="_blank" rel="noopener">Bitwarden</a></h3>
+                <span class="card-category">Security / Passwords</span>
+            </div>
+            <p class="card-desc">Open source password manager.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Security / Passwords">
+            <div class="card-top">
+                <h3><a href="https://keepassxc.org/" target="_blank" rel="noopener">KeePassXC</a></h3>
+                <span class="card-category">Security / Passwords</span>
+            </div>
+            <p class="card-desc">Cross-Platform Password Manager.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Communication">
+            <div class="card-top">
+                <h3><a href="https://signal.org/" target="_blank" rel="noopener">Signal</a></h3>
+                <span class="card-category">Communication</span>
+            </div>
+            <p class="card-desc">Speak Freely.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Communication">
+            <div class="card-top">
+                <h3><a href="https://mattermost.com/" target="_blank" rel="noopener">Mattermost</a></h3>
+                <span class="card-category">Communication</span>
+            </div>
+            <p class="card-desc">Open source alternative to Slack.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Communication">
+            <div class="card-top">
+                <h3><a href="https://jitsi.org/" target="_blank" rel="noopener">Jitsi Meet</a></h3>
+                <span class="card-category">Communication</span>
+            </div>
+            <p class="card-desc">Secure, Simple and Scalable Video Conferences.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Communication">
+            <div class="card-top">
+                <h3><a href="https://element.io/" target="_blank" rel="noopener">Element</a></h3>
+                <span class="card-category">Communication</span>
+            </div>
+            <p class="card-desc">Secure and independent communication.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://plausible.io/" target="_blank" rel="noopener">Plausible Analytics</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">Simple and privacy-friendly alternative to Google Analytics.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://matomo.org/" target="_blank" rel="noopener">Matomo</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">Google Analytics alternative that protects your data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://posthog.com/" target="_blank" rel="noopener">PostHog</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">The open-source product OS.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://grafana.com/" target="_blank" rel="noopener">Grafana</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">The open observability platform.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://www.metabase.com/" target="_blank" rel="noopener">Metabase</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">The easiest way for people to get answers from their data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://redash.io/" target="_blank" rel="noopener">Redash</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">Make Sense of Your Data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Analytics">
+            <div class="card-top">
+                <h3><a href="https://superset.apache.org/" target="_blank" rel="noopener">Apache Superset</a></h3>
+                <span class="card-category">Analytics</span>
+            </div>
+            <p class="card-desc">A modern data exploration and visualization platform.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://cal.com/" target="_blank" rel="noopener">Cal.com</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">The open-source Calendly alternative.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Automation">
+            <div class="card-top">
+                <h3><a href="https://n8n.io/" target="_blank" rel="noopener">n8n</a></h3>
+                <span class="card-category">Automation</span>
+            </div>
+            <p class="card-desc">Free and open fair-code licensed node based Workflow Automation Tool.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Automation">
+            <div class="card-top">
+                <h3><a href="https://github.com/huginn/huginn" target="_blank" rel="noopener">Huginn</a></h3>
+                <span class="card-category">Automation</span>
+            </div>
+            <p class="card-desc">Create agents that monitor and act on your behalf.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://www.getoutline.com/" target="_blank" rel="noopener">Outline</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">The fastest wiki and knowledge base for growing teams.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://www.appsmith.com/" target="_blank" rel="noopener">Appsmith</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">Build internal tools faster.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Development">
+            <div class="card-top">
+                <h3><a href="https://nocodb.com/" target="_blank" rel="noopener">NocoDB</a></h3>
+                <span class="card-category">Development</span>
+            </div>
+            <p class="card-desc">The Open Source Airtable Alternative.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://penpot.app/" target="_blank" rel="noopener">Penpot</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">The open-source design & prototyping platform.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://www.videolan.org/vlc/" target="_blank" rel="noopener">VLC Media Player</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">VLC is a free and open source cross-platform multimedia player and framework.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://obsproject.com/" target="_blank" rel="noopener">OBS Studio</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">Free and open source software for video recording and live streaming.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://rufus.ie/" target="_blank" rel="noopener">Rufus</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">Rufus is a utility that helps format and create bootable USB flash drives, such as USB keys/pendrives.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://www.7-zip.org/" target="_blank" rel="noopener">7-Zip</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">A file archiver with a high compression ratio.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://krita.org/" target="_blank" rel="noopener">Krita</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">Professional free and open source painting program.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://handbrake.fr/" target="_blank" rel="noopener">HandBrake</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">An open source video transcoder available for Linux, Mac, and Windows.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://filezilla-project.org/" target="_blank" rel="noopener">FileZilla</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">The free FTP solution for both client and server.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://www.qbittorrent.org/" target="_blank" rel="noopener">qBittorrent</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">A free software alternative to µTorrent.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Free Software">
+            <div class="card-top">
+                <h3><a href="https://brave.com/" target="_blank" rel="noopener">Brave Browser</a></h3>
+                <span class="card-category">Free Software</span>
+            </div>
+            <p class="card-desc">Secure, fast, and private web browser with ad blocker.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CRM">
+            <div class="card-top">
+                <h3><a href="https://suitecrm.com/" target="_blank" rel="noopener">SuiteCRM</a></h3>
+                <span class="card-category">CRM</span>
+            </div>
+            <p class="card-desc">Enterprise-ready open source CRM alternative to Salesforce with sales automation and customer management.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CRM">
+            <div class="card-top">
+                <h3><a href="https://www.espocrm.com/" target="_blank" rel="noopener">EspoCRM</a></h3>
+                <span class="card-category">CRM</span>
+            </div>
+            <p class="card-desc">Free self-hosted CRM with sales automation, email tracking, and customizable dashboards.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CRM">
+            <div class="card-top">
+                <h3><a href="https://twenty.com/" target="_blank" rel="noopener">Twenty</a></h3>
+                <span class="card-category">CRM</span>
+            </div>
+            <p class="card-desc">Modern open-source CRM with a beautiful interface, designed as a Salesforce alternative for startups.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CRM">
+            <div class="card-top">
+                <h3><a href="https://erxes.io/" target="_blank" rel="noopener">Erxes</a></h3>
+                <span class="card-category">CRM</span>
+            </div>
+            <p class="card-desc">Open-source experience operating system with CRM, marketing automation, and customer engagement tools.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="CRM">
+            <div class="card-top">
+                <h3><a href="https://www.monicahq.com/" target="_blank" rel="noopener">Monica</a></h3>
+                <span class="card-category">CRM</span>
+            </div>
+            <p class="card-desc">Personal relationship management system for tracking interactions with friends and family.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Machine Learning">
+            <div class="card-top">
+                <h3><a href="https://mlflow.org/" target="_blank" rel="noopener">MLflow</a></h3>
+                <span class="card-category">Machine Learning</span>
+            </div>
+            <p class="card-desc">Open-source platform for managing the end-to-end machine learning lifecycle including tracking and deployment.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Machine Learning">
+            <div class="card-top">
+                <h3><a href="https://labelstud.io/" target="_blank" rel="noopener">Label Studio</a></h3>
+                <span class="card-category">Machine Learning</span>
+            </div>
+            <p class="card-desc">Multi-type data labeling and annotation tool for NLP, computer vision, and audio ML projects.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Machine Learning">
+            <div class="card-top">
+                <h3><a href="https://haystack.deepset.ai/" target="_blank" rel="noopener">Haystack</a></h3>
+                <span class="card-category">Machine Learning</span>
+            </div>
+            <p class="card-desc">Open-source NLP framework for building production-ready LLM applications and semantic search pipelines.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Machine Learning">
+            <div class="card-top">
+                <h3><a href="https://opencv.org/" target="_blank" rel="noopener">OpenCV</a></h3>
+                <span class="card-category">Machine Learning</span>
+            </div>
+            <p class="card-desc">Leading open-source computer vision library with 2500+ algorithms for image and video analysis.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Machine Learning">
+            <div class="card-top">
+                <h3><a href="https://scikit-learn.org/" target="_blank" rel="noopener">scikit-learn</a></h3>
+                <span class="card-category">Machine Learning</span>
+            </div>
+            <p class="card-desc">Simple and efficient machine learning library for Python with classification, regression, and clustering.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Project Management">
+            <div class="card-top">
+                <h3><a href="https://www.openproject.org/" target="_blank" rel="noopener">OpenProject</a></h3>
+                <span class="card-category">Project Management</span>
+            </div>
+            <p class="card-desc">Open-source project management software with Gantt charts, agile boards, and time tracking.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Project Management">
+            <div class="card-top">
+                <h3><a href="https://taiga.io/" target="_blank" rel="noopener">Taiga</a></h3>
+                <span class="card-category">Project Management</span>
+            </div>
+            <p class="card-desc">Free open-source project management tool for agile developers and designers with kanban and scrum.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Project Management">
+            <div class="card-top">
+                <h3><a href="https://wekan.github.io/" target="_blank" rel="noopener">WeKan</a></h3>
+                <span class="card-category">Project Management</span>
+            </div>
+            <p class="card-desc">Open-source kanban board with drag-and-drop task management for teams and individuals.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Project Management">
+            <div class="card-top">
+                <h3><a href="https://www.focalboard.com/" target="_blank" rel="noopener">Focalboard</a></h3>
+                <span class="card-category">Project Management</span>
+            </div>
+            <p class="card-desc">Self-hosted project management tool with boards, lists, and calendar views for task organization.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Project Management">
+            <div class="card-top">
+                <h3><a href="https://plane.so/" target="_blank" rel="noopener">Plane</a></h3>
+                <span class="card-category">Project Management</span>
+            </div>
+            <p class="card-desc">Open-source project tracking tool with issue management, cycles, and modules for software teams.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><div class="container">
+    <p>Part of <a href="https://quickutils.top">QuickUtils</a> — 90+ free web tools</p>
+</div></footer>
+
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('categoryFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.dir-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardCat = card.dataset.category;
+        const show = text.includes(q) && (cat === '' || cardCat === cat);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('countBadge').textContent = visible + ' items';
+}
+</script>
+</body>
+</html>

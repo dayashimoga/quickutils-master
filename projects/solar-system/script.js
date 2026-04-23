@@ -21,38 +21,15 @@
     let isDragging = false, dragStart = {x:0,y:0}, camStart = {x:0,y:0};
     const MIN_ZOOM = 0.0000001, MAX_ZOOM = 20000;
 
-    // Controls
-    const ctrl = document.createElement('div');
-    ctrl.innerHTML = `
-        <div style="position:fixed;top:70px;left:15px;background:rgba(0,0,0,0.75);padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);z-index:10;backdrop-filter:blur(10px);">
-            <p style="margin:0 0 8px;color:#fff;font-weight:700;font-size:14px;">🔭 Space Explorer</p>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button id="z00" class="btn btn-secondary btn-sm" style="border-color: #8b5cf6;">Cosmic Web</button>
-                <button id="z0" class="btn btn-secondary btn-sm">Supercluster</button>
-                <button id="z1" class="btn btn-secondary btn-sm">Milky Way</button>
-                <button id="z2" class="btn btn-secondary btn-sm">Constellations</button>
-                <button id="z3" class="btn btn-secondary btn-sm">Solar System</button>
-            </div>
-            <p id="zoomInfo" style="margin:8px 0 0;font-size:11px;color:#888;">Scroll to zoom • Drag to pan</p>
-        </div>
-        <div id="infoPanel" class="info-panel" style="position:fixed;top:70px;right:-400px;transition:right 0.3s;z-index:10;background:rgba(15,15,26,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.15);padding:24px;border-radius:12px;color:#fff;width:300px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-            <h2 id="ipTitle" style="margin:0 0 10px;font-size:1.5rem;display:flex;align-items:center;gap:8px;">Star</h2>
-            <div id="ipType" style="color:#aaccff;font-size:0.9rem;margin-bottom:15px;font-weight:600;">Type</div>
-            <div class="info-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:15px;">
-                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Magnitude</div><div id="ipMag" style="font-weight:600;">0</div></div>
-                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Planets</div><div id="ipPlanets" style="font-weight:600;">0</div></div>
-                <div><div style="font-size:0.7rem;color:#888;text-transform:uppercase;">Distance</div><div id="ipDist" style="font-weight:600;">Unknown</div></div>
-            </div>
-            <button id="ipClose" class="btn btn-primary" style="margin-top:20px;width:100%;">Close Panel</button>
-        </div>`;
-    document.body.appendChild(ctrl);
+    // Removed dynamic HUD creation in favor of index.html mainHUD
 
     $('#z00').onclick = () => { zoomTarget = 0.00000002; cxTarget = 0; cyTarget = 0; };
     $('#z0').onclick = () => { zoomTarget = 0.000003; cxTarget=0; cyTarget=0; };
     $('#z1').onclick = () => { zoomTarget = 0.0008; cxTarget=-100000; cyTarget=50000; };
     $('#z2').onclick = () => { zoomTarget = 0.03; cxTarget=0; cyTarget=0; };
     $('#z3').onclick = () => { zoomTarget = 1.0; cxTarget=0; cyTarget=0; };
-    $('#ipClose').onclick = () => { $('#infoPanel').style.right = '-400px'; selectedObj = null; };
+    $('#zBH').onclick = () => { zoomTarget = 0.2; cxTarget=150000; cyTarget=-150000; };
+    $('#ipClose').onclick = () => { $('#infoPanel').style.left = '-400px'; selectedObj = null; };
 
     canvas.addEventListener('mousedown', e => { isDragging=true; dragStart={x:e.clientX,y:e.clientY}; camStart={x:cx,y:cy}; });
     window.addEventListener('mouseup', () => isDragging=false);
@@ -240,14 +217,14 @@
     // ═══════════════════════════════════════════════════════
     const sun = { r: 50, color: '#facc15', glow: '#fef08a' };
     const planets = [
-        { name:'Mercury', d:80, s:3, c:'#a8a29e', v:0.04, a:0, moons:[] },
-        { name:'Venus', d:130, s:6, c:'#fcd34d', v:0.015, a:1, moons:[] },
-        { name:'Earth', d:190, s:7, c:'#3b82f6', v:0.01, a:2, moons:[{name:'Moon', d:14, s:1.5, c:'#ddd', v:0.04, a:0}] },
-        { name:'Mars', d:250, s:5, c:'#ef4444', v:0.008, a:-1, moons:[
+        { name:'Mercury', d:80, e:0.2056, s:3, c:'#a8a29e', v:0.04, a:0, moons:[] },
+        { name:'Venus', d:130, e:0.0067, s:6, c:'#fcd34d', v:0.015, a:1, moons:[] },
+        { name:'Earth', d:190, e:0.0167, s:7, c:'#3b82f6', v:0.01, a:2, moons:[{name:'Moon', d:14, s:1.5, c:'#ddd', v:0.04, a:0}] },
+        { name:'Mars', d:250, e:0.0934, s:5, c:'#ef4444', v:0.008, a:-1, moons:[
             {name:'Phobos', d:9, s:0.8, c:'#aaa', v:0.06, a:0},
             {name:'Deimos', d:16, s:0.6, c:'#999', v:0.03, a:2}
         ]},
-        { name:'Jupiter', d:450, s:22, c:'#fdba74', v:0.002, a:3, bands:true, moons:[
+        { name:'Jupiter', d:450, e:0.0489, s:22, c:'#fdba74', v:0.002, a:3, bands:true, moons:[
             {name:'Io', d:32, s:2, c:'#ffeb3b', v:0.02, a:0},
             {name:'Europa', d:45, s:1.8, c:'#e0e8ff', v:0.015, a:1},
             {name:'Ganymede', d:65, s:2.5, c:'#ccc', v:0.01, a:2},
@@ -257,7 +234,7 @@
             {name:'Himalia', d:110, s:1.0, c:'#997', v:0.004, a:0.5},
             {name:'Elara', d:120, s:0.7, c:'#887', v:0.003, a:1.5}
         ]},
-        { name:'Saturn', d:650, s:18, c:'#fde047', v:0.001, a:5, hasRings:true, moons:[
+        { name:'Saturn', d:650, e:0.0565, s:18, c:'#fde047', v:0.001, a:5, hasRings:true, moons:[
             {name:'Titan', d:48, s:3, c:'#ffb74d', v:0.012, a:0},
             {name:'Enceladus', d:30, s:1, c:'#fff', v:0.03, a:1},
             {name:'Mimas', d:25, s:0.8, c:'#bbb', v:0.04, a:2},
@@ -267,7 +244,7 @@
             {name:'Tethys', d:33, s:1.1, c:'#dde', v:0.022, a:0.7},
             {name:'Hyperion', d:55, s:0.9, c:'#aa8', v:0.01, a:1.2}
         ]},
-        { name:'Uranus', d:850, s:14, c:'#67e8f9', v:0.0005, a:0, moons:[
+        { name:'Uranus', d:850, e:0.0463, s:14, c:'#67e8f9', v:0.0005, a:0, moons:[
             {name:'Titania', d:25, s:1.5, c:'#ccc', v:0.015, a:0},
             {name:'Oberon', d:32, s:1.4, c:'#bbb', v:0.01, a:1},
             {name:'Umbriel', d:18, s:1.2, c:'#999', v:0.02, a:2},
@@ -276,17 +253,28 @@
             {name:'Puck', d:12, s:0.6, c:'#aab', v:0.04, a:5},
             {name:'Cordelia', d:10, s:0.4, c:'#bbc', v:0.05, a:0.3}
         ]},
-        { name:'Neptune', d:1050, s:13, c:'#3b82f6', v:0.0004, a:Math.PI, moons:[
+        { name:'Neptune', d:1050, e:0.0086, s:13, c:'#3b82f6', v:0.0004, a:Math.PI, moons:[
             {name:'Triton', d:25, s:2, c:'#b3e5fc', v:-0.015, a:0},
             {name:'Proteus', d:18, s:1.2, c:'#aaa', v:0.02, a:1},
             {name:'Nereid', d:40, s:0.8, c:'#888', v:0.008, a:2},
             {name:'Larissa', d:14, s:0.7, c:'#99b', v:0.03, a:3},
             {name:'Galatea', d:12, s:0.5, c:'#aac', v:0.035, a:4}
         ]},
-        { name:'Pluto', d:1250, s:2.5, c:'#ddc', v:0.0002, a:4, moons:[
+        { name:'Pluto', d:1250, e:0.2488, s:2.5, c:'#ddc', v:0.0002, a:4, isDwarf:true, moons:[
             {name:'Charon', d:8, s:1.2, c:'#ccc', v:0.05, a:0},
             {name:'Nix', d:14, s:0.5, c:'#bba', v:0.02, a:1.5},
             {name:'Hydra', d:18, s:0.5, c:'#aab', v:0.015, a:3}
+        ]},
+        { name:'Ceres', d:340, e:0.0758, s:2, c:'#a8a8a0', v:0.006, a:2.5, isDwarf:true, moons:[] },
+        { name:'Haumea', d:1400, e:0.1912, s:2.2, c:'#e8ddd0', v:0.00018, a:1, isDwarf:true, moons:[
+            {name:'Hi\u02BBiaka', d:10, s:0.5, c:'#ccc', v:0.03, a:0},
+            {name:'Namaka', d:7, s:0.4, c:'#bbb', v:0.04, a:2}
+        ]},
+        { name:'Makemake', d:1500, e:0.1559, s:2, c:'#e0c8a0', v:0.00015, a:3, isDwarf:true, moons:[
+            {name:'MK2', d:6, s:0.3, c:'#888', v:0.05, a:0}
+        ]},
+        { name:'Eris', d:1700, e:0.4407, s:2.3, c:'#e8e8e8', v:0.0001, a:5.5, isDwarf:true, moons:[
+            {name:'Dysnomia', d:10, s:0.6, c:'#999', v:0.025, a:0}
         ]}
     ];
 
@@ -398,9 +386,19 @@
             $('#ipMag').textContent = selectedObj.mag !== undefined ? selectedObj.mag : 'N/A';
             $('#ipPlanets').textContent = selectedObj.planets !== undefined ? selectedObj.planets : 'N/A';
             $('#ipDist').textContent = selectedObj.dist || (Math.round(Math.hypot(selectedObj.x, selectedObj.y)/10) + ' ly');
-            $('#infoPanel').style.right = '15px';
+            
+            const btnLand = $('#btnLandRover');
+            if(selectedObj.type === 'Solar System Planet' && ['Mars', 'Moon'].includes(selectedObj.name)) {
+                btnLand.classList.remove('hidden');
+                btnLand.style.display = 'block';
+                btnLand.onclick = () => launchRoverSimulator(selectedObj.name);
+            } else {
+                btnLand.style.display = 'none';
+            }
+
+            $('#infoPanel').style.left = '20px';
         } else {
-            $('#infoPanel').style.right = '-400px';
+            $('#infoPanel').style.left = '-400px';
             selectedObj = null;
         }
     });
@@ -435,8 +433,9 @@
                     hoveredObj = {name:'Sun', x:0, y:0, type:'G-Type Main Sequence', emoji:'☀️', targetZoom: 1.5, mag: -26.74, planets: 8, dist: '0 ly'};
                 } else {
                     for(const p of planets) {
-                        const px = Math.cos(p.a)*p.d;
-                        const py = Math.sin(p.a)*p.d;
+                        const r = p.d * (1 - p.e * p.e) / (1 + p.e * Math.cos(p.a));
+                        const px = Math.cos(p.a) * r;
+                        const py = Math.sin(p.a) * r;
                         if(Math.hypot(mx - px, my - py) < Math.max(p.s*2, 20/zoom)) {
                             hoveredObj = {...p, x:px, y:py, emoji:'🪐', type:'Solar System Planet', mag:'N/A', planets: p.moons.length + ' moons', targetZoom: 25, dist: p.d + ' Mkm'};
                             break;
@@ -499,12 +498,52 @@
     }
 
     let time = 0;
+    let timeSpeed = 1;
+    let showAsteroids = true;
+    let trueScale = false;
+    let showOrbitTrails = true;
+
+    // Generate asteroid belt (cached)
+    const asteroids = [];
+    {
+        let aseed = 42;
+        const arng = () => { aseed=(aseed*16807)%2147483647; return(aseed-1)/2147483646; };
+        for(let i=0; i<400; i++) {
+            const d = 300 + arng() * 130; // Between Mars (250) and Jupiter (450)
+            asteroids.push({ a: arng()*Math.PI*2, d, s: arng()*1.5+0.3, v: 0.003+arng()*0.002, b: arng()*0.5+0.3 });
+        }
+    }
+
+    // Generate Kuiper Belt (cached)
+    const kuiperBelt = [];
+    {
+        let kseed = 84;
+        const krng = () => { kseed=(kseed*16807)%2147483647; return(kseed-1)/2147483646; };
+        for(let i=0; i<600; i++) {
+            const d = 1100 + krng() * 700; // Beyond Neptune (1050)
+            kuiperBelt.push({ a: krng()*Math.PI*2, d, s: krng()*1.2+0.2, v: 0.0005+krng()*0.001, b: krng()*0.4+0.2 });
+        }
+    }
+
+    // Control bindings
+    const timeSlider = $('#timeSpeedSlider');
+    const timeLabel = $('#timeSpeedVal');
+    if(timeSlider) timeSlider.addEventListener('input', e => {
+        timeSpeed = parseFloat(e.target.value);
+        if(timeLabel) timeLabel.textContent = (timeSpeed >= 0 ? '' : '') + timeSpeed + '×';
+    });
+    const astToggle = $('#showAsteroidBelt');
+    if(astToggle) astToggle.addEventListener('change', e => showAsteroids = e.target.checked);
+    const orbitToggle = $('#showOrbitTrails');
+    if(orbitToggle) orbitToggle.addEventListener('change', e => showOrbitTrails = e.target.checked);
+    const scaleToggle = $('#distScaleToggle');
+    if(scaleToggle) scaleToggle.addEventListener('change', e => trueScale = e.target.checked);
 
     function draw() {
         const w = canvas.width, h = canvas.height;
         ctx.fillStyle = '#020208';
         ctx.fillRect(0, 0, w, h);
-        time++;
+        time += timeSpeed;
 
         // Logarithmic zoom interpolation and smooth camera
         zoom = Math.exp(Math.log(zoom) + (Math.log(zoomTarget) - Math.log(zoom)) * 0.04);
@@ -840,15 +879,62 @@
             }
         }
 
-        // ─── 3. NEBULA GLOW ───
-        if(zoom > 0.0005 && zoom < 0.05) {
+        // ─── 3. NEBULA & GALAXY GLOW ───
+        if(zoom > 0.0001 && zoom < 0.1) {
             ctx.globalCompositeOperation = 'screen';
-            [[0,0,'rgba(40,10,80,0.3)'],[5000,-3000,'rgba(10,40,80,0.2)'],[-4000,4000,'rgba(80,20,20,0.2)']].forEach(([nx,ny,nc]) => {
-                const g = ctx.createRadialGradient(nx,ny,0,nx,ny,8000);
+            // Brighter, more prominent galaxies
+            [[0,0,'rgba(60,20,120,0.4)'],[5000,-3000,'rgba(20,60,120,0.3)'],[-4000,4000,'rgba(120,30,30,0.3)'],[150000,-150000,'rgba(255,200,100,0.3)']].forEach(([nx,ny,nc]) => {
+                const g = ctx.createRadialGradient(nx,ny,0,nx,ny,12000);
                 g.addColorStop(0, nc); g.addColorStop(1, 'transparent');
-                ctx.fillStyle = g; ctx.fillRect(nx-8000,ny-8000,16000,16000);
+                ctx.fillStyle = g; ctx.fillRect(nx-12000,ny-12000,24000,24000);
             });
             ctx.globalCompositeOperation = 'source-over';
+        }
+        
+        // ─── 3.5. SUPERMASSIVE BLACK HOLE ───
+        // Located far away at 150000, -150000
+        const bhX = 150000, bhY = -150000, bhR = 50;
+        if(zoom > 0.005) {
+            const distToBH = Math.hypot(cx - bhX, cy - bhY);
+            if(distToBH < 5000/zoom) {
+                // Accretion disk
+                ctx.save();
+                ctx.translate(bhX, bhY);
+                ctx.scale(1, 0.3); // Tilted disk
+                const timeStr = Date.now() / 500;
+                ctx.rotate(timeStr * 0.5);
+                const diskGrad = ctx.createRadialGradient(0,0,bhR, 0,0,bhR*4);
+                diskGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
+                diskGrad.addColorStop(0.2, 'rgba(255,150,50,0.8)');
+                diskGrad.addColorStop(0.6, 'rgba(100,20,150,0.4)');
+                diskGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = diskGrad;
+                ctx.beginPath(); ctx.arc(0,0,bhR*4, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+                
+                // Event Horizon
+                ctx.fillStyle = '#000';
+                ctx.shadowBlur = 20 * zoom;
+                ctx.shadowColor = '#fff';
+                ctx.beginPath(); ctx.arc(bhX, bhY, bhR, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Lensing (simple representation)
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 2/zoom;
+                ctx.beginPath(); ctx.arc(bhX, bhY, bhR*1.5, 0, Math.PI*2); ctx.stroke();
+                
+                // Label
+                if(zoom > 0.05) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = `${20/zoom}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Sagittarius A*', bhX, bhY - bhR*2 - 10/zoom);
+                    ctx.fillStyle = '#aaa';
+                    ctx.font = `${12/zoom}px Inter`;
+                    ctx.fillText('Supermassive Black Hole', bhX, bhY - bhR*2 + 10/zoom);
+                }
+            }
         }
 
         // ─── 4. CONSTELLATIONS ───
@@ -915,10 +1001,12 @@
                     ctx.beginPath(); ctx.arc(s.x, s.y, 15, 0, Math.PI*2); ctx.fill();
                     const exos = genExoSystem(s);
                     for(const ep of exos) {
-                        ep.a -= ep.v * 0.5;
-                        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                        ctx.lineWidth = 0.5/zoom;
-                        ctx.beginPath(); ctx.arc(s.x, s.y, ep.d, 0, Math.PI*2); ctx.stroke();
+                        ep.a -= ep.v * 0.5 * timeSpeed;
+                        if(showOrbitTrails) {
+                            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                            ctx.lineWidth = 0.5/zoom;
+                            ctx.beginPath(); ctx.arc(s.x, s.y, ep.d, 0, Math.PI*2); ctx.stroke();
+                        }
                         const px = s.x + Math.cos(ep.a) * ep.d;
                         const py = s.y + Math.sin(ep.a) * ep.d;
                         ctx.fillStyle = ep.c;
@@ -942,9 +1030,72 @@
 
         // ─── 6. SOLAR SYSTEM ───
         if(zoom > 0.05 && cx > -10000 && cx < 10000) {
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-            ctx.lineWidth = 1/zoom;
-            for(const p of planets) { ctx.beginPath(); ctx.arc(0,0,p.d,0,Math.PI*2); ctx.stroke(); }
+            if(showOrbitTrails) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1/zoom;
+                for(const p of planets) { 
+                    ctx.beginPath(); 
+                    for(let angle = 0; angle <= Math.PI*2; angle += 0.05) {
+                        const r = p.d * (1 - p.e * p.e) / (1 + p.e * Math.cos(angle));
+                        if(angle === 0) ctx.moveTo(Math.cos(angle)*r, Math.sin(angle)*r);
+                        else ctx.lineTo(Math.cos(angle)*r, Math.sin(angle)*r);
+                    }
+                    ctx.closePath();
+                    ctx.stroke(); 
+                }
+            }
+
+            // Asteroid Belt
+            if(showAsteroids && zoom > 0.2) {
+                ctx.fillStyle = 'rgba(180,170,150,0.5)';
+                for(const a of asteroids) {
+                    a.a -= a.v * timeSpeed;
+                    const ax = Math.cos(a.a)*a.d, ay = Math.sin(a.a)*a.d;
+                    ctx.globalAlpha = a.b;
+                    ctx.fillRect(ax - a.s/2, ay - a.s/2, a.s, a.s);
+                }
+                ctx.globalAlpha = 1;
+                if(zoom > 0.5 && zoom < 3) {
+                    ctx.fillStyle = 'rgba(180,170,150,0.25)';
+                    ctx.font = `${9/zoom}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ASTEROID BELT', 350, 0);
+                }
+            }
+
+            // Kuiper Belt (beyond Neptune)
+            if(showAsteroids && zoom > 0.1 && zoom < 5) {
+                ctx.fillStyle = 'rgba(120,140,180,0.35)';
+                for(const kb of kuiperBelt) {
+                    kb.a -= kb.v * timeSpeed;
+                    const kx = Math.cos(kb.a)*kb.d, ky = Math.sin(kb.a)*kb.d;
+                    ctx.globalAlpha = kb.b;
+                    ctx.fillRect(kx - kb.s/2, ky - kb.s/2, kb.s, kb.s);
+                }
+                ctx.globalAlpha = 1;
+                if(zoom > 0.2 && zoom < 2) {
+                    ctx.fillStyle = 'rgba(120,140,180,0.2)';
+                    ctx.font = `${9/zoom}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('KUIPER BELT', 1450, 0);
+                }
+            }
+
+            // Oort Cloud (outermost faint shell)
+            if(showAsteroids && zoom > 0.02 && zoom < 1) {
+                ctx.strokeStyle = 'rgba(100,120,160,0.08)';
+                ctx.lineWidth = 2/zoom;
+                ctx.setLineDash([10/zoom, 20/zoom]);
+                ctx.beginPath(); ctx.arc(0, 0, 2500, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(0, 0, 3000, 0, Math.PI*2); ctx.stroke();
+                ctx.setLineDash([]);
+                if(zoom > 0.05 && zoom < 0.5) {
+                    ctx.fillStyle = 'rgba(100,120,160,0.15)';
+                    ctx.font = `${12/zoom}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('OORT CLOUD', 2750, 0);
+                }
+            }
             const rg = ctx.createRadialGradient(0,0,sun.r*0.1,0,0,sun.r*2);
             rg.addColorStop(0,'#fff'); rg.addColorStop(0.5,sun.color); rg.addColorStop(1,'transparent');
             ctx.fillStyle = rg;
@@ -957,8 +1108,14 @@
                 ctx.fillText('Sun', 0, -sun.r*2 - 10/zoom);
             }
             for(const p of planets) {
-                p.a -= p.v;
-                const px = Math.cos(p.a)*p.d, py = Math.sin(p.a)*p.d;
+                // Kepler's Second Law approximation: angular velocity depends inversely on distance squared
+                const r = p.d * (1 - p.e * p.e) / (1 + p.e * Math.cos(p.a));
+                const angularV = (p.v * (p.d * p.d) / (r * r));
+                p.a -= angularV * timeSpeed;
+
+                const px = Math.cos(p.a) * r;
+                const py = Math.sin(p.a) * r;
+                
                 ctx.save(); ctx.translate(px,py);
                 const isHoveredP = hoveredObj && hoveredObj.name === p.name;
                 if(p.hasRings) {
@@ -975,7 +1132,9 @@
                     for(const m of p.moons) {
                         m.a -= m.v;
                         const mmx = Math.cos(m.a)*m.d, mmy = Math.sin(m.a)*m.d;
-                        ctx.beginPath(); ctx.arc(0,0,m.d,0,Math.PI*2); ctx.stroke();
+                        if(showOrbitTrails) {
+                            ctx.beginPath(); ctx.arc(0,0,m.d,0,Math.PI*2); ctx.stroke();
+                        }
                         const hoverM = hoveredObj && hoveredObj.name === m.name;
                         ctx.fillStyle = m.c;
                         ctx.beginPath(); ctx.arc(mmx, mmy, hoverM ? m.s*1.5 : m.s, 0, Math.PI*2); ctx.fill();
@@ -1014,6 +1173,32 @@
         ctx.fillRect(0, h-1, w, 1);
 
         requestAnimationFrame(draw);
+    }
+
+    const addPlanetBtn = $('#addPlanetBtn');
+    if (addPlanetBtn) {
+        addPlanetBtn.addEventListener('click', () => {
+            const name = prompt('Enter planet name:', 'New Planet');
+            if (!name) return;
+            const dist = parseFloat(prompt('Enter orbit distance (e.g. 500 for between Jupiter and Saturn):', '500'));
+            if (isNaN(dist)) return;
+            const size = parseFloat(prompt('Enter size (1-30):', '8'));
+            if (isNaN(size)) return;
+            const color = prompt('Enter hex color (e.g. #ff00ff):', '#ff00ff');
+            
+            planets.push({
+                name: name,
+                d: dist,
+                e: 0.05, // Slight eccentricity
+                s: Math.min(100, Math.max(1, size)),
+                c: color || '#fff',
+                v: 0.01 / Math.sqrt(dist / 100), // Kepler-ish
+                a: Math.random() * Math.PI * 2,
+                moons: []
+            });
+            
+            if(typeof QU !== 'undefined') QU.showToast(`Added custom planet: ${name}`, 'success');
+        });
     }
 
     setTimeout(() => { zoomTarget = 0.02; }, 500);

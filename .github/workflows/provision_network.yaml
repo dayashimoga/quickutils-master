@@ -22,7 +22,7 @@ concurrency:
 jobs:
   provision:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,7 +62,7 @@ jobs:
             CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep '^projects/\|^terraform/\|^shared/' | cut -d/ -f2 | sort -u | tr '\n' ',' | sed 's/,$//')
             
             # Also detect shared/config/scripts changes that affect all projects
-            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json\|^scripts/redeploy\|^scripts/cancel' || true)
+            SHARED_CHANGED=$(git diff --name-only $DIFF_TARGET 2>/dev/null | grep -c '^shared/\|^terraform/projects.json\|^scripts/redeploy\|^scripts/cancel\|^scripts/assign_domains' || true)
             if [ "$SHARED_CHANGED" -gt "0" ]; then
               CHANGED="ALL"
               echo "Infrastructure files changed — deploying ALL projects"
@@ -104,15 +104,15 @@ jobs:
           # Free CF 100-limit slots by extinguishing orphaned projects first
           python scripts/cf_extinguisher.py
           
-          # Cancel old builds in background while deploying new ones
-          python scripts/cancel_cf_builds.py &
-          CANCEL_PID=$!
+          # Cancel old builds synchronously before deploying new ones
+          python scripts/cancel_cf_builds.py
           
           # Deploy changed projects immediately (parallel, 4 at a time)
           python scripts/redeploy_cloudflare.py
           
-          # Wait for cancel to finish
-          wait $CANCEL_PID 2>/dev/null || true
+          # Assign custom domains automatically 
+          python scripts/assign_domains_bulk.py
+          
 
       - name: Skip - No Changes
         if: steps.changes.outputs.projects == 'NONE'

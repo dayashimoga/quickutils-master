@@ -3,11 +3,103 @@
 const $=s=>document.querySelector(s);
 let ctx = null;
 
+let eqBass, eqMid, eqTreble, convolver, convolverGain, dryGain;
+let destNode; 
+let mediaRecorder;
+let recordedChunks = [];
+
 function initAudio() {
     if(!ctx) {
         ctx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        eqBass = ctx.createBiquadFilter();
+        eqBass.type = 'lowshelf';
+        eqBass.frequency.value = 250;
+        
+        eqMid = ctx.createBiquadFilter();
+        eqMid.type = 'peaking';
+        eqMid.frequency.value = 1000;
+        eqMid.Q.value = 1;
+        
+        eqTreble = ctx.createBiquadFilter();
+        eqTreble.type = 'highshelf';
+        eqTreble.frequency.value = 4000;
+        
+        // Reverb (Convolver)
+        convolver = ctx.createConvolver();
+        const length = ctx.sampleRate * 2;
+        const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+        for (let i = 0; i < 2; i++) {
+            const channel = impulse.getChannelData(i);
+            for (let j = 0; j < length; j++) {
+                channel[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 3);
+            }
+        }
+        convolver.buffer = impulse;
+        
+        convolverGain = ctx.createGain();
+        convolverGain.gain.value = 0;
+        
+        dryGain = ctx.createGain();
+        dryGain.gain.value = 1;
+        
+        eqBass.connect(eqMid);
+        eqMid.connect(eqTreble);
+        
+        eqTreble.connect(dryGain);
+        eqTreble.connect(convolver);
+        convolver.connect(convolverGain);
+        
+        dryGain.connect(ctx.destination);
+        convolverGain.connect(ctx.destination);
+        
+        destNode = ctx.createMediaStreamDestination();
+        dryGain.connect(destNode);
+        convolverGain.connect(destNode);
+
+        // Spectrum Analyser
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        dryGain.connect(analyser);
+        convolverGain.connect(analyser);
+        startSpectrumLoop();
     }
     if(ctx.state === 'suspended') ctx.resume();
+}
+
+let analyser = null;
+let specAnimId = null;
+function startSpectrumLoop() {
+    const canvas = document.getElementById('spectrumCanvas');
+    if (!canvas || !analyser) return;
+    const specCtx = canvas.getContext('2d');
+    const bufLen = analyser.frequencyBinCount;
+    const dataArr = new Uint8Array(bufLen);
+
+    function draw() {
+        specAnimId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArr);
+
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        specCtx.scale(dpr, dpr);
+        const w = rect.width, h = rect.height;
+
+        specCtx.clearRect(0, 0, w, h);
+        const barW = (w / bufLen) * 2.5;
+        let x = 0;
+        for (let i = 0; i < bufLen; i++) {
+            const barH = (dataArr[i] / 255) * h;
+            const hue = (i / bufLen) * 280 + 120;
+            specCtx.fillStyle = `hsla(${hue}, 80%, 55%, 0.8)`;
+            specCtx.fillRect(x, h - barH, barW - 1, barH);
+            x += barW;
+            if (x > w) break;
+        }
+    }
+    draw();
 }
 
 let masterVol = 0.5;
@@ -22,8 +114,9 @@ function playSound(type) {
     
     // Create master gain for this sound
     const gain = ctx.createGain();
-    gain.connect(ctx.destination);
-    gain.gain.value = masterVol;
+    gain.connect(eqBass);
+    // Envelope will apply masterVol
+
 
     if(type === 'kick') {
         const osc = ctx.createOscillator();
@@ -219,6 +312,116 @@ window.addEventListener('keydown', e=>{
     if(type) {
         const el = document.querySelector(`.pad[data-type="${type}"]`);
         if(el) { playSound(type); el.classList.add('active'); setTimeout(()=>el.classList.remove('active'),100); }
+    }
+});
+
+// --- EQ and Reverb Controls ---
+$('#eqBass')?.addEventListener('input', e=>{ if(eqBass) eqBass.gain.value = parseInt(e.target.value); $('#bassVal').textContent=e.target.value; });
+$('#eqMid')?.addEventListener('input', e=>{ if(eqMid) eqMid.gain.value = parseInt(e.target.value); $('#midVal').textContent=e.target.value; });
+$('#eqTreble')?.addEventListener('input', e=>{ if(eqTreble) eqTreble.gain.value = parseInt(e.target.value); $('#trebleVal').textContent=e.target.value; });
+$('#reverbMix')?.addEventListener('input', e=>{ 
+    const mix = parseInt(e.target.value)/100; 
+    if(convolverGain) convolverGain.gain.value = mix; 
+    if(dryGain) dryGain.gain.value = 1 - mix*0.5;
+    $('#reverbVal').textContent=e.target.value; 
+});
+
+// --- Live Recording ---
+$('#btnRecord')?.addEventListener('click', () => {
+    initAudio();
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(destNode.stream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.start();
+    $('#btnRecord').disabled = true;
+    $('#btnRecord').classList.add('recording');
+    $('#btnStopRec').disabled = false;
+    $('#btnDownloadRec').disabled = true;
+    $('#btnRecord').textContent = 'Recording...';
+});
+
+$('#btnStopRec')?.addEventListener('click', () => {
+    if(mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        $('#btnRecord').disabled = false;
+        $('#btnRecord').classList.remove('recording');
+        $('#btnStopRec').disabled = true;
+        $('#btnDownloadRec').disabled = false;
+        $('#btnRecord').textContent = '🔴 Record';
+    }
+});
+
+$('#btnDownloadRec')?.addEventListener('click', () => {
+    if(recordedChunks.length === 0) return;
+    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'soundboard_recording.webm';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// --- Sequencer ---
+const seqTracks = ['kick', 'snare', 'hihat', 'blip'];
+let seqStep = 0;
+let seqInterval = null;
+
+function renderSequencer() {
+    const grid = $('#sequencerGrid');
+    if(!grid) return;
+    let html = `<div></div>`;
+    for(let i=0; i<16; i++) html += `<div style="text-align:center; color:#aaa; font-size:0.75rem;">${i+1}</div>`;
+    
+    seqTracks.forEach(t => {
+        html += `<div class="seq-row-label">${t.toUpperCase()}</div>`;
+        for(let i=0; i<16; i++) {
+            html += `<div class="seq-cell" data-track="${t}" data-step="${i}"></div>`;
+        }
+    });
+    grid.innerHTML = html;
+
+    document.querySelectorAll('.seq-cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+            cell.classList.toggle('active');
+        });
+    });
+}
+renderSequencer();
+
+function stepSequencer() {
+    document.querySelectorAll('.seq-cell.playing').forEach(e => e.classList.remove('playing'));
+    
+    seqTracks.forEach(t => {
+        const cell = document.querySelector(`.seq-cell[data-track="${t}"][data-step="${seqStep}"]`);
+        if(cell) {
+            cell.classList.add('playing');
+            if(cell.classList.contains('active')) {
+                playSound(t);
+            }
+        }
+    });
+    seqStep = (seqStep + 1) % 16;
+}
+
+$('#btnSeqPlay')?.addEventListener('click', () => {
+    if(seqInterval) clearInterval(seqInterval);
+    const bpm = parseInt($('#seqBpm').value);
+    const msPer16th = (60000 / bpm) / 4;
+    seqStep = 0;
+    seqInterval = setInterval(stepSequencer, msPer16th);
+});
+
+$('#btnSeqStop')?.addEventListener('click', () => {
+    if(seqInterval) clearInterval(seqInterval);
+    seqInterval = null;
+    seqStep = 0;
+});
+
+$('#seqBpm')?.addEventListener('input', e => {
+    $('#bpmVal').textContent = e.target.value;
+    if(seqInterval) {
+        $('#btnSeqPlay').click(); // restart
     }
 });
 

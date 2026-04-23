@@ -1,54 +1,173 @@
+/* ═══════════════════════════════════════════════
+   Procedural Planet — Premium Glassmorphism
+   ═══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
     --bg-color: #050510;
+    --glass-bg: rgba(10, 14, 24, 0.75);
+    --glass-border: rgba(255,255,255,0.08);
+    --accent: #10b981;
+    --accent-blue: #3b82f6;
 }
 
 body.planet-bg {
     background-color: var(--bg-color);
-    margin: 0;
-    overflow: hidden;
-    font-family: 'Outfit', sans-serif;
+    margin: 0; overflow: hidden;
+    font-family: 'Inter', sans-serif;
     color: #e2e8f0;
 }
 
 .transparent-nav {
     background: transparent !important;
     border-bottom: none !important;
-    position: absolute;
-    width: 100%;
-    z-index: 100;
+    position: absolute; width: 100%; z-index: 100;
 }
 
 #canvasWrap {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    z-index: 0;
+    position: absolute; top: 0; left: 0;
+    width: 100vw; height: 100vh; z-index: 0;
 }
 
+/* ─── Main Controls Panel ─── */
 .planet-controls {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    width: 300px;
-    background: rgba(10, 12, 16, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    z-index: 10;
+    position: absolute; bottom: 20px; right: 20px;
+    width: 320px; max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px; z-index: 10;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: slideIn 0.5s ease-out;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ─── Stats Panel ─── */
+.planet-stats {
+    position: absolute; bottom: 20px; left: 20px;
+    width: 260px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px; z-index: 10; padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: slideInLeft 0.5s ease-out;
+}
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+.stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.82rem;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: #94a3b8; }
+.stat-value { font-weight: 600; color: #f1f5f9; }
+
+.habitability-bar {
+    width: 100%; height: 8px; background: rgba(255,255,255,0.06);
+    border-radius: 4px; overflow: hidden; margin-top: 6px;
+}
+.habitability-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
 }
 
+/* ─── Range Sliders ─── */
 .form-range {
-    height: 4px;
-    appearance: none;
-    background: rgba(255,255,255,0.2);
-    border-radius: 2px;
-    outline: none;
+    width: 100%; height: 4px;
+    appearance: none; -webkit-appearance: none;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px; outline: none;
+    transition: background 0.2s;
 }
+.form-range:hover { background: rgba(255,255,255,0.18); }
 .form-range::-webkit-slider-thumb {
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #22c55e;
-    cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer; border: 2px solid rgba(0,0,0,0.3);
+    box-shadow: 0 0 8px rgba(16,185,129,0.4);
+    transition: transform 0.15s;
+}
+.form-range::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+/* ─── Preset Buttons ─── */
+.preset-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    margin-bottom: 1rem;
+}
+.preset-btn {
+    padding: 6px 4px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.03); color: #cbd5e1;
+    border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 500;
+    font-family: inherit; transition: all 0.2s;
+    text-align: center;
+}
+.preset-btn:hover {
+    background: rgba(16,185,129,0.1); border-color: var(--accent);
+    color: var(--accent); transform: translateY(-1px);
+}
+.preset-btn.active {
+    background: rgba(16,185,129,0.15); border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ─── Biome Progress ─── */
+.biome-bar {
+    display: flex; height: 8px; border-radius: 4px; overflow: hidden;
+    background: rgba(255,255,255,0.04); margin-top: 4px;
+}
+.biome-bar > div { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); min-width: 0; }
+
+/* ─── Action Buttons ─── */
+.action-row {
+    display: flex; gap: 6px; margin-bottom: 0.75rem;
+}
+.btn-glass {
+    flex: 1; padding: 8px 10px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.04); color: #e2e8f0;
+    border-radius: 10px; cursor: pointer; font-family: inherit;
+    font-size: 0.82rem; font-weight: 500;
+    transition: all 0.2s; text-align: center;
+}
+.btn-glass:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.btn-glass-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: transparent; color: #fff; font-weight: 600;
+}
+.btn-glass-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+/* ─── Seed Display ─── */
+.seed-row {
+    display: flex; gap: 6px; margin-bottom: 1rem;
+}
+.seed-input {
+    flex: 1; padding: 7px 10px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+    color: #94a3b8; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; outline: none;
+}
+.seed-input:focus { border-color: var(--accent); color: #e2e8f0; }
+
+/* ─── Section Headers ─── */
+.section-title {
+    font-size: 0.72rem; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 0.75rem 0 0.5rem 0;
+    padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.slider-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.82rem; margin-bottom: 4px; color: #cbd5e1;
+}
+.slider-val { color: var(--accent); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .planet-controls { width: calc(100% - 30px); right: 15px; bottom: 15px; }
+    .planet-stats { width: calc(100% - 30px); left: 15px; bottom: auto; top: 70px; }
+    .preset-grid { grid-template-columns: repeat(4, 1fr); }
 }

@@ -151,11 +151,83 @@ const PORTS = [
 function renderPorts(filter='all',search='') {
   const s = search.toLowerCase();
   const filtered = PORTS.filter(p=>(filter==='all'||p.cat===filter)&&(s===''||p.port.toString().includes(s)||p.service.toLowerCase().includes(s)||p.desc.toLowerCase().includes(s)));
-  $('#portTable').innerHTML = `<div class="port-row port-header"><span>Port</span><span>Service</span><span>Protocol</span><span>Description</span></div>`+filtered.map(p=>`<div class="port-row"><span class="port-num">${p.port}</span><span>${p.service}</span><span class="port-proto">${p.proto}</span><span class="port-desc">${p.desc}</span></div>`).join('');
+  $('#portTable').innerHTML = `<div class="port-row port-header"><span>Port</span><span>Service</span><span>Protocol</span><span>Description</span><span>Status</span></div>`+filtered.map(p=>`<div class="port-row"><span class="port-num">${p.port}</span><span>${p.service}</span><span class="port-proto">${p.proto}</span><span class="port-desc">${p.desc}</span><span class="port-status" id="pstat-${p.port}" style="font-weight:bold; color:var(--text-muted)">-</span></div>`).join('');
 }
 renderPorts();
 $$('.filter-btn').forEach(b=>b.addEventListener('click',()=>{$$('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderPorts(b.dataset.cat,$('#portSearch').value);}));
 $('#portSearch').addEventListener('input',()=>{const active=document.querySelector('.filter-btn.active');renderPorts(active?active.dataset.cat:'all',$('#portSearch').value);});
+
+// Scan Ports
+let scanResults = [];
+async function scanPort(target, port, timeout = 1500) {
+    const start = performance.now();
+    try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        await fetch(`http://${target}:${port}`, { mode: 'no-cors', signal: controller.signal });
+        clearTimeout(id);
+        return { port, status: 'Open', ms: Math.round(performance.now() - start) };
+    } catch(e) {
+        const ms = Math.round(performance.now() - start);
+        if (e.name === 'AbortError' || ms >= timeout - 50) {
+            return { port, status: 'Filtered', ms };
+        } else {
+            return { port, status: 'Closed', ms };
+        }
+    }
+}
+
+$('#scanPortsBtn')?.addEventListener('click', async () => {
+    let target = $('#scanTarget').value.trim();
+    if(!target) {
+        if(typeof QU !== 'undefined') QU.showToast('Please enter a target IP or domain','error');
+        return;
+    }
+    target = target.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    
+    scanResults = [];
+    $('#scanPortsBtn').disabled = true;
+    $('#scanPortsBtn').textContent = 'Scanning...';
+    
+    PORTS.forEach(p => {
+        const el = $(`#pstat-${p.port}`);
+        if(el) { el.textContent = '...'; el.style.color = 'var(--accent)'; }
+    });
+    
+    // Concurrent scanning
+    const promises = PORTS.map(async (p) => {
+        const res = await scanPort(target, p.port);
+        scanResults.push(res);
+        const el = $(`#pstat-${p.port}`);
+        if(el) {
+            el.textContent = `${res.status} (${res.ms}ms)`;
+            if(res.status === 'Open') el.style.color = 'var(--neon-green)';
+            else if(res.status === 'Closed') el.style.color = '#ef4444';
+            else el.style.color = 'var(--text-muted)';
+        }
+    });
+    
+    await Promise.allSettled(promises);
+    $('#scanPortsBtn').disabled = false;
+    $('#scanPortsBtn').textContent = 'Scan';
+    if(typeof QU !== 'undefined') QU.showToast('Port scan complete', 'success');
+});
+
+$('#exportScanBtn')?.addEventListener('click', () => {
+    if(scanResults.length === 0) {
+        if(typeof QU !== 'undefined') QU.showToast('No scan results to export', 'error');
+        return;
+    }
+    const blob = new Blob([JSON.stringify({ target: $('#scanTarget').value.trim(), results: scanResults }, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `port_scan_${$('#scanTarget').value.trim().replace(/[^a-z0-9]/gi, '_') || 'export'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
 
 // ── CIDR ──
 $('#cidrCalcBtn').addEventListener('click',()=>{
@@ -209,4 +281,301 @@ $('#headerSearch').addEventListener('input',()=>renderHeaders($('#headerSearch')
 // Init
 if(typeof QU!=='undefined') QU.init({kofi:true,discover:true});
 lookupIp('192.168.1.1');
+
+// ── IPv6 TOOLS ──
+function expandIPv6(addr) {
+  let groups = addr.split('::');
+  let left = groups[0] ? groups[0].split(':') : [];
+  let right = groups.length > 1 && groups[1] ? groups[1].split(':') : [];
+  const missing = 8 - left.length - right.length;
+  const middle = Array(Math.max(0, missing)).fill('0000');
+  const full = [...left, ...middle, ...right].map(g => g.padStart(4, '0'));
+  return full.slice(0, 8).join(':');
+}
+
+function isValidIPv6(addr) {
+  const expanded = expandIPv6(addr);
+  return /^([0-9a-f]{4}:){7}[0-9a-f]{4}$/i.test(expanded);
+}
+
+function compressIPv6(full) {
+  let groups = full.split(':').map(g => g.replace(/^0+/, '') || '0');
+  let best = { start: -1, len: 0 }, cur = { start: -1, len: 0 };
+  for (let i = 0; i < 8; i++) {
+    if (groups[i] === '0') {
+      if (cur.start === -1) cur.start = i;
+      cur.len++;
+      if (cur.len > best.len) { best.start = cur.start; best.len = cur.len; }
+    } else { cur = { start: -1, len: 0 }; }
+  }
+  if (best.len > 1) {
+    groups.splice(best.start, best.len, '');
+    if (best.start === 0) groups.unshift('');
+    if (best.start + best.len === 8) groups.push('');
+  }
+  return groups.join(':');
+}
+
+function getIPv6Type(addr) {
+  const expanded = expandIPv6(addr).toLowerCase();
+  if (expanded.startsWith('fe80')) return 'Link-Local';
+  if (expanded.startsWith('fc') || expanded.startsWith('fd')) return 'Unique Local (Private)';
+  if (expanded.startsWith('ff')) return 'Multicast';
+  if (expanded === '0000:0000:0000:0000:0000:0000:0000:0001') return 'Loopback';
+  if (expanded === '0000:0000:0000:0000:0000:0000:0000:0000') return 'Unspecified';
+  if (expanded.startsWith('2001:0db8')) return 'Documentation';
+  if (expanded.startsWith('2001:') || expanded.startsWith('2002:') || expanded.startsWith('2003:')) return 'Global Unicast';
+  return 'Global Unicast';
+}
+
+$('#ipv6Btn')?.addEventListener('click', () => {
+  const addr = $('#ipv6Input').value.trim();
+  if (!addr) return;
+  const expanded = expandIPv6(addr);
+  const valid = isValidIPv6(addr);
+  const compressed = compressIPv6(expanded);
+  const type = getIPv6Type(addr);
+  const binary = expanded.split(':').map(g => parseInt(g, 16).toString(2).padStart(16, '0')).join(' ');
+  const results = [
+    {label:'Input', value: addr, hl:true},
+    {label:'Valid', value: valid ? '✅ Yes' : '❌ No'},
+    {label:'Full Form', value: expanded},
+    {label:'Compressed', value: compressed},
+    {label:'Type', value: type},
+    {label:'Prefix (first 64 bits)', value: expanded.split(':').slice(0,4).join(':')+'::'},
+    {label:'Interface ID', value: expanded.split(':').slice(4).join(':')},
+    {label:'Binary', value: `<span style="font-size:0.65rem;word-break:break-all;">${binary}</span>`}
+  ];
+  $('#ipv6Results').innerHTML = results.map(r=>`<div class="result-card"><div class="rc-label">${r.label}</div><div class="rc-value${r.hl?' highlight':''}">${r.value}</div></div>`).join('');
+});
+
+// ── MAC ADDRESS LOOKUP ──
+const OUI_DB = {
+  '00:00:0C':'Cisco','00:1A:2B':'Ayecom','00:50:56':'VMware','00:0C:29':'VMware',
+  '00:1B:21':'Intel','00:1C:C0':'Intel','00:1E:37':'Universal Global','3C:D9:2B':'HP',
+  '00:14:22':'Dell','00:1A:A0':'Dell','F8:BC:12':'Dell','00:25:B5':'Dell',
+  'AC:DE:48':'Private','00:26:B9':'Dell','00:0D:56':'Dell','B8:CA:3A':'Dell',
+  '00:17:A4':'Global','00:1B:63':'Apple','00:1E:C2':'Apple','3C:15:C2':'Apple',
+  'A4:83:E7':'Apple','F0:18:98':'Apple','DC:A4:CA':'Apple','00:03:93':'Apple',
+  '00:24:36':'Apple','F4:5C:89':'Apple','00:25:00':'Apple','7C:D1:C3':'Apple',
+  '00:1F:F3':'Apple','88:E9:FE':'Apple','A8:86:DD':'Apple','54:26:96':'Apple',
+  '00:16:CB':'Apple','D8:9E:3F':'Apple',
+  '00:50:B6':'Good Technology','28:CF:E9':'Apple',
+  '00:0A:95':'Apple','00:11:24':'Apple','00:14:51':'Apple',
+  'B8:27:EB':'Raspberry Pi','DC:A6:32':'Raspberry Pi',
+  '00:1A:79':'Brocade','00:05:9A':'Cisco','00:0E:38':'Cisco',
+  '00:15:5D':'Microsoft','00:50:F2':'Microsoft','7C:1E:52':'Microsoft',
+  'FC:EC:DA':'Ubiquiti','00:27:22':'Ubiquiti','24:A4:3C':'Ubiquiti',
+  '00:0E:C6':'ASIX','00:E0:4C':'Realtek','52:54:00':'QEMU/KVM',
+  '08:00:27':'Oracle VirtualBox','00:1C:42':'Parallels',
+  '00:23:AE':'Dell','00:24:E8':'Dell',
+  '00:25:B3':'Hewlett-Packard','00:21:5A':'Hewlett-Packard',
+  '00:0F:20':'Hewlett-Packard','3C:D9:2B':'Hewlett-Packard',
+  '00:26:55':'Hewlett-Packard',
+  'E4:11:5B':'Hewlett-Packard Enterprise',
+  '00:E0:81':'Tyan','00:11:25':'IBM','00:1A:64':'IBM',
+  '44:38:39':'Cumulus Networks',
+  '00:60:2F':'Cisco','00:09:7C':'Cisco','00:18:BA':'Cisco',
+  '30:37:A6':'Cisco','58:97:1E':'Cisco','B0:AA:77':'Cisco',
+  '00:22:55':'Cisco','00:40:96':'Cisco',
+  '00:04:4B':'Nvidia','00:14:38':'Hewlett-Packard'
+};
+
+function lookupMac(mac) {
+  mac = mac.toUpperCase().replace(/[^0-9A-F]/g, ':');
+  // Normalize to colon separated
+  const clean = mac.replace(/[^0-9A-F]/g, '');
+  if (clean.length !== 12) {
+    $('#macResults').innerHTML = '<div class="result-card"><div class="rc-value" style="color:#ef4444">Invalid MAC address. Expected 12 hex digits.</div></div>';
+    return;
+  }
+  const formatted = clean.match(/.{2}/g).join(':');
+  const oui = formatted.substring(0, 8);
+  const vendor = OUI_DB[oui] || 'Unknown Vendor';
+  const isMulticast = (parseInt(clean.substring(0, 2), 16) & 1) === 1;
+  const isLocal = (parseInt(clean.substring(0, 2), 16) & 2) === 2;
+  const results = [
+    {label:'MAC Address', value: formatted, hl:true},
+    {label:'OUI Prefix', value: oui},
+    {label:'Vendor', value: vendor},
+    {label:'Device ID', value: formatted.substring(9)},
+    {label:'Type', value: isMulticast ? 'Multicast' : 'Unicast'},
+    {label:'Administration', value: isLocal ? 'Locally Administered' : 'Universally Administered (UAA)'},
+    {label:'Binary', value: clean.split('').map(h=>parseInt(h,16).toString(2).padStart(4,'0')).join(' ')}
+  ];
+  $('#macResults').innerHTML = results.map(r=>`<div class="result-card"><div class="rc-label">${r.label}</div><div class="rc-value${r.hl?' highlight':''}">${r.value}</div></div>`).join('');
+}
+$('#macBtn')?.addEventListener('click', () => lookupMac($('#macInput').value.trim()));
+$('#macInput')?.addEventListener('keydown', e => { if(e.key==='Enter') lookupMac($('#macInput').value.trim()); });
+
+// ── BANDWIDTH CALCULATOR ──
+$('#bwCalcBtn')?.addEventListener('click', () => {
+  const size = parseFloat($('#bwSize').value);
+  const sizeUnit = $('#bwSizeUnit').value;
+  const speed = parseFloat($('#bwSpeed').value);
+  const speedUnit = $('#bwSpeedUnit').value;
+  if (isNaN(size) || isNaN(speed) || size <= 0 || speed <= 0) return;
+
+  const sizeBytes = { B:1, KB:1024, MB:1048576, GB:1073741824, TB:1099511627776 };
+  const speedBits = { Kbps:1000, Mbps:1e6, Gbps:1e9 };
+  
+  const totalBits = size * sizeBytes[sizeUnit] * 8;
+  const bitsPerSec = speed * speedBits[speedUnit];
+  const seconds = totalBits / bitsPerSec;
+
+  function formatTime(s) {
+    if (s < 0.001) return `${(s*1000000).toFixed(1)} µs`;
+    if (s < 1) return `${(s*1000).toFixed(1)} ms`;
+    if (s < 60) return `${s.toFixed(2)} seconds`;
+    if (s < 3600) return `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
+    if (s < 86400) return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m ${Math.floor(s%60)}s`;
+    return `${Math.floor(s/86400)}d ${Math.floor((s%86400)/3600)}h ${Math.floor((s%3600)/60)}m`;
+  }
+
+  const results = [
+    {label:'File Size', value:`${size} ${sizeUnit} (${(size*sizeBytes[sizeUnit]).toLocaleString()} bytes)`, hl:true},
+    {label:'Transfer Speed', value:`${speed} ${speedUnit}`},
+    {label:'Transfer Time', value:formatTime(seconds)},
+    {label:'Total Bits', value:totalBits.toLocaleString()},
+    {label:'Throughput', value:`${(totalBits/seconds/1e6).toFixed(2)} Mbps`},
+    {label:'At 10 Mbps', value:formatTime(totalBits/10e6)},
+    {label:'At 100 Mbps', value:formatTime(totalBits/100e6)},
+    {label:'At 1 Gbps', value:formatTime(totalBits/1e9)}
+  ];
+  $('#bwResults').innerHTML = results.map(r=>`<div class="result-card"><div class="rc-label">${r.label}</div><div class="rc-value${r.hl?' highlight':''}">${r.value}</div></div>`).join('');
+});
+
+// ── LATENCY MONITOR ──
+let latencyChartInst = null;
+let latencyInterval = null;
+const latencyData = { labels: [], values: [] };
+
+function measureLatency() {
+    const t0 = performance.now();
+    // Ping by fetching a tiny resource with cache-busting
+    fetch('https://httpbin.org/status/200', { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
+        .then(() => {
+            const latency = Math.round(performance.now() - t0);
+            addLatencyPoint(latency);
+        })
+        .catch(() => {
+            // Simulate on failure (CORS may block, use timing)
+            const latency = Math.round(performance.now() - t0);
+            addLatencyPoint(latency);
+        });
+}
+
+function addLatencyPoint(ms) {
+    const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    latencyData.labels.push(now);
+    latencyData.values.push(ms);
+    
+    // Keep rolling window of 30
+    if (latencyData.labels.length > 30) {
+        latencyData.labels.shift();
+        latencyData.values.shift();
+    }
+    
+    updateLatencyChart();
+    updateLatencyStats();
+}
+
+function updateLatencyChart() {
+    const canvas = document.getElementById('latencyChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    const ctx = canvas.getContext('2d');
+    
+    if (latencyChartInst) {
+        latencyChartInst.data.labels = latencyData.labels;
+        latencyChartInst.data.datasets[0].data = latencyData.values;
+        latencyChartInst.update('none');
+        return;
+    }
+    
+    latencyChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyData.labels,
+            datasets: [{
+                label: 'Latency (ms)',
+                data: latencyData.values,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: '#10b981',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#10b981',
+                    bodyFont: { family: 'monospace', size: 13 },
+                    cornerRadius: 6,
+                    callbacks: { label: c => c.parsed.y + ' ms' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + 'ms' },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                x: {
+                    ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 8 },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function updateLatencyStats() {
+    const vals = latencyData.values;
+    if (vals.length === 0) return;
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const avg = Math.round(vals.reduce((a,b) => a+b, 0) / vals.length);
+    const statsEl = document.getElementById('latencyStats');
+    if (statsEl) {
+        statsEl.innerHTML = `
+            <div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Min</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#10b981;">${min}ms</div>
+            </div>
+            <div style="background:rgba(99,102,241,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Avg</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#6366f1;">${avg}ms</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.1); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted)">Max</div>
+                <div style="font-size:1.1rem; font-weight:700; color:#ef4444;">${max}ms</div>
+            </div>
+        `;
+    }
+}
+
+$('#startLatencyBtn').addEventListener('click', () => {
+    if (latencyInterval) return;
+    $('#startLatencyBtn').disabled = true;
+    $('#stopLatencyBtn').disabled = false;
+    measureLatency();
+    latencyInterval = setInterval(measureLatency, 2000);
+});
+
+$('#stopLatencyBtn').addEventListener('click', () => {
+    clearInterval(latencyInterval);
+    latencyInterval = null;
+    $('#startLatencyBtn').disabled = false;
+    $('#stopLatencyBtn').disabled = true;
+});
+
 })();

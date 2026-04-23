@@ -23,10 +23,12 @@
         xor: (inps) => (inps[0] ^ inps[1]) ? 1 : 0,
         nand:(inps) => !(inps[0] && inps[1]) ? 1 : 0,
         nor: (inps) => !(inps[0] || inps[1]) ? 1 : 0,
+        xnor:(inps) => (inps[0] ^ inps[1]) ? 0 : 1,
+        buffer:(inps) => inps[0] ? 1 : 0,
     };
 
-    function addComponent(type, x, y) {
-        const id = 'c_' + compIdCounter++;
+    function addComponent(type, x, y, forceId) {
+        const id = forceId || ('c_' + compIdCounter++);
         let el = document.createElement('div');
         el.className = `comp-node comp-${type}`;
         el.id = id;
@@ -37,11 +39,16 @@
         let inC = 2, outC = 1;
         let isSpecial = false;
 
-        if(type === 'not') inC = 1;
+        if(type === 'not' || type === 'buffer') inC = 1;
         if(type === 'switch' || type === 'clock') { inC = 0; outC = 1; isSpecial = true; }
         if(type === 'bulb') { inC = 1; outC = 0; isSpecial = true; }
         if(type === 'dff') { inC = 2; outC = 2; name = "D-FF"; } // Data, Clock -> Q, !Q
         if(type === 'seg7') { inC = 4; outC = 0; name = "7-SEG"; }
+        if(type === 'mux') { inC = 3; outC = 1; name = "MUX"; } // A, B, Sel -> Out
+        if(type === 'srlatch') { inC = 2; outC = 2; name = "SR"; } // S, R -> Q, !Q
+        if(type === 'jkff') { inC = 3; outC = 2; name = "JK-FF"; } // J, K, Clk -> Q, !Q
+        if(type === 'xnor') name = 'XNOR';
+        if(type === 'buffer') name = 'BUF';
 
         let inHTML = '', outHTML = '';
         for(let i=0; i<inC; i++) inHTML += `<div class="port port-in" data-cid="${id}" data-pid="${i}" data-state="0"></div>`;
@@ -218,6 +225,28 @@
                 let val = c.ins[0]*8 + c.ins[1]*4 + c.ins[2]*2 + c.ins[3]*1;
                 c.el.querySelector('.comp-label').textContent = val.toString(16).toUpperCase();
             }
+            else if(c.type === 'mux') {
+                // 2:1 MUX: sel=ins[2], A=ins[0], B=ins[1]
+                c.outs[0] = c.ins[2] ? c.ins[1] : c.ins[0];
+            }
+            else if(c.type === 'srlatch') {
+                // SR Latch: S=ins[0], R=ins[1]
+                if(c.ins[0] && !c.ins[1]) c.mem = 1;
+                else if(!c.ins[0] && c.ins[1]) c.mem = 0;
+                // S=R=1 is invalid, keep previous state
+                c.outs[0] = c.mem;
+                c.outs[1] = c.mem ? 0 : 1;
+            }
+            else if(c.type === 'jkff') {
+                // JK Flip-Flop: J=ins[0], K=ins[1], Clk=ins[2]
+                if(c.ins[2] === 1) { // Clock high
+                    if(c.ins[0] && !c.ins[1]) c.mem = 1;       // Set
+                    else if(!c.ins[0] && c.ins[1]) c.mem = 0;   // Reset
+                    else if(c.ins[0] && c.ins[1]) c.mem = c.mem ? 0 : 1; // Toggle
+                }
+                c.outs[0] = c.mem;
+                c.outs[1] = c.mem ? 0 : 1;
+            }
             // Update out ports DOM
             let outPorts = c.el.querySelectorAll('.port-out');
             outPorts.forEach((p, i) => p.dataset.state = c.outs[i]);
@@ -227,30 +256,228 @@
     }
 
     // Global toggle clock
-    function toggleClock() {
+    let clockRunning = true;
+    let clockTimer = null;
+    let clockMs = 1000;
+
+    function tickClock() {
+        if(!clockRunning) return;
         simClock = !simClock;
         $('#clockStatus').textContent = simClock ? "High" : "Low";
         $('#clockStatus').className = simClock ? "text-neon-green" : "text-danger";
-        simulate();
     }
-    
-    // Master loop (evaluates combinational logic continuously, and slow clock separately if needed)
-    setInterval(simulate, 50); // High frequency eval for stability
-    setInterval(() => {
-        // Auto clock toggle every 1s
-        simClock = !simClock;
-        $('#clockStatus').textContent = simClock ? "High" : "Low";
-        $('#clockStatus').className = simClock ? "text-neon-green" : "text-danger";
-    }, 1000);
+
+    function toggleClock() {
+        clockRunning = !clockRunning;
+        $('#clockStatus').textContent = clockRunning ? (simClock ? "High" : "Low") : "Paused";
+        $('#clockStatus').className = clockRunning ? (simClock ? "text-neon-green" : "text-danger") : "text-muted";
+        $('#btnClock').textContent = clockRunning ? "Pause Clock" : "Resume Clock";
+    }
+
+    $('#clockSpeed').oninput = e => {
+        clockMs = parseInt(e.target.value);
+        if(clockTimer) clearInterval(clockTimer);
+        clockTimer = setInterval(tickClock, clockMs);
+    };
+
+    clockTimer = setInterval(tickClock, clockMs);
+    setInterval(simulate, 50);
 
     // Initial setup
     $('#btnClock').onclick = toggleClock;
-    $('#btnClear').onclick = () => { container.innerHTML = ''; svg.innerHTML = ''; components = {}; wires = []; };
+    $('#btnClear').onclick = () => { container.innerHTML = ''; svg.innerHTML = ''; components = {}; wires = []; compIdCounter = 0; };
+
+    // Save/Load
+    $('#btnSave').onclick = () => {
+        let saveObj = {
+            comps: Object.values(components).map(c => ({
+                id: c.id, type: c.type, 
+                x: parseInt(c.el.style.left), y: parseInt(c.el.style.top)
+            })),
+            wires: wires.map(w => ({ sc: w.sc, sp: w.sp, dc: w.dc, dp: w.dp }))
+        };
+        localStorage.setItem('logicSimSave', JSON.stringify(saveObj));
+        alert('Circuit Saved to Browser!');
+    };
+
+    $('#btnLoad').onclick = () => {
+        let str = localStorage.getItem('logicSimSave');
+        if(!str) return alert('No saved circuit found.');
+        let saveObj = JSON.parse(str);
+        $('#btnClear').onclick(); // clear first
+        saveObj.comps.forEach(c => {
+            let n = parseInt(c.id.split('_')[1]);
+            if(n >= compIdCounter) compIdCounter = n + 1;
+            addComponent(c.type, c.x, c.y, c.id);
+        });
+        setTimeout(() => {
+            saveObj.wires.forEach(w => {
+                 let sComp = components[w.sc]; let dComp = components[w.dc];
+                 if(sComp && dComp) {
+                     let sPort = sComp.el.querySelectorAll('.port-out')[w.sp];
+                     let dPort = dComp.el.querySelectorAll('.port-in')[w.dp];
+                     if(sPort && dPort) {
+                         let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                         path.setAttribute('class', 'wire');
+                         svg.appendChild(path);
+                         let wObj = { sc:w.sc, sp:w.sp, dc:w.dc, dp:w.dp, sel:sPort, del:dPort, el:path, state:0 };
+                         path.onclick = () => { path.remove(); wires = wires.filter(wx=>wx!==wObj); components[wObj.dc].ins[wObj.dp] = 0; };
+                         wires.push(wObj);
+                     }
+                 }
+            });
+            updateWires();
+        }, 50);
+    };
+
+    // Truth Table
+    $('#btnTruth').onclick = () => {
+        let switches = Object.values(components).filter(c => c.type === 'switch');
+        let bulbs = Object.values(components).filter(c => c.type === 'bulb');
+        if(switches.length === 0 || bulbs.length === 0) return alert('Need at least 1 Switch and 1 Bulb to generate a Truth Table.');
+        if(switches.length > 5) return alert('Too many switches (Max 5 for performance).');
+        
+        $('#ttPanel').style.display = 'block';
+        let thead = '';
+        switches.forEach((s,i) => thead += `<th style="padding:4px;border:1px solid #444;color:#a855f7;">SW ${i+1}</th>`);
+        bulbs.forEach((b,i) => thead += `<th style="padding:4px;border:1px solid #444;color:#facc15;">L ${i+1}</th>`);
+        $('#ttHead').innerHTML = thead;
+        
+        let tbody = '';
+        let numRows = 1 << switches.length;
+        
+        // Save old states
+        let oldStates = switches.map(s => s.outs[0]);
+        
+        for(let r=0; r<numRows; r++) {
+            let rowHTML = '';
+            // set switches
+            switches.forEach((s, idx) => {
+                let val = (r >> (switches.length - 1 - idx)) & 1;
+                s.outs[0] = val;
+                s.el.dataset.on = val;
+                rowHTML += `<td style="padding:4px;border:1px solid #444;">${val}</td>`;
+            });
+            
+            // let logic propagate (call simulate a few times to simulate combinational delay settling)
+            for(let step=0; step<switches.length*2; step++) simulate(); 
+            
+            // read bulbs
+            bulbs.forEach(b => {
+                let val = b.ins[0] ? 1 : 0;
+                rowHTML += `<td style="padding:4px;border:1px solid #444;">${val}</td>`;
+            });
+            
+            tbody += `<tr>${rowHTML}</tr>`;
+        }
+        $('#ttBody').innerHTML = tbody;
+        
+        // Restore old states
+        switches.forEach((s, idx) => {
+            s.outs[0] = oldStates[idx];
+            s.el.dataset.on = oldStates[idx];
+        });
+        simulate();
+    };
+
+    $('#btnCloseTT').onclick = () => $('#ttPanel').style.display = 'none';
     
     $$('.btn-tool').forEach(btn => {
         if(btn.dataset.type) {
             btn.onclick = () => addComponent(btn.dataset.type, window.innerWidth/2, window.innerHeight/2);
         }
     });
+
+    // ── PRESET CIRCUITS ──
+    const PRESETS = {
+        halfAdder: {
+            name: 'Half Adder',
+            comps: [
+                {id:'c_100',type:'switch',x:100,y:200},
+                {id:'c_101',type:'switch',x:100,y:350},
+                {id:'c_102',type:'xor',x:350,y:200},
+                {id:'c_103',type:'and',x:350,y:350},
+                {id:'c_104',type:'bulb',x:600,y:200},
+                {id:'c_105',type:'bulb',x:600,y:350}
+            ],
+            wires: [
+                {sc:'c_100',sp:'0',dc:'c_102',dp:'0'},
+                {sc:'c_101',sp:'0',dc:'c_102',dp:'1'},
+                {sc:'c_100',sp:'0',dc:'c_103',dp:'0'},
+                {sc:'c_101',sp:'0',dc:'c_103',dp:'1'},
+                {sc:'c_102',sp:'0',dc:'c_104',dp:'0'},
+                {sc:'c_103',sp:'0',dc:'c_105',dp:'0'}
+            ]
+        },
+        srLatch: {
+            name: 'SR Latch (NOR)',
+            comps: [
+                {id:'c_200',type:'switch',x:100,y:200},
+                {id:'c_201',type:'switch',x:100,y:400},
+                {id:'c_202',type:'srlatch',x:350,y:280},
+                {id:'c_203',type:'bulb',x:600,y:230},
+                {id:'c_204',type:'bulb',x:600,y:370}
+            ],
+            wires: [
+                {sc:'c_200',sp:'0',dc:'c_202',dp:'0'},
+                {sc:'c_201',sp:'0',dc:'c_202',dp:'1'},
+                {sc:'c_202',sp:'0',dc:'c_203',dp:'0'},
+                {sc:'c_202',sp:'1',dc:'c_204',dp:'0'}
+            ]
+        },
+        notGateDemo: {
+            name: 'NOT Gate Demo',
+            comps: [
+                {id:'c_300',type:'switch',x:150,y:300},
+                {id:'c_301',type:'not',x:350,y:300},
+                {id:'c_302',type:'bulb',x:550,y:300}
+            ],
+            wires: [
+                {sc:'c_300',sp:'0',dc:'c_301',dp:'0'},
+                {sc:'c_301',sp:'0',dc:'c_302',dp:'0'}
+            ]
+        }
+    };
+
+    function loadPreset(key) {
+        const preset = PRESETS[key];
+        if (!preset) return;
+        $('#btnClear').onclick(); // clear first
+        compIdCounter = 500;
+        preset.comps.forEach(c => {
+            addComponent(c.type, c.x, c.y, c.id);
+        });
+        setTimeout(() => {
+            preset.wires.forEach(w => {
+                let sComp = components[w.sc]; let dComp = components[w.dc];
+                if(sComp && dComp) {
+                    let sPort = sComp.el.querySelectorAll('.port-out')[w.sp];
+                    let dPort = dComp.el.querySelectorAll('.port-in')[w.dp];
+                    if(sPort && dPort) {
+                        let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('class', 'wire');
+                        svg.appendChild(path);
+                        let wObj = { sc:w.sc, sp:w.sp, dc:w.dc, dp:w.dp, sel:sPort, del:dPort, el:path, state:0 };
+                        path.onclick = () => { path.remove(); wires = wires.filter(wx=>wx!==wObj); components[wObj.dc].ins[wObj.dp] = 0; };
+                        wires.push(wObj);
+                    }
+                }
+            });
+            updateWires();
+        }, 80);
+    }
+    window._loadPreset = loadPreset;
+
+    // Inject preset buttons if container exists
+    const presetContainer = $('#presetBtns');
+    if (presetContainer) {
+        Object.entries(PRESETS).forEach(([key, p]) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-tool';
+            btn.textContent = '📋 ' + p.name;
+            btn.onclick = () => loadPreset(key);
+            presetContainer.appendChild(btn);
+        });
+    }
 
 })();

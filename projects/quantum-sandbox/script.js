@@ -30,7 +30,9 @@
         X: [[c0, c1], [c1, c0]],
         Y: [[c0, cni], [ci, c0]],
         Z: [[c1, c0], [c0, new C(-1)]],
-        H: [[new C(SQRT2_INV), new C(SQRT2_INV)], [new C(SQRT2_INV), new C(-SQRT2_INV)]]
+        H: [[new C(SQRT2_INV), new C(SQRT2_INV)], [new C(SQRT2_INV), new C(-SQRT2_INV)]],
+        S: [[c1, c0], [c0, ci]],
+        TG: [[c1, c0], [c0, new C(Math.cos(Math.PI/4), Math.sin(Math.PI/4))]]
     };
 
     let numQubits = 3;
@@ -39,8 +41,11 @@
 
     function initCircuit() {
         circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        const qc = $('#qubitCount');
+        if (qc) qc.textContent = numQubits;
         renderCircuit();
         simulate();
+        generateQASM();
     }
 
     // Apply 1-qubit gate to state vector
@@ -123,34 +128,258 @@
         return num.toString(2).padStart(padding, '0');
     }
 
+    let probChartInstance = null;
     function renderVis(state) {
-        const pContainer = $('#probChart');
-        pContainer.innerHTML = '';
         let vecStr = '';
+        const labels = [];
+        const probs = [];
+        const barColors = [];
 
         state.forEach((amp, idx) => {
             const prob = amp.magSq();
             const bin = getBinaryString(idx, numQubits);
-            
-            // Vector text
+            labels.push(`|${bin}⟩`);
+            probs.push(parseFloat((prob * 100).toFixed(2)));
+            // Neon gradient: green to purple based on index
+            const hue = 140 + (idx / state.length) * 180;
+            barColors.push(`hsla(${hue}, 80%, 55%, 0.75)`);
+
             if (prob > 0.0001) {
                 vecStr += `|${bin}⟩: ${amp.toString()} <br>`;
             }
-
-            // Chart bar
-            const row = document.createElement('div');
-            row.className = 'prob-row';
-            row.innerHTML = `
-                <div class="prob-label">|${bin}⟩</div>
-                <div class="prob-bar-container">
-                    <div class="prob-bar" style="width: ${(prob*100).toFixed(1)}%"></div>
-                </div>
-                <div class="prob-val">${(prob*100).toFixed(1)}%</div>
-            `;
-            pContainer.appendChild(row);
         });
 
+        // Chart.js
+        const canvas = document.getElementById('probChartCanvas');
+        if (canvas && typeof Chart !== 'undefined') {
+            const ctx = canvas.getContext('2d');
+            if (probChartInstance) probChartInstance.destroy();
+            probChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: probs,
+                        backgroundColor: barColors,
+                        borderColor: barColors.map(c => c.replace('0.75', '1')),
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 400, easing: 'easeOutQuart' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10,10,30,0.9)',
+                            titleColor: '#7af0c8',
+                            bodyColor: '#ccc',
+                            bodyFont: { family: 'Space Grotesk', size: 12 },
+                            cornerRadius: 6,
+                            callbacks: { label: ctx => `${ctx.parsed.y.toFixed(1)}%` }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#64748b', font: { family: 'Space Grotesk', size: 10 }, callback: v => v + '%' },
+                            grid: { color: 'rgba(255,255,255,0.04)' }
+                        },
+                        x: {
+                            ticks: { color: '#7af0c8', font: { family: 'Space Grotesk', size: 10, weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
         $('#stateVector').innerHTML = vecStr || "Invalid State";
+        
+        // Compute Bloch Vector for Q0
+        const bit = 1 << (numQubits - 1); // Q0 is MSB in our loop
+        let r00 = 0, r11 = 0;
+        let r01 = new C(0);
+        for(let i=0; i< (1<<numQubits); i++) {
+            if((i & bit) === 0) {
+                const amp0 = state[i];
+                const amp1 = state[i | bit];
+                r00 += amp0.magSq();
+                r11 += amp1.magSq();
+                const c_amp1_conj = new C(amp1.r, -amp1.i);
+                r01 = r01.add(amp0.mul(c_amp1_conj));
+            }
+        }
+        const x = 2 * r01.r;
+        const y = -2 * r01.i;
+        const z = r00 - r11;
+        updateBloch3D(x, y, z);
+        updateProbabilityClouds(state);
+    }
+
+    // --- Three.js Setup (Bloch Sphere & Probability Clouds) ---
+    let blochScene, blochCamera, blochRenderer, blochVector;
+    function initBloch3D() {
+        const container = $('#blochContainer');
+        if(!container || typeof THREE === 'undefined') return;
+        blochScene = new THREE.Scene();
+        blochCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        blochCamera.position.set(2, 1.5, 3);
+        
+        blochRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        blochRenderer.setSize(container.clientWidth, container.clientHeight);
+        blochRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(blochRenderer.domElement);
+        
+        const controls = new THREE.OrbitControls(blochCamera, blochRenderer.domElement);
+        controls.enablePan = false;
+        controls.enableZoom = false;
+
+        // Sphere
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x44aa88, wireframe: true, transparent: true, opacity: 0.15 });
+        blochScene.add(new THREE.Mesh(geometry, material));
+
+        // Axes (X, Y, Z in Three.js terms)
+        const axesHelper = new THREE.AxesHelper(1.2);
+        blochScene.add(axesHelper);
+
+        // Vector
+        const dir = new THREE.Vector3(0, 1, 0); // pointing up
+        const origin = new THREE.Vector3(0, 0, 0);
+        blochVector = new THREE.ArrowHelper(dir, origin, 1, 0x00ffcc, 0.2, 0.15);
+        blochScene.add(blochVector);
+
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();
+            blochRenderer.render(blochScene, blochCamera);
+        };
+        animate();
+    }
+
+    function updateBloch3D(x, y, z) {
+        if(!blochVector) return;
+        // Bloch standard: Z is Up, X is front, Y is right
+        // Three.js: Y is Up, Z is front, X is right
+        const dir = new THREE.Vector3(y, z, x).normalize();
+        
+        if (Math.abs(x)<0.01 && Math.abs(y)<0.01 && Math.abs(z)<0.01) {
+            blochVector.visible = false;
+        } else {
+            blochVector.visible = true;
+            blochVector.setDirection(dir);
+            blochVector.setLength(Math.sqrt(x*x + y*y + z*z));
+        }
+        const st = $('#blochStats');
+        if(st) st.textContent = `x: ${x.toFixed(2)}  y: ${y.toFixed(2)}  z: ${z.toFixed(2)}`;
+    }
+
+    let cloudScene, cloudCamera, cloudRenderer, particles;
+    let cloudGeo;
+    function initProbabilityClouds() {
+        const container = $('#cloudContainer');
+        if(!container || typeof THREE === 'undefined') return;
+        cloudScene = new THREE.Scene();
+        cloudCamera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cloudCamera.position.z = 60;
+
+        cloudRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        cloudRenderer.setSize(window.innerWidth, window.innerHeight);
+        cloudRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(cloudRenderer.domElement);
+
+        cloudGeo = new THREE.BufferGeometry();
+        const count = 6000;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        
+        cloudGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        cloudGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const mat = new THREE.PointsMaterial({ 
+            size: 1.5, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.6, 
+            blending: THREE.AdditiveBlending 
+        });
+        particles = new THREE.Points(cloudGeo, mat);
+        cloudScene.add(particles);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.001;
+            particles.rotation.x += 0.0005;
+            cloudRenderer.render(cloudScene, cloudCamera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            if(!cloudRenderer) return;
+            cloudCamera.aspect = window.innerWidth/window.innerHeight;
+            cloudCamera.updateProjectionMatrix();
+            cloudRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    function updateProbabilityClouds(state) {
+        if(!cloudGeo) return;
+        const count = 6000;
+        const positions = cloudGeo.attributes.position.array;
+        const colors = cloudGeo.attributes.color.array;
+
+        let pIdx = 0;
+        const nBasis = state.length;
+        
+        state.forEach((amp, idx) => {
+            const prob = amp.magSq();
+            const alloc = Math.floor(prob * count);
+            if(alloc <= 0) return;
+            
+            // Assign color based on basis state
+            const hue = (idx / nBasis) * 0.8 + 0.1; // spread across spectrum
+            const color = new THREE.Color().setHSL(hue, 1, 0.6);
+
+            // Assign a cluster center
+            // Random fixed angle per index for stability
+            const angle1 = idx * Math.PI * 0.6180339887 * 2; 
+            const angle2 = idx * Math.PI * 1.41421356 * 2;
+            const radius = 25;
+            const cx = radius * Math.cos(angle1) * Math.sin(angle2);
+            const cy = radius * Math.sin(angle1) * Math.sin(angle2);
+            const cz = radius * Math.cos(angle2);
+
+            for(let i=0; i<alloc; i++) {
+                if(pIdx >= count) break;
+                // Add noise
+                positions[pIdx*3] = cx + (Math.random()-0.5)*20;
+                positions[pIdx*3+1] = cy + (Math.random()-0.5)*20;
+                positions[pIdx*3+2] = cz + (Math.random()-0.5)*20;
+                
+                colors[pIdx*3] = color.r;
+                colors[pIdx*3+1] = color.g;
+                colors[pIdx*3+2] = color.b;
+                pIdx++;
+            }
+        });
+        
+        // Hide unused
+        for(; pIdx < count; pIdx++) {
+            positions[pIdx*3] = 0;
+            positions[pIdx*3+1] = 0;
+            positions[pIdx*3+2] = 0;
+            colors[pIdx*3] = 0;
+            colors[pIdx*3+1] = 0;
+            colors[pIdx*3+2] = 0;
+        }
+
+        cloudGeo.attributes.position.needsUpdate = true;
+        cloudGeo.attributes.color.needsUpdate = true;
     }
 
     // --- UI & Drag-Drop Logic ---
@@ -305,6 +534,90 @@
     $('#remQubitBtn').onclick = () => { if(numQubits>1) {numQubits--; initCircuit();} };
     $('#resetBtn').onclick = () => initCircuit();
 
+    const dEnt = $('#btnDemoEntangle');
+    if(dEnt) dEnt.onclick = () => {
+        numQubits = 2;
+        circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'CNOT:1';
+        circuit[1][1] = 'T';
+        renderCircuit();
+        simulate();
+    };
+
+    const dInt = $('#btnDemoInterference');
+    if(dInt) dInt.onclick = () => {
+        numQubits = 1;
+        circuit = Array.from({length: maxSteps}, () => Array(1).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'H';
+        renderCircuit();
+        simulate();
+        generateQASM();
+    };
+
+    const dGHZ = $('#btnDemoGHZ');
+    if(dGHZ) dGHZ.onclick = () => {
+        numQubits = 3;
+        circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'CNOT:1';
+        circuit[1][1] = 'T';
+        circuit[2][1] = 'CNOT:2';
+        circuit[2][2] = 'T';
+        renderCircuit();
+        simulate();
+        generateQASM();
+    };
+
+    // QASM Export
+    function generateQASM() {
+        const qasmEl = $('#qasmOutput');
+        if (!qasmEl) return;
+        let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[${numQubits}];\ncreg c[${numQubits}];\n`;
+        for (let step = 0; step < maxSteps; step++) {
+            for (let q = 0; q < numQubits; q++) {
+                const g = circuit[step][q];
+                if (g === 'I' || g === 'T') continue;
+                if (g === 'H') qasm += `h q[${q}];\n`;
+                else if (g === 'X') qasm += `x q[${q}];\n`;
+                else if (g === 'Y') qasm += `y q[${q}];\n`;
+                else if (g === 'Z') qasm += `z q[${q}];\n`;
+                else if (g === 'S') qasm += `s q[${q}];\n`;
+                else if (g === 'TG') qasm += `t q[${q}];\n`;
+                else if (g === 'M') qasm += `measure q[${q}] -> c[${q}];\n`;
+                else if (g.startsWith('CNOT:')) {
+                    const targ = parseInt(g.split(':')[1]);
+                    qasm += `cx q[${q}],q[${targ}];\n`;
+                }
+            }
+        }
+        qasmEl.textContent = qasm;
+    }
+
+    const exportBtn = $('#exportQASM');
+    if (exportBtn) exportBtn.onclick = () => {
+        generateQASM();
+        const qasmEl = $('#qasmOutput');
+        if (qasmEl && qasmEl.textContent) {
+            navigator.clipboard.writeText(qasmEl.textContent).then(() => {
+                exportBtn.textContent = '✅ Copied!';
+                setTimeout(() => { exportBtn.textContent = '📋 Copy QASM'; }, 2000);
+            }).catch(() => {});
+        }
+    };
+
+    initBloch3D();
+    initProbabilityClouds();
     initCircuit();
+
+    // Re-bind drag events for new gate elements added in HTML
+    $$('.q-gate').forEach(gt => {
+        gt.addEventListener('dragstart', (e) => {
+            draggedGate = gt.dataset.type;
+            pendingCnotCtrl = null;
+        });
+        gt.addEventListener('dragend', () => draggedGate = null);
+    });
 
 })();

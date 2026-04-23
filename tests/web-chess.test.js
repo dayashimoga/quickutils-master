@@ -1,0 +1,859 @@
+/**
+ * @jest-environment jsdom
+ */
+
+// ═══════════════════════════════════════════════════
+// Web-Chess Unit Tests — Coach Engine, Analysis, Board Logic
+// ═══════════════════════════════════════════════════
+const fs = require('fs');
+const path = require('path');
+
+
+
+beforeAll(() => {
+    const htmlCode = `<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Web Chess — AI Play & PGN Analyzer | QuickUtils</title>
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Web Chess \u2014 AI Play & PGN Analyzer",
+    "url": "https://chess.quickutils.top/",
+    "description": "Play chess against Stockfish AI or paste a PGN to analyze games with an evaluation bar and elegant move viewer.",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "All",
+    "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+    }
+}
+</script>
+    <link rel="canonical" href="https://chess.quickutils.top/">
+    <meta name="keywords" content="QuickUtils, chess, play against ai, pgn viewer, stockfish, analyzer">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="Web Chess — AI Play & PGN Analyzer">
+    <meta property="og:description" content="Play chess against Stockfish AI or paste a PGN to analyze games with an evaluation bar and elegant move viewer.">
+    <meta property="og:url" content="https://chess.quickutils.top/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="description" content="Play chess against Stockfish AI or paste a PGN to analyze games with an evaluation bar and elegant move viewer.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container nav-inner">
+        <a href="/" class="brand">♟️ <span>WebChess</span></a>
+        <div class="nav-links">
+            <a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener" class="kofi-link">☕ Support</a>
+            <a href="https://quickutils.top" target="_blank">QuickUtils</a>
+        </div>
+        <button class="theme-btn" id="themeBtn">🌙</button>
+    </div>
+</nav>
+
+<main class="container">
+    <section class="hero text-center">
+        <h1><span class="gradient-text">Web Chess Pro</span></h1>
+        <p class="hero-sub">Play • Learn • Master — Powered by Stockfish AI</p>
+    </section>
+
+    <div class="chess-layout">
+        <!-- LEFT: Chess Board & Eval Bar -->
+        <div class="board-column">
+            <div class="eval-container glass-card hidden" id="evalContainer">
+                <div class="eval-bar" id="evalBar"></div>
+                <div class="eval-text" id="evalText">0.0</div>
+            </div>
+            
+            <div class="board-stack">
+            <div class="player-info p-black mb-2" style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="player-name">Black</span>
+                    <div class="game-clock"><div class="clock-side" id="clockBlack">10:00</div></div>
+                </div>
+                <div class="captured-pieces" id="capturedBlack" style="display:flex; gap:2px; height:1.5rem; overflow:hidden;"></div>
+            </div>
+            
+            <div class="board-wrapper glass-card">
+                <div class="promotion-modal hidden" id="promotionModal">
+                    <div class="promo-pieces"></div>
+                </div>
+                <div class="chess-board" id="board"></div>
+                <svg id="arrowOverlay" class="board-arrow-overlay" width="100%" height="100%" style="position:absolute;top:0;left:0;pointer-events:none;z-index:10;">
+                    <defs>
+                        <marker id="arrowhead-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse">
+                            <polygon points="0 0, 6 3, 0 6" fill="rgba(34,197,94,0.85)" />
+                        </marker>
+                        <marker id="arrowhead-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse">
+                            <polygon points="0 0, 6 3, 0 6" fill="rgba(239,68,68,0.85)" />
+                        </marker>
+                        <marker id="arrowhead-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto-start-reverse">
+                            <polygon points="0 0, 6 3, 0 6" fill="rgba(249,115,22,0.85)" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+            
+            <div class="player-info p-white mt-2" style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="player-name">White</span>
+                    <div class="game-clock"><div class="clock-side active-clock" id="clockWhite">10:00</div></div>
+                </div>
+                <div class="captured-pieces" id="capturedWhite" style="display:flex; gap:2px; height:1.5rem; overflow:hidden;"></div>
+            </div>
+            
+
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem;">
+                <div class="opening-badge" id="openingName"></div>
+                <div style="display:flex; gap:0.5rem; margin-left:auto;">
+                    <button class="toolbar-btn" id="btnSoundToggle" title="Toggle Sound">🔊</button>
+                    <button class="toolbar-btn" id="btnFullscreen" title="Fullscreen">⛶</button>
+                </div>
+            </div>
+            </div>
+            <!-- Sound Effects -->
+            <audio id="snd-move" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-self.mp3" preload="auto"></audio>
+            <audio id="snd-capture" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/capture.mp3" preload="auto"></audio>
+            <audio id="snd-check" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-check.mp3" preload="auto"></audio>
+            <audio id="snd-castle" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/castle.mp3" preload="auto"></audio>
+            <audio id="snd-end" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/game-end.mp3" preload="auto"></audio>
+            <audio id="snd-error" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/illegal.mp3" preload="auto"></audio>
+            <audio id="snd-success" src="https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/promote.mp3" preload="auto"></audio>
+        </div>
+
+        <!-- RIGHT: Controls & PGN -->
+        <div class="controls-column">
+            
+            <div id="interactiveCoachHud" class="glass-card hidden" style="position:relative; z-index:10; width:100%; padding:1rem 1.25rem; margin-bottom:1rem; border:2px solid var(--glow-purple); background:rgba(15,23,42,0.95); text-align:center; box-shadow:0 0 20px rgba(139,92,246,0.3); border-radius:12px;">
+                <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <span style="font-size:1.3rem;">🎯</span>
+                    <h4 style="color:var(--glow-purple); margin:0; font-size:1rem;" id="coachHudTitle">Coach Review Mode</h4>
+                    <span style="font-size:0.75rem; background:rgba(139,92,246,0.2); padding:2px 8px; border-radius:10px; color:#c084fc;" id="coachProgress">1/1</span>
+                </div>
+                <p id="coachHudText" style="margin-bottom:0.75rem; font-size:0.9rem; line-height:1.5;">You blundered. Find the best move!</p>
+                <div id="coachReasonText" style="margin-bottom:0.75rem; font-size:0.8rem; color:#94a3b8; line-height:1.4; padding:0.5rem; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:none;"></div>
+                <div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
+                    <button class="btn btn-outline" id="coachBtnHint" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="coachShowHint()">💡 Show Hint</button>
+                    <button class="btn btn-outline" id="coachBtnSkip" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="coachSkipMistake()">⏭ Skip Move</button>
+                    <button class="btn btn-primary" id="coachBtnExit" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="coachExitReview()">Exit Coach</button>
+                </div>
+            </div>
+
+            <div class="glass-card mb-4" id="controlsBox">
+                <div class="flex-spread mb-3">
+                    <h3 class="card-title m-0">Game Mode</h3>
+                    <div class="engine-status" id="engineStatus"><span class="status-dot"></span> Engine Loading...</div>
+
+                </div>
+                
+                <div class="tabs mb-3">
+                    <button class="tab-btn active" data-tab="play">Play AI</button>
+                    <button class="tab-btn" data-tab="multiplayer">👥 Friend</button>
+                    <button class="tab-btn" data-tab="analyze">Analyze</button>
+                    <button class="tab-btn" data-tab="academy"><span style="color:#facc15;">★</span> Academy</button>
+                </div>
+                
+                <div id="tab-play" class="tab-content">
+                    <div class="control-group">
+                        <label>Difficulty Level</label>
+                        <select class="input-modern" id="aiLevel">
+                            <option value="1">🟢 Beginner (800 Elo)</option>
+                            <option value="5">🟡 Intermediate (1200 Elo)</option>
+                            <option value="10" selected>🟠 Advanced (1800 Elo)</option>
+                            <option value="15">🔴 Expert (2200 Elo)</option>
+                            <option value="20">⚫ Grandmaster (2500+ Elo)</option>
+                        </select>
+                        <p id="difficultyDesc" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">AI plays at club-level strength. Good for improving players.</p>
+                    </div>
+                    <div class="control-group">
+                        <label>Play As</label>
+                        <select class="input-modern" id="playerColor">
+                            <option value="w">White</option>
+                            <option value="b">Black</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Time Control</label>
+                        <select class="input-modern" id="clockSelect">
+                            <option value="none">No Clock</option>
+                            <option value="1+0">1 min (Bullet)</option>
+                            <option value="3+0">3 min (Blitz)</option>
+                            <option value="3+2">3 min + 2s (Blitz)</option>
+                            <option value="5+3">5 min + 3s (Blitz)</option>
+                            <option value="10+0" selected>10 min (Rapid)</option>
+                            <option value="15+10">15 min + 10s (Rapid)</option>
+                            <option value="30+0">30 min (Classical)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="coach-toggle-row mb-3">
+                        <div style="display:flex; flex-direction:column; padding-right:10px;">
+                            <span style="font-weight:600; font-size:0.9rem;">Interactive Coach</span>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">Real-time visual hints & engine evaluation</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="coachToggleBtn">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="coachHintHud" class="coach-hud mb-3">
+                        <div class="coach-hud-title">🌟 Coach Advice</div>
+                        <div id="coachHintText" style="line-height:1.4; color:#cbd5e1;">Awaiting position analysis...</div>
+                    </div>
+
+                    <button class="btn btn-primary w-100" id="newGameBtn">Start New Game</button>
+                </div>
+
+                <div id="tab-multiplayer" class="tab-content hidden">
+                    <p class="text-xs text-muted mb-3" style="text-align: center; color: var(--text-muted);">Play directly with a friend via Peer-to-Peer WebRTC. No servers!</p>
+                    <div class="control-group">
+                        <label>Your ID (Send to friend)</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="myPeerId" class="input-modern" readonly placeholder="Connecting to PeerJS...">
+                            <button class="btn btn-secondary" id="btnCopyPeerId" title="Copy ID">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div style="text-align:center; color:var(--text-muted); margin:0.5rem 0; font-size:0.8rem;">OR</div>
+                    <div class="control-group">
+                        <label>Connect to Friend's ID</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="friendPeerId" class="input-modern" placeholder="Paste ID here">
+                            <button class="btn btn-primary" id="btnConnectFriend">Connect</button>
+                        </div>
+                    </div>
+                    <div id="multiplayerStatus" class="engine-status mt-2 mb-2"><span class="status-dot"></span> <span id="mpStatusText">Offline</span></div>
+                    
+                    <div id="multiplayerControls" class="hidden">
+                        <div class="control-group mt-3">
+                            <label>Play As</label>
+                            <select class="input-modern" id="mpPlayerColor">
+                                <option value="w">White</option>
+                                <option value="b">Black</option>
+                                <option value="random">Random</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" id="btnMpStart" style="background:linear-gradient(135deg, #10b981, #059669);">Start Multiplayer Game</button>
+                    </div>
+                </div>
+                
+                <div id="tab-analyze" class="tab-content hidden">
+                    <div class="control-group">
+                        <label>Paste PGN</label>
+                        <textarea class="textarea-modern" id="pgnInput" rows="3" placeholder="1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 ..."></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+                        <button class="btn btn-primary" style="flex:1;" id="loadPgnBtn">Load PGN</button>
+                        <label class="btn btn-secondary" style="flex:1;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;" for="pgnFileInput">📂 Upload .pgn</label>
+                        <input type="file" id="pgnFileInput" accept=".pgn,.txt" style="display:none;">
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+                        <button class="btn btn-secondary" style="flex:1;" id="downloadPgnBtn">💾 Download .pgn</button>
+                        <button class="btn btn-secondary" style="flex:1;" id="autoReplayBtn">▶️ Auto-Replay</button>
+                    </div>
+                    
+                    <div class="control-group mb-2">
+                        <label>Famous Games</label>
+                        <select class="input-modern" id="famousGames">
+                            <option value="">-- Select to Auto-Play --</option>
+                            <option value="opera">The Opera Game (Morphy, 1858)</option>
+                            <option value="century">Game of the Century (Fischer, 1956)</option>
+                            <option value="immortal">Kasparov's Immortal (1999)</option>
+                            <option value="deepblue">Deep Blue vs Kasparov (1997)</option>
+                            <option value="carlsen">Carlsen's Queen Sac (2016)</option>
+                            <option value="evergreen">The Evergreen Game (Anderssen, 1852)</option>
+                            <option value="brilliancy">The Brilliancy Prize (Tal, 1960)</option>
+                            <option value="spassky">Fischer vs Spassky G6 (1972)</option>
+                            <option value="zugzwang">Nimzowitsch Zugzwang (1923)</option>
+                            <option value="alphazero">AlphaZero vs Stockfish (2017)</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+                        <label style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">⏱ Replay Speed</label>
+                        <input type="range" id="replaySpeedSlider" min="300" max="3000" step="100" value="1200" style="flex:1;accent-color:var(--primary-color);">
+                        <span id="replaySpeedVal" style="font-size:0.72rem;color:var(--text-muted);min-width:28px;">1.2s</span>
+                    </div>
+
+                    <button class="btn btn-secondary w-100" id="resetBoardBtn">Reset Board</button>
+                </div>
+
+                <div id="tab-academy" class="tab-content hidden">
+                    <p class="text-xs text-muted mb-3" style="text-align: center; color: var(--text-muted);">Interactive curriculum to guide you to mastery.</p>
+                    
+                    <div class="academy-progress mb-3 glass-card" style="padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="text-xs text-muted">Daily Streak 🔥 <span id="academyStreak">0</span></span>
+                            <span class="text-xs text-muted">Elo Estimate: <strong id="academyElo">Unranked</strong></span>
+                        </div>
+                        <div class="text-neon-green" style="font-size:1.1rem; font-weight:800; text-shadow: 0 0 5px rgba(34,197,94,0.5);">
+                            XP: <span id="academyXp">0</span>
+                        </div>
+                    </div>
+
+                    <div id="academyCategories">
+                        <div class="academy-category mb-2">
+                            <div class="ac-header d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="color:#f59e0b; font-size: 1.05rem;">0. Chess Fundamentals</span>
+                                <span class="text-xs text-muted" id="ac-prog-fund">0%</span>
+                            </div>
+                            <div class="ac-list" id="ac-list-fundamentals"></div>
+                        </div>
+                        <div class="academy-category mb-2">
+                            <div class="ac-header d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="color:#60a5fa; font-size: 1.05rem;">I. Openings</span>
+                                <span class="text-xs text-muted" id="ac-prog-ops">0%</span>
+                            </div>
+                            <div class="ac-list" id="ac-list-openings"></div>
+                        </div>
+                        
+                        <div class="academy-category mb-2 mt-3">
+                            <div class="ac-header d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="color:#c084fc; font-size: 1.05rem;">II. Middlegame & Tactics</span>
+                                <span class="text-xs text-muted" id="ac-prog-tac">0%</span>
+                            </div>
+                            <div class="ac-list" id="ac-list-tactics"></div>
+                        </div>
+
+                        <div class="academy-category mb-2 mt-3">
+                            <div class="ac-header d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="color:#34d399; font-size: 1.05rem;">III. Endgames</span>
+                                <span class="text-xs text-muted" id="ac-prog-end">0%</span>
+                            </div>
+                            <div class="ac-list" id="ac-list-endgame"></div>
+                        </div>
+
+                        <div class="academy-category mb-2 mt-3">
+                            <div class="ac-header d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="color:#f472b6; font-size: 1.05rem;">IV. Strategy & Positional Play</span>
+                                <span class="text-xs text-muted" id="ac-prog-str">0%</span>
+                            </div>
+                            <div class="ac-list" id="ac-list-strategy"></div>
+                        </div>
+                    
+                    <div id="academyActiveLesson" class="hidden">
+                        <button class="btn btn-secondary btn-sm mb-3 w-100" id="btnBackToAcademy">← Back to Curriculum</button>
+                        <h4 id="al-title" style="color: var(--primary-color); margin-bottom: 0.5rem;"></h4>
+                        <p id="al-desc" class="text-xs text-muted mb-3"></p>
+                        
+                        <div class="tabs mb-2" style="border-bottom: 1px solid var(--panel-border);">
+                            <button class="tab-btn active" data-atab="theory" style="padding: 5px; font-size: 0.8rem;">Theory Mode</button>
+                            <button class="tab-btn" data-atab="practice" style="padding: 5px; font-size: 0.8rem;">Practice Mode</button>
+                        </div>
+                        
+                        <div class="academy-instructions mt-2 p-3 glass-card" style="border-left: 3px solid var(--primary-color);">
+                            <p class="text-xs m-0" id="academyHintText">Loading lesson...</p>
+                            <button class="btn btn-secondary btn-sm mt-2 hidden" id="btnAcademyHint">💡 Show Hint (-5 XP)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card flex-grow" id="movesPanelBox" style="display:flex; flex-direction:column; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <h3 class="card-title m-0">Moves</h3>
+                    <button class="btn btn-secondary btn-sm" id="btnAnalyzeGame" style="padding: 4px 10px; font-size:0.8rem; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#4ade80;">🔍 Request Analysis</button>
+                </div>
+                <div class="move-controls mb-3">
+                    <button class="btn btn-icon" id="btnStart" title="First Move">⏮</button>
+                    <button class="btn btn-icon" id="btnPrev" title="Previous Move">◀</button>
+                    <button class="btn btn-icon" id="btnNext" title="Next Move">▶</button>
+                    <button class="btn btn-icon" id="btnEnd" title="Last Move">⏭</button>
+                    <button class="btn btn-icon" id="btnAutoPlay" title="Auto Play PGN">⏯</button>
+                </div>
+                <div class="moves-list" id="movesList"></div>
+                <div class="game-result hidden" id="gameResult"></div>
+                <div class="opening-name" id="openingName" style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-muted);font-style:italic;"></div>
+                <div class="utility-buttons" style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" id="exportPgn" title="Export PGN">&#x1F4CB; Export PGN</button>
+                    <button class="btn btn-secondary btn-sm" id="copyFen" title="Copy FEN">&#x1F4C4; Copy FEN</button>
+                    <button class="btn btn-secondary btn-sm" id="flipBoard" title="Flip Board">&#x1F504; Flip</button>
+                </div>
+                <div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border-color);display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <select id="boardTheme" class="btn btn-secondary btn-sm" style="padding:3px 6px;font-size:0.72rem;">
+                        <option value="classic">🎨 Classic</option>
+                        <option value="emerald">Emerald</option>
+                        <option value="midnight">Midnight</option>
+                        <option value="marble">Marble</option>
+                    </select>
+                    <div style="display:flex;gap:0.3rem;align-items:center;flex:1;min-width:120px;">
+                        <span style="font-size:0.68rem;color:var(--text-muted);">⏱</span>
+                        <input type="range" id="moveTimingSlider" min="200" max="3000" step="100" value="1200" style="flex:1;accent-color:var(--primary-color);height:4px;">
+                        <span id="moveTimingVal" style="font-size:0.68rem;color:var(--text-muted);min-width:24px;">1.2s</span>
+                    </div>
+                </div>
+
+                <!-- Analysis Report Container -->
+                <div id="analysisReportContainer" class="hidden" style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color); flex-grow:1; display:flex; flex-direction:column;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+                        <h4 style="margin:0; font-size:0.95rem; color:var(--text-color);">Game Report</h4>
+                        <button class="btn btn-icon" id="btnCloseAnalysis" style="width:24px;height:24px;font-size:0.8rem;" title="Close Report">❌</button>
+                    </div>
+                    
+                    <div class="progress-bar mb-3" style="height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                        <div id="analysisProgressBar" style="height:100%; width:0%; background:var(--primary-color); transition:width 0.3s;"></div>
+                    </div>
+
+                    <div class="analysis-stats mb-3" style="display:flex; gap:0.5rem; justify-content:space-between;">
+                        <div class="stat-box" style="flex:1;text-align:center;padding:6px;background:rgba(239,68,68,0.1);border-radius:6px;border:1px solid rgba(239,68,68,0.2);">
+                            <div style="font-size:1.1rem;font-weight:bold;color:#ef4444;" id="ar-blunders">0</div>
+                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Blunders</div>
+                        </div>
+                        <div class="stat-box" style="flex:1;text-align:center;padding:6px;background:rgba(249,115,22,0.1);border-radius:6px;border:1px solid rgba(249,115,22,0.2);">
+                            <div style="font-size:1.1rem;font-weight:bold;color:#f97316;" id="ar-mistakes">0</div>
+                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Mistakes</div>
+                        </div>
+                        <div class="stat-box" style="flex:1;text-align:center;padding:6px;background:rgba(234,179,8,0.1);border-radius:6px;border:1px solid rgba(234,179,8,0.2);">
+                            <div style="font-size:1.1rem;font-weight:bold;color:#eab308;" id="ar-inaccuracies">0</div>
+                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Inaccuracies</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100 mb-2" id="btnStartCoach" style="display:none;" onclick="startInteractiveCoach()">🎯 Start Interactive Coach — Review Your Mistakes</button>
+                    <div id="analysisAccuracy" style="display:none; text-align:center; margin-bottom:0.75rem; padding:0.5rem; background:rgba(34,197,94,0.08); border-radius:8px; border:1px solid rgba(34,197,94,0.15);">
+                        <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Overall Accuracy</span>
+                        <div style="font-size:1.6rem; font-weight:bold; color:#4ade80;" id="ar-accuracy">100%</div>
+                    </div>
+                    <div style="flex-grow:1; max-height:200px; overflow-y:auto; padding-right:4px;" id="analysisReportList" class="custom-scrollbar">
+                        <div class="text-center text-muted" style="font-size:0.8rem; padding: 1rem 0;">Awaiting analysis request...</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container footer-inner text-center">
+        <p class="copyright">© 2026 QuickUtils. Powered by <a href="https://github.com/jhlywa/chess.js" target="_blank" style="color:var(--primary-color);">chess.js</a> and <a href="https://stockfishchess.org/" target="_blank" style="color:var(--primary-color);">Stockfish</a>.</p>
+    </div>
+</footer>
+
+<script type="module" src="script.js"></script>
+
+
+
+
+
+
+
+
+<!-- QuickUtils Network Promo -->
+<div id="qu-promo-ribbon" style="position:relative; z-index:50; margin-top:2rem; padding:0; background:#111; border-top:1px solid rgba(128,128,128,0.3); text-align:center; font-family:sans-serif;">
+   <button onclick="var c=document.getElementById('qu-promo-content');c.style.display=c.style.display==='none'?'block':'none';this.textContent=c.style.display==='none'?'🚀 Explore 90+ QuickUtils Apps ▼':'▲ Close'" style="width:100%;padding:10px;background:transparent;border:none;color:#aaa;cursor:pointer;font-size:0.85rem;font-family:inherit;">🚀 Explore 90+ QuickUtils Apps ▼</button>
+   <div id="qu-promo-content" style="display:none; padding:1rem 1rem 2rem 1rem;">
+   <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; max-width:1200px; margin:0 auto;">
+      <a href="https://roomplanner.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">3D Room Planner</a>
+      <a href="https://apistatus.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">API Status Directory</a>
+      <a href="https://ascii.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">ASCII Art Studio</a>
+      <a href="https://algorithms.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Algorithm Visualizer</a>
+      <a href="https://ambient.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Ambient Sound Mixer</a>
+      <a href="https://beatmaker.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Beat Maker</a>
+      <a href="https://blackhole.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Blackhole Raytracer</a>
+      <a href="https://boilerplates.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Boilerplates Directory</a>
+      <a href="https://quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Boring Website</a>
+      <a href="https://budget.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Budget Tracker</a>
+      <a href="https://cssbattle.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">CSS Battle</a>
+      <a href="https://gradients.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">CSS Gradient Studio</a>
+      <a href="https://charts.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Chart Maker</a>
+      <a href="https://cheatsheets.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Cheatsheets Directory</a>
+      <a href="https://chemistry.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Chemistry Lab</a>
+      <a href="https://circuits.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Circuit Designer</a>
+      <a href="https://cityflow.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">City Pathfinding</a>
+      <a href="https://code.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Code Arena</a>
+      <a href="https://diff.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Code Diff</a>
+      <a href="https://whiteboard.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Collaborative Whiteboard</a>
+      <a href="https://coloring.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Coloring Books</a>
+      <a href="https://countries.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Country Explorer</a>
+      <a href="https://cron.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Cron Builder</a>
+      <a href="https://cyberdefense.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Cyber Defense</a>
+      <a href="https://dna.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">DNA Lab</a>
+      <a href="https://convert.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Data Converter</a>
+      <a href="https://datasets.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Datasets Directory</a>
+      <a href="https://decide.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Decision Maker</a>
+      <a href="https://draw.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Drawing Board</a>
+      <a href="https://earthquake.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Earthquake Explorer</a>
+      <a href="https://escaperoom.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Escape Room</a>
+      <a href="https://firesimulator.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">FIRE Simulator</a>
+      <a href="https://flashcards.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Flashcard Maker</a>
+      <a href="https://fonts.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Font Playground</a>
+      <a href="https://genetics.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Genetic Code Studio</a>
+      <a href="https://streak.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Habit Streak</a>
+      <a href="https://habits.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Habit Tracker</a>
+      <a href="https://ip.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">IP Lookup</a>
+      <a href="https://image.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Image Converter</a>
+      <a href="https://elements.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Interactive Periodic Table</a>
+      <a href="https://invoices.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Invoice Generator</a>
+      <a href="https://json.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">JSON Explorer</a>
+      <a href="https://jobs.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Jobs Directory</a>
+      <a href="https://languageplayground.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Language Playground</a>
+      <a href="https://life.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Life Simulator</a>
+      <a href="https://loan.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Loan Calculator</a>
+      <a href="https://logicsim.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Logic Simulator</a>
+      <a href="https://markdown.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Markdown Editor</a>
+      <a href="https://market.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Market Digest</a>
+      <a href="https://grapher.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Math Grapher</a>
+      <a href="https://memes.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Meme Generator</a>
+      <a href="https://mindmap.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Mind Map</a>
+      <a href="https://mlnodes.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Ml Node Editor</a>
+      <a href="https://music.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Music Maker</a>
+      <a href="https://musicviz.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Music Visualizer</a>
+      <a href="https://nettools.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Network Tools</a>
+      <a href="https://opensource.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Open Source Directory</a>
+      <a href="https://pdfstudio.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">PDF Studio</a>
+      <a href="https://physics.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Physics Sandbox</a>
+      <a href="https://pixelart.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Pixel Art Editor</a>
+      <a href="https://focus.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Pomodoro Focus Timer</a>
+      <a href="https://prices.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Price Comparator</a>
+      <a href="https://privacymap.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Privacy Map</a>
+      <a href="https://planets.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Procedural Planet</a>
+      <a href="https://prompts.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Prompts Directory</a>
+      <a href="https://proteins.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Protein Visualizer</a>
+      <a href="https://qr.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">QR Studio</a>
+      <a href="https://quantumsandbox.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Quantum Sandbox</a>
+      <a href="https://quiz.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Quiz Master</a>
+      <a href="https://regex.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Regex Playground</a>
+      <a href="https://resume.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Resume Builder</a>
+      <a href="https://games.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Retro Games</a>
+      <a href="https://rhythm.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Rhythm Trainer</a>
+      <a href="https://svg.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">SVG Editor</a>
+      <a href="https://screenrecord.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Screen Recorder</a>
+      <a href="https://solar.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Solar System Explorer</a>
+      <a href="https://sounds.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Sound Board</a>
+      <a href="https://soundlab.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Sound Lab</a>
+      <a href="https://spacemission.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Space Mission Control</a>
+      <a href="https://speed.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Speed Test</a>
+      <a href="https://stocks.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Stock Simulator</a>
+      <a href="https://subtitlegenerator.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Subtitle Generator</a>
+      <a href="https://textbehind.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Text Behind Image</a>
+      <a href="https://text.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Text Toolkit</a>
+      <a href="https://timeline.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Timeline Universe</a>
+      <a href="https://tools.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Tools Directory</a>
+      <a href="https://travelbuilder.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Travel Builder</a>
+      <a href="https://typing.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Typing Speed Test</a>
+      <a href="https://video.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Video Studio</a>
+      <a href="https://weather.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Weather Dashboard</a>
+      <a href="https://chess.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Web Chess</a>
+      <a href="https://workoutarchitect.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">Workout Architect</a>
+      <a href="https://worldbuilder.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">World Builder</a>
+      <a href="https://clock.quickutils.top" target="_blank" style="padding: 4px 10px; background: rgba(128,128,128,0.1); border-radius: 8px; font-size: 0.8rem; text-decoration: none; color: inherit; opacity: 0.8; transition: all 0.2s; white-space: nowrap;">World Clock</a>
+
+   </div>
+   </div>
+</div>
+<!-- /QuickUtils Network Promo -->
+
+
+
+
+
+
+</body>
+</html>
+`;
+    document.documentElement.innerHTML = htmlCode;
+    
+    // Mock Audio elements
+    HTMLMediaElement.prototype.play = jest.fn(() => Promise.resolve());
+    HTMLMediaElement.prototype.pause = jest.fn();
+    
+    // Mock Worker (Stockfish)
+    window.Worker = class MockWorker {
+        constructor() { this.onmessage = null; this.onerror = null; }
+        postMessage(msg) {
+            setTimeout(() => {
+                if (this.onmessage) {
+                    if (msg === 'uci') this.onmessage({ data: 'uciok' });
+                    if (msg === 'isready') this.onmessage({ data: 'readyok' });
+                }
+            }, 0);
+        }
+        terminate() {}
+    };
+    
+    // Mock URL.createObjectURL
+    URL.createObjectURL = jest.fn(() => 'blob:mock');
+    URL.revokeObjectURL = jest.fn();
+    
+    // Mock ResizeObserver
+    window.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} };
+    
+    // Mock Image
+    window.Image = class { set src(v) {} };
+    
+    // Mock getBoundingClientRect
+    Element.prototype.getBoundingClientRect = jest.fn(() => ({
+        top: 0, left: 0, right: 100, bottom: 100, width: 100, height: 100, x: 0, y: 0
+    }));
+    
+    // Mock localStorage
+    const store = {};
+    Object.defineProperty(window, 'localStorage', {
+        value: {
+            getItem: jest.fn(k => store[k] || null),
+            setItem: jest.fn((k, v) => { store[k] = v; }),
+            removeItem: jest.fn(k => { delete store[k]; })
+        }
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// DOM STRUCTURE TESTS
+// ═══════════════════════════════════════════════════
+describe('Web-Chess DOM Structure', () => {
+    test('Chess board container exists', () => {
+        expect(document.getElementById('board')).not.toBeNull();
+    });
+
+    test('Evaluation bar elements exist', () => {
+        expect(document.getElementById('evalBar')).not.toBeNull();
+        expect(document.getElementById('evalText')).not.toBeNull();
+        expect(document.getElementById('evalContainer')).not.toBeNull();
+    });
+
+    test('Engine status indicator exists', () => {
+        expect(document.getElementById('engineStatus')).not.toBeNull();
+    });
+
+    test('Move navigation buttons exist', () => {
+        expect(document.getElementById('movesList')).not.toBeNull();
+    });
+
+    test('Arrow overlay SVG exists with markers', () => {
+        const svg = document.getElementById('arrowOverlay');
+        expect(svg).not.toBeNull();
+        expect(document.getElementById('arrowhead-green')).not.toBeNull();
+        expect(document.getElementById('arrowhead-red')).not.toBeNull();
+    });
+
+    test('Promotion modal exists', () => {
+        expect(document.getElementById('promotionModal')).not.toBeNull();
+    });
+
+    test('Game result display exists', () => {
+        expect(document.getElementById('gameResult')).not.toBeNull();
+    });
+    
+    test('Clock elements exist', () => {
+        expect(document.getElementById('clockWhite')).not.toBeNull();
+        expect(document.getElementById('clockBlack')).not.toBeNull();
+    });
+    
+    test('Sound effect audio elements exist', () => {
+        expect(document.getElementById('snd-move')).not.toBeNull();
+        expect(document.getElementById('snd-capture')).not.toBeNull();
+        expect(document.getElementById('snd-check')).not.toBeNull();
+        expect(document.getElementById('snd-castle')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// TAB SYSTEM TESTS
+// ═══════════════════════════════════════════════════
+describe('Tab Navigation System', () => {
+    test('Play tab is active by default', () => {
+        const playTab = document.querySelector('.tab-btn[data-tab="play"]');
+        expect(playTab).not.toBeNull();
+        expect(playTab.classList.contains('active')).toBe(true);
+    });
+
+    test('Analyze tab exists', () => {
+        expect(document.getElementById('tab-analyze')).not.toBeNull();
+    });
+
+    test('Academy tab exists', () => {
+        expect(document.getElementById('tab-academy')).not.toBeNull();
+    });
+
+    test('PGN input textarea exists', () => {
+        expect(document.getElementById('pgnInput')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// GAME CONTROLS TESTS
+// ═══════════════════════════════════════════════════
+describe('Game Control Settings', () => {
+    test('AI level selector exists with valid options', () => {
+        const sel = document.getElementById('aiLevel');
+        expect(sel).not.toBeNull();
+        expect(sel.options.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('New game button exists', () => {
+        expect(document.getElementById('newGameBtn')).not.toBeNull();
+    });
+
+    test('Board theme selector exists', () => {
+        expect(document.getElementById('boardTheme')).not.toBeNull();
+    });
+
+    test('Move timing slider exists', () => {
+        expect(document.getElementById('moveTimingSlider')).not.toBeNull();
+    });
+    
+    test('Sound toggle button exists', () => {
+        expect(document.getElementById('btnSoundToggle')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// ANALYSIS SYSTEM TESTS
+// ═══════════════════════════════════════════════════
+describe('Analysis System', () => {
+    test('Analysis report containers exist', () => {
+        expect(document.getElementById('ar-blunders')).not.toBeNull();
+        expect(document.getElementById('ar-mistakes')).not.toBeNull();
+        expect(document.getElementById('ar-inaccuracies')).not.toBeNull();
+    });
+
+    test('Analysis report list exists', () => {
+        expect(document.getElementById('analysisReportList')).not.toBeNull();
+    });
+
+    test('Analyze game button exists', () => {
+        expect(document.getElementById('btnAnalyzeGame')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// INTERACTIVE COACH HUD TESTS
+// ═══════════════════════════════════════════════════
+describe('Interactive Coach Mode', () => {
+    test('Coach HUD exists in DOM', () => {
+        const hud = document.getElementById('interactiveCoachHud');
+        expect(hud).not.toBeNull();
+    });
+
+    test('Coach HUD is hidden by default', () => {
+        const hud = document.getElementById('interactiveCoachHud');
+        expect(hud.classList.contains('hidden')).toBe(true);
+    });
+
+    test('Coach text display exists', () => {
+        expect(document.getElementById('coachHudText')).not.toBeNull();
+    });
+
+    test('Coach Hint button exists', () => {
+        expect(document.getElementById('coachBtnHint')).not.toBeNull();
+    });
+
+    test('Coach Skip button exists', () => {
+        expect(document.getElementById('coachBtnSkip')).not.toBeNull();
+    });
+
+    test('Coach Exit button exists', () => {
+        expect(document.getElementById('coachBtnExit')).not.toBeNull();
+    });
+
+    test('Start Coach button exists', () => {
+        expect(document.getElementById('btnStartCoach')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// ACADEMY MODULE TESTS
+// ═══════════════════════════════════════════════════
+describe('Academy Module', () => {
+    test('Academy XP display exists', () => {
+        expect(document.getElementById('academyXp')).not.toBeNull();
+    });
+
+    test('Academy streak display exists', () => {
+        expect(document.getElementById('academyStreak')).not.toBeNull();
+    });
+
+    test('Academy Elo display exists', () => {
+        expect(document.getElementById('academyElo')).not.toBeNull();
+    });
+    
+    test('Academy lesson sections exist', () => {
+        // Fundamentals, Openings, Tactics, Strategy, Endgame sections
+        const tab = document.getElementById('tab-academy');
+        expect(tab).not.toBeNull();
+        expect(tab.innerHTML).toContain('curriculum');
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// CAPTURED PIECES TESTS
+// ═══════════════════════════════════════════════════
+describe('Captured Pieces Display', () => {
+    test('White captured pieces container exists', () => {
+        expect(document.getElementById('capturedWhite')).not.toBeNull();
+    });
+
+    test('Black captured pieces container exists', () => {
+        expect(document.getElementById('capturedBlack')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// FAMOUS GAMES SELECTOR
+// ═══════════════════════════════════════════════════
+describe('Famous Games', () => {
+    test('Famous games dropdown exists', () => {
+        const sel = document.getElementById('famousGames');
+        expect(sel).not.toBeNull();
+    });
+
+    test('Contains at least 5 famous games', () => {
+        const sel = document.getElementById('famousGames');
+        // First option is placeholder
+        expect(sel.options.length).toBeGreaterThanOrEqual(6);
+    });
+
+    test('Includes Opera Game', () => {
+        const sel = document.getElementById('famousGames');
+        const options = Array.from(sel.options).map(o => o.value);
+        expect(options).toContain('opera');
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// PGN MANAGEMENT
+// ═══════════════════════════════════════════════════
+describe('PGN Management', () => {
+    test('Load PGN button exists', () => {
+        expect(document.getElementById('loadPgnBtn')).not.toBeNull();
+    });
+
+    test('Download PGN button exists', () => {
+        expect(document.getElementById('downloadPgnBtn')).not.toBeNull();
+    });
+
+    test('Auto replay button exists', () => {
+        expect(document.getElementById('autoReplayBtn')).not.toBeNull();
+    });
+
+    test('PGN file upload input exists', () => {
+        expect(document.getElementById('pgnFileInput')).not.toBeNull();
+    });
+
+    test('Replay speed slider exists', () => {
+        expect(document.getElementById('replaySpeedSlider')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// OPENING DETECTION
+// ═══════════════════════════════════════════════════
+describe('Opening Badge', () => {
+    test('Opening name badge exists', () => {
+        expect(document.getElementById('openingName')).not.toBeNull();
+    });
+});

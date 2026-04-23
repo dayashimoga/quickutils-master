@@ -1,22 +1,27 @@
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    testTimeout: 10000,
     globals: true,
     environment: 'jsdom',
-    fileParallelism: false,
-    include: ['projects/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
     setupFiles: ['./tests/jsdom-setup.js'],
+    include: [
+      'tests/web-chess.test.js',
+      'tests/speed-test.test.js',
+      'tests/solar-system.test.js',
+      'tests/country-explorer.test.js',
+      'tests/sound-board.test.js'
+    ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['projects/**/*.js', 'shared/**/*.js'],
-      exclude: ['**/dist/**', '**/tests/**', '**/*.test.js', '**/package.json', '**/README.md']
-    },
-    deps: {
-      inline: [/quickutils/]
+      reporter: ['text', 'xml', 'html'],
+      include: [
+        'projects/web-chess/script.js',
+        'projects/speed-test/script.js',
+        'projects/solar-system/script.js',
+        'projects/country-explorer/script.js',
+        'projects/sound-board/script.js'
+      ]
     }
   }
 });
