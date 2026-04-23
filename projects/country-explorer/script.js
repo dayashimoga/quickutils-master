@@ -309,7 +309,63 @@ $('#doCompare').addEventListener('click',()=>{
     ['Population',fmt(a.population),fmt(b.population)],['Area',fmt(a.area)+' km²',fmt(b.area)+' km²'],
     ['Density',a.density+'/km²',b.density+'/km²'],['Currency',a.currencies,b.currencies],
     ['Languages',a.languages,b.languages],['Driving',a.drivingSide,b.drivingSide]];
-  $('#compareResults').innerHTML=`<table class="compare-table"><thead><tr><th>Metric</th><th>${a.flag} ${a.name}</th><th>${b.flag} ${b.name}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
+  $('#compareResults').innerHTML=`<div style="display:flex; flex-direction:column; gap:20px;">
+    <div style="height: 250px; width: 100%;"><canvas id="compareChart"></canvas></div>
+    <table class="compare-table"><thead><tr><th>Metric</th><th>${a.flag} ${a.name}</th><th>${b.flag} ${b.name}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>
+  </div>`;
+  
+  if (window.compareChartInst) window.compareChartInst.destroy();
+  const ctx = document.getElementById('compareChart').getContext('2d');
+  
+  // Normalize data for chart so bars are visible even with huge differences
+  // We'll chart log10 values or just use multiple scales
+  window.compareChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: ['Population (Log)', 'Area km² (Log)', 'Density /km²'],
+          datasets: [{
+              label: a.name,
+              data: [Math.log10(a.population || 1), Math.log10(a.area || 1), a.density],
+              backgroundColor: 'rgba(99, 102, 241, 0.7)',
+              borderColor: 'rgba(99, 102, 241, 1)',
+              borderWidth: 1
+          }, {
+              label: b.name,
+              data: [Math.log10(b.population || 1), Math.log10(b.area || 1), b.density],
+              backgroundColor: 'rgba(236, 72, 153, 0.7)',
+              borderColor: 'rgba(236, 72, 153, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { labels: { color: '#fff' } },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) label += ': ';
+                    // Restore true value for tooltip
+                    if (context.dataIndex === 0) {
+                      label += fmt(context.datasetIndex === 0 ? a.population : b.population);
+                    } else if (context.dataIndex === 1) {
+                      label += fmt(context.datasetIndex === 0 ? a.area : b.area) + ' km²';
+                    } else {
+                      label += (context.datasetIndex === 0 ? a.density : b.density) + ' /km²';
+                    }
+                    return label;
+                  }
+                }
+              }
+          },
+          scales: {
+              y: { ticks: { color: '#aaa', callback: function() { return ''; } }, grid: { color: 'rgba(255,255,255,0.1)' } },
+              x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+          }
+      }
+  });
 });
 
 // Quiz
