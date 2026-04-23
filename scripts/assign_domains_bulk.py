@@ -56,23 +56,35 @@ def assign_domains():
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         projects = json.load(f)
 
-    count = 0
-    errors = 0
-    skips = 0
-
     token = find_wrangler_token()
     if not token:
-        print("ERROR: Could not find active Wrangler OAuth token. Please login via wrangler or set CLOUDFLARE_API_TOKEN.")
-        sys.exit(1)
+        print("Error: Could not find Wrangler token or CLOUDFLARE_API_TOKEN.")
+        return
 
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
     if not account_id:
-        accounts_res, code = api_request("GET", "https://api.cloudflare.com/client/v4/accounts", token)
-        if accounts_res and accounts_res.get("success") and accounts_res.get("result"):
-            account_id = accounts_res["result"][0]["id"]
-        else:
-            print("ERROR: Could not fetch Account ID from API. Please set CLOUDFLARE_ACCOUNT_ID.")
-            sys.exit(1)
+        print("Error: CLOUDFLARE_ACCOUNT_ID not set.")
+        return
+
+    base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
+    
+    # 1. Fetch ALL projects and their domains to build a global map
+    print("Fetching all projects to map existing domains...")
+    project_domain_map = {}
+    all_projects_res, code = api_request("GET", f"{base_url}?per_page=100", token)
+    if all_projects_res and all_projects_res.get("success"):
+        for proj in all_projects_res.get("result", []):
+            proj_name = proj.get("name")
+            domains_list = proj.get("domains", [])
+            for d in domains_list:
+                if isinstance(d, str):
+                    project_domain_map[d] = proj_name
+                elif isinstance(d, dict) and "name" in d:
+                    project_domain_map[d["name"]] = proj_name
+
+    count = 0
+    errors = 0
+    skips = 0
 
     # Pre-fetch zone ID for quickutils.top
     zones_res, _ = api_request("GET", "https://api.cloudflare.com/client/v4/zones?name=quickutils.top", token)
@@ -80,7 +92,6 @@ def assign_domains():
     if zones_res and zones_res.get("success") and zones_res.get("result"):
         zone_id = zones_res["result"][0]["id"]
 
-    base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
     print(f"Loaded {len(projects)} projects from config. Initiating bulk domain REST API assignment...")
     
     for arch_key, cfg in projects.items():
@@ -90,19 +101,34 @@ def assign_domains():
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
             domain = domain.split("/")[0] # remove trailing paths if any
             
+            already_assigned = False
+
+            # Check if domain is attached ANYWHERE ELSE
+            current_holder = project_domain_map.get(domain)
+            if current_holder and current_holder != foldername:
+                print(f"  [FORCE DETACH] -> Domain {domain} is bound to {current_holder}. Detaching...")
+                api_request("DELETE", f"{base_url}/{current_holder}/domains/{domain}", token)
+                time.sleep(2) # Give CF time to process detach
+                project_domain_map[domain] = None
+
+            # Get current domains for THIS project to verify state
             domain_list_url = f"{base_url}/{foldername}/domains"
             list_res, list_code = api_request("GET", domain_list_url, token)
             
-            already_assigned = False
-            if list_code == 200 and list_res and "result" in list_res:
-                for existing in list_res["result"]:
+            if list_code == 429:
+                print("  [WARN] Rate limited reading domains. Sleeping 10s...")
+                time.sleep(10)
+                list_res, _ = api_request("GET", domain_list_url, token)
+
+            if list_res and list_res.get("success"):
+                for existing in list_res.get("result", []):
                     if existing.get("name") == domain:
                         if existing.get("status") == "active":
                             already_assigned = True
                         else:
-                            print(f"  [FORCE REBIND] -> Domain {domain} is stuck in state: {existing.get('status')}. Deleting...")
+                            print(f"  [FORCE REBIND] -> Domain {domain} is stuck in state: {existing.get('status')} on {foldername}. Deleting...")
                             api_request("DELETE", f"{base_url}/{foldername}/domains/{domain}", token)
-                            time.sleep(1) # give CF time to detach
+                            time.sleep(1)
                         break
 
             success_status = False

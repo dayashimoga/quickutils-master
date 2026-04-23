@@ -1,14 +1,16 @@
 :root {
-    --bg-base: #0b0f19;
-    --bg-surface: #151a28;
-    --bg-panel: #1c2234;
-    --text-main: #f1f5f9;
-    --text-muted: #94a3b8;
-    --border-color: #2e364f;
-    --color-green: #10b981;
-    --color-red: #ef4444;
-    --color-yellow: #f59e0b;
-    --color-brand: #3b82f6;
+    --bg-base: #0B0E14; /* Deep modern dark */
+    --bg-surface: rgba(21, 26, 40, 0.6);
+    --bg-panel: rgba(28, 34, 52, 0.7);
+    --text-main: #E2E8F0;
+    --text-muted: #94A3B8;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --color-green: #10B981;
+    --color-red: #EF4444;
+    --color-yellow: #F59E0B;
+    --color-brand: #3B82F6;
+    --glass-blur: blur(16px);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
 }
 
 * {
@@ -20,6 +22,9 @@
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-base);
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 25%);
     color: var(--text-main);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;

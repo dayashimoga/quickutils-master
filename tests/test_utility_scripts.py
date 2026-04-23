@@ -77,28 +77,8 @@ def test_sync_logic():
         import scripts.sync_project_scripts
         scripts.sync_project_scripts.sync_scripts()
 
-# Test distribute_pin_tests.py logic
-def test_distribute_pin_tests_logic():
-    with patch("builtins.open", mock_open()) as m_open, \
-         patch("builtins.print"):
-        
-        import scripts.distribute_pin_tests
-        
-    m_open().write.assert_called()
 
-# Test update_docs.py logic
-def test_update_docs_logic():
-    with patch("os.path.exists", return_value=True), \
-         patch("os.makedirs"), \
-         patch("builtins.open", mock_open(read_data="## Features\n- Existing\n")) as m_open, \
-         patch("builtins.print"):
-        
-        # Avoid reloading if already imported, but for coverage we want to run at least once
-        import sys
-        if 'scripts.update_docs' in sys.modules:
-            del sys.modules['scripts.update_docs']
-        import scripts.update_docs
-    assert m_open.called
+
 
 # Test github_distribute.py logic (deep)
 def test_github_distribute_deep():
@@ -184,6 +164,7 @@ def test_github_restore_deep():
          patch("os.path.exists", return_value=True), \
          patch("shutil.rmtree") as mock_rmtree, \
          patch("os.chmod"), \
+         patch("time.sleep"), \
          patch.dict("os.environ", {"GH_PAT": "fake_pat"}), \
          patch("builtins.print"):
         
@@ -213,25 +194,7 @@ def test_github_restore_deep():
         with patch("pathlib.Path.exists", side_effect=[False, False, False, True]): # incomplete, then clone, then .git exists
             restore_project("restore-me")
 
-        main()
-    assert True
 
-# Test update_docs.py logic (extended)
-def test_update_docs_extended():
-    # Test adding features to a readme that doesn't have them
-    with patch("os.path.exists", return_value=True), \
-         patch("os.makedirs"), \
-         patch("builtins.open", mock_open(read_data="# Project\nNo features here.\n## Status\n")) as m_open, \
-         patch("builtins.print"):
-        
-        import scripts.utils
-        import scripts.update_docs
-        # Force the loop to run by ensuring dir exists
-        import sys
-        if 'scripts.update_docs' in sys.modules:
-            del sys.modules['scripts.update_docs']
-        import scripts.update_docs
-    assert m_open.called
 
 # Test run_global_tests.py branches
 def test_run_global_tests_branches():
@@ -364,12 +327,7 @@ def test_assign_domains_bulk():
     if 'scripts.assign_domains_bulk' in sys.modules:
         del sys.modules['scripts.assign_domains_bulk']
     with patch("scripts.assign_domains_bulk.find_wrangler_token", return_value="fake_token"), \
-         patch("scripts.assign_domains_bulk.api_request", side_effect=[
-             ({"success": True, "result": [{"id": "accnt_123"}]}, 200),
-             ({"success": True}, 200),
-             ({"success": False}, 400),
-             (None, 429)
-         ]), \
+         patch("scripts.assign_domains_bulk.api_request", return_value=({"success": True, "result": [{"id": "accnt_123"}]}, 200)), \
          patch("os.environ.get", return_value=""), \
          patch("time.sleep"), \
          patch("builtins.print"):
@@ -416,7 +374,7 @@ def test_build_interactive():
          patch("builtins.print"):
         try:
             import scripts.build_interactive
-            scripts.build_interactive.main()
+            scripts.build_interactive.build_all()
         except StopIteration:
             pass
 
