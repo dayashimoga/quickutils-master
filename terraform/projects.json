@@ -499,14 +499,6 @@
         "custom_domain": "escaperoom.quickutils.top",
         "destination_dir": "dist"
     },
-    "stock_simulator": {
-        "directory": "projects/stock-simulator",
-        "repo_name": "stock-simulator",
-        "project_type": "stock-simulator",
-        "root_dir": "projects/stock-simulator",
-        "custom_domain": "stocks.quickutils.top",
-        "destination_dir": "dist"
-    },
     "meme_generator": {
         "directory": "projects/meme-generator",
         "repo_name": "meme-generator",
@@ -687,5 +679,13 @@
         "destination_dir": "dist",
         "custom_domain": "earthquake.quickutils.top",
         "root_dir": "projects/earthquake-explorer"
+    },
+    "tests/test_smoke_all.py": {
+        "directory": "projects/tests/test_smoke_all.py",
+        "repo_name": "tests/test_smoke_all.py",
+        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
+        "destination_dir": "dist",
+        "custom_domain": "None.quickutils.top",
+        "root_dir": "projects/tests/test_smoke_all.py"
     }
 }

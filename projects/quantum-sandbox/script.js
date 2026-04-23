@@ -30,7 +30,9 @@
         X: [[c0, c1], [c1, c0]],
         Y: [[c0, cni], [ci, c0]],
         Z: [[c1, c0], [c0, new C(-1)]],
-        H: [[new C(SQRT2_INV), new C(SQRT2_INV)], [new C(SQRT2_INV), new C(-SQRT2_INV)]]
+        H: [[new C(SQRT2_INV), new C(SQRT2_INV)], [new C(SQRT2_INV), new C(-SQRT2_INV)]],
+        S: [[c1, c0], [c0, ci]],
+        TG: [[c1, c0], [c0, new C(Math.cos(Math.PI/4), Math.sin(Math.PI/4))]]
     };
 
     let numQubits = 3;
@@ -39,8 +41,11 @@
 
     function initCircuit() {
         circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        const qc = $('#qubitCount');
+        if (qc) qc.textContent = numQubits;
         renderCircuit();
         simulate();
+        generateQASM();
     }
 
     // Apply 1-qubit gate to state vector
@@ -548,10 +553,71 @@
         circuit[1][0] = 'H';
         renderCircuit();
         simulate();
+        generateQASM();
+    };
+
+    const dGHZ = $('#btnDemoGHZ');
+    if(dGHZ) dGHZ.onclick = () => {
+        numQubits = 3;
+        circuit = Array.from({length: maxSteps}, () => Array(numQubits).fill('I'));
+        circuit[0][0] = 'H';
+        circuit[1][0] = 'CNOT:1';
+        circuit[1][1] = 'T';
+        circuit[2][1] = 'CNOT:2';
+        circuit[2][2] = 'T';
+        renderCircuit();
+        simulate();
+        generateQASM();
+    };
+
+    // QASM Export
+    function generateQASM() {
+        const qasmEl = $('#qasmOutput');
+        if (!qasmEl) return;
+        let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[${numQubits}];\ncreg c[${numQubits}];\n`;
+        for (let step = 0; step < maxSteps; step++) {
+            for (let q = 0; q < numQubits; q++) {
+                const g = circuit[step][q];
+                if (g === 'I' || g === 'T') continue;
+                if (g === 'H') qasm += `h q[${q}];\n`;
+                else if (g === 'X') qasm += `x q[${q}];\n`;
+                else if (g === 'Y') qasm += `y q[${q}];\n`;
+                else if (g === 'Z') qasm += `z q[${q}];\n`;
+                else if (g === 'S') qasm += `s q[${q}];\n`;
+                else if (g === 'TG') qasm += `t q[${q}];\n`;
+                else if (g === 'M') qasm += `measure q[${q}] -> c[${q}];\n`;
+                else if (g.startsWith('CNOT:')) {
+                    const targ = parseInt(g.split(':')[1]);
+                    qasm += `cx q[${q}],q[${targ}];\n`;
+                }
+            }
+        }
+        qasmEl.textContent = qasm;
+    }
+
+    const exportBtn = $('#exportQASM');
+    if (exportBtn) exportBtn.onclick = () => {
+        generateQASM();
+        const qasmEl = $('#qasmOutput');
+        if (qasmEl && qasmEl.textContent) {
+            navigator.clipboard.writeText(qasmEl.textContent).then(() => {
+                exportBtn.textContent = '✅ Copied!';
+                setTimeout(() => { exportBtn.textContent = '📋 Copy QASM'; }, 2000);
+            }).catch(() => {});
+        }
     };
 
     initBloch3D();
     initProbabilityClouds();
     initCircuit();
+
+    // Re-bind drag events for new gate elements added in HTML
+    $$('.q-gate').forEach(gt => {
+        gt.addEventListener('dragstart', (e) => {
+            draggedGate = gt.dataset.type;
+            pendingCnotCtrl = null;
+        });
+        gt.addEventListener('dragend', () => draggedGate = null);
+    });
 
 })();

@@ -6,10 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile.test
     container_name: quickutils_test_runner
-    volumes:
-      - ./coverage:/app/coverage
-      - ./.coverage:/app/.coverage
-      - ./coverage.xml:/app/coverage.xml
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=8192
     command: >
       sh -c "echo '=== Python Tests ===' && 
              python3 -m pytest tests/test_smoke_all.py tests/test_coverage_booster.py --cov=scripts --cov-report=term --cov-report=xml --cov-fail-under=90 && 

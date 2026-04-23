@@ -75,9 +75,20 @@
                         <span id="qubitCount" class="fw-bold">3</span>
                         <button class="btn btn-secondary btn-sm px-2" id="addQubitBtn">+</button>
                     </div>
+                </div>
+                <h3 class="mt-4 mb-3 text-neon-amber">Gates</h3>
+                <div class="gates-extra d-flex gap-2 flex-wrap mb-3">
+                    <div class="q-gate gate-s" draggable="true" data-type="S" title="Phase Gate (S)">S</div>
+                    <div class="q-gate gate-t-gate" draggable="true" data-type="TG" title="T Gate (π/8)">T</div>
+                    <div class="q-gate gate-swap" draggable="true" data-type="SWAP" title="SWAP Gate">⇄</div>
+                </div>
                 <h3 class="mt-4 mb-3 text-neon-amber">Demos</h3>
                 <button class="btn btn-outline btn-sm w-100 mb-2 p-2" id="btnDemoEntangle" title="Generate Bell State">Bell State (Entanglement)</button>
-                <button class="btn btn-outline btn-sm w-100 p-2" id="btnDemoInterference" title="Interference via H-gate">Interference (Double Slit)</button>
+                <button class="btn btn-outline btn-sm w-100 mb-2 p-2" id="btnDemoInterference" title="Interference via H-gate">Interference (Double Slit)</button>
+                <button class="btn btn-outline btn-sm w-100 mb-2 p-2" id="btnDemoGHZ" title="3-qubit GHZ State">GHZ State (3-Qubit)</button>
+                <h3 class="mt-4 mb-3 text-neon-amber">Export</h3>
+                <button class="btn btn-primary btn-sm w-100 mb-2 p-2" id="exportQASM">📋 Copy QASM</button>
+                <pre id="qasmOutput" style="font-size:0.7rem;max-height:150px;overflow-y:auto;background:rgba(0,0,0,0.3);padding:8px;border-radius:8px;color:#7af0c8;margin-top:0.5rem;white-space:pre-wrap;"></pre>
             </div>
 
             <!-- Main Circuit Editor -->

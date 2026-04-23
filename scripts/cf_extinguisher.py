@@ -55,11 +55,6 @@ def api_request(method, url, token, payload=None):
     return None
 
 def main():
-    target_projects = sys.argv[1:]
-    if not target_projects:
-        # Default projects to extinguish to free slots
-        target_projects = []
-
     token = find_wrangler_token()
     if not token:
         print("❌ Could not find active Wrangler OAuth token. Please login via wrangler or set CLOUDFLARE_API_TOKEN.")
@@ -76,9 +71,47 @@ def main():
             print("❌ Could not fetch Account ID from API. Please set CLOUDFLARE_ACCOUNT_ID.")
             sys.exit(1)
 
-    print(f"🚀 Initializing Cloudflare REST API Extinguisher for {len(target_projects)} projects...")
+    # 1. Fetch valid projects from projects.json
+    valid_projects = set()
+    config_path = Path(__file__).resolve().parent.parent / "terraform" / "projects.json"
+    if config_path.exists():
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+            for k, v in cfg.items():
+                valid_projects.add(v.get("repo_name", k))
+    else:
+        print("⚠️ Warning: terraform/projects.json not found. Proceeding with caution.")
 
+    # 2. Determine target projects
+    target_projects = sys.argv[1:]
     base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
+
+    if not target_projects and valid_projects:
+        print("🔍 No specific projects provided. Auto-detecting orphans...")
+        # Fetch all active CF Pages projects
+        cf_projects = []
+        page = 1
+        while True:
+            res = api_request("GET", f"{base_url}?page={page}&per_page=50", token)
+            if res and res.get("success"):
+                batch = res.get("result", [])
+                if not batch: break
+                for p in batch:
+                    cf_projects.append(p["name"])
+                if len(batch) < 50: break
+                page += 1
+            else:
+                break
+        
+        # Calculate orphans
+        target_projects = [p for p in cf_projects if p not in valid_projects]
+        print(f"📡 Found {len(cf_projects)} Cloudflare projects. Auto-detected {len(target_projects)} orphans.")
+
+    if not target_projects:
+        print("🏁 No orphans to extinguish. Operations completed.")
+        return
+
+    print(f"🚀 Initializing Cloudflare REST API Extinguisher for {len(target_projects)} projects...")
 
     for project in target_projects:
         print(f"\nTargeting Project: {project}")

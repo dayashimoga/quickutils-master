@@ -60,6 +60,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="quickutils-core.css">
     <link rel="stylesheet" href="style.css">
     
     <!-- Config Variables (injected by build/cloudflare pages) -->
@@ -180,6 +181,57 @@
                     </div>
                     <div class="news-list" id="newsContainer">
                         <div class="loading-text">Loading latest headlines...</div>
+                    </div>
+                </section>
+
+                <!-- Technical Analysis -->
+                <section class="info-card" id="techAnalysis">
+                    <div class="card-header">
+                        <h2>📊 Technical Analysis</h2>
+                    </div>
+                    <div class="ta-grid">
+                        <div class="ta-gauge-container">
+                            <h4>RSI (14-Day)</h4>
+                            <canvas id="rsiGauge" width="200" height="120"></canvas>
+                            <div id="rsiValue" class="ta-value">--</div>
+                        </div>
+                        <div class="ta-gauge-container">
+                            <h4>MACD Histogram</h4>
+                            <canvas id="macdChart" width="300" height="120"></canvas>
+                            <div id="macdSignal" class="ta-value">--</div>
+                        </div>
+                    </div>
+                    <div id="supportResistance" class="sr-levels mt-2"></div>
+                </section>
+
+                <!-- Investment Signals -->
+                <section class="info-card" id="investmentSignals">
+                    <div class="card-header">
+                        <h2>💡 Investment Signals</h2>
+                    </div>
+                    <div id="signalCards" class="signal-cards-grid"></div>
+                </section>
+
+                <!-- Paper Trading (merged from Stock Simulator) -->
+                <section class="info-card" id="paperTrading">
+                    <div class="card-header">
+                        <h2>📈 Paper Trading Simulator</h2>
+                    </div>
+                    <div class="paper-portfolio">
+                        <div class="portfolio-stats">
+                            <div class="stat"><span class="text-muted">Cash</span><strong id="ptCash">$10,000.00</strong></div>
+                            <div class="stat"><span class="text-muted">Holdings</span><strong id="ptHoldings">$0.00</strong></div>
+                            <div class="stat"><span class="text-muted">Total</span><strong id="ptTotal" style="font-size:1.1rem;">$10,000.00</strong></div>
+                            <div class="stat"><span class="text-muted">P&amp;L</span><strong id="ptPnl" style="color:#22c55e;">$0.00 (0.00%)</strong></div>
+                        </div>
+                        <div class="pt-chart-container">
+                            <canvas id="portfolioChart" height="150" style="width:100%;"></canvas>
+                        </div>
+                        <div id="ptPositions" class="pt-positions mt-2"></div>
+                        <details class="mt-2" style="font-size:0.85rem;">
+                            <summary style="cursor:pointer;color:var(--text-muted);">📋 Trade History</summary>
+                            <div id="tradeHistory" class="trade-history mt-1"></div>
+                        </details>
                     </div>
                 </section>
 
