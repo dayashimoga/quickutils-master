@@ -55,8 +55,9 @@
 
     <main class="container main-content">
         <div class="top-controls">
-            <div class="search-wrap">
-                <input type="text" id="searchInput" placeholder="Search by name, symbol, or atomic number..." autocomplete="off">
+            <div class="search-wrap" style="position:relative;">
+                <input type="text" id="searchInput" placeholder="Search by name, symbol, or atomic number..." autocomplete="off" style="width:100%;">
+                <div id="searchSuggestions" style="position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; z-index:1000; display:none; max-height:200px; overflow-y:auto;"></div>
             </div>
             
             <div class="phase-controls glass-card p-3" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
@@ -72,9 +73,12 @@
                 </div>
             </div>
 
-            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
                 <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
                 <button class="btn btn-secondary btn-sm" id="sensitivityBtn">☢️ Highlight Sensitivity</button>
+                <button class="btn btn-secondary btn-sm" id="trendRadiusBtn">📏 Trend: Radius</button>
+                <button class="btn btn-secondary btn-sm" id="trendElectroBtn">⚡ Trend: Electronegativity</button>
+                <button class="btn btn-secondary btn-sm" id="clearTrendsBtn" style="display:none;">❌ Clear Trend</button>
             </div>
             <div class="legend-filter mt-3" id="legendFilter">
                 <!-- Populated by JS -->
@@ -142,6 +146,8 @@
     <script src="script.js"></script>
     <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
     <script>kofiWidgetOverlay.draw('dayatin',{'type':'floating-chat','floating-chat.donateButton.text':'Support Us','floating-chat.donateButton.background-color':'#ff5e5b','floating-chat.donateButton.text-color':'#fff'});</script>
+
+
 
 
 
@@ -263,6 +269,8 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
+
+
 
 
 

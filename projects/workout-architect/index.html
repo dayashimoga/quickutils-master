@@ -58,10 +58,66 @@
             <div class="mt-4"><h4>My Routine</h4><div id="myRoutine"></div></div>
         </div>
     </div>
+
+    <!-- Rhythm Trainer Section (Merged from rhythm-trainer) -->
+    <div class="glass-card p-4 mt-4">
+        <h3>🎵 Workout Rhythm Trainer</h3>
+        <p class="text-muted" style="font-size:0.85rem;margin-bottom:1rem;">Keep your workout tempo with this beat-matching game. Hit the notes as they cross the line!</p>
+        <div class="d-flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center;">
+            <div>
+                <label style="font-size:0.75rem;color:var(--text-muted,#888);">BPM</label>
+                <div class="d-flex gap-1 align-items-center">
+                    <button class="btn btn-secondary btn-sm" id="tempoDown">−</button>
+                    <input type="range" id="tempoSlider" min="40" max="240" value="120" style="width:120px;">
+                    <button class="btn btn-secondary btn-sm" id="tempoUp">+</button>
+                    <span id="tempoVal" style="font-weight:700;min-width:40px;text-align:center;">120</span>
+                </div>
+            </div>
+            <div>
+                <label style="font-size:0.75rem;color:var(--text-muted,#888);">Pattern</label>
+                <select id="pattern" class="form-control" style="font-size:0.85rem;">
+                    <option value="quarter">Quarter Notes</option>
+                    <option value="eighth">Eighth Notes</option>
+                    <option value="triplet">Triplets</option>
+                    <option value="offbeat">Offbeat</option>
+                    <option value="syncopated">Syncopated</option>
+                    <option value="random">Random Mix</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.75rem;color:var(--text-muted,#888);">Difficulty</label>
+                <select id="difficulty" class="form-control" style="font-size:0.85rem;">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" id="startBtn">▶ Start</button>
+                <button class="btn btn-secondary" id="stopBtn" disabled>⏹ Stop</button>
+            </div>
+        </div>
+        <div style="position:relative;border-radius:10px;overflow:hidden;background:#120e20;">
+            <canvas id="beatCanvas" style="width:100%;height:180px;display:block;"></canvas>
+            <div id="hitFeedback" class="hit-feedback"></div>
+        </div>
+        <div class="d-flex gap-4 mt-2" style="font-size:0.8rem;color:var(--text-muted,#888);justify-content:center;flex-wrap:wrap;">
+            <span>Score: <strong id="score" style="color:var(--text,#e8e8f0);">0</strong></span>
+            <span id="combo"></span>
+            <span>Perfect: <strong id="perfectCount">0</strong></span>
+            <span>Good: <strong id="goodCount">0</strong></span>
+            <span>Miss: <strong id="missCount">0</strong></span>
+            <span>Max Combo: <strong id="maxCombo">0</strong></span>
+            <span>Accuracy: <strong id="accuracy">0%</strong></span>
+        </div>
+        <p class="text-muted text-center mt-2" style="font-size:0.75rem;">Press Space, D, F, J, or K to hit notes. Tap on mobile.</p>
+    </div>
     </main>
     <footer class="footer"><div class="container copyright text-center py-4">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
+
+
 
 
 
@@ -183,6 +239,8 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
+
+
 
 
 

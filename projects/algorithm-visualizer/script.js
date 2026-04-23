@@ -174,7 +174,167 @@ async function heapify(n, i) {
   }
 }
 
-const SORT_ALGOS = { bubble: bubbleSort, selection: selectionSort, insertion: insertionSort, merge: mergeSort, quick: quickSort, heap: heapSort };
+// ─── New Sorting Algorithms ───
+
+async function cocktailSort() {
+  let swapped = true;
+  let start = 0, end = array.length - 1;
+  while (swapped && sorting) {
+    swapped = false;
+    for (let i = start; i < end; i++) {
+      if (!sorting) return;
+      comparisons++;
+      renderBars({comparing: [i, i+1]});
+      await sleep(getDelay());
+      if (array[i] > array[i+1]) {
+        await swap(i, i+1);
+        renderBars({swapping: [i, i+1]});
+        await sleep(getDelay());
+        swapped = true;
+      }
+    }
+    if (!swapped) break;
+    swapped = false;
+    end--;
+    for (let i = end - 1; i >= start; i--) {
+      if (!sorting) return;
+      comparisons++;
+      renderBars({comparing: [i, i+1]});
+      await sleep(getDelay());
+      if (array[i] > array[i+1]) {
+        await swap(i, i+1);
+        renderBars({swapping: [i, i+1]});
+        await sleep(getDelay());
+        swapped = true;
+      }
+    }
+    start++;
+  }
+}
+
+async function shellSort() {
+  let gap = Math.floor(array.length / 2);
+  while (gap > 0 && sorting) {
+    for (let i = gap; i < array.length; i++) {
+      if (!sorting) return;
+      let temp = array[i];
+      let j = i;
+      while (j >= gap && array[j - gap] > temp) {
+        comparisons++;
+        array[j] = array[j - gap];
+        swaps++;
+        renderBars({comparing: [j, j - gap]});
+        await sleep(getDelay());
+        j -= gap;
+      }
+      array[j] = temp;
+      renderBars();
+    }
+    gap = Math.floor(gap / 2);
+  }
+}
+
+async function combSort() {
+  let gap = array.length;
+  const shrink = 1.3;
+  let sorted = false;
+  while (!sorted && sorting) {
+    gap = Math.floor(gap / shrink);
+    if (gap <= 1) { gap = 1; sorted = true; }
+    for (let i = 0; i + gap < array.length; i++) {
+      if (!sorting) return;
+      comparisons++;
+      renderBars({comparing: [i, i + gap]});
+      await sleep(getDelay());
+      if (array[i] > array[i + gap]) {
+        await swap(i, i + gap);
+        renderBars({swapping: [i, i + gap]});
+        await sleep(getDelay());
+        sorted = false;
+      }
+    }
+  }
+}
+
+async function radixSort() {
+  const max = Math.max(...array);
+  for (let exp = 1; Math.floor(max / exp) > 0 && sorting; exp *= 10) {
+    const output = new Array(array.length);
+    const count = new Array(10).fill(0);
+    for (let i = 0; i < array.length; i++) {
+      const digit = Math.floor(array[i] / exp) % 10;
+      count[digit]++;
+    }
+    for (let i = 1; i < 10; i++) count[i] += count[i - 1];
+    for (let i = array.length - 1; i >= 0; i--) {
+      const digit = Math.floor(array[i] / exp) % 10;
+      output[count[digit] - 1] = array[i];
+      count[digit]--;
+      swaps++;
+    }
+    for (let i = 0; i < array.length; i++) {
+      if (!sorting) return;
+      array[i] = output[i];
+      renderBars({comparing: [i]});
+      await sleep(getDelay());
+    }
+  }
+}
+
+async function countingSort() {
+  const max = Math.ceil(Math.max(...array));
+  const min = Math.floor(Math.min(...array));
+  const range = max - min + 1;
+  const count = new Array(range).fill(0);
+  const output = new Array(array.length);
+  for (let i = 0; i < array.length; i++) {
+    count[Math.floor(array[i]) - min]++;
+  }
+  for (let i = 1; i < range; i++) count[i] += count[i - 1];
+  for (let i = array.length - 1; i >= 0; i--) {
+    const idx = Math.floor(array[i]) - min;
+    output[count[idx] - 1] = array[i];
+    count[idx]--;
+    swaps++;
+  }
+  for (let i = 0; i < array.length; i++) {
+    if (!sorting) return;
+    array[i] = output[i];
+    renderBars({comparing: [i]});
+    await sleep(getDelay());
+  }
+}
+
+const SORT_ALGOS = { bubble: bubbleSort, selection: selectionSort, insertion: insertionSort, merge: mergeSort, quick: quickSort, heap: heapSort, cocktail: cocktailSort, shell: shellSort, comb: combSort, radix: radixSort, counting: countingSort };
+
+// ─── Algorithm Info Database ───
+const ALGO_INFO = {
+  bubble: { name: 'Bubble Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stable: true, desc: 'Repeatedly steps through the list, compares adjacent elements and swaps them if in wrong order. Best for nearly sorted data.' },
+  selection: { name: 'Selection Sort', best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stable: false, desc: 'Finds the minimum element and places it at the beginning. Always O(n²) — not adaptive.' },
+  insertion: { name: 'Insertion Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stable: true, desc: 'Builds sorted array one item at a time. Excellent for small or nearly sorted arrays.' },
+  cocktail: { name: 'Cocktail Shaker Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stable: true, desc: 'Bidirectional bubble sort — traverses in both directions alternately. Slightly better than bubble sort for certain distributions.' },
+  merge: { name: 'Merge Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', stable: true, desc: 'Divides array in half, sorts recursively, then merges. Guaranteed O(n log n) but uses extra memory.' },
+  quick: { name: 'Quick Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n²)', space: 'O(log n)', stable: false, desc: 'Picks a pivot, partitions around it. Fastest in practice for random data, but worst case is O(n²).' },
+  heap: { name: 'Heap Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(1)', stable: false, desc: 'Builds a max-heap, repeatedly extracts the maximum. In-place with guaranteed O(n log n).' },
+  shell: { name: 'Shell Sort', best: 'O(n log n)', avg: 'O(n^1.3)', worst: 'O(n²)', space: 'O(1)', stable: false, desc: 'Generalization of insertion sort using gap sequences. Much faster than insertion sort for large arrays.' },
+  comb: { name: 'Comb Sort', best: 'O(n log n)', avg: 'O(n²/2^p)', worst: 'O(n²)', space: 'O(1)', stable: false, desc: 'Improvement on bubble sort using shrinking gaps. Eliminates "turtles" (small values at the end).' },
+  radix: { name: 'Radix Sort (LSD)', best: 'O(nk)', avg: 'O(nk)', worst: 'O(nk)', space: 'O(n+k)', stable: true, desc: 'Non-comparative sort that distributes elements into buckets by digit. Linear time for fixed-width integers.' },
+  counting: { name: 'Counting Sort', best: 'O(n+k)', avg: 'O(n+k)', worst: 'O(n+k)', space: 'O(k)', stable: true, desc: 'Counts occurrences of each value, then reconstructs the array. Efficient when range k is small.' }
+};
+
+function updateAlgoInfo(algoKey) {
+  const info = ALGO_INFO[algoKey];
+  if (!info) return;
+  const nameEl = $('#algoInfoName'); if (nameEl) nameEl.textContent = info.name;
+  const bestEl = $('#algoTimeBest'); if (bestEl) bestEl.textContent = 'Best: ' + info.best;
+  const avgEl = $('#algoTimeAvg'); if (avgEl) avgEl.textContent = 'Avg: ' + info.avg;
+  const worstEl = $('#algoTimeWorst'); if (worstEl) worstEl.textContent = 'Worst: ' + info.worst;
+  const spaceEl = $('#algoSpace'); if (spaceEl) spaceEl.textContent = 'Space: ' + info.space;
+  const stableEl = $('#algoStable'); if (stableEl) { stableEl.textContent = info.stable ? 'Stable ✓' : 'Unstable ✗'; stableEl.className = info.stable ? 'badge badge-stable' : 'badge badge-unstable'; }
+  const descEl = $('#algoDescription'); if (descEl) descEl.textContent = info.desc;
+}
+
+$('#sortAlgo').addEventListener('change', (e) => updateAlgoInfo(e.target.value));
 
 $('#startSortBtn').addEventListener('click', async () => {
   if (sorting) { sorting = false; $('#startSortBtn').textContent = '▶ Start'; return; }
@@ -377,7 +537,28 @@ function generateMaze() {
   renderGrid();
 }
 
-const PATH_ALGOS = { bfs, dfs, dijkstra, astar };
+async function greedy() {
+  const parent = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+  const closed = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+  const open = [[heuristic(startNode.r, startNode.c, endNode.r, endNode.c), startNode.r, startNode.c]];
+  while (open.length && pathfinding) {
+    open.sort((a, b) => a[0] - b[0]);
+    const [, r, c] = open.shift();
+    if (r === endNode.r && c === endNode.c) return tracePath(parent);
+    if (closed[r][c]) continue;
+    closed[r][c] = true;
+    const cell = getCell(r, c);
+    if (cell && !cell.classList.contains('start') && !cell.classList.contains('end')) cell.classList.add('visited');
+    await sleep(10);
+    for (const [nr, nc] of neighbors(r, c)) {
+      if (closed[nr][nc]) continue;
+      parent[nr][nc] = [r, c];
+      open.push([heuristic(nr, nc, endNode.r, endNode.c), nr, nc]);
+    }
+  }
+}
+
+const PATH_ALGOS = { bfs, dfs, dijkstra, astar, greedy };
 
 $('#startPathBtn').addEventListener('click', async () => {
   if (pathfinding) { pathfinding = false; return; }

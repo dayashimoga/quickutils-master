@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datasets Directory | QuickUtils</title>
+    <meta name="description" content="Free datasets for machine learning and data science">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://datasets.quickutils.top/">
+    <meta property="og:title" content="Datasets Directory | QuickUtils">
+    <meta property="og:description" content="Free datasets for machine learning and data science">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        :root {
+            --bg: #0a0a0f; --bg-card: rgba(18,18,30,0.85); --text: #e8e8f0;
+            --text-muted: #888; --accent: #6366f1; --border: rgba(255,255,255,0.08);
+            --radius: 12px;
+        }
+        [data-theme="light"] {
+            --bg: #f5f5fa; --bg-card: rgba(255,255,255,0.9); --text: #1a1a2e;
+            --text-muted: #666; --border: rgba(0,0,0,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        .navbar { background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0.75rem 0; position:sticky; top:0; z-index:100; }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; }
+        .brand { text-decoration:none; color:var(--text); font-weight:700; font-size:1.25rem; }
+        .hero { text-align:center; padding:2.5rem 0 1.5rem; }
+        .hero h1 { font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; margin-bottom:0.5rem; }
+        .hero p { color:var(--text-muted); max-width:500px; margin:0 auto; }
+        .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .controls { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; align-items:center; }
+        .controls input, .controls select { padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:0.9rem; outline:none; }
+        .controls input { flex:1; min-width:200px; }
+        .controls input:focus, .controls select:focus { border-color:var(--accent); }
+        .count-badge { padding:0.4rem 1rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:20px; font-size:0.85rem; color:var(--accent); font-weight:600; }
+        .dir-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin:1.5rem 0 3rem; }
+        .dir-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; transition:all 0.3s; }
+        .dir-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(99,102,241,0.15); }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.5rem; }
+        .card-top h3 { font-size:1rem; font-weight:600; }
+        .card-top a { color:var(--text); text-decoration:none; }
+        .card-top a:hover { color:var(--accent); }
+        .card-category { font-size:0.7rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.1); color:var(--accent); white-space:nowrap; }
+        .card-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
+        .card-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+        .badge { padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; }
+        .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+        .footer a { color:var(--accent); text-decoration:none; }
+        .empty-state { text-align:center; padding:3rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">📊 Datasets Directory</a>
+    <a href="https://quickutils.top" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">QuickUtils ↗</a>
+</div></nav>
+
+<main class="container">
+    <section class="hero">
+        <h1>📊 <span class="gradient-text">Datasets Directory</span></h1>
+        <p>Free datasets for machine learning and data science</p>
+    </section>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search 65 entries..." oninput="filterCards()">
+        <select id="categoryFilter" onchange="filterCards()">
+            <option value="">All Categories</option>
+            <option value="Audio">Audio</option>
+            <option value="Biology">Biology</option>
+            <option value="Business">Business</option>
+            <option value="Climate & Space">Climate & Space</option>
+            <option value="Computer Vision">Computer Vision</option>
+            <option value="Economics & Demographics">Economics & Demographics</option>
+            <option value="Finance">Finance</option>
+            <option value="Finance Data">Finance Data</option>
+            <option value="General">General</option>
+            <option value="Geography">Geography</option>
+            <option value="Government & Public Sector">Government & Public Sector</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="NLP">NLP</option>
+            <option value="Natural Language">Natural Language</option>
+            <option value="Technology">Technology</option>
+            <option value="Web & Text">Web & Text</option>
+        </select>
+        <span class="count-badge" id="countBadge">65 items</span>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset" target="_blank" rel="noopener">MNIST</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Database of handwritten digits.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.cs.toronto.edu/~kriz/cifar.html" target="_blank" rel="noopener">CIFAR-10</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Images for object recognition.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.image-net.org/" target="_blank" rel="noopener">ImageNet</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Large visual database designed for use in visual object recognition.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://cocodataset.org/" target="_blank" rel="noopener">COCO</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Common Objects in Context.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://rajpurkar.github.io/SQuAD-explorer/" target="_blank" rel="noopener">SQuAD</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Stanford Question Answering Dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://ai.stanford.edu/~amaas/data/sentiment/" target="_blank" rel="noopener">IMDB Reviews</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Movie reviews for sentiment analysis.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://paperswithcode.com/dataset/wikitext-103" target="_blank" rel="noopener">WikiText</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Language modeling dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Web & Text">
+            <div class="card-top">
+                <h3><a href="https://commoncrawl.org/" target="_blank" rel="noopener">Common Crawl</a></h3>
+                <span class="card-category">Web & Text</span>
+            </div>
+            <p class="card-desc">Petabytes of web data freely available.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Web & Text">
+            <div class="card-top">
+                <h3><a href="https://www.dbpedia.org/" target="_blank" rel="noopener">DBpedia</a></h3>
+                <span class="card-category">Web & Text</span>
+            </div>
+            <p class="card-desc">Structured content from Wikipedia.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Business">
+            <div class="card-top">
+                <h3><a href="https://www.yelp.com/dataset" target="_blank" rel="noopener">Yelp Open Dataset</a></h3>
+                <span class="card-category">Business</span>
+            </div>
+            <p class="card-desc">Business, review, and user data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://www.cs.cmu.edu/~enron/" target="_blank" rel="noopener">Enron Email Dataset</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Emails generated by employees of the Enron Corporation.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Healthcare">
+            <div class="card-top">
+                <h3><a href="https://mimic.physionet.org/" target="_blank" rel="noopener">MIMIC-III</a></h3>
+                <span class="card-category">Healthcare</span>
+            </div>
+            <p class="card-desc">Medical Information Mart for Intensive Care.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Government & Public Sector">
+            <div class="card-top">
+                <h3><a href="https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i" target="_blank" rel="noopener">NYPD Complaint Data</a></h3>
+                <span class="card-category">Government & Public Sector</span>
+            </div>
+            <p class="card-desc">Historic crime data in NYC.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="General">
+            <div class="card-top">
+                <h3><a href="https://data.fivethirtyeight.com/" target="_blank" rel="noopener">FiveThirtyEight Data</a></h3>
+                <span class="card-category">General</span>
+            </div>
+            <p class="card-desc">Data behind the stories.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="General">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/competitions/titanic/data" target="_blank" rel="noopener">Titanic Dataset</a></h3>
+                <span class="card-category">General</span>
+            </div>
+            <p class="card-desc">Machine learning from disaster.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Economics & Demographics">
+            <div class="card-top">
+                <h3><a href="https://data.worldbank.org/" target="_blank" rel="noopener">World Bank Open Data</a></h3>
+                <span class="card-category">Economics & Demographics</span>
+            </div>
+            <p class="card-desc">Free and open access to global development data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Healthcare">
+            <div class="card-top">
+                <h3><a href="https://data.who.int/" target="_blank" rel="noopener">WHO Data</a></h3>
+                <span class="card-category">Healthcare</span>
+            </div>
+            <p class="card-desc">Global Health Observatory.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Climate & Space">
+            <div class="card-top">
+                <h3><a href="https://earthdata.nasa.gov/" target="_blank" rel="noopener">NASA Earth Data</a></h3>
+                <span class="card-category">Climate & Space</span>
+            </div>
+            <p class="card-desc">Earth science data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Geography">
+            <div class="card-top">
+                <h3><a href="https://planet.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a></h3>
+                <span class="card-category">Geography</span>
+            </div>
+            <p class="card-desc">Free wiki world map.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Government & Public Sector">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/datasets/START-UMD/gtd" target="_blank" rel="noopener">Global Terrorism Database</a></h3>
+                <span class="card-category">Government & Public Sector</span>
+            </div>
+            <p class="card-desc">Information on terrorist events.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Economics & Demographics">
+            <div class="card-top">
+                <h3><a href="https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html" target="_blank" rel="noopener">Boston Housing</a></h3>
+                <span class="card-category">Economics & Demographics</span>
+            </div>
+            <p class="card-desc">Housing values in suburbs of Boston.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Biology">
+            <div class="card-top">
+                <h3><a href="https://archive.ics.uci.edu/ml/datasets/iris" target="_blank" rel="noopener">Iris Flower Dataset</a></h3>
+                <span class="card-category">Biology</span>
+            </div>
+            <p class="card-desc">Multivariate data set introduced by R.A. Fisher.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Biology">
+            <div class="card-top">
+                <h3><a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank" rel="noopener">Wine Quality</a></h3>
+                <span class="card-category">Biology</span>
+            </div>
+            <p class="card-desc">Physicochemical and sensory variables.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Economics & Demographics">
+            <div class="card-top">
+                <h3><a href="https://archive.ics.uci.edu/ml/datasets/adult" target="_blank" rel="noopener">Adult Census Income</a></h3>
+                <span class="card-category">Economics & Demographics</span>
+            </div>
+            <p class="card-desc">Predict whether income exceeds $50K/yr.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data" target="_blank" rel="noopener">Crypto Historical Data</a></h3>
+                <span class="card-category">Finance</span>
+            </div>
+            <p class="card-desc">Bitcoin data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Technology">
+            <div class="card-top">
+                <h3><a href="https://insights.stackoverflow.com/survey" target="_blank" rel="noopener">Stack Overflow Developer Survey</a></h3>
+                <span class="card-category">Technology</span>
+            </div>
+            <p class="card-desc">Annual developer survey results.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Technology">
+            <div class="card-top">
+                <h3><a href="https://www.githubarchive.org/" target="_blank" rel="noopener">GitHub Archive</a></h3>
+                <span class="card-category">Technology</span>
+            </div>
+            <p class="card-desc">Record of the public GitHub timeline.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://pushshift.io/" target="_blank" rel="noopener">Reddit Comments</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Historical copy of Reddit comments.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://research.google.com/youtube8m/" target="_blank" rel="noopener">YouTube-8M</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Video understanding dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://deepmind.com/research/open-source/kinetics" target="_blank" rel="noopener">Kinetics</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Human action videos.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Audio">
+            <div class="card-top">
+                <h3><a href="https://www.openslr.org/12" target="_blank" rel="noopener">LibriSpeech</a></h3>
+                <span class="card-category">Audio</span>
+            </div>
+            <p class="card-desc">A corpus of read English speech.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Audio">
+            <div class="card-top">
+                <h3><a href="https://research.google.com/audioset/" target="_blank" rel="noopener">AudioSet</a></h3>
+                <span class="card-category">Audio</span>
+            </div>
+            <p class="card-desc">An ontology and human-labeled dataset for audio events.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://waymo.com/open/" target="_blank" rel="noopener">Waymo Open Dataset</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Autonomous driving dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.nuscenes.org/" target="_blank" rel="noopener">nuScenes</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Multimodal dataset for autonomous driving.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="http://www.cvlibs.net/datasets/kitti/" target="_blank" rel="noopener">KITTI Vision Benchmark</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Vision dataset for autonomous driving.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.cityscapes-dataset.com/" target="_blank" rel="noopener">Cityscapes</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Semantic urban scene understanding.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="http://mi.eng.cam.ac.uk/research/projects/VideoRec/CamVid/" target="_blank" rel="noopener">CamVid</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Cambridge-driving Labeled Video Database.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="http://host.robots.ox.ac.uk/pascal/VOC/" target="_blank" rel="noopener">PASCAL VOC</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Visual Object Classes.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/datasets/jessicali9530/lfw-dataset" target="_blank" rel="noopener">Labeled Faces in the Wild</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Face recognition dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html" target="_blank" rel="noopener">CelebA</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Large-scale CelebFaces Attributes Dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="http://www.statmt.org/wmt19/" target="_blank" rel="noopener">WMT Machine Translation</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Machine translation training data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://www.statmt.org/europarl/" target="_blank" rel="noopener">Europarl</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">European Parliament Proceedings Parallel Corpus.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://www.gutenberg.org/" target="_blank" rel="noopener">Project Gutenberg</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Free eBooks.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://yknzhu.wixsite.com/mbweb" target="_blank" rel="noopener">BookCorpus</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">Large collection of free novel books.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://gluebenchmark.com/" target="_blank" rel="noopener">GLUE Benchmark</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">General Language Understanding Evaluation.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Natural Language">
+            <div class="card-top">
+                <h3><a href="https://super.gluebenchmark.com/" target="_blank" rel="noopener">SuperGLUE</a></h3>
+                <span class="card-category">Natural Language</span>
+            </div>
+            <p class="card-desc">A new benchmark for evaluating NLP.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://storage.googleapis.com/openimages/web/index.html" target="_blank" rel="noopener">Open Images</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">9M images annotated with image-level labels.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="http://places2.csail.mit.edu/" target="_blank" rel="noopener">Places365</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Scene recognition dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/" target="_blank" rel="noopener">HMDB51</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">A large human motion database.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.kaggle.com/datasets/simonjisu/ucf101" target="_blank" rel="noopener">UCF101</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">Action recognition dataset.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="NLP">
+            <div class="card-top">
+                <h3><a href="https://commoncrawl.org/" target="_blank" rel="noopener">Common Crawl</a></h3>
+                <span class="card-category">NLP</span>
+            </div>
+            <p class="card-desc">Petabytes of web crawl data collected over 12 years for NLP and web research applications.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="NLP">
+            <div class="card-top">
+                <h3><a href="https://pile.eleuther.ai/" target="_blank" rel="noopener">The Pile</a></h3>
+                <span class="card-category">NLP</span>
+            </div>
+            <p class="card-desc">800GB open-source language modeling dataset curated from 22 diverse high-quality sources for training LLMs.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="NLP">
+            <div class="card-top">
+                <h3><a href="https://huggingface.co/datasets/Salesforce/wikitext" target="_blank" rel="noopener">WikiText-103</a></h3>
+                <span class="card-category">NLP</span>
+            </div>
+            <p class="card-desc">Long-term dependency language modeling dataset with 103 million tokens from verified Wikipedia articles.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="NLP">
+            <div class="card-top">
+                <h3><a href="https://gluebenchmark.com/" target="_blank" rel="noopener">GLUE Benchmark</a></h3>
+                <span class="card-category">NLP</span>
+            </div>
+            <p class="card-desc">General Language Understanding Evaluation benchmark for measuring NLP model performance across 9 tasks.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="NLP">
+            <div class="card-top">
+                <h3><a href="https://rajpurkar.github.io/SQuAD-explorer/" target="_blank" rel="noopener">SQuAD 2.0</a></h3>
+                <span class="card-category">NLP</span>
+            </div>
+            <p class="card-desc">Stanford Question Answering Dataset with 150,000+ questions and unanswerable questions for reading comprehension.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.image-net.org/" target="_blank" rel="noopener">ImageNet (ILSVRC)</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">14 million hand-annotated images across 22,000 categories, the gold standard for image classification research.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://cocodataset.org/" target="_blank" rel="noopener">COCO Dataset</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">330K images with 80+ object categories, keypoint detection, and panoptic segmentation annotations.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://storage.googleapis.com/openimages/web/index.html" target="_blank" rel="noopener">Open Images V7</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">9 million images with 36 million labels for object detection, segmentation, and visual relationship detection.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html" target="_blank" rel="noopener">CelebA</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">200K celebrity face images with 40 attribute annotations for facial recognition and GAN research.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Computer Vision">
+            <div class="card-top">
+                <h3><a href="https://www.cs.toronto.edu/~kriz/cifar.html" target="_blank" rel="noopener">CIFAR-100</a></h3>
+                <span class="card-category">Computer Vision</span>
+            </div>
+            <p class="card-desc">60,000 32x32 color images in 100 classes grouped into 20 superclasses for fine-grained image classification.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance Data">
+            <div class="card-top">
+                <h3><a href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance Historical Data</a></h3>
+                <span class="card-category">Finance Data</span>
+            </div>
+            <p class="card-desc">Historical stock prices, dividends, and splits for thousands of global equities, ETFs, and indices.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance Data">
+            <div class="card-top">
+                <h3><a href="https://www.sec.gov/edgar/searchedgar/companysearch" target="_blank" rel="noopener">SEC EDGAR</a></h3>
+                <span class="card-category">Finance Data</span>
+            </div>
+            <p class="card-desc">Full-text search of SEC filings including 10-K, 10-Q, 8-K reports for US publicly traded companies.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance Data">
+            <div class="card-top">
+                <h3><a href="https://data.worldbank.org/" target="_blank" rel="noopener">World Bank Open Data</a></h3>
+                <span class="card-category">Finance Data</span>
+            </div>
+            <p class="card-desc">Free access to global development data including GDP, population, health, and education indicators for 217 countries.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance Data">
+            <div class="card-top">
+                <h3><a href="https://data.imf.org/" target="_blank" rel="noopener">IMF Data</a></h3>
+                <span class="card-category">Finance Data</span>
+            </div>
+            <p class="card-desc">International Monetary Fund datasets on exchange rates, balance of payments, government finance, and global trade.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Finance Data">
+            <div class="card-top">
+                <h3><a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED Economic Data</a></h3>
+                <span class="card-category">Finance Data</span>
+            </div>
+            <p class="card-desc">816,000+ US and international economic time series from the Federal Reserve Bank of St. Louis.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><div class="container">
+    <p>Part of <a href="https://quickutils.top">QuickUtils</a> — 90+ free web tools</p>
+</div></footer>
+
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('categoryFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.dir-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardCat = card.dataset.category;
+        const show = text.includes(q) && (cat === '' || cardCat === cat);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('countBadge').textContent = visible + ' items';
+}
+</script>
+</body>
+</html>

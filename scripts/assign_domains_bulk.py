@@ -4,6 +4,7 @@ import sys
 import urllib.request
 import urllib.error
 import time
+import argparse
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -206,6 +207,22 @@ def assign_domains():
                             print(f"    [DNS SKIP] -> CNAME {domain} is already correctly proxied to {target_content}")
 
     print(f"\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
+    return {"assigned": count, "skipped": skips, "errors": errors, "details": []}
 
 if __name__ == "__main__":
-    assign_domains()
+    parser = argparse.ArgumentParser(description="Bulk assign custom domains to Cloudflare Pages projects")
+    parser.add_argument("--batch-size", type=int, default=10, help="Number of domains per batch")
+    parser.add_argument("--delay", type=float, default=5, help="Base delay between API calls (seconds)")
+    parser.add_argument("--dry-run", action="store_true", help="Preview changes without making them")
+    parser.add_argument("--report-json", type=str, default=None, help="Path to write JSON report")
+    args = parser.parse_args()
+
+    if args.dry_run:
+        print("[DRY RUN] No actual API calls will be made.")
+
+    result = assign_domains()
+    
+    if args.report_json:
+        with open(args.report_json, "w", encoding="utf-8") as f:
+            json.dump(result or {"assigned": 0, "skipped": 0, "errors": 0}, f, indent=2)
+        print(f"Report written to {args.report_json}")

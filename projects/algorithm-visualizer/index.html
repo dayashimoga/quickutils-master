@@ -57,13 +57,24 @@
         <div class="controls-bar">
             <div class="control-group">
                 <label>Algorithm</label>
-                <select id="sortAlgo">
-                    <option value="bubble">Bubble Sort</option>
-                    <option value="selection">Selection Sort</option>
-                    <option value="insertion">Insertion Sort</option>
-                    <option value="merge">Merge Sort</option>
-                    <option value="quick">Quick Sort</option>
-                    <option value="heap">Heap Sort</option>
+    <select id="sortAlgo">
+                    <optgroup label="O(n²) — Basic">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="cocktail">Cocktail Shaker Sort</option>
+                    </optgroup>
+                    <optgroup label="O(n log n) — Efficient">
+                        <option value="merge">Merge Sort</option>
+                        <option value="quick">Quick Sort</option>
+                        <option value="heap">Heap Sort</option>
+                        <option value="shell">Shell Sort</option>
+                        <option value="comb">Comb Sort</option>
+                    </optgroup>
+                    <optgroup label="O(nk) — Non-Comparative">
+                        <option value="radix">Radix Sort (LSD)</option>
+                        <option value="counting">Counting Sort</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="control-group">
@@ -97,6 +108,7 @@
                     <option value="dfs">DFS (Depth-First)</option>
                     <option value="dijkstra">Dijkstra's</option>
                     <option value="astar">A* Search</option>
+                    <option value="greedy">Greedy Best-First</option>
                 </select>
             </div>
             <button class="btn btn-primary" id="startPathBtn">▶ Find Path</button>
@@ -116,13 +128,45 @@
         </div>
     </section>
 
+    <!-- Live Complexity Panel -->
+    <section class="glass-card mt-4" id="complexityPanel">
+        <h2>🧮 Current Algorithm Analysis</h2>
+        <div id="algoInfo" class="algo-info-panel">
+            <div class="algo-info-header">
+                <h3 id="algoInfoName">Bubble Sort</h3>
+                <div class="complexity-badges">
+                    <span class="badge badge-time" id="algoTimeBest">Best: O(n)</span>
+                    <span class="badge badge-time" id="algoTimeAvg">Avg: O(n²)</span>
+                    <span class="badge badge-time" id="algoTimeWorst">Worst: O(n²)</span>
+                    <span class="badge badge-space" id="algoSpace">Space: O(1)</span>
+                    <span class="badge badge-stable" id="algoStable">Stable ✓</span>
+                </div>
+            </div>
+            <p id="algoDescription" class="text-muted text-sm">Repeatedly swaps adjacent elements if they are in wrong order. Simple but inefficient for large datasets.</p>
+        </div>
+    </section>
+
     <section class="info-section">
-        <h2>📚 Algorithm Complexity</h2>
-        <div class="info-grid">
-            <div class="info-card"><h3>Bubble Sort</h3><p>O(n²) time. Repeatedly swaps adjacent elements. Simple but slow.</p></div>
-            <div class="info-card"><h3>Quick Sort</h3><p>O(n log n) avg. Divides array around a pivot. Very fast in practice.</p></div>
-            <div class="info-card"><h3>Merge Sort</h3><p>O(n log n) guaranteed. Divides and merges. Stable but uses extra memory.</p></div>
-            <div class="info-card"><h3>A* Search</h3><p>Optimal pathfinding using heuristics. Faster than Dijkstra's with admissible heuristic.</p></div>
+        <h2>📚 Algorithm Complexity Reference</h2>
+        <div class="complexity-table-wrapper">
+            <table class="complexity-table">
+                <thead>
+                    <tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Bubble Sort</td><td>O(n)</td><td class="warn">O(n²)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✓</td></tr>
+                    <tr><td>Selection Sort</td><td class="warn">O(n²)</td><td class="warn">O(n²)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✗</td></tr>
+                    <tr><td>Insertion Sort</td><td>O(n)</td><td class="warn">O(n²)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✓</td></tr>
+                    <tr><td>Cocktail Shaker</td><td>O(n)</td><td class="warn">O(n²)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✓</td></tr>
+                    <tr><td>Merge Sort</td><td class="good">O(n log n)</td><td class="good">O(n log n)</td><td class="good">O(n log n)</td><td class="warn">O(n)</td><td>✓</td></tr>
+                    <tr><td>Quick Sort</td><td class="good">O(n log n)</td><td class="good">O(n log n)</td><td class="warn">O(n²)</td><td class="good">O(log n)</td><td>✗</td></tr>
+                    <tr><td>Heap Sort</td><td class="good">O(n log n)</td><td class="good">O(n log n)</td><td class="good">O(n log n)</td><td class="good">O(1)</td><td>✗</td></tr>
+                    <tr><td>Shell Sort</td><td class="good">O(n log n)</td><td>O(n^1.3)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✗</td></tr>
+                    <tr><td>Comb Sort</td><td class="good">O(n log n)</td><td>O(n²/2^p)</td><td class="warn">O(n²)</td><td class="good">O(1)</td><td>✗</td></tr>
+                    <tr><td>Radix Sort</td><td class="good">O(nk)</td><td class="good">O(nk)</td><td class="good">O(nk)</td><td>O(n+k)</td><td>✓</td></tr>
+                    <tr><td>Counting Sort</td><td class="good">O(n+k)</td><td class="good">O(n+k)</td><td class="good">O(n+k)</td><td>O(k)</td><td>✓</td></tr>
+                </tbody>
+            </table>
         </div>
     </section>
 </main>
@@ -131,6 +175,8 @@
     <p class="copyright">© 2026 QuickUtils. All rights reserved.</p>
 </div></footer>
 <script src="script.js"></script>
+
+
 
 
 
@@ -252,6 +298,8 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
+
+
 
 
 

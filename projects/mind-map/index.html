@@ -39,12 +39,29 @@
     <nav class="navbar"><div class="container nav-inner">
         <a href="https://quickutils.top" class="brand">🧠 Mind Map</a>
         <div class="nav-links">
-            <button class="btn btn-sm btn-primary" id="addNodeBtn">➕ Add Node</button>
-            <button class="btn btn-sm btn-secondary" id="deleteNodeBtn">🗑️ Delete</button>
-            <button class="btn btn-sm btn-secondary" id="exportPngBtn">🖼️ PNG</button>
-            <button class="btn btn-sm btn-secondary" id="exportJsonBtn">💾 JSON</button>
+            <button class="btn btn-sm btn-primary" id="addNodeBtn" title="Tab">➕ Add Node</button>
+            <button class="btn btn-sm btn-secondary" id="deleteNodeBtn" title="Delete">🗑️</button>
+            <button class="btn btn-sm btn-secondary" onclick="undo()" title="Ctrl+Z">↩️</button>
+            <button class="btn btn-sm btn-secondary" onclick="redo()" title="Ctrl+Y">↪️</button>
+            <button class="btn btn-sm btn-secondary" onclick="autoLayout()" title="Ctrl+A">✨ Auto Layout</button>
+            <select class="btn btn-sm btn-secondary" style="background:var(--bg-surface);color:var(--text);border:1px solid var(--border);" onchange="if(this.value){loadTemplate(this.value);this.value='';}">
+                <option value="">📂 Load Template...</option>
+                <option value="project">📋 Project Planning</option>
+                <option value="swot">📊 SWOT Analysis</option>
+                <option value="brainstorm">💡 Brainstorm</option>
+                <option value="meeting">📝 Meeting Notes</option>
+                <option value="learning">🎓 Learning Path</option>
+            </select>
+            <div class="dropdown-wrapper" style="display:inline-block;position:relative;">
+                <button class="btn btn-sm btn-secondary" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">💾 Export ▾</button>
+                <div style="display:none;position:absolute;top:100%;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.5rem;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.3);min-width:120px;">
+                    <button class="btn btn-sm btn-secondary" id="exportPngBtn" style="width:100%;margin-bottom:0.3rem;text-align:left;">🖼️ PNG</button>
+                    <button class="btn btn-sm btn-secondary" onclick="exportSVG()" style="width:100%;margin-bottom:0.3rem;text-align:left;">📐 SVG</button>
+                    <button class="btn btn-sm btn-secondary" id="exportJsonBtn" style="width:100%;text-align:left;">💾 JSON</button>
+                </div>
+            </div>
             <button class="btn btn-sm btn-secondary" id="importJsonBtn">📂 Import</button>
-            <button class="btn btn-sm btn-secondary" id="clearBtn">🧹 Clear</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">🧹</button>
             <a href="https://ko-fi.com/dayatin" target="_blank" class="kofi-link">☕</a>
             <button id="themeBtn" class="theme-btn">🌙</button>
         </div>
@@ -69,6 +86,8 @@
     <footer class="footer"><div class="container copyright">© 2026 QuickUtils. All rights reserved.</div></footer>
     <script src="quickutils-core.js"></script>
     <script src="script.js"></script>
+
+
 
 
 
@@ -190,6 +209,8 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
+
+
 
 
 

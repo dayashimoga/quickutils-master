@@ -69,126 +69,96 @@
 </head>
 <body class="dark-theme">
     <header>
-        <div class="container header-container" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="container header-container">
             <h1 class="logo">Market<span class="highlight">Digest</span></h1>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
+            <div class="header-right">
                 <div class="last-updated">
                     Last updated: <span id="updateTime">--</span>
                 </div>
-                <button id="refreshBtn" class="refresh-btn" style="background:var(--accent-blue); color:white; border:none; padding:4px 12px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
+                <button id="refreshBtn" class="refresh-btn">
                     ♻️ Refresh Live Data
                 </button>
-                <div id="rateLimitMsg" style="font-size:0.75rem; color:var(--text-muted); display:none;">
+                <div id="rateLimitMsg" class="rate-limit-msg" style="display:none;">
                     Rate Limit: Please wait <span id="timeRemaining">60</span>s
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container">
-        <div class="dashboard-grid-modern">
-            
-            <!-- Left Column: Insights & Context -->
-            <div class="dashboard-column insights-col">
-                <!-- Entry Watch -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>🟢 Entry Watch</h2>
-                    </div>
-                    <ul class="bullet-list" id="entryWatchList">
-                        <li>Loading...</li>
-                    </ul>
-                </section>
+    <!-- Ticker Marquee -->
+    <div class="ticker-bar" id="tickerBar">
+        <div class="ticker-content" id="tickerContent">
+            Loading market data...
+        </div>
+    </div>
 
-                <!-- Exit Watch -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>🔑 Exit Watch</h2>
-                    </div>
-                    <ul class="bullet-list" id="exitWatchList">
-                        <li>Loading...</li>
-                    </ul>
-                </section>
-
-                <!-- Economic Context -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>🌍 Economic Context</h2>
-                    </div>
-                    <ul class="bullet-list" id="economicContextList">
-                        <li>Loading...</li>
-                    </ul>
-                </section>
-                
-                <!-- Sector Insights -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>🏭 Sector Insights</h2>
-                    </div>
-                    <ul class="bullet-list" id="sectorInsightsList">
-                        <li>Loading...</li>
-                    </ul>
-                </section>
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav" id="tabNav">
+        <div class="container">
+            <div class="tab-list" role="tablist">
+                <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" id="tab-overview">📊 Overview</button>
+                <button class="tab-btn" data-tab="signals" role="tab" aria-selected="false" id="tab-signals">💡 Signals</button>
+                <button class="tab-btn" data-tab="news" role="tab" aria-selected="false" id="tab-news">📰 News</button>
+                <button class="tab-btn" data-tab="charts" role="tab" aria-selected="false" id="tab-charts">📈 Charts</button>
+                <button class="tab-btn" data-tab="trading" role="tab" aria-selected="false" id="tab-trading">🎯 Paper Trading</button>
             </div>
+        </div>
+    </nav>
 
-            <!-- Right Column: Charts & News -->
-            <div class="dashboard-column charts-col">
-                
-                <!-- Watchlist -->
-                <section class="info-card" id="watchlist-section" style="display: none;">
-                     <div class="card-header">
-                        <h2>⭐ My Watchlist</h2>
-                    </div>
-                    <div class="comparison-grid" id="watchlistGrid">
-                        <!-- Populated by JS -->
-                    </div>
-                </section>
+    <main class="container">
+        <!-- Tab: Overview (Default) -->
+        <div class="tab-panel active" id="panel-overview" role="tabpanel">
+            <div class="overview-grid">
+                <!-- Left: Compact Market Cards -->
+                <div class="overview-left">
+                    <!-- Watchlist (if any) -->
+                    <section class="info-card compact" id="watchlist-section" style="display:none;">
+                        <div class="card-header"><h2>⭐ My Watchlist</h2></div>
+                        <div class="comparison-grid" id="watchlistGrid"></div>
+                    </section>
 
-                <!-- Comparison Bar (1D, 1W, 1M) -->
-                <section class="info-card">
-                     <div class="card-header">
-                        <h2>Historical Comparison</h2>
-                    </div>
-                    <div class="comparison-grid" id="comparisonGrid">
-                        <!-- Populated by JS -->
-                    </div>
-                </section>
+                    <!-- Historical Comparison Table -->
+                    <section class="info-card compact">
+                        <div class="card-header"><h2>📋 Market Overview</h2></div>
+                        <div class="comparison-grid" id="comparisonGrid"></div>
+                    </section>
+                </div>
 
-                <!-- Charts -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>📊 Charts</h2>
-                    </div>
+                <!-- Right: Insights & Context -->
+                <div class="overview-right">
+                    <!-- Entry Watch -->
+                    <section class="info-card compact">
+                        <div class="card-header"><h2>🟢 Entry Watch</h2></div>
+                        <ul class="bullet-list" id="entryWatchList"><li>Loading...</li></ul>
+                    </section>
+
+                    <!-- Exit Watch -->
+                    <section class="info-card compact">
+                        <div class="card-header"><h2>🔑 Exit Watch</h2></div>
+                        <ul class="bullet-list" id="exitWatchList"><li>Loading...</li></ul>
+                    </section>
+
+                    <!-- Economic Context -->
+                    <section class="info-card compact">
+                        <div class="card-header"><h2>🌍 Economic Context</h2></div>
+                        <ul class="bullet-list" id="economicContextList"><li>Loading...</li></ul>
+                    </section>
                     
-                    <div class="chart-wrapper">
-                        <h3>Regional vs Global Indices (30 Days)</h3>
-                        <div class="canvas-container">
-                            <canvas id="niftyVixChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper mt-4">
-                        <h3>Crypto Momentum (30 Days)</h3>
-                        <div class="canvas-container">
-                            <canvas id="flowsChart"></canvas>
-                        </div>
-                    </div>
-                </section>
+                    <!-- Sector Insights -->
+                    <section class="info-card compact">
+                        <div class="card-header"><h2>🏭 Sector Insights</h2></div>
+                        <ul class="bullet-list" id="sectorInsightsList"><li>Loading...</li></ul>
+                    </section>
+                </div>
+            </div>
+        </div>
 
-                <!-- News -->
-                <section class="info-card">
-                    <div class="card-header">
-                        <h2>📰 News & Geopolitical Insights</h2>
-                    </div>
-                    <div class="news-list" id="newsContainer">
-                        <div class="loading-text">Loading latest headlines...</div>
-                    </div>
-                </section>
-
+        <!-- Tab: Signals -->
+        <div class="tab-panel" id="panel-signals" role="tabpanel">
+            <div class="signals-layout">
                 <!-- Technical Analysis -->
                 <section class="info-card" id="techAnalysis">
-                    <div class="card-header">
-                        <h2>📊 Technical Analysis</h2>
-                    </div>
+                    <div class="card-header"><h2>📊 Technical Analysis</h2></div>
                     <div class="ta-grid">
                         <div class="ta-gauge-container">
                             <h4>RSI (14-Day)</h4>
@@ -206,50 +176,73 @@
 
                 <!-- Investment Signals -->
                 <section class="info-card" id="investmentSignals">
-                    <div class="card-header">
-                        <h2>💡 Investment Signals</h2>
-                    </div>
+                    <div class="card-header"><h2>💡 Investment Signals</h2></div>
                     <div id="signalCards" class="signal-cards-grid"></div>
                 </section>
+            </div>
+        </div>
 
-                <!-- Paper Trading (merged from Stock Simulator) -->
-                <section class="info-card" id="paperTrading">
-                    <div class="card-header">
-                        <h2>📈 Paper Trading Simulator</h2>
+        <!-- Tab: News -->
+        <div class="tab-panel" id="panel-news" role="tabpanel">
+            <section class="info-card">
+                <div class="card-header"><h2>📰 News & Geopolitical Insights</h2></div>
+                <div class="news-scroll-container">
+                    <div class="news-list" id="newsContainer">
+                        <div class="loading-text">Loading latest headlines...</div>
                     </div>
-                    <div class="paper-portfolio">
-                        <div class="portfolio-stats">
-                            <div class="stat"><span class="text-muted">Cash</span><strong id="ptCash">$10,000.00</strong></div>
-                            <div class="stat"><span class="text-muted">Holdings</span><strong id="ptHoldings">$0.00</strong></div>
-                            <div class="stat"><span class="text-muted">Total</span><strong id="ptTotal" style="font-size:1.1rem;">$10,000.00</strong></div>
-                            <div class="stat"><span class="text-muted">P&amp;L</span><strong id="ptPnl" style="color:#22c55e;">$0.00 (0.00%)</strong></div>
-                        </div>
-                        <div class="pt-chart-container">
-                            <canvas id="portfolioChart" height="150" style="width:100%;"></canvas>
-                        </div>
-                        <div id="ptPositions" class="pt-positions mt-2"></div>
-                        <details class="mt-2" style="font-size:0.85rem;">
-                            <summary style="cursor:pointer;color:var(--text-muted);">📋 Trade History</summary>
-                            <div id="tradeHistory" class="trade-history mt-1"></div>
-                        </details>
-                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tab: Charts -->
+        <div class="tab-panel" id="panel-charts" role="tabpanel">
+            <div class="charts-grid">
+                <section class="info-card">
+                    <div class="card-header"><h2>📊 Regional vs Global Indices (30 Days)</h2></div>
+                    <div class="canvas-container"><canvas id="niftyVixChart"></canvas></div>
                 </section>
-
-                <!-- Ads Section -->
-                <section class="ads-banner mt-4">
-                     <ins class="adsbygoogle"
-                          style="display:block"
-                          data-ad-client="ca-pub-5193703345853377"
-                          data-ad-slot="2246027256"
-                          data-ad-format="auto"
-                          data-full-width-responsive="true"></ins>
-                     <script>
-                          (adsbygoogle = window.adsbygoogle || []).push({});
-                     </script>
+                <section class="info-card">
+                    <div class="card-header"><h2>📊 Crypto Momentum (30 Days)</h2></div>
+                    <div class="canvas-container"><canvas id="flowsChart"></canvas></div>
                 </section>
             </div>
-
         </div>
+
+        <!-- Tab: Paper Trading -->
+        <div class="tab-panel" id="panel-trading" role="tabpanel">
+            <section class="info-card" id="paperTrading">
+                <div class="card-header"><h2>📈 Paper Trading Simulator</h2></div>
+                <div class="paper-portfolio">
+                    <div class="portfolio-stats">
+                        <div class="stat"><span class="text-muted">Cash</span><strong id="ptCash">$10,000.00</strong></div>
+                        <div class="stat"><span class="text-muted">Holdings</span><strong id="ptHoldings">$0.00</strong></div>
+                        <div class="stat"><span class="text-muted">Total</span><strong id="ptTotal" style="font-size:1.1rem;">$10,000.00</strong></div>
+                        <div class="stat"><span class="text-muted">P&amp;L</span><strong id="ptPnl" style="color:#22c55e;">$0.00 (0.00%)</strong></div>
+                    </div>
+                    <div class="pt-chart-container">
+                        <canvas id="portfolioChart" height="150" style="width:100%;"></canvas>
+                    </div>
+                    <div id="ptPositions" class="pt-positions mt-2"></div>
+                    <details class="mt-2" style="font-size:0.85rem;">
+                        <summary style="cursor:pointer;color:var(--text-muted);">📋 Trade History</summary>
+                        <div id="tradeHistory" class="trade-history mt-1"></div>
+                    </details>
+                </div>
+            </section>
+        </div>
+
+        <!-- Ads Section -->
+        <section class="ads-banner mt-4">
+             <ins class="adsbygoogle"
+                  style="display:block"
+                  data-ad-client="ca-pub-5193703345853377"
+                  data-ad-slot="2246027256"
+                  data-ad-format="auto"
+                  data-full-width-responsive="true"></ins>
+             <script>
+                  (adsbygoogle = window.adsbygoogle || []).push({});
+             </script>
+        </section>
     </main>
 
     <footer>
@@ -277,19 +270,6 @@
       'floating-chat.donateButton.text-color': '#fff'
     });
   </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- QuickUtils Network Promo -->
@@ -398,19 +378,6 @@
    </div>
 </div>
 <!-- /QuickUtils Network Promo -->
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 </body>

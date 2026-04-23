@@ -73,3 +73,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .footer-brand a{color:var(--accent);text-decoration:none}
 .copyright{width:100%;text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
 @media(max-width:768px){.nav-links{display:none}.controls-bar{flex-direction:column;align-items:stretch}.sort-canvas{height:200px}.path-grid{grid-template-columns:repeat(20,20px)}.path-cell{width:20px;height:20px}}
+
+/* Algorithm Info Panel */
+.algo-info-panel{padding:1rem;background:rgba(0,0,0,0.2);border-radius:10px;margin-top:0.75rem}
+.algo-info-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.5rem}
+.algo-info-header h3{font-size:1.1rem;font-weight:700}
+.complexity-badges{display:flex;gap:0.4rem;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;letter-spacing:0.3px}
+.badge-time{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3)}
+.badge-space{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)}
+.badge-stable{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
+.badge-unstable{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+
+/* Complexity Table */
+.complexity-table-wrapper{overflow-x:auto}
+.complexity-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.complexity-table th{text-align:left;padding:10px 12px;background:rgba(99,102,241,0.1);color:var(--accent);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border)}
+.complexity-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-muted)}
+.complexity-table td:first-child{color:var(--text);font-weight:500}
+.complexity-table tr:hover{background:rgba(99,102,241,0.05)}
+.complexity-table .good{color:#34d399;font-weight:600}
+.complexity-table .warn{color:#fbbf24;font-weight:600}

@@ -3,6 +3,9 @@
 let lastRefreshTime = 0;
 const REFRESH_COOLDOWN_MS = 60000; // 60 seconds
 let countdownInterval = null;
+let cachedMarketData = null;
+let cachedMacroData = null;
+let chartsInitialized = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Update timestamp
@@ -13,12 +16,85 @@ document.addEventListener('DOMContentLoaded', () => {
         hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    // 2. Initialize Charts & Data
+    // 2. Setup Tab Navigation
+    setupTabNavigation();
+
+    // 3. Initialize Charts & Data
     initializeDashboard();
 
-    // 3. Setup Refresh Logic
+    // 4. Setup Refresh Logic
     setupRefreshLogic();
 });
+
+// ─── Tab Navigation System ───
+function setupTabNavigation() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.dataset.tab;
+
+            // Deactivate all
+            tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+            panels.forEach(p => p.classList.remove('active'));
+
+            // Activate selected
+            tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
+            document.getElementById('panel-' + target).classList.add('active');
+
+            // Lazy init charts when Charts tab is first shown
+            if (target === 'charts' && !chartsInitialized && cachedMarketData && cachedMacroData) {
+                setTimeout(() => renderCharts(cachedMarketData, cachedMacroData), 50);
+                chartsInitialized = true;
+            }
+
+            // Update URL hash without scrolling
+            history.replaceState(null, '', '#' + target);
+        });
+    });
+
+    // Restore tab from hash
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) {
+        document.getElementById('tab-' + hash).click();
+    }
+}
+
+// ─── Ticker Bar ───
+function renderTickerBar(marketData, macroData) {
+    const container = document.getElementById('tickerContent');
+    if (!container) return;
+
+    const items = [
+        { name: 'Nifty 50', val: marketData.regional.nifty.current, delta: marketData.regional.nifty.delta_1d, prefix: '' },
+        { name: 'Sensex', val: marketData.regional.sensex.current, delta: marketData.regional.sensex.delta_1d, prefix: '' },
+        { name: 'India VIX', val: marketData.regional.vix.current, delta: marketData.regional.vix.delta_1d, prefix: '' },
+        { name: 'Nasdaq', val: marketData.global.nasdaq.current, delta: marketData.global.nasdaq.delta_1d, prefix: '' },
+        { name: 'Dow Jones', val: marketData.global.dji.current, delta: marketData.global.dji.delta_1d, prefix: '' },
+        { name: 'Nikkei', val: marketData.global.nikkei.current, delta: marketData.global.nikkei.delta_1d, prefix: '' },
+        { name: 'BTC', val: marketData.crypto.btc.current, delta: marketData.crypto.btc.delta_1d, prefix: '$' },
+        { name: 'ETH', val: marketData.crypto.eth.current, delta: marketData.crypto.eth.delta_1d, prefix: '$' },
+        { name: 'SOL', val: marketData.crypto.sol.current, delta: marketData.crypto.sol.delta_1d, prefix: '$' },
+        { name: 'Crude Oil', val: macroData.crudeOil.current, delta: macroData.crudeOil.delta_1d, prefix: '$' },
+        { name: 'USD/INR', val: macroData.usdInr.current, delta: macroData.usdInr.delta_1d, prefix: '₹' },
+    ];
+
+    const renderItem = (item) => {
+        const color = item.delta > 0 ? '#10B981' : item.delta < 0 ? '#EF4444' : '#94A3B8';
+        const sign = item.delta > 0 ? '+' : '';
+        return `<span class="ticker-item">
+            <span class="ticker-name">${item.name}</span>
+            <span class="ticker-price" style="color:${color}">${item.prefix}${item.val.toFixed(2)}</span>
+            <span class="ticker-delta" style="color:${color}">${sign}${item.delta.toFixed(2)}%</span>
+        </span>`;
+    };
+
+    // Duplicate for seamless loop
+    const html = items.map(renderItem).join('') + items.map(renderItem).join('');
+    container.innerHTML = html;
+}
 
 function setupRefreshLogic() {
     const refreshBtn = document.getElementById('refreshBtn');
@@ -83,8 +159,12 @@ async function initializeDashboard() {
         const macroData = dataJson.macroData;
         const newsData = dataJson.newsData;
 
+        // Cache for lazy chart initialization
+        cachedMarketData = marketData;
+        cachedMacroData = macroData;
+
+        renderTickerBar(marketData, macroData);
         renderWatchLists(marketData, macroData);
-        renderCharts(marketData, macroData);
         renderComparisonGrid(marketData, macroData);
         renderMyWatchlist(marketData, macroData);
         renderNews(newsData);
@@ -92,6 +172,15 @@ async function initializeDashboard() {
         renderTechnicalAnalysis(marketData, macroData);
         renderInvestmentSignals(marketData, macroData);
         renderPaperTrading(marketData, macroData);
+
+        // Only render charts if the charts tab is currently active
+        const chartsPanel = document.getElementById('panel-charts');
+        if (chartsPanel && chartsPanel.classList.contains('active')) {
+            chartsInitialized = true;
+            renderCharts(marketData, macroData);
+        } else {
+            chartsInitialized = false;
+        }
         
     } catch (error) {
         console.error("Dashboard initialization failed.", error);

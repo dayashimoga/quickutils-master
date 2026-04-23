@@ -2343,7 +2343,6 @@ showDetails = function(id) {
     
     // Fallback pseudo-melting/boiling thresholds if missing
     function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
         let melt = 1000, boil = 3000;
         if (el.c === 'noble_gas') { melt = 10; boil = 100; }
         else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
@@ -2383,94 +2382,90 @@ showDetails = function(id) {
         });
     }
 
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
+    // -- SEARCH AUTOCOMPLETE --
+    const searchInput = $('#searchInput');
+    const suggestionsBox = $('#searchSuggestions');
+    if (searchInput && suggestionsBox) {
+        searchInput.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase().trim();
+            if (!q) { suggestionsBox.style.display = 'none'; return; }
+            const matches = elements.filter(el => 
+                el.name.toLowerCase().includes(q) || 
+                el.s.toLowerCase().includes(q) || 
+                el.n.toString().includes(q)
+            ).slice(0, 6);
+            if (matches.length > 0) {
+                suggestionsBox.innerHTML = matches.map(el => `
+                    <div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;" 
+                         onclick="document.getElementById('searchInput').value='${el.name}'; document.getElementById('searchInput').dispatchEvent(new Event('input')); document.getElementById('searchSuggestions').style.display='none';">
+                        <span style="font-weight:600; color:var(--text);">${el.name} <small style="color:var(--text-muted);">(${el.s})</small></span>
+                        <span style="color:var(--accent);">#${el.n}</span>
+                    </div>
+                `).join('');
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrap')) suggestionsBox.style.display = 'none';
+        });
+    }
+
+    // -- TRENDS VISUALIZATION --
+    let currentTrend = null; // 'radius', 'electro', null
     
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
-        
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
-
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
-            
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
-                }
-            });
-        });
-    }
-
-    // -- ENHANCED TEMPERATURE LOGIC --
-    const tempInput = document.getElementById('tempInput');
-    const tempVal = document.getElementById('tempVal');
+    // Pseudo data for trends (since detailed data isn't in elements array)
+    function getAtomicRadius(el) { return Math.max(30, 200 - el.group * 10 + el.period * 20); } // Picometers (approx)
+    function getElectronegativity(el) { if(el.group === 18) return 0; return Math.max(0.7, 4.0 - (el.period - 1)*0.5 + (el.group - 1)*0.15); } // Pauling scale (approx)
     
-    // Fallback pseudo-melting/boiling thresholds if missing
-    function getStateAtTemp(el, currentTemp) {
-        // Mock calculations based on group/type to simulate state changes visually
-        let melt = 1000, boil = 3000;
-        if (el.c === 'noble_gas') { melt = 10; boil = 100; }
-        else if (el.c === 'nonmetal' || el.c === 'halogen') { melt = 200; boil = 350; }
-        else if (el.group === 1) { melt = 350; boil = 1000; }
-        else if (el.group === 2) { melt = 900; boil = 1800; }
+    function applyTrend() {
+        const cards = $$('.element-card');
+        const clearBtn = $('#clearTrendsBtn');
+        if (!currentTrend) {
+            cards.forEach(c => { c.style.transform = ''; c.style.filter = ''; c.style.opacity = '1'; c.querySelector('.mass').style.display = ''; });
+            if(clearBtn) clearBtn.style.display = 'none';
+            return;
+        }
+        if(clearBtn) clearBtn.style.display = 'inline-block';
         
-        if (currentTemp < melt) return 'solid';
-        if (currentTemp < boil) return 'liquid';
-        return 'gas';
-    }
+        let maxVal = 0, minVal = Infinity;
+        elements.forEach(el => {
+            const v = currentTrend === 'radius' ? getAtomicRadius(el) : getElectronegativity(el);
+            if (v > maxVal) maxVal = v;
+            if (v < minVal && v > 0) minVal = v;
+        });
 
-    if (tempInput) {
-        tempInput.addEventListener('input', (e) => {
-            const temp = parseInt(e.target.value);
-            tempVal.textContent = temp + ' K';
+        cards.forEach(card => {
+            const num = parseInt(card.dataset.n);
+            const elData = elements.find(x => x.n === num);
+            if (!elData) return;
+            const val = currentTrend === 'radius' ? getAtomicRadius(elData) : getElectronegativity(elData);
+            const massEl = card.querySelector('.mass');
             
-            document.querySelectorAll('.element-card').forEach(card => {
-                const num = parseInt(card.dataset.n);
-                const elData = elements.find(x => x.n === num);
-                if (elData) {
-                    const state = getStateAtTemp(elData, temp);
-                    if (state === 'liquid') {
-                        card.style.opacity = '0.8';
-                        card.style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
-                        card.style.transform = 'scale(0.98)';
-                    } else if (state === 'gas') {
-                        card.style.opacity = '0.3';
-                        card.style.boxShadow = 'none';
-                        card.style.transform = 'scale(0.95)';
-                    } else {
-                        card.style.opacity = '1';
-                        card.style.boxShadow = 'var(--shadow-sm)';
-                        card.style.transform = 'scale(1)';
-                    }
+            if (val === 0) {
+                card.style.opacity = '0.1';
+                card.style.transform = 'scale(0.8)';
+                if(massEl) massEl.textContent = 'N/A';
+            } else {
+                card.style.opacity = '1';
+                if (currentTrend === 'radius') {
+                    const scale = 0.5 + (val / maxVal) * 0.7; // 0.5 to 1.2
+                    card.style.transform = `scale(${scale})`;
+                    if(massEl) massEl.textContent = `${Math.round(val)} pm`;
+                } else if (currentTrend === 'electro') {
+                    const heat = (val - minVal) / (maxVal - minVal); // 0 to 1
+                    const hue = (1 - heat) * 240; // Blue (240) to Red (0)
+                    card.style.filter = `drop-shadow(0 0 ${heat * 15}px hsl(${hue}, 100%, 50%))`;
+                    card.style.transform = 'scale(1)';
+                    if(massEl) massEl.textContent = val.toFixed(2);
                 }
-            });
+            }
         });
     }
+
+    $('#trendRadiusBtn')?.addEventListener('click', () => { currentTrend = 'radius'; applyTrend(); });
+    $('#trendElectroBtn')?.addEventListener('click', () => { currentTrend = 'electro'; applyTrend(); });
+    $('#clearTrendsBtn')?.addEventListener('click', () => { currentTrend = null; applyTrend(); });
+
+})();
