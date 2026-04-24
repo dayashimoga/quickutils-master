@@ -42,6 +42,7 @@ jobs:
         # Optionally trigger the main deployment workflow if you want immediate deployment
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
