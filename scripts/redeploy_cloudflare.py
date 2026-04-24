@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_JSON = ROOT_DIR / "terraform" / "projects.json"
-MAX_PARALLEL = 4  # Increased parallelism to optimize deploy speed
+MAX_PARALLEL = 8  # Increased parallelism to optimize deploy speed
 
 def get_projects_config():
     try:

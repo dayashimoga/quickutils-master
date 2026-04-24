@@ -420,13 +420,6 @@
         "custom_domain": "solar.quickutils.top",
         "root_dir": "projects/solar-system"
     },
-    "dna-lab": {
-        "directory": "projects/dna-lab",
-        "repo_name": "dna-lab",
-        "destination_dir": "dist",
-        "custom_domain": "dna.quickutils.top",
-        "root_dir": "projects/dna-lab"
-    },
     "video-studio": {
         "directory": "projects/video-studio",
         "repo_name": "video-studio",
@@ -681,53 +674,5 @@
         "destination_dir": "dist",
         "custom_domain": "earthquake.quickutils.top",
         "root_dir": "projects/earthquake-explorer"
-    },
-    "tests/test_smoke_all.py": {
-        "directory": "projects/tests/test_smoke_all.py",
-        "repo_name": "tests/test_smoke_all.py",
-        "build_command": "mkdir -p dist && cp -r * dist/ 2>null || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "None.quickutils.top",
-        "root_dir": "projects/tests/test_smoke_all.py"
-    },
-    "habit-streak": {
-        "directory": "projects/habit-streak",
-        "repo_name": "habit-streak",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "streak.quickutils.top",
-        "root_dir": "projects/habit-streak"
-    },
-    "beat-maker": {
-        "directory": "projects/beat-maker",
-        "repo_name": "beat-maker",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "beatmaker.quickutils.top",
-        "root_dir": "projects/beat-maker"
-    },
-    "stock-simulator": {
-        "directory": "projects/stock-simulator",
-        "repo_name": "stock-simulator",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "stocks.quickutils.top",
-        "root_dir": "projects/stock-simulator"
-    },
-    "music-visualizer": {
-        "directory": "projects/music-visualizer",
-        "repo_name": "music-visualizer",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "musicviz.quickutils.top",
-        "root_dir": "projects/music-visualizer"
-    },
-    "sound-lab": {
-        "directory": "projects/sound-lab",
-        "repo_name": "sound-lab",
-        "build_command": "mkdir -p dist && cp *.html *.css *.js dist/ || true; cp ../../shared/quickutils-core.* dist/ 2>null || true",
-        "destination_dir": "dist",
-        "custom_domain": "soundlab.quickutils.top",
-        "root_dir": "projects/sound-lab"
     }
 }

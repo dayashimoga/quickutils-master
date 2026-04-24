@@ -17,13 +17,22 @@ def apply():
     
     projects = master_config.get("projects", {})
     
-    # 2. Add any missing newly created projects
+    # 2. Add any missing newly created projects (ONLY if folder exists)
     arch_repo_names = {v.get("repo_name", k) for k, v in arch.items()}
     for project_id, info in projects.items():
         if project_id not in arch_repo_names and project_id not in arch and project_id != "quickutils-directory": # skip directory to handle repo_name logic
-            # clean domain
+            # Safety: only add if the project folder actually exists
+            project_folder = ROOT_DIR / "projects" / project_id
+            if not project_folder.exists():
+                continue
+            
+            # clean domain — skip if None or empty
             domain_raw = info.get("SITE_URL", "")
+            if not domain_raw or domain_raw == "None" or "None" in str(domain_raw):
+                continue
             domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
+            if not domain or domain.startswith("None"):
+                continue
             
             # Resilient static site build command caching all dependencies and global core styles
             if project_id.endswith("-directory"):

@@ -48,7 +48,7 @@ jobs:
         run: npm ci
 
       - name: Run Vitest (JS Tests)
-        run: npx vitest run --reporter=basic --pool=threads
+        run: npx vitest run --reporter=default --pool=threads
         env:
           NODE_ENV: test
 
