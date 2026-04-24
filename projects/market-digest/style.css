@@ -216,6 +216,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0; /* Prevents grid blowout */
 }
 
 .dashboard-row-split {
@@ -230,6 +231,7 @@ header {
     }
     .dashboard-row-split > * {
         flex: 1;
+        min-width: 0;
     }
 }
 

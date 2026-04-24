@@ -172,6 +172,14 @@ function renderWatchLists(marketData, macroData) {
     if (macroData.crudeOil.current < 80) {
         entryHtml += `<li>Crude oil &lt; $80 &rarr; Positive macro cue</li>`;
     }
+    // Advanced signal addition
+    if (marketData.regional.nifty.rsi && marketData.regional.nifty.rsi < 35) {
+        entryHtml += `<li>Nifty 50 RSI at ${marketData.regional.nifty.rsi} &rarr; Oversold bounce opportunity</li>`;
+    }
+    if (marketData.regional.nifty.macd && marketData.regional.nifty.macd.hist > 0) {
+        entryHtml += `<li>Nifty MACD Crossover &rarr; Bullish momentum confirmed</li>`;
+    }
+    
     if(entryHtml === '') entryHtml = '<li>Markets are sideways or bearish. Wait for clear signals.</li>';
     entryList.innerHTML = entryHtml;
 
@@ -185,6 +193,10 @@ function renderWatchLists(marketData, macroData) {
     }
     if (marketData.crypto.btc.signal.includes("Sell")) {
         exitHtml += `<li>Bitcoin showing <b>${marketData.crypto.btc.signal}</b> momentum</li>`;
+    }
+    // Advanced signal addition
+    if (marketData.regional.nifty.rsi && marketData.regional.nifty.rsi > 75) {
+        exitHtml += `<li>Nifty 50 RSI at ${marketData.regional.nifty.rsi} &rarr; Overbought, risk of pullback</li>`;
     }
     if(exitHtml === '') exitHtml = '<li>No major immediate exit warnings flagged. Maintain stop losses.</li>';
     exitList.innerHTML = exitHtml;
@@ -263,16 +275,20 @@ function renderComparisonGrid(marketData, macroData) {
             }
             let isWatched = getWatchedAssets().includes(row.name);
             let starHtml = `<button onclick="toggleWatch('${row.name}')" style="background:none;border:none;cursor:pointer;color: ${isWatched ? '#f59e0b' : '#444'};">★</button>`;
+            
+            const searchName = encodeURIComponent(row.name);
+            const hyperlink = `<a href="https://finance.yahoo.com/quote/${searchName}" target="_blank" style="text-decoration: none; color: #60a5fa;" class="hover-underline">${row.name}</a>`;
+            
             html += `
                 <tr>
                     <td>${starHtml}</td>
-                    <td>${row.name}</td>
-                    <td>${row.prefix}${row.obj.current.toFixed(2)}</td>
-                    <td>${formatDelta(row.obj.delta_1d)}</td>
-                    <td>${formatDelta(row.obj.delta_1w)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
-                    <td>${rsiText}</td>
-                    <td>${macdText}</td>
+                    <td style="font-weight:500;">${hyperlink}</td>
+                    <td class="font-mono">${row.prefix}${row.obj.current.toFixed(2)}</td>
+                    <td class="font-mono">${formatDelta(row.obj.delta_1d)}</td>
+                    <td class="font-mono">${formatDelta(row.obj.delta_1w)}</td>
+                    <td class="font-mono hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
+                    <td class="font-mono">${rsiText}</td>
+                    <td class="font-mono">${macdText}</td>
                     <td class="hidden-mobile">${patternText}</td>
                     <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
                 </tr>
@@ -400,6 +416,12 @@ function renderSectors(marketData) {
 }
 
 function renderCharts(marketData, macroData) {
+    if (typeof Chart === 'undefined') {
+        console.warn("Chart.js not loaded yet, retrying...");
+        setTimeout(() => renderCharts(marketData, macroData), 500);
+        return;
+    }
+    
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Inter', sans-serif";
     const gridColor = 'rgba(255, 255, 255, 0.05)';

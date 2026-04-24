@@ -100,15 +100,16 @@
         "custom_domain": "quickutils.top",
         "root_dir": "projects/boringwebsite"
     },
-    "master": {
-        "directory": "projects/quickutils-master",
-        "repo_name": "quickutils-master",
-        "src_dir": "projects/quickutils-master/src",
-        "data_dir": "projects/quickutils-master/data",
-        "project_type": "quickutils-master",
+    "quickutils-directory": {
+        "directory": "projects/quickutils-directory",
+        "repo_name": "quickutils-directory",
+        "src_dir": "projects/quickutils-directory/src",
+        "data_dir": "projects/quickutils-directory/data",
+        "project_type": "quickutils-directory",
         "dist_dir": "dist",
         "destination_dir": "dist",
-        "custom_domain": "directory.quickutils.top"
+        "custom_domain": "directory.quickutils.top",
+        "build_command": "python scripts/build_directory.py --type all && mkdir -p dist && cp *.html *.css *.js dist/ || true"
     },
     "market-digest": {
         "directory": "projects/market-digest",
