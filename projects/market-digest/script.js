@@ -126,18 +126,22 @@ async function initializeDashboard() {
         cachedMarketData = marketData;
         cachedMacroData = macroData;
 
-        renderTickerBar(marketData, macroData);
-        renderWatchLists(marketData, macroData);
-        renderComparisonGrid(marketData, macroData);
-        renderMyWatchlist(marketData, macroData);
-        renderNews(newsData);
-        renderSectors(marketData);
-        renderTechnicalAnalysis(marketData, macroData);
-        renderInvestmentSignals(marketData, macroData);
-        renderPaperTrading(marketData, macroData);
+        const safeRender = (name, fn) => {
+            try { fn(); } catch (e) { console.error(`Error rendering ${name}:`, e); }
+        };
 
-        // Render charts on every refresh — instances are destroyed inside renderCharts()
-        renderCharts(marketData, macroData);
+        safeRender('TickerBar', () => renderTickerBar(marketData, macroData));
+        safeRender('WatchLists', () => renderWatchLists(marketData, macroData));
+        safeRender('ComparisonGrid', () => renderComparisonGrid(marketData, macroData));
+        safeRender('MyWatchlist', () => renderMyWatchlist(marketData, macroData));
+        safeRender('News', () => renderNews(newsData));
+        safeRender('Sectors', () => renderSectors(marketData));
+        safeRender('TechnicalAnalysis', () => renderTechnicalAnalysis(marketData, macroData));
+        safeRender('InvestmentSignals', () => renderInvestmentSignals(marketData, macroData));
+        safeRender('PaperTrading', () => renderPaperTrading(marketData, macroData));
+        
+        // Render charts on every refresh
+        safeRender('Charts', () => renderCharts(marketData, macroData));
         
     } catch (error) {
         console.error("Dashboard initialization failed.", error);
@@ -298,7 +302,12 @@ function renderComparisonGrid(marketData, macroData) {
 }
 
 function getWatchedAssets() {
-    return JSON.parse(localStorage.getItem('md_watchlist') || '[]');
+    try {
+        return JSON.parse(localStorage.getItem('md_watchlist') || '[]');
+    } catch (e) {
+        console.warn('LocalStorage blocked or corrupted:', e);
+        return [];
+    }
 }
 
 function toggleWatch(assetName) {
@@ -753,13 +762,21 @@ const PT_STORAGE_KEY = 'md_paper_trading';
 const PT_INITIAL_CASH = 10000;
 
 function getPTState() {
-    const saved = localStorage.getItem(PT_STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem(PT_STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {
+        console.warn('LocalStorage blocked or corrupted:', e);
+    }
     return { cash: PT_INITIAL_CASH, positions: {}, history: [], portfolioHistory: [PT_INITIAL_CASH] };
 }
 
 function savePTState(state) {
-    localStorage.setItem(PT_STORAGE_KEY, JSON.stringify(state));
+    try {
+        localStorage.setItem(PT_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+        console.warn('LocalStorage blocked, cannot save paper trading state:', e);
+    }
 }
 
 function renderPaperTrading(marketData, macroData) {
