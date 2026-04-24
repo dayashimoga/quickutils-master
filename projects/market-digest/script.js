@@ -206,7 +206,7 @@ function renderWatchLists(marketData, macroData) {
     const economicList = document.getElementById('economicContextList');
     economicList.innerHTML = `
         <li>USD/INR at ₹${macroData.usdInr.current.toFixed(2)} &rarr; ${macroData.usdInr.current > 83.5 ? "Weak Rupee pressure." : "Stable Rupee."}</li>
-        <li>FII Flows (Week): ${marketData.fiiFlows.current < 0 ? 'Outflow ₹'+Math.abs(marketData.fiiFlows.current)+'Cr' : 'Inflow ₹'+marketData.fiiFlows.current+'Cr'}</li>
+        <li>IT Sector Momentum: ${marketData.sectors.IT.delta_1m > 0 ? 'Bullish ('+marketData.sectors.IT.delta_1m+'%)' : 'Bearish ('+marketData.sectors.IT.delta_1m+'%)'}</li>
         <li>${macroData.inflation.expectation}</li>
     `;
 }
@@ -415,9 +415,10 @@ function renderNews(newsData) {
 
 function renderSectors(marketData) {
      const sectorList = document.getElementById('sectorInsightsList');
+     if(!sectorList) return;
      sectorList.innerHTML = '';
      Object.entries(marketData.sectors).forEach(([sector, data]) => {
-         sectorList.innerHTML += `<li>${sector}: ${data.change > 0 ? '+' : ''}${data.change}% &rarr; ${data.bias}</li>`;
+         sectorList.innerHTML += `<li>${sector}: ${data.delta_1d > 0 ? '+' : ''}${data.delta_1d}% &rarr; ${data.signal}</li>`;
      });
 }
 
@@ -476,42 +477,94 @@ function renderCharts(marketData, macroData) {
         }
     });
 
-    // 2. Crypto Chart
-    chartInstances.flows = new Chart(document.getElementById('flowsChart'), {
-        type: 'line',
-        data: {
-            labels: labels30d,
-            datasets: [
-                {
-                    label: 'Bitcoin ($)',
-                    data: marketData.crypto.btc.history_30d,
-                    borderColor: '#f59e0b',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    yAxisID: 'y',
-                    pointRadius: 0
-                },
-                {
-                    label: 'Ethereum ($)',
-                    data: marketData.crypto.eth.history_30d,
-                    borderColor: '#8b5cf6',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    yAxisID: 'y1',
-                    pointRadius: 0
+    // 2. Sectors Chart
+    const sectorsCanvas = document.getElementById('sectorsChart');
+    if (sectorsCanvas) {
+        chartInstances.sectors = new Chart(sectorsCanvas, {
+            type: 'line',
+            data: {
+                labels: labels30d,
+                datasets: [
+                    {
+                        label: 'IT Sector',
+                        data: marketData.sectors.IT ? marketData.sectors.IT.history_30d : [],
+                        borderColor: '#f59e0b',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y',
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Pharma',
+                        data: marketData.sectors.Pharma ? marketData.sectors.Pharma.history_30d : [],
+                        borderColor: '#8b5cf6',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false }, ticks: { display: false } },
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: gridColor } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
                 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { grid: { display: false }, ticks: { display: false } },
-                y: { type: 'linear', display: true, position: 'left', grid: { color: gridColor } },
-                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
             }
-        }
-    });
+        });
+    }
+
+    // 3. Forecast Chart
+    const forecastCanvas = document.getElementById('forecastChart');
+    if (forecastCanvas && marketData.regional.nifty.forecast_7d) {
+        const historyData = marketData.regional.nifty.history_30d;
+        const forecastData = marketData.regional.nifty.forecast_7d;
+        
+        const combinedLabels = [...labels30d, ...Array.from({length: 7}, (_, i) => `+${i+1}d`)];
+        const combinedHistorical = [...historyData, ...Array(7).fill(null)];
+        const combinedForecast = [...Array(30).fill(null), ...forecastData];
+        
+        // Connect the lines seamlessly
+        combinedForecast[29] = historyData[29];
+
+        chartInstances.forecast = new Chart(forecastCanvas, {
+            type: 'line',
+            data: {
+                labels: combinedLabels,
+                datasets: [
+                    {
+                        label: 'Historical (Nifty)',
+                        data: combinedHistorical,
+                        borderColor: '#3b82f6',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0
+                    },
+                    {
+                        label: '7-Day AI Forecast',
+                        data: combinedForecast,
+                        borderColor: '#a855f7',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#a855f7'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } },
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: gridColor } }
+                }
+            }
+        });
+    }
 }
 
 // ─── Technical Analysis ───

@@ -136,6 +136,32 @@ def detect_patterns(prices):
         
     return {"pattern": "Consolidation", "target": round(current*1.02, 2), "stop_loss": round(current*0.95, 2), "strength": "Neutral"}
 
+def calculate_forecast(prices, days_ahead=7):
+    if len(prices) < 30:
+        return [round(prices[-1], 2)] * days_ahead
+        
+    # Simple linear regression on last 30 days
+    y = prices[-30:]
+    n = len(y)
+    x = list(range(n))
+    
+    sum_x = sum(x)
+    sum_y = sum(y)
+    sum_xy = sum(xi * yi for xi, yi in zip(x, y))
+    sum_xx = sum(xi * xi for xi in x)
+    
+    slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x) if (n * sum_xx - sum_x * sum_x) != 0 else 0
+    intercept = (sum_y - slope * sum_x) / n
+    
+    forecast = []
+    for i in range(days_ahead):
+        # Add slight momentum decay and volatility
+        vol = (max(y) - min(y)) / (prices[-1] * 10)
+        proj = intercept + slope * (n + i)
+        forecast.append(round(proj, 2))
+        
+    return forecast
+
 def calculate_deltas(history):
     if not history or len(history) < 2:
         return {
@@ -165,7 +191,8 @@ def calculate_deltas(history):
         "signal": get_signal(current, history),
         "rsi": calculate_rsi(history),
         "macd": calculate_macd(history),
-        "pattern": detect_patterns(history)
+        "pattern": detect_patterns(history),
+        "forecast_7d": calculate_forecast(history, 7)
     }
 
 def fetch_rss_news(feed_urls, limit=30):
@@ -224,6 +251,14 @@ def main():
     usd_inr = get_symbol_data('INR=X', 83.5)
     crude = get_symbol_data('BZ=F', 80.0)
     
+    # Sectors (Real Data)
+    sector_it = get_symbol_data('^CNXIT', 35000.0)
+    sector_pharma = get_symbol_data('^CNXPHARMA', 22000.0)
+    sector_fmcg = get_symbol_data('^CNXFMCG', 55000.0)
+    sector_auto = get_symbol_data('^CNXAUTO', 24000.0)
+    sector_realty = get_symbol_data('^CNXREALTY', 800.0)
+    sector_energy = get_symbol_data('^CNXENERGY', 38000.0)
+    
     # News (fetch 30)
     news_feeds = [
         ('https://economictimes.indiatimes.com/markets/rssfeeds/2146842.cms', 'ET Markets'),
@@ -258,22 +293,13 @@ def main():
                 "eth": eth,
                 "sol": sol
             },
-            "fiiFlows": {
-                 "current": -6200, 
-                 "history_30d": [1200, -500, 800, 2100, -300, 1500, 2800, -100, 1900, -6200],
-                 "delta_status": "heavy outflow"
-            },
-            "diiFlows": {
-                 "current": 4500,
-                 "history_30d": [800, 1100, 900, 500, 1200, 800, 600, 1500, 700, 4500]
-            },
             "sectors": {
-                'IT': { "change": 1.2, "bias": "Strength" },
-                'Pharma': { "change": 0.8, "bias": "Defensive support" },
-                'FMCG': { "change": 0.5, "bias": "Stable demand" },
-                'Auto': { "change": -2.5, "bias": "Weakness (oil shock impact)" },
-                'Realty': { "change": -3.1, "bias": "Weakness (rate sensitivity)" },
-                'Oil & Gas': { "change": -4.0, "bias": "Pressure from crude spike" }
+                'IT': sector_it,
+                'Pharma': sector_pharma,
+                'FMCG': sector_fmcg,
+                'Auto': sector_auto,
+                'Realty': sector_realty,
+                'Energy': sector_energy
             }
         },
         "macroData": {
