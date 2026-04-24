@@ -217,6 +217,36 @@ header {
     flex-direction: column;
     gap: 16px;
     min-width: 0; /* Prevents grid blowout */
+    overflow: hidden; /* Prevents horizontal bleed */
+}
+
+/* Table and grid overflow containment */
+.comparison-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.comparison-grid table {
+    width: 100%;
+    min-width: 600px;
+}
+
+/* Canvas containers must have explicit height for Chart.js */
+.canvas-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.canvas-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Asset hyperlinks */
+.hover-underline:hover {
+    text-decoration: underline !important;
+    color: #93c5fd !important;
 }
 
 .dashboard-row-split {
@@ -260,11 +290,11 @@ header {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px;
 }
 
 .info-card.compact {
-    padding: 16px;
+    padding: 12px;
 }
 
 .card-header h2 {
@@ -590,7 +620,7 @@ footer {
     }
     
     .canvas-container {
-        height: 220px;
+        height: 200px;
     }
     
     .overview-grid {

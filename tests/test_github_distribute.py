@@ -48,13 +48,13 @@ def test_get_projects(tmp_path):
         projects_dir.mkdir()
         (projects_dir / "valid-proj").mkdir()
         (projects_dir / ".hidden").mkdir()
-        (projects_dir / "quickutils-master").mkdir()
+        (projects_dir / "quickutils-directory").mkdir()
         (projects_dir / "file.txt").touch()
         
         projs = get_projects()
         assert "valid-proj" in projs
         assert ".hidden" not in projs
-        assert "quickutils-master" not in projs
+        assert "quickutils-directory" not in projs
 
 @patch("scripts.github_distribute.PAT", None)
 @patch("scripts.github_distribute.get_username", return_value="testuser")

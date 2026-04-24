@@ -5,7 +5,7 @@ const REFRESH_COOLDOWN_MS = 60000; // 60 seconds
 let countdownInterval = null;
 let cachedMarketData = null;
 let cachedMacroData = null;
-let chartsInitialized = false;
+let chartInstances = {}; // Store Chart.js instances for proper lifecycle
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Update timestamp
@@ -136,11 +136,8 @@ async function initializeDashboard() {
         renderInvestmentSignals(marketData, macroData);
         renderPaperTrading(marketData, macroData);
 
-        // Render charts unconditionally for dashboard
-        if (!chartsInitialized) {
-            renderCharts(marketData, macroData);
-            chartsInitialized = true;
-        }
+        // Render charts on every refresh — instances are destroyed inside renderCharts()
+        renderCharts(marketData, macroData);
         
     } catch (error) {
         console.error("Dashboard initialization failed.", error);
@@ -426,10 +423,14 @@ function renderCharts(marketData, macroData) {
     Chart.defaults.font.family = "'Inter', sans-serif";
     const gridColor = 'rgba(255, 255, 255, 0.05)';
 
+    // Destroy existing instances to prevent canvas reuse errors
+    Object.values(chartInstances).forEach(c => { if (c && typeof c.destroy === 'function') c.destroy(); });
+    chartInstances = {};
+
     const labels30d = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
 
     // 1. Regional + Global Dual Chart 
-    new Chart(document.getElementById('niftyVixChart'), {
+    chartInstances.niftyVix = new Chart(document.getElementById('niftyVixChart'), {
         type: 'line',
         data: {
             labels: labels30d,
@@ -467,7 +468,7 @@ function renderCharts(marketData, macroData) {
     });
 
     // 2. Crypto Chart
-    new Chart(document.getElementById('flowsChart'), {
+    chartInstances.flows = new Chart(document.getElementById('flowsChart'), {
         type: 'line',
         data: {
             labels: labels30d,
@@ -715,6 +716,26 @@ function computeSignal(assetObj, macroData) {
     else if (assetObj.signal.includes('Buy')) { score += 10; }
     else if (assetObj.signal.includes('Strong Sell')) { score -= 15; }
     else if (assetObj.signal.includes('Sell')) { score -= 10; }
+    
+    // ─── Advanced Signals ───
+    // Bollinger Band squeeze (volatility compression → breakout imminent)
+    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
+        const prices = assetObj.history_30d;
+        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        const stdDev = Math.sqrt(prices.slice(-20).reduce((s, p) => s + Math.pow(p - sma20, 2), 0) / 20);
+        const bbWidth = (stdDev / sma20) * 100;
+        if (bbWidth < 2) { reasons.push('Bollinger squeeze → breakout imminent'); score += 5; }
+        else if (bbWidth > 6) { reasons.push('High volatility band expansion'); }
+    }
+    
+    // Moving Average crossover (SMA 10 vs SMA 20)
+    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
+        const prices = assetObj.history_30d;
+        const sma10 = prices.slice(-10).reduce((a, b) => a + b, 0) / 10;
+        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        if (sma10 > sma20) { score += 8; reasons.push('SMA10 > SMA20 → Golden cross'); }
+        else { score -= 8; reasons.push('SMA10 < SMA20 → Death cross'); }
+    }
     
     const confidence = Math.min(95, Math.max(15, 50 + score));
     let signal;
