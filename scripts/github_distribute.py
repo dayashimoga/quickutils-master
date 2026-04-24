@@ -51,7 +51,7 @@ def get_projects():
     # Dynamically discover all project directories
     if PROJECTS_DIR.exists():
         for d in PROJECTS_DIR.iterdir():
-            if d.is_dir() and not d.name.startswith(".") and d.name != "quickutils-master":
+            if d.is_dir() and not d.name.startswith(".") and d.name != "quickutils-directory":
                 projects[d.name] = str(d.absolute())
             
     return projects

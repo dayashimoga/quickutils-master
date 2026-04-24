@@ -6,6 +6,7 @@ import urllib.error
 import time
 import argparse
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT_DIR / "terraform" / "projects.json"
@@ -26,9 +27,8 @@ def find_wrangler_token():
                 content = p.read_text(encoding="utf-8")
                 for line in content.splitlines():
                     if line.startswith("oauth_token"):
-                        token = line.split("=")[1].strip().strip('"').strip("'")
-                        return token
-            except Exception as e:
+                        return line.split("=")[1].strip().strip('"').strip("'")
+            except Exception:
                 pass
     return os.environ.get("CLOUDFLARE_API_TOKEN")
 
@@ -43,11 +43,122 @@ def api_request(method, url, token, payload=None):
         with urllib.request.urlopen(req) as response:
             return json.loads(response.read().decode("utf-8")), response.status
     except urllib.error.HTTPError as e:
-        if e.code == 409 or e.code == 400: # Domain already bound or validation failed
+        if e.code == 409 or e.code == 400:
             return {"success": False, "code": e.code, "msg": str(e)}, e.code
         return None, e.code
     except Exception as e:
         return None, 500
+
+def process_domain(domain, foldername, base_url, token, zone_id, project_domain_map):
+    if not domain or domain.lower() == "none" or domain.startswith("none."):
+        return "skip", f"  [SKIP] Invalid domain: {domain}"
+
+    already_assigned = False
+    current_holder = project_domain_map.get(domain)
+    
+    if current_holder and current_holder != foldername:
+        print(f"  [FORCE DETACH] -> Domain {domain} is bound to {current_holder}. Detaching...")
+        api_request("DELETE", f"{base_url}/{current_holder}/domains/{domain}", token)
+        time.sleep(2)
+
+    # Check if domain already exists on THIS project
+    domain_list_url = f"{base_url}/{foldername}/domains"
+    list_res, list_code = api_request("GET", domain_list_url, token)
+    
+    if list_code == 429:
+        time.sleep(10)
+        list_res, _ = api_request("GET", domain_list_url, token)
+
+    if list_res and list_res.get("success"):
+        for existing in list_res.get("result", []):
+            if existing.get("name") == domain:
+                if existing.get("status") == "active":
+                    already_assigned = True
+                else:
+                    print(f"  [FORCE REBIND] -> Domain {domain} stuck ({existing.get('status')} on {foldername}). Deleting...")
+                    api_request("DELETE", f"{base_url}/{foldername}/domains/{domain}", token)
+                    time.sleep(1)
+                break
+
+    success_status = False
+    domain_is_active = False
+    action_type = "error"
+    
+    if already_assigned:
+        action_type = "skip"
+        success_status = True
+        domain_is_active = True
+        print(f"  [SKIP] -> Already configured & ACTIVE: {domain}")
+    else:
+        print(f"Assigning {domain} to {foldername}...")
+        domain_add_url = f"{base_url}/{foldername}/domains"
+        
+        for attempt in range(3):
+            res, code = api_request("POST", domain_add_url, token, payload={"name": domain})
+            if code == 429:
+                time.sleep(10 * (2 ** attempt))
+                continue
+            if code in (409, 400) or (res and not res.get("success") and "already" in str(res).lower()):
+                action_type = "skip"
+                success_status = True
+                print(f"  [SKIP] -> Bound simultaneously: {domain}")
+                break
+            elif res and res.get("success"):
+                action_type = "assigned"
+                success_status = True
+                print(f"  [SUCCESS] -> {domain}")
+                break
+            else:
+                print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
+                break
+        
+        time.sleep(1.5)
+
+        if success_status:
+            print(f"  [WAIT] Polling for {domain} to become active...")
+            for _ in range(12):
+                chk_res, chk_code = api_request("GET", f"{base_url}/{foldername}/domains/{domain}", token)
+                if chk_code == 200 and chk_res and chk_res.get("success"):
+                    status = chk_res["result"].get("status")
+                    if status == "active":
+                        domain_is_active = True
+                        print(f"  [READY] -> {domain} is active!")
+                        break
+                    time.sleep(5)
+                elif chk_code == 429:
+                    time.sleep(10)
+                else:
+                    time.sleep(3)
+            
+            if not domain_is_active:
+                print(f"  [WARN] -> {domain} did not become active in time. Skipping DNS provisioning.")
+
+    # DNS CNAME Provisioning
+    if zone_id and domain_is_active:
+        target_content = f"{foldername}.pages.dev"
+        cname_payload = {
+            "type": "CNAME", "name": domain, "content": target_content,
+            "proxied": True, "comment": "Auto-provisioned by QuickUtils orchestrator"
+        }
+        
+        dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
+        if dns_res and dns_res.get("success"):
+            records = dns_res.get("result", [])
+            if len(records) == 0:
+                dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
+                if dns_code in (200, 201):
+                    print(f"    [DNS OK] -> Created proxied CNAME {domain} -> {target_content}")
+            else:
+                existing = records[0]
+                if not existing.get("proxied") or existing.get("content") != target_content:
+                    dns_put, dns_code = api_request("PUT", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{existing['id']}", token, payload=cname_payload)
+                    if dns_code in (200, 201):
+                        print(f"    [DNS OK] -> Updated CNAME {domain} -> {target_content}")
+                else:
+                    print(f"    [DNS SKIP] -> CNAME {domain} is already proxied correctly.")
+
+    return action_type, f"Processed {domain}"
+
 
 def assign_domains():
     if not CONFIG_PATH.exists():
@@ -59,7 +170,7 @@ def assign_domains():
 
     token = find_wrangler_token()
     if not token:
-        print("Error: Could not find Wrangler token or CLOUDFLARE_API_TOKEN.")
+        print("Error: Could not find Wrangler token.")
         return
 
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
@@ -69,160 +180,56 @@ def assign_domains():
 
     base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
     
-    # 1. Fetch ALL projects and their domains to build a global map
     print("Fetching all projects to map existing domains...")
     project_domain_map = {}
-    all_projects_res, code = api_request("GET", f"{base_url}?per_page=100", token)
+    all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100", token)
     if all_projects_res and all_projects_res.get("success"):
         for proj in all_projects_res.get("result", []):
             proj_name = proj.get("name")
-            domains_list = proj.get("domains", [])
-            for d in domains_list:
-                if isinstance(d, str):
-                    project_domain_map[d] = proj_name
-                elif isinstance(d, dict) and "name" in d:
-                    project_domain_map[d["name"]] = proj_name
+            for d in proj.get("domains", []):
+                if isinstance(d, str): project_domain_map[d] = proj_name
+                elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name
 
-    count = 0
-    errors = 0
-    skips = 0
-
-    # Pre-fetch zone ID for quickutils.top
     zones_res, _ = api_request("GET", "https://api.cloudflare.com/client/v4/zones?name=quickutils.top", token)
-    zone_id = None
-    if zones_res and zones_res.get("success") and zones_res.get("result"):
-        zone_id = zones_res["result"][0]["id"]
+    zone_id = zones_res["result"][0]["id"] if (zones_res and zones_res.get("success") and zones_res.get("result")) else None
 
-    print(f"Loaded {len(projects)} projects from config. Initiating bulk domain REST API assignment...")
-    
+    tasks = []
     for arch_key, cfg in projects.items():
-        foldername = cfg.get("repo_name", arch_key)
         domain_raw = cfg.get("custom_domain", "")
         if "quickutils.top" in domain_raw:
-            domain = domain_raw.replace("https://", "").replace("http://", "").strip("/")
-            domain = domain.split("/")[0] # remove trailing paths if any
-            
-            already_assigned = False
+            domain = domain_raw.replace("https://", "").replace("http://", "").strip("/").split("/")[0]
+            foldername = cfg.get("repo_name", arch_key)
+            tasks.append((domain, foldername))
 
-            # Check if domain is attached ANYWHERE ELSE
-            current_holder = project_domain_map.get(domain)
-            if current_holder and current_holder != foldername:
-                print(f"  [FORCE DETACH] -> Domain {domain} is bound to {current_holder}. Detaching...")
-                api_request("DELETE", f"{base_url}/{current_holder}/domains/{domain}", token)
-                time.sleep(2) # Give CF time to process detach
-                project_domain_map[domain] = None
+    print(f"Initiating bulk domain REST API assignment for {len(tasks)} domains (using 8 parallel workers)...")
+    
+    stats = {"assigned": 0, "skipped": 0, "errors": 0}
+    
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(process_domain, d, f, base_url, token, zone_id, project_domain_map): d for d, f in tasks}
+        for future in as_completed(futures):
+            domain = futures[future]
+            try:
+                action_type, msg = future.result()
+                if action_type in stats:
+                    stats[action_type] += 1
+            except Exception as e:
+                print(f"Error processing {domain}: {e}")
+                stats["errors"] += 1
 
-            # Get current domains for THIS project to verify state
-            domain_list_url = f"{base_url}/{foldername}/domains"
-            list_res, list_code = api_request("GET", domain_list_url, token)
-            
-            if list_code == 429:
-                print("  [WARN] Rate limited reading domains. Sleeping 10s...")
-                time.sleep(10)
-                list_res, _ = api_request("GET", domain_list_url, token)
-
-            if list_res and list_res.get("success"):
-                for existing in list_res.get("result", []):
-                    if existing.get("name") == domain:
-                        if existing.get("status") == "active":
-                            already_assigned = True
-                        else:
-                            print(f"  [FORCE REBIND] -> Domain {domain} is stuck in state: {existing.get('status')} on {foldername}. Deleting...")
-                            api_request("DELETE", f"{base_url}/{foldername}/domains/{domain}", token)
-                            time.sleep(1)
-                        break
-
-            success_status = False
-            if already_assigned:
-                print(f"  [SKIP] -> Already configured in Pages: {domain}")
-                skips += 1
-                success_status = True
-            else:
-                print(f"Assigning {domain} to {foldername}...")
-                domain_add_url = f"{base_url}/{foldername}/domains"
-                payload = {"name": domain}
-                max_retries = 3
-                
-                for attempt in range(max_retries):
-                    res, code = api_request("POST", domain_add_url, token, payload=payload)
-                    
-                    if code == 429:
-                        wait_time = 10 * (2 ** attempt)
-                        print(f"  [WARN] -> Rate limited (HTTP 429). Retrying in {wait_time}s...")
-                        time.sleep(wait_time)
-                        continue
-                        
-                    if code == 409 or code == 400 or (res and not res.get("success") and "already" in str(res).lower()):
-                        print(f"  [SKIP] -> Bound simultaneously: {domain}")
-                        skips += 1
-                        success_status = True
-                        break
-                    elif res and res.get("success"):
-                        count += 1
-                        print(f"  [SUCCESS] -> {domain}")
-                        success_status = True
-                        break
-                    else:
-                        print(f"  [ERROR] -> Failed: {domain} (HTTP {code})")
-                        break
-                
-                if not success_status and code != 400 and code != 409 and not (res and res.get("success")):
-                    errors += 1
-                    
-                time.sleep(1.5) # Protect against rate-limits
-
-            # DNS CNAME Provisioning (Proxy MUST be True to avoid Error 1014 CNAME Cross-User Banned)
-            if zone_id and success_status: # ONLY provision DNS if successfully added to Pages
-                dns_res, _ = api_request("GET", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?name={domain}&type=CNAME", token)
-                
-                target_content = f"{foldername}.pages.dev"
-                cname_payload = {
-                    "type": "CNAME",
-                    "name": domain,
-                    "content": target_content,
-                    "proxied": True,
-                    "comment": "Auto-provisioned by QuickUtils network orchestrator"
-                }
-
-                if dns_res and dns_res.get("success"):
-                    records = dns_res.get("result", [])
-                    if len(records) == 0:
-                        # Create new record
-                        dns_post, dns_code = api_request("POST", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records", token, payload=cname_payload)
-                        if dns_code in [200, 201]:
-                            print(f"    [DNS OK] -> Created proxied CNAME {domain} -> {target_content}")
-                        else:
-                            print(f"    [DNS ERROR] -> Failed to create CNAME for {domain}")
-                    else:
-                        # Update existing record if it's unproxied or points to the wrong target
-                        existing_record = records[0]
-                        if not existing_record.get("proxied") or existing_record.get("content") != target_content:
-                            record_id = existing_record["id"]
-                            dns_put, dns_code = api_request("PUT", f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record_id}", token, payload=cname_payload)
-                            if dns_code in [200, 201]:
-                                print(f"    [DNS OK] -> Updated existing CNAME {domain} to be proxied -> {target_content}")
-                            else:
-                                print(f"    [DNS ERROR] -> Failed to update existing CNAME for {domain}")
-                        else:
-                            print(f"    [DNS SKIP] -> CNAME {domain} is already correctly proxied to {target_content}")
-
-    print(f"\nProcess Completed. Successfully Assigned: {count}. Skipped: {skips}. Errors: {errors}")
-    return {"assigned": count, "skipped": skips, "errors": errors, "details": []}
+    print(f"\nProcess Completed. Assigned: {stats['assigned']}. Skipped: {stats['skipped']}. Errors: {stats['errors']}")
+    return stats
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bulk assign custom domains to Cloudflare Pages projects")
-    parser.add_argument("--batch-size", type=int, default=10, help="Number of domains per batch")
-    parser.add_argument("--delay", type=float, default=5, help="Base delay between API calls (seconds)")
-    parser.add_argument("--dry-run", action="store_true", help="Preview changes without making them")
-    parser.add_argument("--report-json", type=str, default=None, help="Path to write JSON report")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batch-size", type=int, default=10)
+    parser.add_argument("--delay", type=float, default=5)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--report-json", type=str, default=None)
     args = parser.parse_args()
 
-    if args.dry_run:
-        print("[DRY RUN] No actual API calls will be made.")
-
-    result = assign_domains()
-    
-    if args.report_json:
-        with open(args.report_json, "w", encoding="utf-8") as f:
-            json.dump(result or {"assigned": 0, "skipped": 0, "errors": 0}, f, indent=2)
-        print(f"Report written to {args.report_json}")
+    if not args.dry_run:
+        result = assign_domains()
+        if args.report_json and result:
+            with open(args.report_json, "w", encoding="utf-8") as f:
+                json.dump(result, f, indent=2)

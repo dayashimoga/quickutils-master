@@ -5,7 +5,7 @@ const REFRESH_COOLDOWN_MS = 60000; // 60 seconds
 let countdownInterval = null;
 let cachedMarketData = null;
 let cachedMacroData = null;
-let chartsInitialized = false;
+let chartInstances = {}; // Store Chart.js instances for proper lifecycle
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Update timestamp
@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    // 2. Setup Tab Navigation
-    setupTabNavigation();
+    // Removed Tab Navigation Setup
 
     // 3. Initialize Charts & Data
     initializeDashboard();
@@ -25,42 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Setup Refresh Logic
     setupRefreshLogic();
 });
-
-// ─── Tab Navigation System ───
-function setupTabNavigation() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-
-            // Deactivate all
-            tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-            panels.forEach(p => p.classList.remove('active'));
-
-            // Activate selected
-            tab.classList.add('active');
-            tab.setAttribute('aria-selected', 'true');
-            document.getElementById('panel-' + target).classList.add('active');
-
-            // Lazy init charts when Charts tab is first shown
-            if (target === 'charts' && !chartsInitialized && cachedMarketData && cachedMacroData) {
-                setTimeout(() => renderCharts(cachedMarketData, cachedMacroData), 50);
-                chartsInitialized = true;
-            }
-
-            // Update URL hash without scrolling
-            history.replaceState(null, '', '#' + target);
-        });
-    });
-
-    // Restore tab from hash
-    const hash = window.location.hash.replace('#', '');
-    if (hash && document.getElementById('tab-' + hash)) {
-        document.getElementById('tab-' + hash).click();
-    }
-}
 
 // ─── Ticker Bar ───
 function renderTickerBar(marketData, macroData) {
@@ -163,24 +126,22 @@ async function initializeDashboard() {
         cachedMarketData = marketData;
         cachedMacroData = macroData;
 
-        renderTickerBar(marketData, macroData);
-        renderWatchLists(marketData, macroData);
-        renderComparisonGrid(marketData, macroData);
-        renderMyWatchlist(marketData, macroData);
-        renderNews(newsData);
-        renderSectors(marketData);
-        renderTechnicalAnalysis(marketData, macroData);
-        renderInvestmentSignals(marketData, macroData);
-        renderPaperTrading(marketData, macroData);
+        const safeRender = (name, fn) => {
+            try { fn(); } catch (e) { console.error(`Error rendering ${name}:`, e); }
+        };
 
-        // Only render charts if the charts tab is currently active
-        const chartsPanel = document.getElementById('panel-charts');
-        if (chartsPanel && chartsPanel.classList.contains('active')) {
-            chartsInitialized = true;
-            renderCharts(marketData, macroData);
-        } else {
-            chartsInitialized = false;
-        }
+        safeRender('TickerBar', () => renderTickerBar(marketData, macroData));
+        safeRender('WatchLists', () => renderWatchLists(marketData, macroData));
+        safeRender('ComparisonGrid', () => renderComparisonGrid(marketData, macroData));
+        safeRender('MyWatchlist', () => renderMyWatchlist(marketData, macroData));
+        safeRender('News', () => renderNews(newsData));
+        safeRender('Sectors', () => renderSectors(marketData));
+        safeRender('TechnicalAnalysis', () => renderTechnicalAnalysis(marketData, macroData));
+        safeRender('InvestmentSignals', () => renderInvestmentSignals(marketData, macroData));
+        safeRender('PaperTrading', () => renderPaperTrading(marketData, macroData));
+        
+        // Render charts on every refresh
+        safeRender('Charts', () => renderCharts(marketData, macroData));
         
     } catch (error) {
         console.error("Dashboard initialization failed.", error);
@@ -212,6 +173,14 @@ function renderWatchLists(marketData, macroData) {
     if (macroData.crudeOil.current < 80) {
         entryHtml += `<li>Crude oil &lt; $80 &rarr; Positive macro cue</li>`;
     }
+    // Advanced signal addition
+    if (marketData.regional.nifty.rsi && marketData.regional.nifty.rsi < 35) {
+        entryHtml += `<li>Nifty 50 RSI at ${marketData.regional.nifty.rsi} &rarr; Oversold bounce opportunity</li>`;
+    }
+    if (marketData.regional.nifty.macd && marketData.regional.nifty.macd.hist > 0) {
+        entryHtml += `<li>Nifty MACD Crossover &rarr; Bullish momentum confirmed</li>`;
+    }
+    
     if(entryHtml === '') entryHtml = '<li>Markets are sideways or bearish. Wait for clear signals.</li>';
     entryList.innerHTML = entryHtml;
 
@@ -225,6 +194,10 @@ function renderWatchLists(marketData, macroData) {
     }
     if (marketData.crypto.btc.signal.includes("Sell")) {
         exitHtml += `<li>Bitcoin showing <b>${marketData.crypto.btc.signal}</b> momentum</li>`;
+    }
+    // Advanced signal addition
+    if (marketData.regional.nifty.rsi && marketData.regional.nifty.rsi > 75) {
+        exitHtml += `<li>Nifty 50 RSI at ${marketData.regional.nifty.rsi} &rarr; Overbought, risk of pullback</li>`;
     }
     if(exitHtml === '') exitHtml = '<li>No major immediate exit warnings flagged. Maintain stop losses.</li>';
     exitList.innerHTML = exitHtml;
@@ -303,16 +276,20 @@ function renderComparisonGrid(marketData, macroData) {
             }
             let isWatched = getWatchedAssets().includes(row.name);
             let starHtml = `<button onclick="toggleWatch('${row.name}')" style="background:none;border:none;cursor:pointer;color: ${isWatched ? '#f59e0b' : '#444'};">★</button>`;
+            
+            const searchName = encodeURIComponent(row.name);
+            const hyperlink = `<a href="https://finance.yahoo.com/quote/${searchName}" target="_blank" style="text-decoration: none; color: #60a5fa;" class="hover-underline">${row.name}</a>`;
+            
             html += `
                 <tr>
                     <td>${starHtml}</td>
-                    <td>${row.name}</td>
-                    <td>${row.prefix}${row.obj.current.toFixed(2)}</td>
-                    <td>${formatDelta(row.obj.delta_1d)}</td>
-                    <td>${formatDelta(row.obj.delta_1w)}</td>
-                    <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
-                    <td>${rsiText}</td>
-                    <td>${macdText}</td>
+                    <td style="font-weight:500;">${hyperlink}</td>
+                    <td class="font-mono">${row.prefix}${row.obj.current.toFixed(2)}</td>
+                    <td class="font-mono">${formatDelta(row.obj.delta_1d)}</td>
+                    <td class="font-mono">${formatDelta(row.obj.delta_1w)}</td>
+                    <td class="font-mono hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
+                    <td class="font-mono">${rsiText}</td>
+                    <td class="font-mono">${macdText}</td>
                     <td class="hidden-mobile">${patternText}</td>
                     <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
                 </tr>
@@ -325,7 +302,12 @@ function renderComparisonGrid(marketData, macroData) {
 }
 
 function getWatchedAssets() {
-    return JSON.parse(localStorage.getItem('md_watchlist') || '[]');
+    try {
+        return JSON.parse(localStorage.getItem('md_watchlist') || '[]');
+    } catch (e) {
+        console.warn('LocalStorage blocked or corrupted:', e);
+        return [];
+    }
 }
 
 function toggleWatch(assetName) {
@@ -440,14 +422,24 @@ function renderSectors(marketData) {
 }
 
 function renderCharts(marketData, macroData) {
+    if (typeof Chart === 'undefined') {
+        console.warn("Chart.js not loaded yet, retrying...");
+        setTimeout(() => renderCharts(marketData, macroData), 500);
+        return;
+    }
+    
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Inter', sans-serif";
     const gridColor = 'rgba(255, 255, 255, 0.05)';
 
+    // Destroy existing instances to prevent canvas reuse errors
+    Object.values(chartInstances).forEach(c => { if (c && typeof c.destroy === 'function') c.destroy(); });
+    chartInstances = {};
+
     const labels30d = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
 
     // 1. Regional + Global Dual Chart 
-    new Chart(document.getElementById('niftyVixChart'), {
+    chartInstances.niftyVix = new Chart(document.getElementById('niftyVixChart'), {
         type: 'line',
         data: {
             labels: labels30d,
@@ -485,7 +477,7 @@ function renderCharts(marketData, macroData) {
     });
 
     // 2. Crypto Chart
-    new Chart(document.getElementById('flowsChart'), {
+    chartInstances.flows = new Chart(document.getElementById('flowsChart'), {
         type: 'line',
         data: {
             labels: labels30d,
@@ -734,6 +726,26 @@ function computeSignal(assetObj, macroData) {
     else if (assetObj.signal.includes('Strong Sell')) { score -= 15; }
     else if (assetObj.signal.includes('Sell')) { score -= 10; }
     
+    // ─── Advanced Signals ───
+    // Bollinger Band squeeze (volatility compression → breakout imminent)
+    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
+        const prices = assetObj.history_30d;
+        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        const stdDev = Math.sqrt(prices.slice(-20).reduce((s, p) => s + Math.pow(p - sma20, 2), 0) / 20);
+        const bbWidth = (stdDev / sma20) * 100;
+        if (bbWidth < 2) { reasons.push('Bollinger squeeze → breakout imminent'); score += 5; }
+        else if (bbWidth > 6) { reasons.push('High volatility band expansion'); }
+    }
+    
+    // Moving Average crossover (SMA 10 vs SMA 20)
+    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
+        const prices = assetObj.history_30d;
+        const sma10 = prices.slice(-10).reduce((a, b) => a + b, 0) / 10;
+        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        if (sma10 > sma20) { score += 8; reasons.push('SMA10 > SMA20 → Golden cross'); }
+        else { score -= 8; reasons.push('SMA10 < SMA20 → Death cross'); }
+    }
+    
     const confidence = Math.min(95, Math.max(15, 50 + score));
     let signal;
     if (score >= 40) signal = 'Strong Buy';
@@ -750,13 +762,21 @@ const PT_STORAGE_KEY = 'md_paper_trading';
 const PT_INITIAL_CASH = 10000;
 
 function getPTState() {
-    const saved = localStorage.getItem(PT_STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem(PT_STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {
+        console.warn('LocalStorage blocked or corrupted:', e);
+    }
     return { cash: PT_INITIAL_CASH, positions: {}, history: [], portfolioHistory: [PT_INITIAL_CASH] };
 }
 
 function savePTState(state) {
-    localStorage.setItem(PT_STORAGE_KEY, JSON.stringify(state));
+    try {
+        localStorage.setItem(PT_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+        console.warn('LocalStorage blocked, cannot save paper trading state:', e);
+    }
 }
 
 function renderPaperTrading(marketData, macroData) {

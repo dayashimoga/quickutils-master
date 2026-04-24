@@ -1,19 +1,16 @@
+"""Core optimized tests covering scripts/utils.py and scripts/build_directory.py"""
 import pytest
 import os
 import json
 import shutil
 from pathlib import Path
 from scripts.utils import slugify, load_database, get_categories, truncate, ensure_dir
-from scripts.build_directory import build_site, create_jinja_env
+from scripts.build_directory import generate_html, build_directory, DIRECTORY_TYPES
 
 # Smoke tests for other scripts to boost overall coverage
 import scripts.check_links
 import scripts.fetch_data
 import scripts.generate_sitemap
-import scripts.generate_pins
-import scripts.indexnow_submit
-import scripts.post_pinterest
-import scripts.post_social
 
 def test_script_imports():
     assert scripts.check_links is not None
@@ -29,8 +26,7 @@ def test_generate_sitemap_smoke(tmp_path, monkeypatch):
 
 def test_check_links_smoke(tmp_path, monkeypatch):
     import scripts.check_links
-    # Mocking basic check
-    pass # assert scripts.check_links.check_url("http://google.com") in [200, 404, 403, 500, None]
+    pass
 
 def test_slugify():
     assert slugify("Hello World") == "hello-world"
@@ -73,90 +69,61 @@ def test_get_categories():
     assert len(cats["Cat1"]) == 2
     assert len(cats["Cat2"]) == 1
 
-def test_create_jinja_env():
-    # This assumes we have src/templates
-    try:
-        env = create_jinja_env()
-        assert env is not None
-        assert "slugify" in env.filters
-    except Exception as e:
-        pytest.skip(f"Templates not found: {e}")
+def test_generate_html_basic():
+    items = [{"name": "Test", "category": "Cat", "url": "#", "description": "desc"}]
+    html = generate_html("tools", items)
+    assert "<!DOCTYPE html>" in html
+    assert "Test" in html
+    assert "1 items" in html
 
-def test_full_build(tmp_path, monkeypatch):
-    # Setup a mock project structure
-    root = tmp_path
-    data_dir = root / "data"
-    data_dir.mkdir()
-    src_dir = root / "src"
-    src_dir.mkdir()
-    tpl_dir = src_dir / "templates"
-    tpl_dir.mkdir(parents=True)
-    asset_dir = src_dir / "css"
-    asset_dir.mkdir()
+def test_generate_html_empty():
+    html = generate_html("tools", [])
+    assert "0 items" in html
+
+def test_build_directory_valid(tmp_path, monkeypatch):
+    import scripts.build_directory as bd
+    monkeypatch.setattr(bd, "ROOT_DIR", tmp_path)
     
-    # Create mock template
-    (tpl_dir / "base.html").write_text("<html>{% block content %}{% endblock %}</html>")
-    (tpl_dir / "index.html").write_text("{% extends 'base.html' %}{% block content %}Index{% endblock %}")
-    (tpl_dir / "item.html").write_text("{% extends 'base.html' %}{% block content %}{{ item.title }}{% endblock %}")
-    (tpl_dir / "category.html").write_text("{% extends 'base.html' %}{% block content %}{{ category_name }}{% endblock %}")
-    (tpl_dir / "404.html").write_text("404")
-    (asset_dir / "style.css").write_text("body { color: red; }")
-    (src_dir / "robots.txt").write_text("User-agent: *")
-    
-    # Mock data
-    db_path = data_dir / "database.json"
-    with open(db_path, "w") as f:
+    project_dir = tmp_path / "projects" / "tools-directory"
+    data_dir = project_dir / "data"
+    data_dir.mkdir(parents=True)
+    with open(data_dir / "database.json", "w") as f:
         json.dump([{"name": "API 1", "category": "Cat1", "description": "Desc"}], f)
-        
-    # Monkeypatch paths in scripts.utils and scripts.build_directory
-    import scripts.utils
-    import scripts.build_directory
-    monkeypatch.setattr(scripts.utils, "DATA_DIR", data_dir)
-    monkeypatch.setattr(scripts.utils, "DIST_DIR", root / "dist")
-    monkeypatch.setattr(scripts.utils, "SRC_DIR", src_dir)
-    monkeypatch.setattr(scripts.utils, "TEMPLATES_DIR", tpl_dir)
     
-    monkeypatch.setattr(scripts.build_directory, "DIST_DIR", root / "dist")
-    monkeypatch.setattr(scripts.build_directory, "SRC_DIR", src_dir)
-    monkeypatch.setattr(scripts.build_directory, "TEMPLATES_DIR", tpl_dir)
+    result = build_directory("tools")
+    assert result is True
+    assert (project_dir / "index.html").exists()
+    assert (project_dir / "dist" / "index.html").exists()
 
-    # Mock social image generation as it hangs in CI
-    import scripts.generate_social_images
-    monkeypatch.setattr(scripts.generate_social_images, "main", lambda: None)
-
-    # Run build
-    build_site(db_path)
+def test_build_directory_missing(tmp_path, monkeypatch):
+    import scripts.build_directory as bd
+    monkeypatch.setattr(bd, "ROOT_DIR", tmp_path)
     
-    assert (root / "dist" / "index.html").exists()
-    assert (root / "dist" / "item" / "api-1.html").exists()
-    assert (root / "dist" / "category" / "cat1.html").exists()
-    assert (root / "dist" / "css" / "style.css").exists()
-    assert (root / "dist" / "robots.txt").exists()
-    assert (root / "dist" / "search.json").exists()
-    assert (root / "dist" / "feed.xml").exists()
+    result = build_directory("nonexistent")
+    assert result is False
+
+def test_directory_types_exist():
+    assert "tools" in DIRECTORY_TYPES
+    assert "opensource" in DIRECTORY_TYPES
+    assert len(DIRECTORY_TYPES) >= 8
 
 def test_main_execution(tmp_path, monkeypatch):
-    import scripts.build_directory
+    import scripts.build_directory as bd
     import sys
     
-    root = tmp_path
-    (root / "data").mkdir()
-    (root / "src" / "templates").mkdir(parents=True)
-    db_path = root / "data" / "database.json"
-    with open(db_path, "w") as f:
+    monkeypatch.setattr(bd, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr(sys, "argv", ["build_directory.py", "--type", "tools"])
+    
+    project_dir = tmp_path / "projects" / "tools-directory"
+    data_dir = project_dir / "data"
+    data_dir.mkdir(parents=True)
+    with open(data_dir / "database.json", "w") as f:
         json.dump([], f)
-        
-    (root / "src" / "templates" / "404.html").write_text("404")
     
-    monkeypatch.setattr(scripts.build_directory, "DIST_DIR", root / "dist")
-    monkeypatch.setattr(scripts.build_directory, "TEMPLATES_DIR", root / "src" / "templates")
-    
-    # Mock sys.argv
-    monkeypatch.setattr(sys, "argv", ["build_directory.py", str(db_path)])
-    
-    # We don't actually call it because it might sys.exit, 
-    # but we can test the logic if we wrap it or just rely on existing coverage.
-    # Actually, let's just test a few more lines in utils.
+    bd.main()
+
+def test_save_database(tmp_path):
     from scripts.utils import save_database
+    db_path = tmp_path / "database.json"
     save_database([], db_path)
     assert db_path.exists()

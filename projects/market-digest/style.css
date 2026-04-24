@@ -198,39 +198,71 @@ header {
     background: rgba(59, 130, 246, 0.05);
 }
 
-/* ─── Tab Panels ─── */
-.tab-panel {
-    display: none;
-    padding: 20px 0;
-    animation: fadeIn 0.3s ease;
-}
-
-.tab-panel.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Overview Grid (2-column) ─── */
-.overview-grid {
+/* ─── Dashboard Grid Layout ─── */
+.dashboard-container {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
+    padding-top: 10px;
 }
 
 @media (min-width: 1024px) {
-    .overview-grid {
-        grid-template-columns: 3fr 2fr;
+    .dashboard-container {
+        grid-template-columns: 25% 50% 25%;
     }
 }
 
-.overview-left, .overview-right {
+.dashboard-col {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0; /* Prevents grid blowout */
+    overflow: hidden; /* Prevents horizontal bleed */
+}
+
+/* Table and grid overflow containment */
+.comparison-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.comparison-grid table {
+    width: 100%;
+    min-width: 600px;
+}
+
+/* Canvas containers must have explicit height for Chart.js */
+.canvas-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.canvas-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Asset hyperlinks */
+.hover-underline:hover {
+    text-decoration: underline !important;
+    color: #93c5fd !important;
+}
+
+.dashboard-row-split {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-row-split {
+        flex-direction: row;
+    }
+    .dashboard-row-split > * {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 /* ─── Signals Layout ─── */
@@ -258,11 +290,11 @@ header {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px;
 }
 
 .info-card.compact {
-    padding: 16px;
+    padding: 12px;
 }
 
 .card-header h2 {
@@ -300,8 +332,16 @@ header {
 }
 
 /* ─── News Scroll Container ─── */
+.full-height {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .news-scroll-container {
-    max-height: 500px;
+    flex: 1;
+    min-height: 400px;
+    max-height: 800px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.1) transparent;
@@ -580,7 +620,7 @@ footer {
     }
     
     .canvas-container {
-        height: 220px;
+        height: 200px;
     }
     
     .overview-grid {

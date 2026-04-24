@@ -20,31 +20,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  provision:
+  # ─── Job 1: Detect what changed ───
+  detect:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    outputs:
+      projects: ${{ steps.changes.outputs.projects }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: 'pip'
-
-      - name: Install Python dependencies
-        run: pip install requests
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
 
       - name: Detect Changed Projects
         id: changes
@@ -77,13 +62,41 @@ jobs:
           fi
           echo "projects=$CHANGED" >> $GITHUB_OUTPUT
 
+  # ─── Job 2: Deploy via Wrangler (depends on detect) ───
+  deploy:
+    needs: detect
+    if: needs.detect.outputs.projects != 'NONE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
       - name: Sync GitHub Repositories
-        if: steps.changes.outputs.projects != 'NONE'
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           OWNER: "dayashimoga"
           PYTHONPATH: "."
-          CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
+          CHANGED_PROJECTS: ${{ needs.detect.outputs.projects }}
         run: |
           python scripts/sync_project_scripts.py
           python scripts/generate_projects_json.py 2>/dev/null || true
@@ -94,27 +107,56 @@ jobs:
           echo "Syncing projects: $CHANGED_PROJECTS"
           python scripts/github_distribute.py
 
-      - name: Cancel Queued CF Builds & Deploy via Wrangler
-        if: steps.changes.outputs.projects != 'NONE'
+      - name: Cleanup Orphans & Deploy via Wrangler
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CHANGED_PROJECTS: ${{ steps.changes.outputs.projects }}
+          CHANGED_PROJECTS: ${{ needs.detect.outputs.projects }}
+          PYTHONPATH: "."
         run: |
-          # Free CF 100-limit slots by extinguishing orphaned projects first
+          # 1. Free CF 100-limit slots by deleting orphaned projects FIRST
+          echo "=== Deleting orphaned Cloudflare projects ==="
+          python scripts/cf_cleanup_orphans.py
+          
+          # 2. Extinguish stale projects
           python scripts/cf_extinguisher.py
           
-          # Cancel old builds synchronously before deploying new ones
+          # 3. Cancel old builds synchronously before deploying new ones
           python scripts/cancel_cf_builds.py
           
-          # Deploy changed projects immediately (parallel, 4 at a time)
+          # 4. Deploy changed projects (parallel, 8 at a time)
           python scripts/redeploy_cloudflare.py
-          
-          # Assign custom domains automatically 
+
+  # ─── Job 3: Assign Custom Domains (runs AFTER deploy completes) ───
+  domains:
+    needs: [detect, deploy]
+    if: needs.detect.outputs.projects != 'NONE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Assign Custom Domains
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PYTHONPATH: "."
+        run: |
+          echo "=== Assigning custom domains (after deploy) ==="
           python scripts/assign_domains_bulk.py
-          
 
-      - name: Skip - No Changes
-        if: steps.changes.outputs.projects == 'NONE'
-        run: echo "✅ No project changes detected. Skipping deployment."
-
+  # ─── Job 4: Skip message ───
+  skip:
+    needs: detect
+    if: needs.detect.outputs.projects == 'NONE'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "✅ No project changes detected. Skipping deployment."

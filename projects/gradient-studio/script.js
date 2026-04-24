@@ -98,8 +98,20 @@ function getGradientString(forPreview = false) {
     const stopStr = s.stops.map(st => `${st.color} ${st.pos}%`).join(', ');
     if (s.type === 'linear') {
         return `linear-gradient(${forPreview ? 90 : s.angle}deg, ${stopStr})`;
-    } else {
+    } else if (s.type === 'radial') {
         return `radial-gradient(${s.shape} at ${s.pos}, ${stopStr})`;
+    } else if (s.type === 'mesh') {
+        if (forPreview) return `linear-gradient(90deg, ${stopStr})`;
+        const positions = ['0% 0%', '100% 100%', '0% 100%', '100% 0%', '50% 50%', '25% 75%', '75% 25%'];
+        const gradients = s.stops.map((st, i) => {
+            const pos = positions[i % positions.length];
+            return `radial-gradient(circle at ${pos}, ${st.color} 0%, transparent 70%)`;
+        });
+        if(s.stops.length > 0) {
+            const baseColor = s.stops[0].color;
+            gradients.push(`linear-gradient(0deg, ${baseColor}, ${baseColor})`);
+        }
+        return gradients.join(', ');
     }
 }
 
@@ -289,7 +301,8 @@ function randomHexColor() {
 }
 
 $('#randomizeBtn').addEventListener('click', () => {
-    s.type = Math.random() > 0.5 ? 'linear' : 'radial';
+    const types = ['linear', 'radial', 'mesh'];
+    s.type = types[Math.floor(Math.random() * types.length)];
     $('input[name="gType"][value="'+s.type+'"]').checked = true;
     linearControls.style.display = s.type === 'linear' ? 'block' : 'none';
     radialControls.style.display = s.type === 'radial' ? 'block' : 'none';
