@@ -60,26 +60,61 @@
                 <div id="searchSuggestions" style="position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; z-index:1000; display:none; max-height:200px; overflow-y:auto;"></div>
             </div>
             
-            <div class="phase-controls glass-card p-3" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label for="tempInput" style="font-weight:600; color:var(--text); font-size:0.9rem">🌡️ Temperature (Kelvin)</label>
-                    <span id="tempVal" style="font-family:monospace; font-weight:700; color:var(--accent);">298 K</span>
+            <div class="advanced-controls glass-card p-3" style="display:flex; flex-direction:column; gap:1rem; margin-top:1rem; position:relative;">
+                <!-- Slider Area -->
+                <div id="propertySliderArea" style="display:none; flex-direction:column; gap:0.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span id="sliderLabel" style="font-weight:600; color:var(--text); font-size:0.9rem">Property Range</span>
+                        <div style="display:flex; gap:1rem; align-items:center; font-family:monospace; font-size:0.85rem;">
+                            <span id="sliderMinVal" style="color:var(--text-muted);">Min</span>
+                            <div style="flex:1; height:6px; background:linear-gradient(to right, #6ee7b7, #3b82f6, #f43f5e); border-radius:3px; min-width:150px;"></div>
+                            <span id="sliderMaxVal" style="color:var(--text-muted);">Max</span>
+                        </div>
+                    </div>
                 </div>
-                <input type="range" id="tempInput" min="0" max="6000" step="10" value="298" style="width:100%; outline:none;" class="slider">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
-                    <span>Absolute Zero (0 K)</span>
-                    <span>Room Temp (298 K)</span>
-                    <span>Surface of Sun (5778 K)</span>
-                </div>
-            </div>
 
-            <div class="mode-toggles" style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
-                <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
-                <button class="btn btn-secondary btn-sm" id="sensitivityBtn">☢️ Highlight Sensitivity</button>
-                <button class="btn btn-secondary btn-sm" id="trendRadiusBtn">📏 Trend: Radius</button>
-                <button class="btn btn-secondary btn-sm" id="trendElectroBtn">⚡ Trend: Electronegativity</button>
-                <button class="btn btn-secondary btn-sm" id="clearTrendsBtn" style="display:none;">❌ Clear Trend</button>
+                <!-- Old Temperature Slider (Keep for Phase classification) -->
+                <div id="tempSliderArea" style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <label for="tempInput" style="font-weight:600; color:var(--text); font-size:0.9rem">🌡️ Temperature</label>
+                        <span id="tempVal" style="font-family:monospace; font-weight:700; color:var(--accent);">298 K</span>
+                    </div>
+                    <input type="range" id="tempInput" min="0" max="6000" step="10" value="298" style="width:100%; outline:none;" class="slider">
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                        <span>0 K</span><span>298 K</span><span>5778 K</span>
+                    </div>
+                </div>
+
+                <!-- Dropdowns and Toggles -->
+                <div class="mode-toggles" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                    <div style="position:relative;">
+                        <select id="propertySelect" class="input" style="appearance:none; padding-right:30px; cursor:pointer;">
+                            <option value="">-- Select Property --</option>
+                            <option value="melt">Melting Point</option>
+                            <option value="boil">Boiling Point</option>
+                            <option value="density">Density</option>
+                            <option value="electronegativity">Electronegativity</option>
+                            <option value="first_ionization">1st Ionization</option>
+                            <option value="electron_affinity">Electron Affinity</option>
+                            <option value="specific_heat">Specific Heat</option>
+                        </select>
+                        <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;">▼</span>
+                    </div>
+                    <div style="position:relative;">
+                        <select id="classificationSelect" class="input" style="appearance:none; padding-right:30px; cursor:pointer;">
+                            <option value="category">Category (Default)</option>
+                            <option value="block">Block (s, p, d, f)</option>
+                            <option value="state">State (Phase)</option>
+                        </select>
+                        <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;">▼</span>
+                    </div>
+                    
+                    <button class="btn btn-secondary btn-sm" id="quizModeBtn">🎓 Quiz Mode</button>
+                    <button class="btn btn-secondary btn-sm" id="sensitivityBtn">☢️ Highlight Sensitivity</button>
+                    <button class="btn btn-secondary btn-sm" id="clearTrendsBtn" style="display:none;">❌ Clear Filter</button>
+                </div>
             </div>
+            
             <div class="legend-filter mt-3" id="legendFilter">
                 <!-- Populated by JS -->
             </div>
@@ -143,6 +178,7 @@
         <p class="copyright">© 2026 QuickUtils.</p>
     </div></footer>
 
+    <script src="data.js"></script>
     <script src="script.js"></script>
     <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
     <script>kofiWidgetOverlay.draw('dayatin',{'type':'floating-chat','floating-chat.donateButton.text':'Support Us','floating-chat.donateButton.background-color':'#ff5e5b','floating-chat.donateButton.text-color':'#fff'});</script>
