@@ -710,7 +710,7 @@ function renderPosition() {
                             // Force reflow
                             pieceEl.getBoundingClientRect();
                             
-                            pieceEl.style.transition = 'transform 0.55s cubic-bezier(0.25, 1, 0.5, 1)';
+                            pieceEl.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
                             pieceEl.style.transform = 'translate(0, 0)';
                         } else {
                             pieceEl.style.transition = 'none';
@@ -1029,8 +1029,8 @@ function commitMove(move) {
         clearInterval(timerInterval);
     }
 
-    // Check Puzzle Mode Logic
-    if (window._dailyPuzzleActive && move.san) {
+    // Check Puzzle Mode Logic — only when actually in puzzles mode
+    if (mode === 'puzzles' && window._dailyPuzzleActive && move.san) {
         const expectedSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
         
         if (move.san === expectedSan) {
@@ -1084,15 +1084,17 @@ function commitMove(move) {
                 }
             } else {
                 // Engine makes the next move automatically
+                // commitMove() handles step increment via the puzzle check above,
+                // so we do NOT increment _dailyPuzzleStep here (was causing double-increment)
                 setTimeout(() => {
                     const engineSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+                    if (!engineSan) return;
                     const emove = chess.move(engineSan);
                     if (emove) {
                         commitMove(emove);
                     }
-                    window._dailyPuzzleStep++;
                     if (typeof updatePuzzleProgress === 'function') updatePuzzleProgress();
-                }, 500);
+                }, 800);
             }
         } else {
             // Wrong move
@@ -1523,6 +1525,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         } else {
             evalContainer.classList.add('hidden');
             if (engine) engine.postMessage('stop');
+            // Reset puzzle state when leaving Puzzles tab to prevent
+            // puzzle validation from triggering in other modes
+            if (window._dailyPuzzleActive) {
+                window._dailyPuzzleActive = false;
+                if (typeof stopPuzzleTimer === 'function') stopPuzzleTimer();
+            }
         }
     });
 });
