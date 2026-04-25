@@ -183,15 +183,24 @@ def assign_domains():
     print("Fetching all projects to map existing domains...")
     project_domain_map = {}
     project_subdomain_map = {}
-    all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100", token)
-    if all_projects_res and all_projects_res.get("success"):
-        for proj in all_projects_res.get("result", []):
+    
+    page_num = 1
+    while True:
+        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100&page={page_num}", token)
+        if not all_projects_res or not all_projects_res.get("success"):
+            break
+        batch = all_projects_res.get("result", [])
+        if not batch:
+            break
+            
+        for proj in batch:
             proj_name = proj.get("name")
             if proj.get("subdomain"):
                 project_subdomain_map[proj_name] = proj.get("subdomain")
             for d in proj.get("domains", []):
                 if isinstance(d, str): project_domain_map[d] = proj_name
                 elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name
+        page_num += 1
 
     zones_res, _ = api_request("GET", "https://api.cloudflare.com/client/v4/zones?name=quickutils.top", token)
     zone_id = zones_res["result"][0]["id"] if (zones_res and zones_res.get("success") and zones_res.get("result")) else None

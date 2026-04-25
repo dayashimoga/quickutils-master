@@ -117,10 +117,12 @@ def test_delete_dangling():
             pass
 
 def test_fetch_puzzles():
+    import sys
+    sys.modules['zstandard'] = MagicMock()
     if 'scripts.fetch_puzzles' in sys.modules:
         del sys.modules['scripts.fetch_puzzles']
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("zstandard.ZstdDecompressor"), \
+         patch("zstandard.ZstdDecompressor", create=True), \
          patch("io.TextIOWrapper"), \
          patch("csv.reader", return_value=iter([["1", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4 d7d5", "1500", "", "", "", "mate MateIn2"], ["2", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "d2d4 c7c5", "1100", "", "", "", "crushing"]]*1500)), \
          patch("builtins.open", mock_open()), \
