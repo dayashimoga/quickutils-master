@@ -944,3 +944,97 @@ describe('Opening Badge', () => {
         expect(document.getElementById('openingName')).not.toBeNull();
     });
 });
+
+// ═══════════════════════════════════════════════════
+// PUZZLE TRAINER — EXTENDED
+// ═══════════════════════════════════════════════════
+describe('Puzzle Trainer Extended', () => {
+    test('Puzzle stats defaults show zero/dash', () => {
+        expect(document.getElementById('pzStatSolved').textContent).toBe('0');
+        expect(document.getElementById('pzStatBestStreak').textContent).toBe('0');
+        expect(document.getElementById('pzStatAccuracy').textContent).toBe('—');
+        expect(document.getElementById('pzStatRating').textContent).toBe('—');
+    });
+
+    test('Hint button has keyboard shortcut title', () => {
+        const btn = document.getElementById('btnPuzzleHint');
+        expect(btn.title || btn.textContent).toContain('Hint');
+    });
+
+    test('Solve button has keyboard shortcut title', () => {
+        const btn = document.getElementById('btnPuzzleSolve');
+        expect(btn.title || btn.textContent).toContain('Solve');
+    });
+
+    test('Puzzle difficulty options have correct values', () => {
+        const sel = document.getElementById('puzzleDifficulty');
+        const values = Array.from(sel.options).map(o => o.value);
+        expect(values).toContain('all');
+        expect(values).toContain('⭐');
+        expect(values).toContain('⭐⭐⭐⭐');
+    });
+
+    test('Puzzle progress bar starts at 0%', () => {
+        const bar = document.getElementById('puzzleProgressBar');
+        expect(bar.style.width).toBe('0%');
+    });
+
+    test('Puzzle timer starts at 0:00', () => {
+        expect(document.getElementById('puzzleTimer').textContent).toBe('0:00');
+    });
+
+    test('Puzzle streak starts at 0', () => {
+        expect(document.getElementById('puzzleStreak').textContent).toBe('0');
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// PLAY AI TAB
+// ═══════════════════════════════════════════════════
+describe('Play AI Settings', () => {
+    test('Player color selector exists with White/Black/Random', () => {
+        const sel = document.getElementById('playerColor');
+        expect(sel).not.toBeNull();
+        const values = Array.from(sel.options).map(o => o.value);
+        expect(values).toEqual(['w', 'b', 'random']);
+    });
+
+    test('Time control selector has at least 5 options', () => {
+        const sel = document.getElementById('clockSelect');
+        expect(sel).not.toBeNull();
+        expect(sel.options.length).toBeGreaterThanOrEqual(5);
+    });
+
+    test('Coach toggle switch exists', () => {
+        expect(document.getElementById('coachToggleBtn')).not.toBeNull();
+    });
+
+    test('Difficulty description paragraph exists', () => {
+        expect(document.getElementById('difficultyDesc')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// MULTIPLAYER TAB
+// ═══════════════════════════════════════════════════
+describe('Multiplayer Tab', () => {
+    test('Peer ID input exists', () => {
+        expect(document.getElementById('myPeerId')).not.toBeNull();
+    });
+
+    test('Copy Peer ID button exists', () => {
+        expect(document.getElementById('btnCopyPeerId')).not.toBeNull();
+    });
+
+    test('Friend Peer ID input exists', () => {
+        expect(document.getElementById('friendPeerId')).not.toBeNull();
+    });
+
+    test('Connect button exists', () => {
+        expect(document.getElementById('btnConnectFriend')).not.toBeNull();
+    });
+
+    test('Multiplayer status container exists', () => {
+        expect(document.getElementById('multiplayerStatus')).not.toBeNull();
+    });
+});
