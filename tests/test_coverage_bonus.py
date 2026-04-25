@@ -119,6 +119,7 @@ def test_delete_dangling():
 def test_fetch_puzzles():
     import sys
     sys.modules['zstandard'] = MagicMock()
+    sys.modules['chess'] = MagicMock()
     if 'scripts.fetch_puzzles' in sys.modules:
         del sys.modules['scripts.fetch_puzzles']
     with patch("urllib.request.urlopen") as mock_urlopen, \
