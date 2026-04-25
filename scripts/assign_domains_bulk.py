@@ -49,7 +49,7 @@ def api_request(method, url, token, payload=None):
     except Exception as e:
         return None, 500
 
-def process_domain(domain, foldername, base_url, token, zone_id, project_domain_map):
+def process_domain(domain, foldername, base_url, token, zone_id, project_domain_map, target_subdomain=None):
     if not domain or domain.lower() == "none" or domain.startswith("none."):
         return "skip", f"  [SKIP] Invalid domain: {domain}"
 
@@ -135,7 +135,7 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
 
     # DNS CNAME Provisioning
     if zone_id and domain_is_active:
-        target_content = f"{foldername}.pages.dev"
+        target_content = target_subdomain if target_subdomain else f"{foldername}.pages.dev"
         cname_payload = {
             "type": "CNAME", "name": domain, "content": target_content,
             "proxied": True, "comment": "Auto-provisioned by QuickUtils orchestrator"
@@ -182,10 +182,13 @@ def assign_domains():
     
     print("Fetching all projects to map existing domains...")
     project_domain_map = {}
+    project_subdomain_map = {}
     all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100", token)
     if all_projects_res and all_projects_res.get("success"):
         for proj in all_projects_res.get("result", []):
             proj_name = proj.get("name")
+            if proj.get("subdomain"):
+                project_subdomain_map[proj_name] = proj.get("subdomain")
             for d in proj.get("domains", []):
                 if isinstance(d, str): project_domain_map[d] = proj_name
                 elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name
@@ -206,7 +209,7 @@ def assign_domains():
     stats = {"assigned": 0, "skip": 0, "error": 0}
     
     with ThreadPoolExecutor(max_workers=8) as executor:
-        futures = {executor.submit(process_domain, d, f, base_url, token, zone_id, project_domain_map): d for d, f in tasks}
+        futures = {executor.submit(process_domain, d, f, base_url, token, zone_id, project_domain_map, project_subdomain_map.get(f)): d for d, f in tasks}
         for future in as_completed(futures):
             domain = futures[future]
             try:

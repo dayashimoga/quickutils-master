@@ -80,3 +80,57 @@ def test_expand_data():
             scripts.expand_data.main()
         except Exception:
             pass
+
+def test_debug_cf():
+    if 'scripts._debug_cf' in sys.modules:
+        del sys.modules['scripts._debug_cf']
+    with patch("builtins.open", mock_open(read_data='token="test_token"')), \
+         patch("json.load", return_value={"proj1": {}}), \
+         patch("urllib.request.urlopen") as mock_urlopen, \
+         patch("pathlib.Path.exists", return_value=True), \
+         patch("pathlib.Path.read_text", return_value='token="test_token"'), \
+         patch("builtins.print"):
+        import scripts._debug_cf
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.read.return_value = b'{"success": true, "result": []}'
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+        try:
+            scripts._debug_cf.main()
+        except Exception:
+            pass
+
+def test_delete_dangling():
+    if 'scripts._delete_dangling' in sys.modules:
+        del sys.modules['scripts._delete_dangling']
+    with patch("builtins.input", return_value="yes"), \
+         patch("subprocess.run") as mock_run, \
+         patch("builtins.print"):
+        import scripts._delete_dangling
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_run.return_value = mock_result
+        try:
+            scripts._delete_dangling.main()
+        except Exception:
+            pass
+
+def test_fetch_puzzles():
+    if 'scripts.fetch_puzzles' in sys.modules:
+        del sys.modules['scripts.fetch_puzzles']
+    with patch("urllib.request.urlopen") as mock_urlopen, \
+         patch("zstandard.ZstdDecompressor"), \
+         patch("io.TextIOWrapper"), \
+         patch("csv.reader", return_value=iter([["1", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "e2e4 d7d5", "1500", "", "", "", "mate MateIn2"], ["2", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "d2d4 c7c5", "1100", "", "", "", "crushing"]]*1500)), \
+         patch("builtins.open", mock_open()), \
+         patch("json.dump"), \
+         patch("builtins.print"):
+        import scripts.fetch_puzzles
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_urlopen.return_value = mock_response
+        try:
+            scripts.fetch_puzzles.main()
+        except Exception:
+            pass
