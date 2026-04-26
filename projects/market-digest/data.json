@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-25T02:32:07.917855Z",
+  "updatedAt": "2026-04-26T02:49:02.002694Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 77660.7,
+        "current": 77529.21,
         "history_30d": [
-          68791.62,
           66338.38,
           66319.7,
           65954.92,
@@ -542,41 +541,41 @@
           76352.77,
           78203.1,
           78268.95,
-          77660.7
+          77455.31,
+          77529.21
         ],
-        "delta_1d": -0.78,
-        "delta_1w": 5.15,
-        "delta_1m": 16.03,
-        "delta_3m": 14.2,
-        "delta_6m": -12.09,
-        "delta_1y": -18.01,
+        "delta_1d": 0.1,
+        "delta_1w": 2.18,
+        "delta_1m": 15.22,
+        "delta_3m": 14.59,
+        "delta_6m": -12.52,
+        "delta_1y": -18.09,
         "signal": "Strong Buy",
-        "rsi": 63.08,
+        "rsi": 62.49,
         "macd": {
-          "macd": 2065.7,
-          "signal": 1699.82,
-          "hist": 365.89
+          "macd": 2037.15,
+          "signal": 1764.66,
+          "hist": 272.49
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 79213.91,
-          "stop_loss": 73777.66,
+          "target": 79079.79,
+          "stop_loss": 73652.75,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          78567.93,
-          79007.43,
-          79446.93,
-          79886.43,
-          80325.94,
-          80765.44,
-          81204.94
+          79093.72,
+          79548.8,
+          80003.88,
+          80458.95,
+          80914.03,
+          81369.1,
+          81824.18
         ]
       },
       "eth": {
-        "current": 2318.88,
+        "current": 2315.79,
         "history_30d": [
-          2059.58,
           1991.27,
           1992.69,
           1982.56,
@@ -605,41 +604,41 @@
           2327.97,
           2376.09,
           2331.51,
-          2318.88
+          2315.69,
+          2315.79
         ],
-        "delta_1d": -0.54,
-        "delta_1w": 2.38,
-        "delta_1m": 12.93,
-        "delta_3m": 17.49,
-        "delta_6m": -22.12,
-        "delta_1y": 29.79,
+        "delta_1d": 0.0,
+        "delta_1w": 0.03,
+        "delta_1m": 12.13,
+        "delta_3m": 18.28,
+        "delta_6m": -22.85,
+        "delta_1y": 27.11,
         "signal": "Buy",
-        "rsi": 54.78,
+        "rsi": 54.54,
         "macd": {
-          "macd": 55.34,
-          "signal": 58.13,
-          "hist": -2.8
+          "macd": 51.12,
+          "signal": 56.69,
+          "hist": -5.57
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2365.26,
-          "stop_loss": 2202.94,
+          "target": 2362.11,
+          "stop_loss": 2200.0,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2423.28,
-          2437.39,
-          2451.5,
-          2465.6,
-          2479.71,
-          2493.82,
-          2507.93
+          2427.03,
+          2440.84,
+          2454.64,
+          2468.45,
+          2482.26,
+          2496.06,
+          2509.87
         ]
       },
       "sol": {
-        "current": 86.33,
+        "current": 86.21,
         "history_30d": [
-          86.44,
           83.02,
           82.02,
           81.42,
@@ -668,35 +667,36 @@
           86.03,
           86.92,
           86.14,
-          86.33
+          86.23,
+          86.21
         ],
-        "delta_1d": 0.22,
-        "delta_1w": 3.29,
-        "delta_1m": 7.42,
-        "delta_3m": 1.31,
-        "delta_6m": -31.38,
-        "delta_1y": -42.8,
+        "delta_1d": -0.02,
+        "delta_1w": 1.03,
+        "delta_1m": 6.68,
+        "delta_3m": 4.13,
+        "delta_6m": -31.57,
+        "delta_1y": -42.25,
         "signal": "Buy",
-        "rsi": 51.96,
+        "rsi": 51.73,
         "macd": {
           "macd": 0.36,
-          "signal": 0.09,
-          "hist": 0.27
+          "signal": 0.15,
+          "hist": 0.22
         },
         "pattern": {
-          "pattern": "Consolidation",
-          "target": 88.06,
-          "stop_loss": 82.01,
-          "strength": "Neutral"
+          "pattern": "Cup & Handle",
+          "target": 94.83,
+          "stop_loss": 81.73,
+          "strength": "Bullish"
         },
         "forecast_7d": [
-          86.78,
-          86.96,
-          87.14,
-          87.33,
-          87.51,
-          87.69,
-          87.87
+          87.25,
+          87.46,
+          87.68,
+          87.89,
+          88.11,
+          88.32,
+          88.53
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 99.78,
+      "current": 105.33,
       "history_30d": [
         103.14,
         100.21,
@@ -1177,35 +1177,35 @@
         98.48,
         101.91,
         105.07,
-        99.78
+        105.33
       ],
-      "delta_1d": -5.03,
-      "delta_1w": 10.4,
-      "delta_1m": -2.39,
-      "delta_3m": 52.13,
-      "delta_6m": 51.2,
-      "delta_1y": 49.93,
-      "signal": "Sell",
-      "rsi": 51.01,
+      "delta_1d": 0.25,
+      "delta_1w": 16.54,
+      "delta_1m": 3.04,
+      "delta_3m": 60.59,
+      "delta_6m": 59.62,
+      "delta_1y": 57.51,
+      "signal": "Buy",
+      "rsi": 56.01,
       "macd": {
-        "macd": 0.88,
-        "signal": 1.38,
-        "hist": -0.5
+        "macd": 1.32,
+        "signal": 1.47,
+        "hist": -0.15
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 101.78,
-        "stop_loss": 94.79,
+        "target": 107.44,
+        "stop_loss": 100.06,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        97.38,
-        97.02,
-        96.66,
-        96.3,
-        95.94,
-        95.59,
-        95.23
+        98.12,
+        97.79,
+        97.47,
+        97.15,
+        96.83,
+        96.5,
+        96.18
       ]
     },
     "inflation": {
@@ -1214,6 +1214,144 @@
     }
   },
   "newsData": [
+    {
+      "title": "IDFC First Bank Q4 Results: PAT grows 5% YoY to Rs 319 crore; NII up 16% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/idfc-first-bank-q4-results-pat-grows-5-yoy-to-rs-319-crore-nims-drop-2-bps-to-5-93/articleshow/130512932.cms",
+      "time": "Sat, 25 Apr 2026 16:25:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Nifty\u2019s next big move hinges on support test; volatility set to stay high ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-niftys-next-big-move-hinges-on-support-test-volatility-set-to-stay-high/articleshow/130513043.cms",
+      "time": "Sat, 25 Apr 2026 16:25:09 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "RBL Bank Q4 Results: Profit soars 233% YoY to Rs 230 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/rbl-bank-q4-results-profit-soars-3x-yoy-to-rs-230-crore/articleshow/130512310.cms",
+      "time": "Sat, 25 Apr 2026 15:36:59 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Reliance Industries becomes first Indian firm to cross $10 billion annual profit ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/reliance-industries-becomes-first-indian-firm-to-cross-10-billion-annual-profit/articleshow/130512249.cms",
+      "time": "Sat, 25 Apr 2026 15:31:49 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "L&amp;T Finance Q4 profit climbs 27 pc to Rs 807 cr ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/lt-finance-q4-profit-climbs-27-pc-to-rs-807-cr/articleshow/130511449.cms",
+      "time": "Sat, 25 Apr 2026 14:26:20 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi to expedite rule simplification, boost tech-led oversight: Chairman Tuhin Kanta Pandey on 38th anniversary ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-to-expedite-rule-simplification-boost-tech-led-oversight-chairman-tuhin-kanta-pandey-on-38th-anniversary/articleshow/130510965.cms",
+      "time": "Sat, 25 Apr 2026 13:36:45 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Mahindra Finance FY26 PAT jumps 55% YoY to Rs 2,782 crore. Rs 7.5/share dividend declared ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/mahindra-finance-fy26-pat-jumps-55-yoy-to-rs-2782-crore-rs-7-5/share-dividend-declared/articleshow/130510540.cms",
+      "time": "Sat, 25 Apr 2026 13:02:59 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Axis Bank Q4 Results: PAT falls marginally YoY to Rs 7,071 crore; NII rises 5% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/axis-bank-q4-results-pat-falls-marginally-yoy-to-rs-7071-crore-interest-income-rises-5/articleshow/130510335.cms",
+      "time": "Sat, 25 Apr 2026 12:48:56 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Mukul Agrawal\u2019s winning bets: 4 stocks turn multibaggers in a year, fresh Q4 picks revealed ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/mukul-agrawals-winning-bets-4-stocks-turn-multibaggers-in-a-year-fresh-q4-picks-revealed/slideshow/130510205.cms",
+      "time": "Sat, 25 Apr 2026 12:27:52 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "FII exodus deepens in 2026 at Rs 1.75 lakh crore as April outflows swell to Rs 43,967 crore; FOMC next trigger ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fii-exodus-deepens-in-2026-at-rs-1-75-lakh-crore-as-april-outflows-swell-to-rs-43967-crore-fomc-next-trigger/articleshow/130509855.cms",
+      "time": "Sat, 25 Apr 2026 12:09:45 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "RBI action on Paytm Payments Bank incrementally negative for One 97, says Bernstein; retains \u2018Outperform\u2019, sees 30% upside ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/rbi-action-on-paytm-payments-bank-incrementally-negative-for-one-97-says-bernstein-retains-outperform-sees-30-upside/articleshow/130509621.cms",
+      "time": "Sat, 25 Apr 2026 11:55:55 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Markets have begun to climb the wall of worry ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/markets-have-begun-to-climb-the-wall-of-worry/articleshow/130508993.cms",
+      "time": "Sat, 25 Apr 2026 11:16:49 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Gainers: 12 stocks that gained for 5 straight sessions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-12-stocks-that-gained-for-5-straight-sessions/slideshow/130508899.cms",
+      "time": "Sat, 25 Apr 2026 10:45:52 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "JPMorgan downgrades Indian stock market to neutral from overweight. 5 reasons why ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jpmorgan-downgrades-indian-stock-market-to-neutral-from-overweight-5-reasons-why/slideshow/130508650.cms",
+      "time": "Sat, 25 Apr 2026 10:39:34 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi plans risk-based calculation for brokers\u2019 variable net worth ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-plans-risk-based-calculation-for-brokers-variable-net-worth/articleshow/130507941.cms",
+      "time": "Sat, 25 Apr 2026 09:45:24 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sumitomo Mitsui infuses Rs 1,075 cr into NBFC arm ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sumitomo-mitsui-infuses-rs-1075-cr-into-nbfc-arm/articleshow/130507894.cms",
+      "time": "Sat, 25 Apr 2026 09:43:10 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi plans changes to rules on unpaid securities ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-plans-changes-to-rules-on-unpaid-securities/articleshow/130507873.cms",
+      "time": "Sat, 25 Apr 2026 09:40:42 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi plans risk-based calculation for brokers\u2019 variable net worth ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-plans-risk-based-calculation-for-brokers-variable-net-worth/articleshow/130507832.cms",
+      "time": "Sat, 25 Apr 2026 09:38:07 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Rs 2.5 lakh crore wiped out: Why Nifty IT just recorded its worst week since 2020 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/rs-2-5-lakh-crore-wiped-out-why-nifty-it-just-recorded-its-worst-week-since-2020/articleshow/130507772.cms",
+      "time": "Sat, 25 Apr 2026 09:37:46 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "D-Street bears brunt of elusive US-Iran truce ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/d-street-bears-brunt-of-elusive-us-iran-truce/articleshow/130507754.cms",
+      "time": "Sat, 25 Apr 2026 09:32:05 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "JP Morgan downgrades India to underweight, flags earnings risks ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jp-morgan-turns-bearish-flags-earnings-risks/articleshow/130507730.cms",
+      "time": "Sat, 25 Apr 2026 09:28:58 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "IndusInd Bank back in black for Q4 with Rs 594 cr profit; provisions, slippages fall ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indusinds-back-in-black-for-q4-with-rs-594-cr-profit-provisions-slippages-fall/articleshow/130507642.cms",
+      "time": "Sat, 25 Apr 2026 09:24:44 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Reliance Industries' Q4 profit dips 8% as Mideast war bites at oil business ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/reliance-industries-q4-profit-dips-8-as-mideast-war-bites-at-oil-business/articleshow/130507592.cms",
+      "time": "Sat, 25 Apr 2026 09:18:48 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Promoters Buying: 9 Nifty 500 stocks that saw stake hikes in March quarter ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/promoters-buying-9-nifty-500-stocks-that-saw-stake-hikes-in-march-quarter/articleshow/130500766.cms",
@@ -1254,144 +1392,6 @@
       "title": "Reliance Industries Q4 Results: Profit falls 13% YoY to Rs 16,971 crore; revenue rises 13% ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/reliance-industries-q4-results-profit-falls-13-yoy-to-rs-16971-crore-revenue-rises-13/articleshow/130495811.cms",
       "time": "Fri, 24 Apr 2026 19:34:19 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "GIFT Nifty jumps 110 points on Iran-US peace talk hopes; Nifty seen reclaiming 24K on Monday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/gift-nifty-jumps-110-points-on-iran-us-peace-talk-hopes-nifty-seen-reclaiming-24k-on-monday/articleshow/130496112.cms",
-      "time": "Fri, 24 Apr 2026 19:13:23 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "GE Vernova among 7 mid-cap stocks that hit 52-week highs &amp; rallied up to 30% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/ge-vernova-among-7-mid-cap-stocks-that-hit-52-week-highs-amp-rallied-up-to-30-in-a-month/slideshow/130495440.cms",
-      "time": "Fri, 24 Apr 2026 18:36:38 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Gainers &amp; Losers: Infosys, Adani Energy among 7 big movers on Friday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/gainers-amp-losers-infosys-adani-energy-among-7-big-movers-on-friday/slideshow/130494992.cms",
-      "time": "Fri, 24 Apr 2026 18:28:08 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi clears 4 IPOs including Yatayat Corporation and EAAA India Alternatives ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-clears-4-ipos-including-yatayat-corporation-and-eaaa-india-alternatives/articleshow/130494931.cms",
-      "time": "Fri, 24 Apr 2026 18:24:56 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "When billionaire Nithin Kamath wanted to earn just Rs 5 crore and retire in Goa ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/when-billionaire-nithin-kamath-wanted-to-earn-just-rs-5-crore-and-retire-in-goa/articleshow/130494007.cms",
-      "time": "Fri, 24 Apr 2026 17:53:57 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi eases FPI settlement norms, allows netting of funds in cash market to cut costs, improve efficiency ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-eases-fpi-settlement-norms-allows-netting-of-funds-in-cash-market-to-cut-costs-improve-efficiency/articleshow/130493617.cms",
-      "time": "Fri, 24 Apr 2026 17:40:47 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Polymarket gambler makes $35,000 profit by using hair dryer to tamper with temperature readings at Paris airport ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/polymarket-gambler-makes-35000-profit-by-using-hair-dryer-to-tamper-with-temperature-readings-at-paris-airport/articleshow/130492802.cms",
-      "time": "Fri, 24 Apr 2026 17:09:11 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "IndusInd Bank Q4 Results: Lender reports profit of Rs 533 cr vs loss year ago; declares Rs 1.5/share final dividend ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indusind-bank-q4-results-lender-reports-profit-of-rs-533-cr-vs-loss-year-ago-declares-rs-1-5/share-final-dividend-check-record-date/articleshow/130492287.cms",
-      "time": "Fri, 24 Apr 2026 16:50:48 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Hindustan Zinc announces first interim dividend of Rs 11: Check record date for Rs 4,600 crore payout ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hindustan-zinc-announces-rs-11/share-dividend-check-record-date-other-key-details/articleshow/130490102.cms",
-      "time": "Fri, 24 Apr 2026 15:23:38 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Shriram Finance Q4 Results: Standalone profit jumps 41% YoY to Rs 3,014 crore, NII rises 16% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/shriram-finance-q4-results-standalone-profit-jumps-41-yoy-to-rs-3014-crore-nii-rises-16/articleshow/130489730.cms",
-      "time": "Fri, 24 Apr 2026 15:13:07 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Smallcap Shock: 10 stocks crashed up to 45% in CY26 so far. Are you holding any? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/smallcap-shock-10-stocks-crashed-up-to-45-in-cy26-so-far-are-you-holding-any/slideshow/130489996.cms",
-      "time": "Fri, 24 Apr 2026 15:02:30 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Adani Green Q4 Results: Cons PAT jumps 34% YoY to Rs 514 crore; revenue up 16% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/adani-green-q4-results-cons-pat-jump-34-yoy-to-rs-514-crore-revenue-up-16/articleshow/130488889.cms",
-      "time": "Fri, 24 Apr 2026 14:36:24 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Hindustan Zinc Q4 Results: Cons PAT surges 68% YoY to Rs 5,033 crore; Rs 11/share dividend declared ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/hindustan-zinc-q4-results-cons-pat-surges-68-yoy-to-rs-5033-crore-rs-11/-share-dividend-declared/articleshow/130488960.cms",
-      "time": "Fri, 24 Apr 2026 14:34:07 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "SBI General Insurance\u2019s annual GDP crosses Rs 15,000 crore for first time, PAT jumps 8.7% YoY in FY26 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sbi-general-insurances-annual-gdp-crosses-rs-15000-crore-for-first-time-pat-jumps-8-7-yoy-in-fy26/articleshow/130488470.cms",
-      "time": "Fri, 24 Apr 2026 14:08:51 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Reliance Industries Q4 Results FY26 Live Updates: RIL's annual cons profit jumps 18% YoY, revenue up 10%. Catch all live updates here ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/live-blog/reliance-industries-q4-results-fy26-live-updates-ril-jio-retail-q4-dividend-bonus-earnings-2026-share-price-today/liveblog/130488430.cms",
-      "time": "Fri, 24 Apr 2026 14:07:16 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Waaree Energies shares tumble 5% after US 123% anti-dumping duty shock for Indian solar imports ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/waaree-energies-shares-tumble-5-after-us-123-anti-dumping-duty-shock-for-indian-solar-imports/articleshow/130488149.cms",
-      "time": "Fri, 24 Apr 2026 13:53:16 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Himadri Speciality shares rally 13% to fresh record high after Q4 earnings, launch of new facility. Do you own? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/himadri-speciality-shares-rally-13-to-fresh-record-high-after-q4-earnings-launch-of-new-facility-do-you-own/articleshow/130487851.cms",
-      "time": "Fri, 24 Apr 2026 13:38:01 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Global Markets | Japan's Nikkei closes at record high as tech earnings overshadow Mideast concerns ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/global-markets-japans-nikkei-closes-at-record-high-as-tech-earnings-overshadow-mideast-concerns/articleshow/130487131.cms",
-      "time": "Fri, 24 Apr 2026 12:58:55 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Lux Industries demerger: Mukul Agrawal-owned smallcap company announces three-way split ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lux-industries-demerger-mukul-agrawal-owned-smallcap-company-announces-three-way-split/articleshow/130486996.cms",
-      "time": "Fri, 24 Apr 2026 12:51:41 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Infosys dividend history: How IT major has rewarded shareholders in last 5 years ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/infosys-dividend-history-how-it-major-has-rewarded-shareholders-in-last-5-years/articleshow/130486273.cms",
-      "time": "Fri, 24 Apr 2026 12:18:51 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Did this recently-listed smallcap stock really crash 90% in one day? Here's why you should ignore the plunge ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/did-this-recently-listed-smallcap-stock-really-crash-90-in-one-day-heres-why-you-should-ignore-the-plunge/articleshow/130485414.cms",
-      "time": "Fri, 24 Apr 2026 11:44:01 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Websol Energy shares jump 27% in 3 sessions as Vijay Kedia buys stake, dividend buzz adds fuel ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/websol-energy-shares-jump-27-in-3-sessions-as-vijay-kedia-buys-stake-dividend-buzz-adds-fuel/articleshow/130484785.cms",
-      "time": "Fri, 24 Apr 2026 11:13:08 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HCL Tech shares give Rs 59,000 crore shock in 3 days as stock down 15%. More pain ahead? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hcl-tech-shares-give-rs-59000-crore-shock-in-3-days-as-stock-down-15-more-pain-ahead/articleshow/130484338.cms",
-      "time": "Fri, 24 Apr 2026 10:45:16 +0530",
       "source": "ET Markets"
     }
   ]
