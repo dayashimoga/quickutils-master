@@ -204,7 +204,7 @@ def assign_domains():
     
     page_num = 1
     while True:
-        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100&page={page_num}", token)
+        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=50&page={page_num}", token)
         if not all_projects_res or not all_projects_res.get("success"):
             break
         batch = all_projects_res.get("result", [])
