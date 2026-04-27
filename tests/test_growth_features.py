@@ -51,7 +51,7 @@ def test_build_directory_generates_output(tmp_path, monkeypatch):
     assert (project_dir / "dist" / "index.html").exists()
 
     # Verify content
-    html = (project_dir / "index.html").read_text()
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
     assert "Test Category" in html
     assert "3 items" in html
 

@@ -49,7 +49,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
-    overflow: hidden;
+    overflow: auto;
     height: 100%;
 }
 
@@ -60,8 +60,8 @@ body {
         radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
         radial-gradient(ellipse at 80% 20%, rgba(167, 139, 250, 0.04) 0%, transparent 50%);
     color: var(--text);
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -123,11 +123,11 @@ body {
    MAIN LAYOUT: Viewport-locked, no page scroll
    ═══════════════════════════════════════════════════ */
 main.container {
-    height: calc(100vh - var(--nav-height));
+    min-height: calc(100vh - var(--nav-height));
     padding-top: var(--nav-height);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .hero { display: none !important; } /* Remove hero to maximize board space */
@@ -190,18 +190,33 @@ main.container {
     width: var(--board-size);
     height: var(--board-size);
     flex-shrink: 0;
-    padding: 0; overflow: hidden;
+    padding: 0;
     position: relative;
     box-shadow:
         0 12px 48px rgba(0, 0, 0, 0.45),
         0 0 0 1px rgba(255,255,255,0.04),
         inset 0 0 0 1px rgba(0,0,0,0.3);
     border-radius: 8px;
+    perspective: 1000px;
 }
 .chess-board {
     display: grid; grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     width: 100%; height: 100%; user-select: none;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* 3D Board Feature */
+.board-wrapper.mode-3d .chess-board {
+    transform: rotateX(25deg) translateY(10px) scale(0.95);
+    box-shadow: 0 30px 40px -20px rgba(0,0,0,0.8), 0 50px 60px -30px rgba(99,102,241,0.2);
+    border-bottom: 8px solid rgba(255, 255, 255, 0.05);
+}
+.board-wrapper.mode-3d .piece {
+    transform: translateY(-8px) scale(1.08) rotateX(-25deg);
 }
 
 .square {
@@ -271,16 +286,31 @@ main.container {
 /* ─── Controls & UI ─── */
 .card-title { font-size: 0.88rem; font-weight: 700; letter-spacing: -0.01em; }
 
-.tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--glass-border); }
+.tabs {
+    display: flex; gap: 3px; padding: 3px;
+    background: rgba(0,0,0,0.15); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
 .tab-btn {
     flex: 1; padding: 7px 4px; background: transparent; border: none;
     color: var(--text-muted); font-weight: 600; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    font-family: inherit; font-size: 0.78rem; transition: all 0.2s;
-    white-space: nowrap;
+    font-family: inherit; font-size: 0.72rem; transition: all 0.25s;
+    white-space: nowrap; border-radius: 7px;
+    position: relative;
 }
-.tab-btn:hover { color: var(--text); }
-.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.tab-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    box-shadow: 0 2px 10px var(--primary-glow);
+}
+
+/* Puzzle action button enhancements */
+#btnPuzzleHint:active, #btnPuzzleSolve:active {
+    transform: scale(0.95);
+}
+#btnPuzzleHint:hover { border-color: #3b82f6; color: #3b82f6; }
+#btnPuzzleSolve:hover { border-color: #10b981; color: #10b981; }
 
 .control-group { margin-bottom: 0.5rem; }
 .control-group label { display: block; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -499,11 +529,60 @@ main.container {
 /* ─── Analysis Report — Scrollable ─── */
 #analysisReportContainer {
     overflow-y: auto;
-    max-height: 250px;
     scrollbar-width: thin; scrollbar-color: rgba(99,102,241,0.3) transparent;
 }
 #analysisReportContainer::-webkit-scrollbar { width: 4px; }
 #analysisReportContainer::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 3px; }
+
+/* ─── Clickable Report Items ─── */
+.report-mistake-item {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.report-mistake-item:hover {
+    transform: translateX(3px);
+    filter: brightness(1.15);
+    border-color: rgba(255,255,255,0.1);
+}
+.report-mistake-item.active-review {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 12px var(--primary-glow);
+    transform: translateX(4px);
+}
+.report-better-move {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(34,197,94,0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(34,197,94,0.12);
+}
+
+/* ─── Board Size Selector ─── */
+.board-size-selector {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.board-size-btn {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: 0.65rem; font-weight: 700;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.board-size-btn:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: var(--text); }
+.board-size-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 /* ─── Sound & Fullscreen Toggle ─── */
 .toolbar-btn {
@@ -659,17 +738,162 @@ input:checked + .slider:before { transform: translateX(18px); background-color: 
     .board-column { max-width: 100%; }
 }
 
-/* Patched CSS */
+/* ─── Patched CSS ─── */
 .board-wrapper { min-width: 320px; min-height: 320px; flex-shrink: 0; }
 .piece { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
 .animate-in-piece { animation: piece-drop 0.3s ease-out forwards; }
 
-/* Patched CSS */
-.board-wrapper { min-width: 320px; min-height: 320px; flex-shrink: 0; }
-.piece { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
-.animate-in-piece { animation: piece-drop 0.3s ease-out forwards; }
+/* ═══════════════════════════════════════════════════
+   PUZZLE TRAINER ANIMATIONS
+   ═══════════════════════════════════════════════════ */
 
-/* Patched CSS */
-.board-wrapper { min-width: 320px; min-height: 320px; flex-shrink: 0; }
-.piece { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
-.animate-in-piece { animation: piece-drop 0.3s ease-out forwards; }
+/* Hint glow — pulsing blue highlight on the piece to move */
+.puzzle-hint-glow {
+    box-shadow: inset 0 0 18px rgba(59, 130, 246, 0.7), 0 0 14px rgba(59, 130, 246, 0.5) !important;
+    animation: puzzle-hint-pulse 1s ease-in-out infinite;
+}
+@keyframes puzzle-hint-pulse {
+    0%, 100% { box-shadow: inset 0 0 14px rgba(59,130,246,0.5), 0 0 10px rgba(59,130,246,0.3); }
+    50%      { box-shadow: inset 0 0 24px rgba(59,130,246,0.9), 0 0 20px rgba(59,130,246,0.6); }
+}
+
+/* Puzzle solve glow — green confirmation on the destination square */
+.puzzle-solve-glow {
+    box-shadow: inset 0 0 18px rgba(34, 197, 94, 0.7), 0 0 14px rgba(34, 197, 94, 0.5) !important;
+    animation: puzzle-solve-pulse 0.6s ease-out forwards;
+}
+@keyframes puzzle-solve-pulse {
+    0%   { box-shadow: inset 0 0 8px rgba(34,197,94,0.3), 0 0 4px rgba(34,197,94,0.2); }
+    50%  { box-shadow: inset 0 0 24px rgba(34,197,94,0.9), 0 0 20px rgba(34,197,94,0.6); }
+    100% { box-shadow: inset 0 0 10px rgba(34,197,94,0.4), 0 0 6px rgba(34,197,94,0.2); }
+}
+
+/* Celebration burst particles */
+@keyframes confetti-burst {
+    0%   { transform: scale(0); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+}
+.puzzle-celebrate::after {
+    content: '🎉';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    pointer-events: none;
+    animation: confetti-burst 0.8s ease-out forwards;
+    z-index: 100;
+}
+
+/* Puzzle turn badge animation */
+#puzzleTurnBadge {
+    animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Keyboard shortcut kbd styling */
+kbd {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Tab Content Transitions ─── */
+.tab-content {
+    animation: tabSlideIn 0.25s ease-out;
+}
+.tab-content.hidden {
+    animation: none;
+}
+@keyframes tabSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Puzzle Stats Dashboard ─── */
+#puzzleStatsDash {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 0.75rem;
+}
+#puzzleStatsDash > div {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+}
+#puzzleStatsDash > div > div:first-child {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+#puzzleStatsDash > div > div:last-child {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+#pzStatSolved { color: #3b82f6 !important; }
+#pzStatAccuracy { color: #10b981 !important; }
+#pzStatBestStreak { color: #f59e0b !important; }
+#pzStatRating { color: #a78bfa !important; }
+
+/* ─── Performance: GPU layers for animated elements ─── */
+.piece {
+    will-change: transform;
+    contain: layout style;
+}
+.square {
+    contain: layout style;
+}
+
+/* ─── Button Active Feedback ─── */
+.btn:active {
+    transform: scale(0.97) !important;
+    filter: brightness(0.95);
+}
+.btn-primary:active {
+    box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+/* ─── Coach HUD enhancements ─── */
+.coach-hud {
+    transition: all 0.3s ease;
+}
+.coach-hud:not(.hidden) {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ─── Academy lesson items smooth hover ─── */
+.ac-list .btn {
+    transition: all 0.2s ease;
+}
+.ac-list .btn:hover {
+    transform: translateX(3px);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* ─── Scrollbar for controls panel ─── */
+.controls-column {
+    scroll-behavior: smooth;
+}
+
+/* ─── Mobile responsive improvements ─── */
+@media (max-width: 768px) {
+    .tabs {
+        flex-wrap: wrap;
+    }
+    .tab-btn {
+        font-size: 0.65rem;
+        padding: 6px 3px;
+    }
+    #puzzleStatsDash {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}

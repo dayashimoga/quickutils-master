@@ -161,10 +161,11 @@ beforeAll(() => {
                 </div>
                 
                 <div class="tabs mb-3">
-                    <button class="tab-btn active" data-tab="play">Play AI</button>
-                    <button class="tab-btn" data-tab="multiplayer">👥 Friend</button>
-                    <button class="tab-btn" data-tab="analyze">Analyze</button>
-                    <button class="tab-btn" data-tab="academy"><span style="color:#facc15;">★</span> Academy</button>
+                    <button class="tab-btn active" data-tab="play">🤖 Play AI</button>
+                    <button class="tab-btn" data-tab="puzzles">🧩 Puzzles</button>
+                    <button class="tab-btn" data-tab="multiplayer">👥 Online</button>
+                    <button class="tab-btn" data-tab="analyze">🔬 Analyze</button>
+                    <button class="tab-btn" data-tab="academy">🎓 Academy</button>
                 </div>
                 
                 <div id="tab-play" class="tab-content">
@@ -219,6 +220,37 @@ beforeAll(() => {
                     <button class="btn btn-primary w-100" id="newGameBtn">Start New Game</button>
                 </div>
 
+                <div id="tab-puzzles" class="tab-content hidden">
+                    <div id="puzzleStatsDash" style="display:grid;">
+                        <div><div id="pzStatSolved">0</div><div>Solved</div></div>
+                        <div><div id="pzStatAccuracy">—</div><div>Accuracy</div></div>
+                        <div><div id="pzStatBestStreak">0</div><div>Best Streak</div></div>
+                        <div><div id="pzStatRating">—</div><div>Rating</div></div>
+                    </div>
+                    <div class="control-group">
+                        <label>Difficulty Level</label>
+                        <select class="input-modern" id="puzzleDifficulty">
+                            <option value="all">🎲 Mixed (All Difficulties)</option>
+                            <option value="⭐">⭐ Easy</option>
+                            <option value="⭐⭐">⭐⭐ Medium</option>
+                            <option value="⭐⭐⭐">⭐⭐⭐ Hard</option>
+                            <option value="⭐⭐⭐⭐">⭐⭐⭐⭐ Expert</option>
+                        </select>
+                    </div>
+                    <div>🔥 <span id="puzzleStreak">0</span></div>
+                    <div>⏱ <span id="puzzleTimer">0:00</span></div>
+                    <div id="puzzleTurnBadge" style="display:none;">⚪ White to Move</div>
+                    <div id="puzzleProgressWrap" style="display:none;">
+                        <span id="puzzleProgressLabel">Step 0 / 0</span>
+                        <span id="puzzleCategoryTag"></span>
+                        <div><div id="puzzleProgressBar" style="width:0%;"></div></div>
+                    </div>
+                    <div id="puzzleTitleText"></div>
+                    <button class="btn btn-primary w-100" id="btnNextPuzzle">▶️ Load Next Puzzle</button>
+                    <button class="btn btn-secondary" id="btnPuzzleHint">💡 Hint</button>
+                    <button class="btn btn-secondary" id="btnPuzzleSolve">🎯 Solve</button>
+                    <button class="btn btn-primary w-100 mb-3" id="btnStartPuzzleRush">⚡ Start 3-Min Puzzle Rush</button>
+                </div>
                 <div id="tab-multiplayer" class="tab-content hidden">
                     <p class="text-xs text-muted mb-3" style="text-align: center; color: var(--text-muted);">Play directly with a friend via Peer-to-Peer WebRTC. No servers!</p>
                     <div class="control-group">
@@ -679,6 +711,61 @@ describe('Tab Navigation System', () => {
         expect(document.getElementById('tab-academy')).not.toBeNull();
     });
 
+    test('Puzzles tab exists', () => {
+        expect(document.getElementById('tab-puzzles')).not.toBeNull();
+        expect(document.querySelector('.tab-btn[data-tab="puzzles"]')).not.toBeNull();
+    });
+
+    test('Multiplayer (Online) tab exists', () => {
+        expect(document.getElementById('tab-multiplayer')).not.toBeNull();
+        expect(document.querySelector('.tab-btn[data-tab="multiplayer"]')).not.toBeNull();
+    });
+
+    test('Interactive Puzzle Trainer UI exists', () => {
+        expect(document.getElementById('puzzleDifficulty')).not.toBeNull();
+        expect(document.getElementById('puzzleStreak')).not.toBeNull();
+        expect(document.getElementById('btnNextPuzzle')).not.toBeNull();
+        expect(document.getElementById('btnPuzzleHint')).not.toBeNull();
+        expect(document.getElementById('btnPuzzleSolve')).not.toBeNull();
+    });
+
+    test('Puzzle Stats Dashboard exists with all metrics', () => {
+        expect(document.getElementById('puzzleStatsDash')).not.toBeNull();
+        expect(document.getElementById('pzStatSolved')).not.toBeNull();
+        expect(document.getElementById('pzStatAccuracy')).not.toBeNull();
+        expect(document.getElementById('pzStatBestStreak')).not.toBeNull();
+        expect(document.getElementById('pzStatRating')).not.toBeNull();
+    });
+
+    test('Puzzle timer display exists', () => {
+        expect(document.getElementById('puzzleTimer')).not.toBeNull();
+    });
+
+    test('Puzzle turn badge exists and is hidden by default', () => {
+        const badge = document.getElementById('puzzleTurnBadge');
+        expect(badge).not.toBeNull();
+        expect(badge.style.display).toBe('none');
+    });
+
+    test('Puzzle progress bar exists', () => {
+        expect(document.getElementById('puzzleProgressWrap')).not.toBeNull();
+        expect(document.getElementById('puzzleProgressBar')).not.toBeNull();
+        expect(document.getElementById('puzzleProgressLabel')).not.toBeNull();
+    });
+
+    test('Puzzle category tag element exists', () => {
+        expect(document.getElementById('puzzleCategoryTag')).not.toBeNull();
+    });
+
+    test('Puzzle difficulty has 5 options', () => {
+        const sel = document.getElementById('puzzleDifficulty');
+        expect(sel.options.length).toBe(5);
+    });
+
+    test('Puzzle Rush button exists in Puzzles tab', () => {
+        expect(document.getElementById('btnStartPuzzleRush')).not.toBeNull();
+    });
+
     test('PGN input textarea exists', () => {
         expect(document.getElementById('pgnInput')).not.toBeNull();
     });
@@ -855,5 +942,99 @@ describe('PGN Management', () => {
 describe('Opening Badge', () => {
     test('Opening name badge exists', () => {
         expect(document.getElementById('openingName')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// PUZZLE TRAINER — EXTENDED
+// ═══════════════════════════════════════════════════
+describe('Puzzle Trainer Extended', () => {
+    test('Puzzle stats defaults show zero/dash', () => {
+        expect(document.getElementById('pzStatSolved').textContent).toBe('0');
+        expect(document.getElementById('pzStatBestStreak').textContent).toBe('0');
+        expect(document.getElementById('pzStatAccuracy').textContent).toBe('—');
+        expect(document.getElementById('pzStatRating').textContent).toBe('—');
+    });
+
+    test('Hint button has keyboard shortcut title', () => {
+        const btn = document.getElementById('btnPuzzleHint');
+        expect(btn.title || btn.textContent).toContain('Hint');
+    });
+
+    test('Solve button has keyboard shortcut title', () => {
+        const btn = document.getElementById('btnPuzzleSolve');
+        expect(btn.title || btn.textContent).toContain('Solve');
+    });
+
+    test('Puzzle difficulty options have correct values', () => {
+        const sel = document.getElementById('puzzleDifficulty');
+        const values = Array.from(sel.options).map(o => o.value);
+        expect(values).toContain('all');
+        expect(values).toContain('⭐');
+        expect(values).toContain('⭐⭐⭐⭐');
+    });
+
+    test('Puzzle progress bar starts at 0%', () => {
+        const bar = document.getElementById('puzzleProgressBar');
+        expect(bar.style.width).toBe('0%');
+    });
+
+    test('Puzzle timer starts at 0:00', () => {
+        expect(document.getElementById('puzzleTimer').textContent).toBe('0:00');
+    });
+
+    test('Puzzle streak starts at 0', () => {
+        expect(document.getElementById('puzzleStreak').textContent).toBe('0');
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// PLAY AI TAB
+// ═══════════════════════════════════════════════════
+describe('Play AI Settings', () => {
+    test('Player color selector exists with White/Black/Random', () => {
+        const sel = document.getElementById('playerColor');
+        expect(sel).not.toBeNull();
+        const values = Array.from(sel.options).map(o => o.value);
+        expect(values).toEqual(['w', 'b', 'random']);
+    });
+
+    test('Time control selector has at least 5 options', () => {
+        const sel = document.getElementById('clockSelect');
+        expect(sel).not.toBeNull();
+        expect(sel.options.length).toBeGreaterThanOrEqual(5);
+    });
+
+    test('Coach toggle switch exists', () => {
+        expect(document.getElementById('coachToggleBtn')).not.toBeNull();
+    });
+
+    test('Difficulty description paragraph exists', () => {
+        expect(document.getElementById('difficultyDesc')).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════
+// MULTIPLAYER TAB
+// ═══════════════════════════════════════════════════
+describe('Multiplayer Tab', () => {
+    test('Peer ID input exists', () => {
+        expect(document.getElementById('myPeerId')).not.toBeNull();
+    });
+
+    test('Copy Peer ID button exists', () => {
+        expect(document.getElementById('btnCopyPeerId')).not.toBeNull();
+    });
+
+    test('Friend Peer ID input exists', () => {
+        expect(document.getElementById('friendPeerId')).not.toBeNull();
+    });
+
+    test('Connect button exists', () => {
+        expect(document.getElementById('btnConnectFriend')).not.toBeNull();
+    });
+
+    test('Multiplayer status container exists', () => {
+        expect(document.getElementById('multiplayerStatus')).not.toBeNull();
     });
 });

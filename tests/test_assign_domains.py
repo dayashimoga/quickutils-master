@@ -360,6 +360,6 @@ def test_assign_domains_exception_in_thread(mock_sleep, mock_api, mock_process):
              patch.dict(os.environ, {"CLOUDFLARE_ACCOUNT_ID": "acc-123"}):
             stats = assign_domains()
 
-        assert stats["errors"] == 1
+        assert stats["error"] == 1
     finally:
         config_path.unlink(missing_ok=True)

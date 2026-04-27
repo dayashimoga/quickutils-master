@@ -15,11 +15,37 @@ const PIECE_URLS = {
 Object.values(PIECE_URLS).forEach(url => { const img = new Image(); img.src = url; });
 
 // ═══════════════════════════════════════════════════
+// TOAST NOTIFICATION SYSTEM
+// ═══════════════════════════════════════════════════
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed;top:60px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    const colors = { success: '#10b981', error: '#ef4444', info: '#3b82f6', warning: '#f59e0b' };
+    const bg = colors[type] || colors.info;
+    toast.style.cssText = `pointer-events:auto;padding:10px 16px;border-radius:10px;background:${bg};color:#fff;font-size:0.82rem;font-weight:600;font-family:inherit;box-shadow:0 4px 20px rgba(0,0,0,0.35);opacity:0;transform:translateX(40px);transition:all 0.35s cubic-bezier(0.25,1,0.5,1);max-width:320px;`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(0)'; });
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(40px)';
+        setTimeout(() => toast.remove(), 350);
+    }, 2500);
+}
+window.showToast = showToast;
+
+// ═══════════════════════════════════════════════════
 // APPLICATION STATE
 // ═══════════════════════════════════════════════════
 let chess = new Chess();
 let flipped = false;
-let mode = 'play';      // 'play' | 'analyze' | 'academy' | 'multiplayer'
+let mode = 'play';      // 'play' | 'puzzles' | 'analyze' | 'academy' | 'multiplayer'
 let aiColor = 'b';
 let aiLevel = 5;
 let selectedSquare = null;
@@ -35,6 +61,15 @@ let isHost = false;
 // Move history tracking
 let moveHistory = [];    // [{san, from, to, fen}, ...]
 let currentMoveIdx = -1; // -1 = starting position
+
+// Timer State
+let timerInterval = null;
+let whiteTimeMs = 0;
+let blackTimeMs = 0;
+let timeIncrementMs = 0;
+let isClockActive = false;
+let lastTimerUpdate = 0;
+let isTimeOut = false;
 
 // ═══════════════════════════════════════════════════
 // ACADEMY DATABASE & STATE
@@ -269,6 +304,217 @@ function parseEvalFromInfo(line) {
     evalBar.style.height = pct + '%';
 }
 
+// ═══════════════════════════════════════════════════
+// GAME CLOCK TIMERS
+// ═══════════════════════════════════════════════════
+function formatTime(ms) {
+    if (ms <= 0) return "0:00.0";
+    const totalSecs = Math.max(0, ms / 1000);
+    const m = Math.floor(totalSecs / 60);
+    const s = Math.floor(totalSecs % 60);
+    if (totalSecs < 20) {
+        const ms_rem = Math.floor((totalSecs - (m * 60) - s) * 10);
+        return `${m}:${s.toString().padStart(2, '0')}.${ms_rem}`;
+    }
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function updateClockUI() {
+    const cw = document.getElementById('clockWhite');
+    const cb = document.getElementById('clockBlack');
+    if (cw) cw.textContent = formatTime(whiteTimeMs);
+    if (cb) cb.textContent = formatTime(blackTimeMs);
+    
+    if (chess.turn() === 'w') {
+        cw?.classList.add('active-clock');
+        cb?.classList.remove('active-clock');
+    } else {
+        cb?.classList.add('active-clock');
+        cw?.classList.remove('active-clock');
+    }
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    if (!isClockActive) return;
+    
+    lastTimerUpdate = performance.now();
+    timerInterval = setInterval(() => {
+        if (chess.isGameOver() || mode === 'analyze' || mode === 'academy') {
+            clearInterval(timerInterval);
+            return;
+        }
+        
+        const now = performance.now();
+        const delta = now - lastTimerUpdate;
+        lastTimerUpdate = now;
+        
+        if (chess.turn() === 'w') {
+            whiteTimeMs -= delta;
+            if (whiteTimeMs <= 0) handleTimeOut('w');
+        } else {
+            blackTimeMs -= delta;
+            if (blackTimeMs <= 0) handleTimeOut('b');
+        }
+        updateClockUI();
+    }, 50); // 50ms for smooth tenths of a second update
+}
+
+function handleTimeOut(colorLost) {
+    clearInterval(timerInterval);
+    isClockActive = false;
+    isTimeOut = true;
+    whiteTimeMs = Math.max(0, whiteTimeMs);
+    blackTimeMs = Math.max(0, blackTimeMs);
+    updateClockUI();
+    const resultDiv = document.getElementById('gameResult');
+    if (resultDiv) {
+        resultDiv.textContent = colorLost === 'w' ? 'Black wins on time.' : 'White wins on time.';
+        resultDiv.classList.remove('hidden');
+    }
+    document.getElementById('snd-end')?.play().catch(()=>{});
+}
+
+function parseTimeControl(val) {
+    if (val === 'none') {
+        isClockActive = false;
+        whiteTimeMs = 0; blackTimeMs = 0; timeIncrementMs = 0;
+        return;
+    }
+    const parts = val.split('+');
+    isClockActive = true;
+    whiteTimeMs = parseInt(parts[0]) * 60000;
+    blackTimeMs = whiteTimeMs;
+    timeIncrementMs = parts.length > 1 ? parseInt(parts[1]) * 1000 : 0;
+}
+
+// ═══════════════════════════════════════════════════
+// MULTIPLAYER (PEERJS)
+// ═══════════════════════════════════════════════════
+function initMultiplayer() {
+    if (peer) return;
+    peer = new Peer();
+    
+    peer.on('open', (id) => {
+        const myPeerIdInput = document.getElementById('myPeerId');
+        if (myPeerIdInput) myPeerIdInput.value = id;
+        document.getElementById('mpStatusText').textContent = 'Online & Ready';
+        document.getElementById('multiplayerStatus').classList.remove('error');
+        document.getElementById('multiplayerStatus').classList.add('ready');
+    });
+
+    peer.on('connection', (conn) => {
+        // Someone connected to us
+        isHost = true;
+        peerConnection = conn;
+        setupPeerConnection();
+    });
+}
+
+function setupPeerConnection() {
+    document.getElementById('mpStatusText').textContent = 'Connected to Friend!';
+    document.getElementById('multiplayerControls').classList.remove('hidden');
+    
+    let pingInterval;
+    
+    peerConnection.on('data', (data) => {
+        if (data.type === 'start') {
+            mpColor = data.color;
+            chess = new Chess();
+            moveHistory = [];
+            currentMoveIdx = -1;
+            lastMoveSquares = [];
+            flipped = mpColor === 'b';
+            isTimeOut = false;
+            buildBoard();
+            document.getElementById('multiplayerControls').classList.add('hidden');
+        } else if (data.type === 'move') {
+            chess.load(data.fen);
+            moveHistory = data.moveHistory;
+            currentMoveIdx = moveHistory.length - 1;
+            if (moveHistory.length > 0) {
+                const lastMove = moveHistory[currentMoveIdx];
+                lastMoveSquares = [lastMove.from, lastMove.to];
+                playSound({ flags: lastMove.flags });
+            }
+            buildBoard();
+        } else if (data.type === 'ping') {
+            peerConnection.send({ type: 'pong', t: data.t });
+        } else if (data.type === 'pong') {
+            const rtt = Date.now() - data.t;
+            const pingEl = document.getElementById('mpPing');
+            if (pingEl) {
+                pingEl.style.display = 'block';
+                const span = pingEl.querySelector('span');
+                if (span) {
+                    span.textContent = `${rtt} ms`;
+                    span.style.color = rtt < 100 ? '#4ade80' : (rtt < 300 ? '#fbbf24' : '#ef4444');
+                }
+            }
+        }
+    });
+
+    peerConnection.on('close', () => {
+        clearInterval(pingInterval);
+        document.getElementById('mpStatusText').textContent = 'Friend Disconnected';
+        document.getElementById('multiplayerStatus').classList.add('error');
+        document.getElementById('mpPing').style.display = 'none';
+        peerConnection = null;
+    });
+    
+    // Start pinging every 2 seconds
+    pingInterval = setInterval(() => {
+        if (peerConnection && peerConnection.open) {
+            peerConnection.send({ type: 'ping', t: Date.now() });
+        } else {
+            clearInterval(pingInterval);
+        }
+    }, 2000);
+}
+
+document.getElementById('btnCopyPeerId')?.addEventListener('click', () => {
+    const myId = document.getElementById('myPeerId').value;
+    if (myId) {
+        navigator.clipboard.writeText(myId);
+        const btn = document.getElementById('btnCopyPeerId');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = '📋 Copy', 2000);
+    }
+});
+
+document.getElementById('btnConnectFriend')?.addEventListener('click', () => {
+    const friendId = document.getElementById('friendPeerId').value.trim();
+    if (!friendId) return;
+    
+    document.getElementById('mpStatusText').textContent = 'Connecting...';
+    peerConnection = peer.connect(friendId);
+    isHost = false;
+    setupPeerConnection();
+});
+
+document.getElementById('btnMpStart')?.addEventListener('click', () => {
+    if (!peerConnection || !peerConnection.open) return;
+    
+    let colorChoice = document.getElementById('mpPlayerColor').value;
+    if (colorChoice === 'random') {
+        colorChoice = Math.random() > 0.5 ? 'w' : 'b';
+    }
+    
+    mpColor = colorChoice;
+    const friendColor = mpColor === 'w' ? 'b' : 'w';
+    
+    chess = new Chess();
+    moveHistory = [];
+    currentMoveIdx = -1;
+    lastMoveSquares = [];
+    flipped = mpColor === 'b';
+    isTimeOut = false;
+    buildBoard();
+    document.getElementById('multiplayerControls').classList.add('hidden');
+    
+    peerConnection.send({ type: 'start', color: friendColor });
+});
+
 function requestEngineAnalysis(depthOverride) {
     if (!engineReady || !engine) return;
     engine.postMessage('stop');
@@ -428,32 +674,83 @@ function renderPosition() {
                     if (alreadyClaimed) continue;
 
                     const pieceId = `${p.color}${p.type}`;
-                    let pieceEl = existingPieces.find(el =>
-                        el.dataset.stale === 'true' && el.dataset.pieceType === pieceId
-                    );
+                    let pieceEl = null;
+                    let isFallback = false;
+                    
+                    // Determine explicitly where this piece should have come from if we have moveInfo
+                    let expectedFrom = null;
+                    if (window._lastMoveInfo) {
+                        const m = window._lastMoveInfo;
+                        if (sq === m.to) {
+                            expectedFrom = m.from; // Main moving piece
+                        } else if (m.flags && m.flags.includes('k')) {
+                            if (p.color === 'w' && sq === 'f1') expectedFrom = 'h1';
+                            if (p.color === 'b' && sq === 'f8') expectedFrom = 'h8';
+                        } else if (m.flags && m.flags.includes('q')) {
+                            if (p.color === 'w' && sq === 'd1') expectedFrom = 'a1';
+                            if (p.color === 'b' && sq === 'd8') expectedFrom = 'a8';
+                        }
+                    }
+                    
+                    if (expectedFrom) {
+                        const fromSqEl = document.getElementById('sq-' + expectedFrom);
+                        if (fromSqEl) {
+                            pieceEl = existingPieces.find(el =>
+                                el.dataset.stale === 'true' && el.dataset.pieceType === pieceId &&
+                                el.parentElement === fromSqEl
+                            );
+                            // If promotion, pieceId will be 'wq' but the stale piece is 'wp'
+                            if (!pieceEl && window._lastMoveInfo && sq === window._lastMoveInfo.to && window._lastMoveInfo.flags.includes('p')) {
+                                pieceEl = existingPieces.find(el =>
+                                    el.dataset.stale === 'true' && el.dataset.pieceType[0] === p.color && el.dataset.pieceType[1] === 'p' &&
+                                    el.parentElement === fromSqEl
+                                );
+                                // Update background image for promotion
+                                if (pieceEl) {
+                                    pieceEl.dataset.pieceType = pieceId;
+                                    pieceEl.style.backgroundImage = `url(${PIECE_URLS[pieceId]})`;
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback: any stale piece of the same type on the board
+                    if (!pieceEl) {
+                        // DO NOT animate fallback pieces from random squares across the board. 
+                        // We will grab them, but without animation, to prevent diagonal flying.
+                        pieceEl = existingPieces.find(el => el.dataset.stale === 'true' && el.dataset.pieceType === pieceId);
+                        if (pieceEl) isFallback = true;
+                    }
+
                     if (pieceEl) {
                         pieceEl.dataset.stale = 'false';
                         
-                        // FLIP Physics Animation
-                        const beforeRect = pieceEl.getBoundingClientRect();
-                        sqEl.appendChild(pieceEl);
-                        const afterRect = pieceEl.getBoundingClientRect();
-                        
-                        if (beforeRect.left !== 0 && beforeRect.top !== 0 && (beforeRect.left !== afterRect.left || beforeRect.top !== afterRect.top)) {
-                            const dx = beforeRect.left - afterRect.left;
-                            const dy = beforeRect.top - afterRect.top;
-                            
-                            pieceEl.style.transition = 'none';
-                            pieceEl.style.transform = `translate(${dx}px, ${dy}px)`;
-                            
-                            // Force reflow
-                            pieceEl.getBoundingClientRect();
-                            
-                            pieceEl.style.transition = 'transform 0.55s cubic-bezier(0.25, 1, 0.5, 1)';
-                            pieceEl.style.transform = 'translate(0, 0)';
-                        } else {
+                        if (isFallback) {
+                            sqEl.appendChild(pieceEl);
                             pieceEl.style.transition = 'none';
                             pieceEl.style.transform = 'none';
+                        } else {
+                            // FLIP Physics Animation
+                            const beforeRect = pieceEl.getBoundingClientRect();
+                            sqEl.appendChild(pieceEl);
+                            const afterRect = pieceEl.getBoundingClientRect();
+                            
+                            if (beforeRect.left !== 0 && beforeRect.top !== 0 && (beforeRect.left !== afterRect.left || beforeRect.top !== afterRect.top)) {
+                                const dx = beforeRect.left - afterRect.left;
+                                const dy = beforeRect.top - afterRect.top;
+                                
+                                pieceEl.style.transition = 'none';
+                                pieceEl.style.transform = `translate(${dx}px, ${dy}px)`;
+                                
+                                // Force reflow
+                                pieceEl.getBoundingClientRect();
+                                
+                                pieceEl.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                                pieceEl.style.transform = 'translate(0, 0)';
+                            } else {
+                                pieceEl.style.transition = 'none';
+                                pieceEl.style.transform = 'none';
+                            }
                         }
                     } else {
                         // Create brand new piece element
@@ -468,10 +765,10 @@ function renderPosition() {
         }
     }
 
+    // Clear move info so it doesn't leak into subsequent board redraws (like undo or history jumping)
+    window._lastMoveInfo = null;
+
     // Remove captured pieces (anything still marked stale)
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
-    document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     document.querySelectorAll('[data-stale="true"]').forEach(p => p.remove());
     updateCapturedPieces();
     updateMovesList();
@@ -535,8 +832,8 @@ function updateCapturedPieces() {
 // CLICK-TO-MOVE INTERACTION
 // ═══════════════════════════════════════════════════
 function onSquareClick(e) {
-    // Block interaction during promotion
-    if (!promotionModal.classList.contains('hidden')) return;
+    // Block interaction during promotion or if time is out
+    if (!promotionModal.classList.contains('hidden') || isTimeOut) return;
 
     // In play mode, block clicks when it's AI's turn
     if (mode === 'play' && chess.turn() === aiColor && !chess.isGameOver()) return;
@@ -720,6 +1017,7 @@ function commitMove(move) {
     }
 
     lastMoveSquares = [move.from, move.to];
+    window._lastMoveInfo = { from: move.from, to: move.to, flags: move.flags };
 
     // Truncate future history if we're branching
     if (currentMoveIdx < moveHistory.length - 1) {
@@ -756,6 +1054,111 @@ function commitMove(move) {
         if (chess.turn() !== mpColor) {
             peerConnection.send({ type: 'move', fen: chess.fen(), moveHistory: moveHistory });
         }
+    }
+
+    // Time increment and restart timer
+    if (isClockActive && !chess.isGameOver()) {
+        if (chess.turn() === 'b') { // White just moved (turn is now black)
+            whiteTimeMs += timeIncrementMs;
+        } else {
+            blackTimeMs += timeIncrementMs;
+        }
+        updateClockUI();
+        startTimer();
+    } else if (chess.isGameOver()) {
+        clearInterval(timerInterval);
+    }
+
+    // Check Puzzle Mode Logic — only when actually in puzzles mode
+    if (mode === 'puzzles' && window._dailyPuzzleActive && move.san) {
+        const expectedSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+        
+        if (move.san === expectedSan) {
+            window._dailyPuzzleStep++;
+            
+            // Check whose turn just played. Puzzles always start with Player move at step 0.
+            const wasPlayerTurn = ((window._dailyPuzzleStep - 1) % 2 === 0);
+            
+            if (wasPlayerTurn) {
+                showToast("✅ Great move!", "success");
+            }
+            if (typeof updatePuzzleProgress === 'function') updatePuzzleProgress();
+            
+            if (window._dailyPuzzleStep >= window._dailyPuzzleSolution.length) {
+                // Solved!
+                window._dailyPuzzleActive = false;
+                document.getElementById('snd-end')?.play().catch(()=>{});
+                if (typeof stopPuzzleTimer === 'function') stopPuzzleTimer();
+                
+                if (puzzleRushActive) {
+                    puzzleRushScore++;
+                    showToast(`⭐ Score: ${puzzleRushScore}`, "success");
+                    updateRushUI();
+                    setTimeout(loadNextRushPuzzle, 600);
+                } else {
+                    if (typeof pzStats !== 'undefined') { pzStats.solved++; savePuzzleStats(); }
+                    updatePuzzleStreak(1);
+                    
+                    const turnBadge = document.getElementById('puzzleTurnBadge');
+                    if (turnBadge) {
+                        const timeStr = typeof puzzleTimerSec !== 'undefined' 
+                            ? ` in ${Math.floor(puzzleTimerSec/60)}:${(puzzleTimerSec%60).toString().padStart(2,'0')}` 
+                            : '';
+                        turnBadge.innerHTML = `🎉 Brilliant!${timeStr} — Loading next...`;
+                        turnBadge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                        turnBadge.style.color = 'white';
+                        turnBadge.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.6)';
+                    }
+                    
+                    const boardEl = document.getElementById('board');
+                    if (boardEl) {
+                        boardEl.classList.add('puzzle-celebrate');
+                        setTimeout(() => boardEl.classList.remove('puzzle-celebrate'), 1000);
+                    }
+                    
+                    const xpEl = document.getElementById('academyXp');
+                    if (xpEl) xpEl.textContent = parseInt(xpEl.textContent) + 50;
+                    
+                    const bar = document.getElementById('puzzleProgressBar');
+                    if (bar) bar.style.width = '100%';
+                    
+                    setTimeout(loadTrainerPuzzle, 1800);
+                }
+            } else {
+                // Not solved yet. Engine needs to move ONLY if it's currently the engine's turn.
+                const isEngineTurn = (window._dailyPuzzleStep % 2 === 1);
+                if (isEngineTurn) {
+                    setTimeout(() => {
+                        const engineSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+                        if (!engineSan) return;
+                        const emove = chess.move(engineSan);
+                        if (emove) {
+                            commitMove(emove);
+                        }
+                    }, 800);
+                }
+            }
+        } else {
+            // Wrong move
+            chess.undo();
+            moveHistory.pop();
+            currentMoveIdx--;
+            renderPosition();
+            document.getElementById('snd-error')?.play().catch(()=>{});
+            
+            if (puzzleRushActive) {
+                puzzleRushStrikes++;
+                showToast("❌ Incorrect!", "error");
+                updateRushUI();
+                if (puzzleRushStrikes >= 3) {
+                    setTimeout(() => endPuzzleRush("3 Strikes! Game Over"), 500);
+                }
+            } else {
+                updatePuzzleStreak(0, true); // Reset streak on error
+                showToast("❌ Incorrect move. Try again!", "error");
+            }
+        }
+        return; // Don't trigger standard AI response during puzzle
     }
 
     // Request engine analysis or AI move
@@ -877,6 +1280,10 @@ document.getElementById('newGameBtn').addEventListener('click', () => {
     moveHistory = [];
     currentMoveIdx = -1;
     lastMoveSquares = [];
+    
+    // Timer logic
+    const clockSelect = document.getElementById('clockSelect');
+    if (clockSelect) parseTimeControl(clockSelect.value);
 
     aiLevel = parseInt(document.getElementById('aiLevel').value);
     const colorSel = document.getElementById('playerColor').value;
@@ -890,6 +1297,8 @@ document.getElementById('newGameBtn').addEventListener('click', () => {
     evalContainer.classList.add('hidden');
     gameResultEl.classList.add('hidden');
     buildBoard();
+    updateClockUI();
+    if (isClockActive) startTimer();
 
     if (aiColor === 'w') {
         requestEngineAnalysis(); // AI moves first
@@ -1131,20 +1540,39 @@ document.addEventListener('keydown', e => {
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        // Ignore inner academy tabs
+        if (btn.dataset.atab) return;
+        
+        document.querySelectorAll('.tab-btn:not([data-atab])').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content:not(#academyTabContent .tab-content)').forEach(c => c.classList.add('hidden'));
 
         btn.classList.add('active');
         const tab = btn.dataset.tab;
         mode = tab;
-        document.getElementById('tab-' + tab).classList.remove('hidden');
+        const target = document.getElementById('tab-' + tab);
+        if (target) target.classList.remove('hidden');
 
         if (mode === 'analyze') {
             evalContainer.classList.remove('hidden');
             if (!chess.isGameOver()) requestEngineAnalysis();
+        } else if (mode === 'multiplayer') {
+            initMultiplayer();
+        } else if (mode === 'puzzles') {
+            evalContainer.classList.add('hidden');
+            if (engine) engine.postMessage('stop');
+            // Auto-load a puzzle when switching to Puzzles tab
+            if (!window._dailyPuzzleActive && typeof loadTrainerPuzzle === 'function') {
+                loadTrainerPuzzle();
+            }
         } else {
             evalContainer.classList.add('hidden');
             if (engine) engine.postMessage('stop');
+            // Reset puzzle state when leaving Puzzles tab to prevent
+            // puzzle validation from triggering in other modes
+            if (window._dailyPuzzleActive) {
+                window._dailyPuzzleActive = false;
+                if (typeof stopPuzzleTimer === 'function') stopPuzzleTimer();
+            }
         }
     });
 });
@@ -1261,6 +1689,19 @@ document.getElementById('flipBoard').addEventListener('click', () => {
         buildBoard();
     }
 });
+
+const toggle3dBtn = document.getElementById('toggle3dBoard');
+if (toggle3dBtn) {
+    toggle3dBtn.addEventListener('click', () => {
+        const wrap = document.querySelector('.board-wrapper');
+        if (wrap) {
+            wrap.classList.toggle('mode-3d');
+            const is3D = wrap.classList.contains('mode-3d');
+            toggle3dBtn.classList.toggle('active', is3D);
+            toggle3dBtn.innerHTML = is3D ? '🧊 2D' : '🧊 3D';
+        }
+    });
+}
 
 // ═══════════════════════════════════════════════════
 // DRAG-AND-DROP PIECE MOVEMENT
@@ -1740,6 +2181,38 @@ if (btnFullscreen) {
 }
 
 // ═══════════════════════════════════════════════════
+// BOARD SIZE SELECTOR
+// ═══════════════════════════════════════════════════
+const boardSizes = {
+    sm: 'min(calc(100vh - var(--nav-height) - 80px), 420px)',
+    md: 'min(calc(100vh - var(--nav-height) - 80px), calc(100vw - 420px), 680px)',
+    lg: 'min(calc(100vh - var(--nav-height) - 40px), calc(100vw - 380px), 780px)',
+    xl: 'min(calc(100vh - var(--nav-height) - 20px), calc(100vw - 340px), 900px)'
+};
+const boardSizeSelector = document.getElementById('boardSizeSelector');
+if (boardSizeSelector) {
+    boardSizeSelector.addEventListener('click', (e) => {
+        const btn = e.target.closest('.board-size-btn');
+        if (!btn) return;
+        const size = btn.dataset.size;
+        boardSizeSelector.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector('.chess-layout').style.setProperty('--board-size', boardSizes[size]);
+        localStorage.setItem('chess-board-size', size);
+    });
+    // Restore saved preference
+    const saved = localStorage.getItem('chess-board-size');
+    if (saved && boardSizes[saved]) {
+        boardSizeSelector.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
+        const btn = boardSizeSelector.querySelector(`[data-size="${saved}"]`);
+        if (btn) {
+            btn.classList.add('active');
+            document.querySelector('.chess-layout').style.setProperty('--board-size', boardSizes[saved]);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════
 // GAME CLOCK (Fischer increment)
 // ═══════════════════════════════════════════════════
 let clockEnabled = false;
@@ -1874,166 +2347,8 @@ if (coachToggleBtn) {
 // ═══════════════════════════════════════════════════
 initEngine();
 buildBoard();
+buildAcademyList();
 
-// ═══════════════════════════════════════════════════
-// WEBRTC MULTIPLAYER (PEERJS)
-// ═══════════════════════════════════════════════════
-function initMultiplayer() {
-    if (peer) return; // Already initialized
-    
-    const myPeerIdEl = document.getElementById('myPeerId');
-    const mpStatusText = document.getElementById('mpStatusText');
-    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
-    
-    // Initialize PeerJS
-    peer = new Peer();
-    
-    peer.on('open', (id) => {
-        myPeerIdEl.value = id;
-        mpStatusText.textContent = 'Ready (Waiting for connection...)';
-        statusDot.className = 'status-dot thinking'; // Orange waiting state
-    });
-    
-    // Handle incoming connections (We are the host)
-    peer.on('connection', (conn) => {
-        if (peerConnection) return; // Only allow one connection
-        peerConnection = conn;
-        isHost = true;
-        setupPeerConnection();
-    });
-    
-    peer.on('error', (err) => {
-        console.error('PeerJS Error:', err);
-        mpStatusText.textContent = 'Connection Error';
-        statusDot.className = 'status-dot error';
-    });
-}
-
-function setupPeerConnection() {
-    const mpStatusText = document.getElementById('mpStatusText');
-    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
-    const controls = document.getElementById('multiplayerControls');
-    
-    peerConnection.on('open', () => {
-        mpStatusText.textContent = 'Connected!';
-        statusDot.className = 'status-dot ready'; // Green
-        if (isHost) {
-            controls.classList.remove('hidden'); // Host can start the game
-        } else {
-            controls.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;">Connected. Waiting for host to start game...</div>';
-            controls.classList.remove('hidden');
-        }
-    });
-    
-    peerConnection.on('data', (data) => {
-        if (data.type === 'start') {
-            // Host started the game
-            mpColor = data.color === 'w' ? 'b' : 'w';
-            flipped = (mpColor === 'b');
-            chess = new Chess();
-            moveHistory = [];
-            currentMoveIdx = -1;
-            lastMoveSquares = [];
-            evalContainer.classList.remove('hidden');
-            gameResultEl.classList.add('hidden');
-            buildBoard();
-            requestEngineAnalysis(); // First analysis
-            document.getElementById('snd-move')?.play().catch(()=>{});
-        } 
-        else if (data.type === 'move') {
-            // Receive opponent's move
-            chess.load(data.fen);
-            moveHistory = data.moveHistory;
-            currentMoveIdx = moveHistory.length - 1;
-            if (currentMoveIdx >= 0) {
-                lastMoveSquares = [moveHistory[currentMoveIdx].from, moveHistory[currentMoveIdx].to];
-            }
-            renderPosition();
-            playSound(moveHistory[currentMoveIdx]);
-            
-            if (moveHistory[currentMoveIdx].flags.includes('c') || moveHistory[currentMoveIdx].flags.includes('e')) {
-                 const sqEl = document.getElementById('sq-' + moveHistory[currentMoveIdx].to);
-                 if (sqEl) {
-                     const ripple = document.createElement('div');
-                     ripple.className = 'capture-ripple';
-                     sqEl.appendChild(ripple);
-                     setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 600);
-                 }
-            }
-            
-            if (!chess.isGameOver()) {
-                requestEngineAnalysis();
-            }
-        }
-    });
-    
-    peerConnection.on('close', () => {
-        mpStatusText.textContent = 'Disconnected';
-        statusDot.className = 'status-dot error';
-        peerConnection = null;
-        controls.classList.add('hidden');
-    });
-}
-
-// Connect as Guest
-document.getElementById('btnConnectFriend')?.addEventListener('click', () => {
-    const friendId = document.getElementById('friendPeerId').value.trim();
-    if (!friendId) return;
-    if (!peer) initMultiplayer();
-    
-    const mpStatusText = document.getElementById('mpStatusText');
-    const statusDot = document.querySelector('#multiplayerStatus .status-dot');
-    mpStatusText.textContent = 'Connecting...';
-    statusDot.className = 'status-dot thinking';
-    
-    peerConnection = peer.connect(friendId);
-    isHost = false;
-    setupPeerConnection();
-});
-
-// Host starts game
-document.getElementById('btnMpStart')?.addEventListener('click', () => {
-    if (!peerConnection || !peerConnection.open) return;
-    
-    const colorSel = document.getElementById('mpPlayerColor').value;
-    if (colorSel === 'random') {
-        mpColor = Math.random() > 0.5 ? 'w' : 'b';
-    } else {
-        mpColor = colorSel;
-    }
-    
-    // Broadcast start game
-    peerConnection.send({ type: 'start', color: mpColor });
-    
-    flipped = (mpColor === 'b');
-    chess = new Chess();
-    moveHistory = [];
-    currentMoveIdx = -1;
-    lastMoveSquares = [];
-    evalContainer.classList.remove('hidden');
-    gameResultEl.classList.add('hidden');
-    buildBoard();
-    requestEngineAnalysis();
-});
-
-document.getElementById('btnCopyPeerId')?.addEventListener('click', () => {
-    const input = document.getElementById('myPeerId');
-    if (input.value) {
-        navigator.clipboard.writeText(input.value);
-        const btn = document.getElementById('btnCopyPeerId');
-        btn.textContent = '✅ Copied';
-        setTimeout(() => btn.textContent = '📋 Copy', 2000);
-    }
-});
-
-// Initialize PeerJS when switching to multiplayer tab
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (btn.dataset.tab === 'multiplayer') {
-            initMultiplayer();
-        }
-    });
-});
 buildAcademyList();
 updateClockDisplay();
 
@@ -2215,6 +2530,8 @@ function finishBatchAnalysis() {
     let humanColor = 'w';
     if (typeof mode !== 'undefined' && mode === 'play' && typeof aiColor !== 'undefined') {
         humanColor = (aiColor === 'w') ? 'b' : 'w';
+    } else {
+        humanColor = 'both'; // Show mistakes for both players in analyze mode
     }
     
     for (let i = 1; i < batchAnalysisResults.length; i++) {
@@ -2259,7 +2576,7 @@ function finishBatchAnalysis() {
         let badge = '✅';
         
         // Only classify and count blunders for the HUMAN player to avoiding guiding them on the engine's behalf
-        if (colorMoved === humanColor) {
+        if (colorMoved === humanColor || humanColor === 'both') {
             // CAPS: Convert centipawn loss to a 0-100 accuracy score per move
             // Formula: accuracy = max(0, 100 - (cpLoss^1.5 / 10))
             const cpLoss = Math.max(0, errorDrop);
@@ -2327,23 +2644,25 @@ function finishBatchAnalysis() {
             }
 
             reportHtml += `
-                <div class="ac-item mb-1" style="background:${colorBox}; border:1px solid ${colorBox}; cursor:pointer; border-radius:8px; padding:0.6rem;" onclick="jumpToAnalysis(${i - 1}, '${bestMv}')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
-                        <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:4px;">
-                                <span style="font-size:1rem;">${emoji}</span>
-                                <span class="ac-item-title" style="font-weight:700;">${moveNumStr} ${moveData.san}</span>
-                                <span style="font-size:0.7rem; padding:1px 6px; border-radius:4px; background:${colorBox}; font-weight:600;">${flag}</span>
-                                <span style="font-size:0.7rem; color:var(--text-muted);">(${errorDrop > 0 ? '-' : '+'}${(Math.abs(errorDrop)/100).toFixed(1)})</span>
-                            </div>
-                            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px; line-height:1.4;">
-                                ${reason.whyBad}
-                            </div>
-                            <div style="font-size:0.78rem; color:#86efac; line-height:1.4;">
-                                <strong>Better:</strong> <span style="color:#4ade80; font-weight:600;">${bestSan !== '?' ? bestSan : 'N/A'}</span>
-                                ${reason.whyBetter ? ' — ' + reason.whyBetter : ''}
-                            </div>
+                <div class="report-mistake-item" id="report-item-${i}" style="background:${colorBox};" onclick="jumpToAnalysis(${i - 1}, '${bestMv}', this)">
+                    <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:5px;">
+                        <span style="font-size:1.1rem;">${emoji}</span>
+                        <span style="font-weight:700; font-size:0.88rem;">${moveNumStr} ${moveData.san}</span>
+                        <span style="font-size:0.68rem; padding:2px 8px; border-radius:12px; background:${colorBox}; font-weight:600; border:1px solid rgba(255,255,255,0.08);">${flag}</span>
+                        <span style="font-size:0.68rem; color:var(--text-muted); margin-left:auto; font-family:'JetBrains Mono',monospace;">${errorDrop > 0 ? '-' : '+'}${(Math.abs(errorDrop)/100).toFixed(1)}</span>
+                    </div>
+                    <div style="font-size:0.76rem; color:#94a3b8; line-height:1.45; margin-bottom:5px; padding-left:1.5rem;">
+                        💭 ${reason.whyBad}
+                    </div>
+                    <div class="report-better-move" style="margin-left:1.5rem;">
+                        <span style="font-size:0.85rem;">✅</span>
+                        <div style="font-size:0.76rem; line-height:1.4;">
+                            <strong style="color:#4ade80;">Better: ${bestSan !== '?' ? bestSan : 'N/A'}</strong>
+                            ${reason.whyBetter ? `<span style="color:#86efac;"> — ${reason.whyBetter}</span>` : ''}
                         </div>
+                    </div>
+                    <div style="margin-top:5px; padding-left:1.5rem; font-size:0.68rem; color:var(--text-muted);">
+                        Click to see on board →
                     </div>
                 </div>
             `;
@@ -2648,19 +2967,45 @@ function generateMoveReasoning(moveData, bestMoveUci, errorDrop, evalBefore, eva
     return { whyBad, whyBetter, whyGood };
 }
 
-window.jumpToAnalysis = function(histIdx, bestMoveUci) {
+window.jumpToAnalysis = function(histIdx, bestMoveUci, clickedEl) {
+    // Highlight the clicked report item
+    document.querySelectorAll('.report-mistake-item.active-review').forEach(el => el.classList.remove('active-review'));
+    if (clickedEl) {
+        clickedEl.classList.add('active-review');
+        clickedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     jumpToMove(histIdx - 1);
     const badMove = moveHistory[histIdx];
+    if (!badMove) return;
+    
     setTimeout(() => {
         clearTheoryHighlights();
+        
+        // Show red arrow for the bad move
         drawArrowRaw(badMove.from, badMove.to, 'rgba(239,68,68,0.85)', 'arrowhead-red');
+        
+        // Show green arrow for the better move
         if (bestMoveUci && bestMoveUci.length >= 4 && bestMoveUci !== '?') {
             drawArrowRaw(bestMoveUci.substring(0, 2), bestMoveUci.substring(2, 4), 'rgba(34,197,94,0.85)', 'arrowhead-green');
+            
+            // Highlight the correct destination square
+            const toEl = document.getElementById('sq-' + bestMoveUci.substring(2, 4));
+            if (toEl) toEl.classList.add('theory-highlight');
         }
-        const pieceEl = document.querySelector(`#sq-${badMove.from} .piece`) || document.querySelector(`#sq-${badMove.to} .piece`);
+        
+        // Highlight bad move source with red glow
+        const fromEl = document.getElementById('sq-' + badMove.from);
+        if (fromEl) {
+            fromEl.style.boxShadow = 'inset 0 0 18px rgba(239,68,68,0.6), 0 0 14px rgba(239,68,68,0.4)';
+            setTimeout(() => { fromEl.style.boxShadow = ''; }, 2500);
+        }
+        
+        // Shake the piece
+        const pieceEl = document.querySelector('#sq-' + badMove.from + ' .piece') || document.querySelector('#sq-' + badMove.to + ' .piece');
         if (pieceEl) {
             pieceEl.classList.add('shake-error');
-            setTimeout(()=> pieceEl.classList.remove('shake-error'), 500);
+            setTimeout(() => pieceEl.classList.remove('shake-error'), 500);
         }
     }, 150);
 }
@@ -2674,15 +3019,18 @@ function drawArrowRaw(fromSq, toSq, colorStr, markerId) {
     const boardRect = boardEl.getBoundingClientRect();
     const sfRect = fEl.getBoundingClientRect();
     const stRect = tEl.getBoundingClientRect();
-    const x1 = sfRect.left + sfRect.width / 2 - boardRect.left;
-    const y1 = sfRect.top + sfRect.height / 2 - boardRect.top;
-    const x2 = stRect.left + stRect.width / 2 - boardRect.left;
-    const y2 = stRect.top + stRect.height / 2 - boardRect.top;
+    
+    // Calculate relative percentages so the arrows scale perfectly when the board resizes
+    const x1 = (((sfRect.left + sfRect.width / 2) - boardRect.left) / boardRect.width) * 100;
+    const y1 = (((sfRect.top + sfRect.height / 2) - boardRect.top) / boardRect.height) * 100;
+    const x2 = (((stRect.left + stRect.width / 2) - boardRect.left) / boardRect.width) * 100;
+    const y2 = (((stRect.top + stRect.height / 2) - boardRect.top) / boardRect.height) * 100;
+    
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1);
-    line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y2', y2);
+    line.setAttribute('x1', x1 + '%');
+    line.setAttribute('y1', y1 + '%');
+    line.setAttribute('x2', x2 + '%');
+    line.setAttribute('y2', y2 + '%');
     line.setAttribute('stroke', colorStr);
     line.setAttribute('stroke-width', '6');
     line.setAttribute('stroke-linecap', 'round');
@@ -2837,68 +3185,390 @@ if (gameResultEl) {
 }
 
 // ═══════════════════════════════════════════════════
-// DAILY PUZZLE OF THE DAY
+// PUZZLE SYSTEM & PUZZLE RUSH
 // ═══════════════════════════════════════════════════
-const DAILY_PUZZLES = [
-    { fen: 'r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 0 1', solution: ['Nf6+', 'gxf6', 'Bxf7#'], title: 'Smothered Discovery', difficulty: '⭐⭐⭐' },
-    { fen: '6k1/pp4p1/2p5/2bp4/8/P5Pb/1P3rrP/2BRRK2 b - - 0 1', solution: ['Rf1+'], title: 'Heavy Piece Tactics', difficulty: '⭐⭐' },
-    { fen: 'r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1', solution: ['Bc5+', 'Kxe5', 'Qf4#'], title: 'King Hunt', difficulty: '⭐⭐⭐' },
-    { fen: 'r3k2r/ppp2Npp/1b5n/4P2b/2B1P3/8/PPP2PPP/RNB1K2R b KQkq - 0 1', solution: ['Kd7'], title: 'Defensive Resource', difficulty: '⭐⭐' },
-    { fen: '6k1/5ppp/8/8/8/8/r4PPP/3R2K1 w - - 0 1', solution: ['Rd8+', 'Kh7'], title: 'Back Rank Pressure', difficulty: '⭐' },
-    { fen: 'r1bqkbnr/pppppppp/2n5/1B6/4P3/8/PPPP1PPP/RNBQK1NR b KQkq - 0 2', solution: ['a6', 'Ba4', 'Nf6'], title: 'Morphy Defense', difficulty: '⭐' },
-    { fen: '2kr3r/p1ppqpb1/bn2Pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQ - 0 1', solution: ['Qxe6'], title: 'Complex Tactics', difficulty: '⭐⭐⭐' },
-    { fen: '1rb4r/pkPp3p/1b1P3n/1Q6/N3Pp2/8/P1P3PP/7K w - - 0 1', solution: ['Qd5+', 'Ka6', 'cxb8=N#'], title: 'Underpromotion Mate', difficulty: '⭐⭐⭐⭐' },
-    { fen: 'r3r1k1/pppb1ppp/8/3pN3/3Pn1q1/2PB4/PP4PP/R1BQ1RK1 w - - 0 1', solution: ['Nxf7'], title: 'Discovered Attack', difficulty: '⭐⭐' },
-    { fen: '4rrk1/pppb4/7p/3P2pq/3Q4/2P5/PP3RPP/R5K1 w - - 0 1', solution: ['Qxg7#'], title: 'Queen Sacrifice', difficulty: '⭐' },
-    { fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', solution: ['c3', 'd6', 'd4'], title: 'Italian Opening Theory', difficulty: '⭐' },
-    { fen: 'r2qr1k1/ppp2ppp/2np1n2/2b1p1B1/2B1P1b1/2NP1N2/PPP2PPP/R2QR1K1 w - - 0 1', solution: ['Nd5'], title: 'Central Knight Domination', difficulty: '⭐⭐' },
-    { fen: '8/8/p1p5/1p5p/1P5k/8/PPP2K1P/8 w - - 0 1', solution: ['a4'], title: 'Pawn Breakthrough', difficulty: '⭐⭐' },
-    { fen: '5rk1/1p3ppp/pq3b2/8/8/1P1Q1N2/P4PPP/3R2K1 w - - 0 1', solution: ['Qd6'], title: 'Queen Trade Advantage', difficulty: '⭐⭐' },
-    { fen: 'r4rk1/pp3ppp/2p2n2/3p4/3P4/2PB1N2/PP3PPP/R4RK1 w - - 0 1', solution: ['Bxh7+', 'Nxh7', 'Ng5'], title: 'Classic Greek Gift', difficulty: '⭐⭐⭐' },
-    { fen: 'r1bq1rk1/pppnn1pp/4p3/3pPp2/1b1P4/2NB3N/PPP2PPP/R1BQK2R w KQ - 0 1', solution: ['Bxf5'], title: 'Pawn Storm Preparation', difficulty: '⭐⭐' },
-    { fen: '8/5pk1/6p1/8/p3P3/8/1r3PPP/4R1K1 w - - 0 1', solution: ['e5'], title: 'Passed Pawn Push', difficulty: '⭐' },
-    { fen: 'r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 0 5', solution: ['cxd5', 'exd5', 'Bg5'], title: 'QGD Exchange Variation', difficulty: '⭐⭐' },
-    { fen: '8/8/8/2K5/8/1Q6/1k6/8 w - - 0 1', solution: ['Qb4+'], title: 'King & Queen Technique', difficulty: '⭐' },
-    { fen: 'r2q1rk1/pp2ppbp/2p2np1/6B1/3PP1b1/2N2N2/PPQ2PPP/R3KB1R w KQ - 0 1', solution: ['e5', 'Nd5', 'Qd2'], title: 'Central Pawn Advance', difficulty: '⭐⭐' },
-];
+let ALL_PUZZLES = [];
 
-function getDailyPuzzle() {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-    return DAILY_PUZZLES[dayOfYear % DAILY_PUZZLES.length];
+// Fetch the large puzzle database
+fetch('data/puzzles.json')
+    .then(r => r.json())
+    .then(data => {
+        ALL_PUZZLES = data;
+        console.log(`Loaded ${ALL_PUZZLES.length} puzzles.`);
+    })
+    .catch(e => console.error("Failed to load puzzles:", e));
+
+function getRandomPuzzle(difficulty = 'all') {
+    if (!ALL_PUZZLES.length) return null;
+    let pool = ALL_PUZZLES;
+    if (difficulty && difficulty !== 'all') {
+        pool = ALL_PUZZLES.filter(p => p.difficulty && p.difficulty.startsWith(difficulty));
+        if (!pool.length) pool = ALL_PUZZLES; // fallback
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function loadDailyPuzzle() {
-    const puzzle = getDailyPuzzle();
+let puzzleRushActive = false;
+let puzzleRushScore = 0;
+let puzzleRushStrikes = 0;
+let puzzleRushTimer = 0;
+let puzzleRushInterval = null;
+let currentRushPuzzle = null;
+
+// ─── Persistent Puzzle Stats ───
+let puzzleStreak = parseInt(localStorage.getItem('chess_puzzle_streak') || '0');
+let pzStats = JSON.parse(localStorage.getItem('chess_puzzle_stats') || '{"solved":0,"attempts":0,"bestStreak":0}');
+let puzzleTimerSec = 0;
+let puzzleTimerInterval = null;
+
+function savePuzzleStats() {
+    localStorage.setItem('chess_puzzle_stats', JSON.stringify(pzStats));
+    localStorage.setItem('chess_puzzle_streak', puzzleStreak);
+}
+
+function renderPuzzleStats() {
+    const el = id => document.getElementById(id);
+    const streakEl = el('puzzleStreak');
+    if (streakEl) streakEl.textContent = puzzleStreak;
+    
+    const solvedEl = el('pzStatSolved');
+    if (solvedEl) solvedEl.textContent = pzStats.solved;
+    
+    const accEl = el('pzStatAccuracy');
+    if (accEl) accEl.textContent = pzStats.attempts > 0 ? Math.round((pzStats.solved / pzStats.attempts) * 100) + '%' : '—';
+    
+    const bestEl = el('pzStatBestStreak');
+    if (bestEl) bestEl.textContent = pzStats.bestStreak;
+    
+    const ratingEl = el('pzStatRating');
+    if (ratingEl) {
+        // Simple Elo-like estimation based on difficulty solved
+        const base = 800;
+        const bonus = Math.min(pzStats.solved * 5, 1200);
+        const streakBonus = Math.min(pzStats.bestStreak * 10, 300);
+        const est = base + bonus + streakBonus;
+        ratingEl.textContent = pzStats.solved > 0 ? est : '—';
+    }
+}
+
+function updatePuzzleStreak(change, reset = false) {
+    if (reset) puzzleStreak = 0;
+    else puzzleStreak += change;
+    if (puzzleStreak > pzStats.bestStreak) pzStats.bestStreak = puzzleStreak;
+    savePuzzleStats();
+    renderPuzzleStats();
+}
+
+function startPuzzleTimer() {
+    clearInterval(puzzleTimerInterval);
+    puzzleTimerSec = 0;
+    const timerEl = document.getElementById('puzzleTimer');
+    if (timerEl) timerEl.textContent = '0:00';
+    puzzleTimerInterval = setInterval(() => {
+        puzzleTimerSec++;
+        if (timerEl) {
+            const m = Math.floor(puzzleTimerSec / 60);
+            const s = puzzleTimerSec % 60;
+            timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        }
+    }, 1000);
+}
+
+function stopPuzzleTimer() {
+    clearInterval(puzzleTimerInterval);
+}
+
+function updatePuzzleProgress() {
+    const wrap = document.getElementById('puzzleProgressWrap');
+    const label = document.getElementById('puzzleProgressLabel');
+    const bar = document.getElementById('puzzleProgressBar');
+    if (!wrap || !window._dailyPuzzleSolution) return;
+    
+    wrap.style.display = 'block';
+    const total = window._dailyPuzzleSolution.length;
+    const current = window._dailyPuzzleStep || 0;
+    // Only count player moves (every other move)
+    const playerTotal = Math.ceil(total / 2);
+    const playerCurrent = Math.ceil(current / 2);
+    if (label) label.textContent = `Step ${playerCurrent} / ${playerTotal}`;
+    if (bar) bar.style.width = total > 0 ? Math.round((current / total) * 100) + '%' : '0%';
+}
+
+function loadTrainerPuzzle() {
+    const diffEl = document.getElementById('puzzleDifficulty');
+    const diff = diffEl ? diffEl.value : 'all';
+    const puzzle = getRandomPuzzle(diff);
+    
+    if (!puzzle) {
+        showToast("Puzzles are still loading, please wait!", "error");
+        return;
+    }
+    
     chess = new Chess(puzzle.fen);
     moveHistory = [];
     currentMoveIdx = -1;
-    buildBoard();
-    updateMovesUI();
     
-    const hud = document.getElementById('coachHintHud');
-    const hintText = document.getElementById('coachHintText');
-    if (hud) hud.classList.add('active');
-    if (hintText) {
-        hintText.innerHTML = `<div style="margin-bottom:4px;"><strong style="color:#fbbf24;">🧩 Daily Puzzle: ${puzzle.title}</strong> <span style="font-size:0.7rem;">${puzzle.difficulty}</span></div>
-            <div style="font-size:0.8rem;color:#94a3b8;">Find the best continuation. ${chess.turn() === 'w' ? 'White' : 'Black'} to move.</div>`;
+    // Auto-flip board based on whose turn it is
+    flipped = chess.turn() === 'b';
+    
+    buildBoard();
+    updateMovesList();
+    
+    // Turn Badge
+    const turnBadge = document.getElementById('puzzleTurnBadge');
+    if (turnBadge) {
+        turnBadge.style.display = 'block';
+        if (chess.turn() === 'w') {
+            turnBadge.innerHTML = '⚪ White to Move';
+            turnBadge.style.background = 'rgba(255,255,255,0.9)';
+            turnBadge.style.color = '#000';
+            turnBadge.style.boxShadow = '0 0 15px rgba(255,255,255,0.3)';
+        } else {
+            turnBadge.innerHTML = '⚫ Black to Move';
+            turnBadge.style.background = 'rgba(0,0,0,0.8)';
+            turnBadge.style.color = '#fff';
+            turnBadge.style.boxShadow = '0 0 15px rgba(0,0,0,0.5)';
+        }
     }
     
-    // Track if user solves it
+    // Puzzle Title
+    const titleText = document.getElementById('puzzleTitleText');
+    if (titleText) {
+        titleText.innerHTML = `${puzzle.title} <span style="font-size:0.75rem;opacity:0.8;margin-left:8px;">${puzzle.difficulty}</span>`;
+    }
+    
+    // Category Tag (extract from title)
+    const catTag = document.getElementById('puzzleCategoryTag');
+    if (catTag) {
+        const categories = ['Mate', 'Fork', 'Pin', 'Skewer', 'Discovered', 'Sacrifice', 'Endgame', 'Middlegame', 'Opening'];
+        const found = categories.find(c => puzzle.title && puzzle.title.toLowerCase().includes(c.toLowerCase()));
+        catTag.textContent = found ? `🏷 ${found}` : '';
+    }
+    
     window._dailyPuzzleSolution = puzzle.solution;
     window._dailyPuzzleStep = 0;
     window._dailyPuzzleActive = true;
+    puzzleRushActive = false;
+    
+    // Track attempt
+    pzStats.attempts++;
+    savePuzzleStats();
+    
+    // Reset any UI highlights
+    document.querySelectorAll('.square').forEach(sq => {
+        sq.classList.remove('puzzle-hint-glow', 'puzzle-solve-glow');
+        sq.style.boxShadow = '';
+    });
+    
+    updatePuzzleProgress();
+    renderPuzzleStats();
+    startPuzzleTimer();
 }
 
-// Inject daily puzzle button into the Play tab
-const newGameBtn = document.getElementById('newGameBtn');
-if (newGameBtn) {
-    const puzzleBtn = document.createElement('button');
-    puzzleBtn.className = 'btn btn-secondary w-100';
-    puzzleBtn.style.cssText = 'margin-top:0.4rem;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;';
-    puzzleBtn.innerHTML = '🧩 Daily Puzzle';
-    puzzleBtn.addEventListener('click', loadDailyPuzzle);
-    newGameBtn.parentNode.insertBefore(puzzleBtn, newGameBtn.nextSibling);
+document.getElementById('btnNextPuzzle')?.addEventListener('click', loadTrainerPuzzle);
+document.getElementById('puzzleDifficulty')?.addEventListener('change', loadTrainerPuzzle);
+
+// ─── Hint Button ───
+document.getElementById('btnPuzzleHint')?.addEventListener('click', puzzleHintAction);
+
+function puzzleHintAction() {
+    if (!window._dailyPuzzleActive) return;
+    const expectedSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+    if (!expectedSan) return;
+    
+    // Clear ALL previous hints and solve glows
+    document.querySelectorAll('.puzzle-hint-glow, .puzzle-solve-glow').forEach(el => {
+        el.classList.remove('puzzle-hint-glow', 'puzzle-solve-glow');
+    });
+    
+    const tempChess = new Chess(chess.fen());
+    const m = tempChess.move(expectedSan);
+    if (m) {
+        const sqEl = document.getElementById('sq-' + m.from);
+        if (sqEl) {
+            sqEl.classList.add('puzzle-hint-glow');
+            // Also scroll into view on mobile
+            sqEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        showToast("💡 Piece highlighted — now find the right square!", "info");
+    }
 }
+
+// ─── Move Button ───
+document.getElementById('btnPuzzleMove')?.addEventListener('click', puzzleMoveAction);
+
+function puzzleMoveAction() {
+    if (!window._dailyPuzzleActive) return;
+    const expectedSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+    if (!expectedSan) return;
+    
+    // Clear previous glows
+    document.querySelectorAll('.puzzle-hint-glow, .puzzle-solve-glow').forEach(el => {
+        el.classList.remove('puzzle-hint-glow', 'puzzle-solve-glow');
+    });
+    
+    updatePuzzleStreak(0, true); // Using move assistance resets streak
+    
+    const tempChess = new Chess(chess.fen());
+    const m = tempChess.move(expectedSan);
+    if (m) {
+        const fromEl = document.getElementById('sq-' + m.from);
+        const toEl = document.getElementById('sq-' + m.to);
+        if (fromEl) fromEl.classList.add('puzzle-hint-glow');
+        if (toEl) toEl.classList.add('puzzle-solve-glow');
+        
+        setTimeout(() => {
+            const actualMove = chess.move(expectedSan);
+            if (actualMove) {
+                commitMove(actualMove);
+            }
+        }, 300);
+    }
+}
+
+// ─── Solve Button ───
+document.getElementById('btnPuzzleSolve')?.addEventListener('click', puzzleSolveAction);
+
+function puzzleSolveAction() {
+    if (!window._dailyPuzzleActive) return;
+    
+    updatePuzzleStreak(0, true); // Using solve resets streak
+    
+    // Clear previous glows
+    document.querySelectorAll('.puzzle-hint-glow, .puzzle-solve-glow').forEach(el => {
+        el.classList.remove('puzzle-hint-glow', 'puzzle-solve-glow');
+    });
+    
+    function playNextMove() {
+        if(!window._dailyPuzzleActive) return;
+        const expectedSan = window._dailyPuzzleSolution[window._dailyPuzzleStep];
+        if(!expectedSan) return;
+        
+        const tempChess = new Chess(chess.fen());
+        const m = tempChess.move(expectedSan);
+        if (m) {
+            const actualMove = chess.move(expectedSan);
+            if (actualMove) {
+                commitMove(actualMove);
+                // Engine or next player move will be auto-triggered by commitMove if it's the engine's turn, 
+                // but if it's the player's turn next, we need to schedule it to auto-play!
+                // Wait, commitMove only auto-plays if (window._dailyPuzzleStep % 2 === 1).
+                // So if we want to "Solve All", we must also manually trigger the next player move.
+                setTimeout(() => {
+                    if(window._dailyPuzzleActive && window._dailyPuzzleStep % 2 === 0) {
+                        playNextMove(); // Play the next player move automatically!
+                    }
+                }, 1000); // Wait for the engine to finish its turn + some padding
+            }
+        }
+    }
+    
+    playNextMove();
+}
+
+// ─── Keyboard Shortcuts for Puzzle Mode ───
+document.addEventListener('keydown', e => {
+    // Only respond if puzzles tab is active
+    if (mode !== 'puzzles') return;
+    // Don't interfere with inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    
+    if (e.key === 'h' || e.key === 'H') { e.preventDefault(); puzzleHintAction(); }
+    if (e.key === 's' || e.key === 'S') { e.preventDefault(); puzzleSolveAction(); }
+    if (e.key === 'n' || e.key === 'N') { e.preventDefault(); loadTrainerPuzzle(); }
+});
+
+// Initialize stats on page load
+renderPuzzleStats();
+
+function startPuzzleRush() {
+    if (!ALL_PUZZLES.length) {
+        alert("Puzzles are still loading!");
+        return;
+    }
+    
+    // Switch to Academy tab if not already
+    document.querySelector('.tab-btn[data-tab="puzzles"]').click();
+    
+    puzzleRushActive = true;
+    puzzleRushScore = 0;
+    puzzleRushStrikes = 0;
+    puzzleRushTimer = 180; // 3 minutes
+    
+    // UI update
+    const hud = document.getElementById('coachHintHud');
+    const hintText = document.getElementById('coachHintText');
+    if (hud) hud.classList.add('active');
+    
+    loadNextRushPuzzle();
+    
+    if (puzzleRushInterval) clearInterval(puzzleRushInterval);
+    puzzleRushInterval = setInterval(() => {
+        puzzleRushTimer--;
+        updateRushUI();
+        if (puzzleRushTimer <= 0) {
+            endPuzzleRush("Time's Up!");
+        }
+    }, 1000);
+}
+
+function loadNextRushPuzzle() {
+    currentRushPuzzle = ALL_PUZZLES[Math.floor(Math.random() * ALL_PUZZLES.length)];
+    chess = new Chess(currentRushPuzzle.fen);
+    moveHistory = [];
+    currentMoveIdx = -1;
+    flipped = chess.turn() === 'b';
+    buildBoard();
+    updateMovesList();
+    
+    window._dailyPuzzleSolution = currentRushPuzzle.solution;
+    window._dailyPuzzleStep = 0;
+    window._dailyPuzzleActive = true; // REUSE the same variable for move checking!
+    
+    updateRushUI();
+}
+
+function updateRushUI() {
+    const hintText = document.getElementById('coachHintText');
+    if (hintText) {
+        const mins = Math.floor(puzzleRushTimer / 60);
+        const secs = puzzleRushTimer % 60;
+        const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+        
+        hintText.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <strong style="color:#f43f5e; font-size:1.1rem;">⚡ Puzzle Rush</strong>
+                <span style="font-family:monospace; font-size:1.2rem; color:${puzzleRushTimer < 30 ? '#ef4444' : '#fff'};">${timeStr}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                <span style="color:#4ade80;">Score: <strong>${puzzleRushScore}</strong></span>
+                <span style="color:#ef4444;">Strikes: <strong>${'X'.repeat(puzzleRushStrikes)}</strong></span>
+            </div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:6px;">Find the best move for ${chess.turn() === 'w' ? 'White' : 'Black'}.</div>
+        `;
+    }
+}
+
+function endPuzzleRush(reason) {
+    clearInterval(puzzleRushInterval);
+    puzzleRushActive = false;
+    window._dailyPuzzleActive = false;
+    
+    const hintText = document.getElementById('coachHintText');
+    if (hintText) {
+        hintText.innerHTML = `
+            <div style="text-align:center;">
+                <strong style="color:#ef4444; font-size:1.2rem;">${reason}</strong>
+                <div style="font-size:1.5rem; margin:10px 0; color:#4ade80;">Final Score: ${puzzleRushScore}</div>
+                <button class="btn btn-primary" onclick="startPuzzleRush()">Play Again</button>
+            </div>
+        `;
+    }
+}
+
+document.getElementById('btnStartPuzzleRush')?.addEventListener('click', startPuzzleRush);
+
+
 
 // ═══════════════════════════════════════════════════
 // KEYBOARD SHORTCUTS

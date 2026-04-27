@@ -49,7 +49,7 @@ def api_request(method, url, token, payload=None):
     except Exception as e:
         return None, 500
 
-def process_domain(domain, foldername, base_url, token, zone_id, project_domain_map):
+def process_domain(domain, foldername, base_url, token, zone_id, project_domain_map, target_subdomain=None):
     if not domain or domain.lower() == "none" or domain.startswith("none."):
         return "skip", f"  [SKIP] Invalid domain: {domain}"
 
@@ -135,7 +135,7 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
 
     # DNS CNAME Provisioning
     if zone_id and domain_is_active:
-        target_content = f"{foldername}.pages.dev"
+        target_content = target_subdomain if target_subdomain else f"{foldername}.pages.dev"
         cname_payload = {
             "type": "CNAME", "name": domain, "content": target_content,
             "proxied": True, "comment": "Auto-provisioned by QuickUtils orchestrator"
@@ -182,13 +182,25 @@ def assign_domains():
     
     print("Fetching all projects to map existing domains...")
     project_domain_map = {}
-    all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100", token)
-    if all_projects_res and all_projects_res.get("success"):
-        for proj in all_projects_res.get("result", []):
+    project_subdomain_map = {}
+    
+    page_num = 1
+    while True:
+        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100&page={page_num}", token)
+        if not all_projects_res or not all_projects_res.get("success"):
+            break
+        batch = all_projects_res.get("result", [])
+        if not batch:
+            break
+            
+        for proj in batch:
             proj_name = proj.get("name")
+            if proj.get("subdomain"):
+                project_subdomain_map[proj_name] = proj.get("subdomain")
             for d in proj.get("domains", []):
                 if isinstance(d, str): project_domain_map[d] = proj_name
                 elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name
+        page_num += 1
 
     zones_res, _ = api_request("GET", "https://api.cloudflare.com/client/v4/zones?name=quickutils.top", token)
     zone_id = zones_res["result"][0]["id"] if (zones_res and zones_res.get("success") and zones_res.get("result")) else None
@@ -203,10 +215,10 @@ def assign_domains():
 
     print(f"Initiating bulk domain REST API assignment for {len(tasks)} domains (using 8 parallel workers)...")
     
-    stats = {"assigned": 0, "skipped": 0, "errors": 0}
+    stats = {"assigned": 0, "skip": 0, "error": 0}
     
     with ThreadPoolExecutor(max_workers=8) as executor:
-        futures = {executor.submit(process_domain, d, f, base_url, token, zone_id, project_domain_map): d for d, f in tasks}
+        futures = {executor.submit(process_domain, d, f, base_url, token, zone_id, project_domain_map, project_subdomain_map.get(f)): d for d, f in tasks}
         for future in as_completed(futures):
             domain = futures[future]
             try:
@@ -215,20 +227,124 @@ def assign_domains():
                     stats[action_type] += 1
             except Exception as e:
                 print(f"Error processing {domain}: {e}")
-                stats["errors"] += 1
+                stats["error"] += 1
 
-    print(f"\nProcess Completed. Assigned: {stats['assigned']}. Skipped: {stats['skipped']}. Errors: {stats['errors']}")
+    print(f"\nProcess Completed. Assigned: {stats['assigned']}. Skipped: {stats['skip']}. Errors: {stats['error']}")
     return stats
+
+
+def cleanup_dangling_projects():
+    """Delete Cloudflare Pages projects that don't exist in the repo's projects/ folder."""
+    token = find_wrangler_token()
+    if not token:
+        print("Error: Could not find Wrangler token.")
+        return
+
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+    if not account_id:
+        print("Error: CLOUDFLARE_ACCOUNT_ID not set.")
+        return
+
+    projects_dir = ROOT_DIR / "projects"
+    local_projects = set()
+    if projects_dir.exists():
+        for d in projects_dir.iterdir():
+            if d.is_dir() and not d.name.startswith('.'):
+                local_projects.add(d.name)
+
+    base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects"
+    
+    print(f"Local projects: {len(local_projects)}")
+    print("Fetching Cloudflare Pages projects...")
+    
+    all_cf_projects = []
+    page_num = 1
+    while True:
+        res, code = api_request("GET", f"{base_url}?per_page=25&page={page_num}", token)
+        if not res or not res.get("success"):
+            break
+        batch = res.get("result", [])
+        if not batch:
+            break
+        all_cf_projects.extend(batch)
+        total_count = res.get("result_info", {}).get("total_count", 0)
+        if len(all_cf_projects) >= total_count:
+            break
+        page_num += 1
+        time.sleep(0.5)
+
+    print(f"Cloudflare projects: {len(all_cf_projects)}")
+
+    dangling = []
+    for proj in all_cf_projects:
+        name = proj.get("name", "")
+        # Skip the main quickutils-master project
+        if name == "quickutils-master":
+            continue
+        if name not in local_projects:
+            dangling.append(name)
+
+    if not dangling:
+        print("No dangling projects found. All Cloudflare projects have a matching local folder.")
+        return
+
+    print(f"\n{'='*60}")
+    print(f"Found {len(dangling)} dangling Cloudflare projects (no matching folder in projects/):")
+    for name in sorted(dangling):
+        print(f"  ❌ {name}")
+    print(f"{'='*60}")
+
+    confirm = input(f"\nDelete these {len(dangling)} projects from Cloudflare? (yes/no): ").strip().lower()
+    if confirm != "yes":
+        print("Aborted.")
+        return
+
+    deleted = 0
+    for name in dangling:
+        print(f"Deleting {name}...", end=" ")
+        # First remove custom domains
+        dom_res, _ = api_request("GET", f"{base_url}/{name}/domains", token)
+        if dom_res and dom_res.get("success"):
+            for d in dom_res.get("result", []):
+                d_name = d.get("name") if isinstance(d, dict) else d
+                if d_name:
+                    api_request("DELETE", f"{base_url}/{name}/domains/{d_name}", token)
+                    time.sleep(0.5)
+
+        # Delete the project
+        res, code = api_request("DELETE", f"{base_url}/{name}", token)
+        if code in (200, 204):
+            print("✅ Deleted")
+            deleted += 1
+        elif code == 429:
+            print("⚠️ Rate limited, waiting...")
+            time.sleep(10)
+            res, code = api_request("DELETE", f"{base_url}/{name}", token)
+            if code in (200, 204):
+                print("✅ Deleted (retry)")
+                deleted += 1
+            else:
+                print(f"❌ Failed (HTTP {code})")
+        else:
+            print(f"❌ Failed (HTTP {code})")
+        time.sleep(1)
+
+    print(f"\nCleanup done. Deleted {deleted}/{len(dangling)} dangling projects.")
+    print(f"Remaining Cloudflare slots: ~{100 - (len(all_cf_projects) - deleted)} / 100")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch-size", type=int, default=10)
     parser.add_argument("--delay", type=float, default=5)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--cleanup", action="store_true", help="Remove Cloudflare projects not in projects/ folder")
     parser.add_argument("--report-json", type=str, default=None)
     args = parser.parse_args()
 
-    if not args.dry_run:
+    if args.cleanup:
+        cleanup_dangling_projects()
+    elif not args.dry_run:
         result = assign_domains()
         if args.report_json and result:
             with open(args.report_json, "w", encoding="utf-8") as f:
