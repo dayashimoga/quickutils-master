@@ -218,7 +218,7 @@ def test_process_domain_dns_provisioning(mock_sleep, mock_api):
             return {"success": True, "result": [{"name": "dns.quickutils.top", "status": "active"}]}, 200
         # Per-project lookup for subdomain resolution
         if method == "GET" and url.endswith("/proj"):
-            return {"success": True, "result": {"subdomain": "proj-abc.pages.dev"}}, 200
+            return {"success": True, "result": {"subdomain": "proj-abc.pages.dev", "latest_deployment": {"url": "https://proj-abc.pages.dev"}}}, 200
         if "dns_records" in url and method == "GET":
             return {"success": True, "result": []}, 200  # No existing DNS
         if "dns_records" in url and method == "POST":

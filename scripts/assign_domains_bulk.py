@@ -140,10 +140,16 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
         if not resolved_subdomain:
             print(f"    [DNS LOOKUP] Fetching real subdomain for project '{foldername}'...")
             proj_res, proj_code = api_request("GET", f"{base_url}/{foldername}", token)
-            if proj_res and proj_res.get("success") and proj_res.get("result", {}).get("subdomain"):
-                resolved_subdomain = proj_res["result"]["subdomain"]
-                print(f"    [DNS LOOKUP] Resolved: {resolved_subdomain}")
-            else:
+            if proj_res and proj_res.get("success"):
+                proj = proj_res.get("result", {})
+                if proj.get("latest_deployment") and proj["latest_deployment"].get("url"):
+                    resolved_subdomain = proj["latest_deployment"]["url"].replace("https://", "").replace("http://", "").strip("/")
+                elif proj.get("subdomain"):
+                    resolved_subdomain = proj.get("subdomain")
+                if resolved_subdomain:
+                    print(f"    [DNS LOOKUP] Resolved: {resolved_subdomain}")
+            
+            if not resolved_subdomain:
                 print(f"    [DNS SKIP] Could not resolve real subdomain for '{foldername}'. Skipping DNS to avoid wrong CNAME.")
                 return action_type, f"Processed {domain} (DNS skipped — subdomain unknown)"
 
@@ -207,8 +213,13 @@ def assign_domains():
             
         for proj in batch:
             proj_name = proj.get("name")
-            if proj.get("subdomain"):
-                project_subdomain_map[proj_name] = proj.get("subdomain")
+            real_subdomain = None
+            if proj.get("latest_deployment") and proj["latest_deployment"].get("url"):
+                real_subdomain = proj["latest_deployment"]["url"].replace("https://", "").replace("http://", "").strip("/")
+            elif proj.get("subdomain"):
+                real_subdomain = proj.get("subdomain")
+            if real_subdomain:
+                project_subdomain_map[proj_name] = real_subdomain
             for d in proj.get("domains", []):
                 if isinstance(d, str): project_domain_map[d] = proj_name
                 elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name
