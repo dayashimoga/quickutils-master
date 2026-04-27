@@ -131,10 +131,10 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
                     time.sleep(3)
             
             if not domain_is_active:
-                print(f"  [WARN] -> {domain} did not become active in time. Skipping DNS provisioning.")
+                print(f"  [WARN] -> {domain} did not become active in time (likely waiting for DNS). Proceeding to DNS provisioning.")
 
     # DNS CNAME Provisioning
-    if zone_id and domain_is_active:
+    if zone_id and success_status:
         # Resolve the real Cloudflare Pages subdomain — NEVER use {foldername}.pages.dev
         resolved_subdomain = target_subdomain
         if not resolved_subdomain:
