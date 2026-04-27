@@ -139,9 +139,11 @@ async function initializeDashboard() {
         safeRender('TechnicalAnalysis', () => renderTechnicalAnalysis(marketData, macroData));
         safeRender('InvestmentSignals', () => renderInvestmentSignals(marketData, macroData));
         safeRender('PaperTrading', () => renderPaperTrading(marketData, macroData));
+        safeRender('MarketPulse', () => renderMarketPulse(marketData, macroData));
         
         // Render charts on every refresh
         safeRender('Charts', () => renderCharts(marketData, macroData));
+        safeRender('CryptoDashboard', () => renderCryptoDashboard(marketData));
         
     } catch (error) {
         console.error("Dashboard initialization failed.", error);
@@ -223,16 +225,27 @@ function renderComparisonGrid(marketData, macroData) {
         { title: "Global (World)", data: [
             { name: "Nasdaq", obj: marketData.global.nasdaq, prefix: "" },
             { name: "Dow Jones", obj: marketData.global.dji, prefix: "" },
-            { name: "Nikkei 225", obj: marketData.global.nikkei, prefix: "" }
+            { name: "Nikkei 225", obj: marketData.global.nikkei, prefix: "" },
+            ...(marketData.global.sp500 ? [{ name: "S&P 500", obj: marketData.global.sp500, prefix: "" }] : []),
+            ...(marketData.global.ftse ? [{ name: "FTSE 100", obj: marketData.global.ftse, prefix: "" }] : []),
+            ...(marketData.global.dax ? [{ name: "DAX", obj: marketData.global.dax, prefix: "" }] : []),
+            ...(marketData.global.hangseng ? [{ name: "Hang Seng", obj: marketData.global.hangseng, prefix: "" }] : []),
+            ...(marketData.global.shanghai ? [{ name: "Shanghai", obj: marketData.global.shanghai, prefix: "" }] : [])
         ]},
         { title: "Crypto", data: [
             { name: "Bitcoin", obj: marketData.crypto.btc, prefix: "$" },
             { name: "Ethereum", obj: marketData.crypto.eth, prefix: "$" },
-            { name: "Solana", obj: marketData.crypto.sol, prefix: "$" }
+            { name: "Solana", obj: marketData.crypto.sol, prefix: "$" },
+            ...(marketData.crypto.xrp ? [{ name: "XRP", obj: marketData.crypto.xrp, prefix: "$" }] : []),
+            ...(marketData.crypto.ada ? [{ name: "Cardano", obj: marketData.crypto.ada, prefix: "$" }] : []),
+            ...(marketData.crypto.doge ? [{ name: "Dogecoin", obj: marketData.crypto.doge, prefix: "$" }] : []),
+            ...(marketData.crypto.avax ? [{ name: "Avalanche", obj: marketData.crypto.avax, prefix: "$" }] : [])
         ]},
         { title: "Macro", data: [
             { name: "Crude Oil", obj: macroData.crudeOil, prefix: "$" },
-            { name: "USD/INR", obj: macroData.usdInr, prefix: "₹" }
+            { name: "USD/INR", obj: macroData.usdInr, prefix: "₹" },
+            ...(macroData.gold ? [{ name: "Gold", obj: macroData.gold, prefix: "$" }] : []),
+            ...(macroData.silver ? [{ name: "Silver", obj: macroData.silver, prefix: "$" }] : [])
         ]}
     ];
 
@@ -291,7 +304,7 @@ function renderComparisonGrid(marketData, macroData) {
                     <td class="font-mono">${rsiText}</td>
                     <td class="font-mono">${macdText}</td>
                     <td class="hidden-mobile">${patternText}</td>
-                    <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
+                    <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(/\s+/g, '-')}">${row.obj.signal}</span></td>
                 </tr>
             `;
         });
@@ -386,7 +399,7 @@ function renderMyWatchlist(marketData, macroData) {
                 <td>${formatDelta(row.obj.delta_1d)}</td>
                 <td>${formatDelta(row.obj.delta_1w)}</td>
                 <td class="hidden-mobile">${formatDelta(row.obj.delta_1m)}</td>
-                <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(' ', '-')}">${row.obj.signal}</span></td>
+                <td><span class="signal-badge ${row.obj.signal.toLowerCase().replace(/\s+/g, '-')}">${row.obj.signal}</span></td>
             </tr>
         `;
     });
@@ -998,3 +1011,91 @@ window.resetPaperTrading = function() {
     initializeDashboard();
 };
 
+// ─── Market Pulse (AI-style summary) ───
+function renderMarketPulse(marketData, macroData) {
+    const el = document.getElementById('marketPulseContent');
+    if (!el) return;
+
+    const nifty = marketData.regional.nifty;
+    const btc = marketData.crypto.btc;
+    const nasdaq = marketData.global.nasdaq;
+    const vix = marketData.regional.vix;
+    const crude = macroData.crudeOil;
+    const usdInr = macroData.usdInr;
+
+    const niftyTrend = nifty.delta_1w > 1 ? 'bullish' : nifty.delta_1w < -1 ? 'bearish' : 'sideways';
+    const btcTrend = btc.delta_1w > 3 ? 'surging' : btc.delta_1w < -3 ? 'declining' : 'consolidating';
+    const rsiZone = nifty.rsi > 70 ? 'overbought territory' : nifty.rsi < 30 ? 'oversold territory' : 'neutral range';
+    const vixLabel = vix.current > 18 ? 'elevated volatility' : vix.current < 12 ? 'low volatility' : 'moderate volatility';
+
+    let forecastStr = '';
+    if (nifty.forecast_7d && nifty.forecast_7d.length > 0) {
+        const lastForecast = nifty.forecast_7d[nifty.forecast_7d.length - 1];
+        const fDelta = ((lastForecast - nifty.current) / nifty.current * 100).toFixed(1);
+        forecastStr = `<br><strong style="color:var(--text-main);">7-Day Forecast:</strong> Nifty projected at <strong>${lastForecast.toFixed(0)}</strong> (${fDelta > 0 ? '+' : ''}${fDelta}%) by week-end.`;
+    }
+
+    el.innerHTML = `
+        <p><strong style="color:var(--text-main);">India:</strong> Nifty 50 is trading <strong style="color:${niftyTrend === 'bullish' ? '#22c55e' : niftyTrend === 'bearish' ? '#ef4444' : '#f59e0b'}">${niftyTrend}</strong> at <strong>${nifty.current.toFixed(0)}</strong> with RSI in the ${rsiZone}. India VIX at <strong>${vix.current.toFixed(1)}</strong> signals ${vixLabel}.</p>
+        <p style="margin-top:0.5rem;"><strong style="color:var(--text-main);">Global:</strong> Nasdaq ${nasdaq.delta_1d > 0 ? 'gained' : 'lost'} <strong>${Math.abs(nasdaq.delta_1d).toFixed(2)}%</strong> today. Crude oil at <strong>$${crude.current.toFixed(2)}</strong> ${crude.delta_1d > 0 ? '↑' : '↓'}. Rupee at <strong>₹${usdInr.current.toFixed(2)}</strong> vs USD.</p>
+        <p style="margin-top:0.5rem;"><strong style="color:var(--text-main);">Crypto:</strong> Bitcoin is <strong style="color:${btcTrend === 'surging' ? '#22c55e' : btcTrend === 'declining' ? '#ef4444' : '#f59e0b'}">${btcTrend}</strong> at <strong>$${btc.current.toFixed(0)}</strong> (${btc.delta_1w > 0 ? '+' : ''}${btc.delta_1w.toFixed(1)}% weekly). ETH at <strong>$${marketData.crypto.eth.current.toFixed(0)}</strong>.</p>
+        ${forecastStr ? `<p style="margin-top:0.5rem;">${forecastStr}</p>` : ''}
+    `;
+}
+
+// ─── Crypto Dashboard Chart ───
+function renderCryptoDashboard(marketData) {
+    const canvas = document.getElementById('cryptoChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    if (chartInstances.crypto) chartInstances.crypto.destroy();
+
+    const btcHistory = marketData.crypto.btc.history_30d;
+    const ethHistory = marketData.crypto.eth.history_30d;
+    const labels = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
+    const gridColor = 'rgba(255, 255, 255, 0.05)';
+
+    const datasets = [
+        { label: 'Bitcoin', data: btcHistory, borderColor: '#f7931a', borderWidth: 2, tension: 0.4, yAxisID: 'y', pointRadius: 0 },
+        { label: 'Ethereum', data: ethHistory, borderColor: '#627eea', borderWidth: 2, tension: 0.4, yAxisID: 'y1', pointRadius: 0 }
+    ];
+
+    if (marketData.crypto.sol && marketData.crypto.sol.history_30d) {
+        datasets.push({ label: 'Solana', data: marketData.crypto.sol.history_30d, borderColor: '#9945ff', borderWidth: 1.5, tension: 0.4, yAxisID: 'y1', pointRadius: 0, borderDash: [3, 3] });
+    }
+
+    chartInstances.crypto = new Chart(canvas, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { display: false } },
+                y: { type: 'linear', display: true, position: 'left', grid: { color: gridColor }, ticks: { callback: v => '$' + v.toLocaleString() } },
+                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => '$' + v.toLocaleString() } }
+            }
+        }
+    });
+
+    // Crypto summary
+    const summaryEl = document.getElementById('cryptoSummary');
+    if (summaryEl) {
+        const btc = marketData.crypto.btc;
+        const eth = marketData.crypto.eth;
+        const btcDom = btc.current > 70000 ? 'dominant' : 'moderate';
+        summaryEl.innerHTML = `
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.5rem;">
+                <div style="flex:1;min-width:140px;background:rgba(247,147,26,0.1);border:1px solid rgba(247,147,26,0.2);border-radius:8px;padding:8px 12px;">
+                    <div style="font-size:0.72rem;color:#f7931a;font-weight:600;">BTC 30d</div>
+                    <div style="font-weight:700;color:${btc.delta_1m >= 0 ? '#22c55e' : '#ef4444'}">${btc.delta_1m >= 0 ? '+' : ''}${btc.delta_1m.toFixed(1)}%</div>
+                </div>
+                <div style="flex:1;min-width:140px;background:rgba(98,126,234,0.1);border:1px solid rgba(98,126,234,0.2);border-radius:8px;padding:8px 12px;">
+                    <div style="font-size:0.72rem;color:#627eea;font-weight:600;">ETH 30d</div>
+                    <div style="font-weight:700;color:${eth.delta_1m >= 0 ? '#22c55e' : '#ef4444'}">${eth.delta_1m >= 0 ? '+' : ''}${eth.delta_1m.toFixed(1)}%</div>
+                </div>
+            </div>
+        `;
+    }
+}

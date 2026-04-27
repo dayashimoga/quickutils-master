@@ -135,7 +135,19 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
 
     # DNS CNAME Provisioning
     if zone_id and domain_is_active:
-        target_content = target_subdomain if target_subdomain else f"{foldername}.pages.dev"
+        # Resolve the real Cloudflare Pages subdomain — NEVER use {foldername}.pages.dev
+        resolved_subdomain = target_subdomain
+        if not resolved_subdomain:
+            print(f"    [DNS LOOKUP] Fetching real subdomain for project '{foldername}'...")
+            proj_res, proj_code = api_request("GET", f"{base_url}/{foldername}", token)
+            if proj_res and proj_res.get("success") and proj_res.get("result", {}).get("subdomain"):
+                resolved_subdomain = proj_res["result"]["subdomain"]
+                print(f"    [DNS LOOKUP] Resolved: {resolved_subdomain}")
+            else:
+                print(f"    [DNS SKIP] Could not resolve real subdomain for '{foldername}'. Skipping DNS to avoid wrong CNAME.")
+                return action_type, f"Processed {domain} (DNS skipped — subdomain unknown)"
+
+        target_content = resolved_subdomain
         cname_payload = {
             "type": "CNAME", "name": domain, "content": target_content,
             "proxied": True, "comment": "Auto-provisioned by QuickUtils orchestrator"
