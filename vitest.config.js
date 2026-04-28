@@ -1,27 +1,47 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/jsdom-setup.js'],
-    include: [
-      'tests/web-chess.test.js',
-      'tests/speed-test.test.js',
-      'tests/solar-system.test.js',
-      'tests/country-explorer.test.js',
-      'tests/sound-board.test.js'
-    ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'xml', 'html'],
-      include: [
-        'projects/web-chess/script.js',
-        'projects/speed-test/script.js',
-        'projects/solar-system/script.js',
-        'projects/country-explorer/script.js',
-        'projects/sound-board/script.js'
-      ]
-    }
-  }
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        include: [
+            'tests/speed-test.test.js',
+            'tests/ip-lookup.test.js',
+            'tests/network-tools.test.js',
+            'tests/market-digest.test.js',
+            'tests/solar-system.test.js',
+            'tests/music-maker.test.js',
+            'tests/web-chess.test.js',
+        ],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'text-summary', 'json', 'html'],
+            include: [
+                'projects/speed-test/speed-test-utils.js',
+                'projects/ip-lookup/ip-lookup-utils.js',
+                'projects/network-tools/network-tools-utils.js',
+                'projects/market-digest/market-digest-utils.js',
+                'projects/solar-system/solar-system-utils.js',
+                'projects/music-maker/music-maker-utils.js',
+            ],
+            thresholds: {
+                lines: 90,
+                functions: 90,
+                branches: 90,
+                statements: 90,
+            },
+        },
+        testTimeout: 15000,
+    },
+    resolve: {
+        alias: {
+            '@speed-test': path.resolve(__dirname, 'projects/speed-test'),
+            '@ip-lookup': path.resolve(__dirname, 'projects/ip-lookup'),
+            '@network-tools': path.resolve(__dirname, 'projects/network-tools'),
+            '@market-digest': path.resolve(__dirname, 'projects/market-digest'),
+            '@solar-system': path.resolve(__dirname, 'projects/solar-system'),
+            '@music-maker': path.resolve(__dirname, 'projects/music-maker'),
+        },
+    },
 });

@@ -1,16 +1,16 @@
-FROM node:20-bullseye
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install specific compatible versions directly
-RUN npm init -y > /dev/null 2>&1 && \
-    npm install jest@29.7.0 jest-environment-jsdom@29.7.0 && \
-    # Force downgrade the hoisted jsdom to v20 (compatible with jest-env-jsdom@29)
-    npm install jsdom@20.0.3 && \
-    echo "jsdom version: $(node -e 'console.log(require(\"jsdom/package.json\").version)')"
+# Copy package files first for layer caching
+COPY package.json vitest.config.js ./
 
-COPY jest.config.js ./
-COPY tests/ ./tests/
+# Install dependencies
+RUN npm install
+
+# Copy project source and tests
 COPY projects/ ./projects/
+COPY tests/ ./tests/
 
-CMD ["npx", "jest", "--coverage", "--forceExit", "--detectOpenHandles"]
+# Run tests with coverage
+CMD ["npx", "vitest", "run", "--coverage"]
