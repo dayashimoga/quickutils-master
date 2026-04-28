@@ -216,17 +216,21 @@ def test_process_domain_dns_provisioning(mock_sleep, mock_api):
     def side_effect(method, url, token, payload=None):
         if method == "GET" and "/domains" in url and "/domains/" not in url and "?" not in url:
             return {"success": True, "result": [{"name": "dns.quickutils.top", "status": "active"}]}, 200
+        # Per-project lookup for subdomain resolution
+        if method == "GET" and url.endswith("/proj"):
+            return {"success": True, "result": {"subdomain": "proj-abc.pages.dev", "latest_deployment": {"url": "https://proj-abc.pages.dev"}}}, 200
         if "dns_records" in url and method == "GET":
             return {"success": True, "result": []}, 200  # No existing DNS
         if "dns_records" in url and method == "POST":
             dns_calls.append(payload)
             return {"success": True}, 201
-        return {"success": True, "result": []}, 200
+        return {"success": True, "result": {}}, 200
 
     mock_api.side_effect = side_effect
     action, msg = process_domain("dns.quickutils.top", "proj", "http://base", "tok", "zone-123", {})
     assert len(dns_calls) == 1
     assert dns_calls[0]["type"] == "CNAME"
+    assert dns_calls[0]["content"] == "proj-abc.pages.dev"  # Verified correct subdomain
 
 
 # ─── assign_domains() ───

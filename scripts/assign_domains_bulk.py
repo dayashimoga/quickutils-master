@@ -131,11 +131,29 @@ def process_domain(domain, foldername, base_url, token, zone_id, project_domain_
                     time.sleep(3)
             
             if not domain_is_active:
-                print(f"  [WARN] -> {domain} did not become active in time. Skipping DNS provisioning.")
+                print(f"  [WARN] -> {domain} did not become active in time (likely waiting for DNS). Proceeding to DNS provisioning.")
 
     # DNS CNAME Provisioning
-    if zone_id and domain_is_active:
-        target_content = target_subdomain if target_subdomain else f"{foldername}.pages.dev"
+    if zone_id and success_status:
+        # Resolve the real Cloudflare Pages subdomain — NEVER use {foldername}.pages.dev
+        resolved_subdomain = target_subdomain
+        if not resolved_subdomain:
+            print(f"    [DNS LOOKUP] Fetching real subdomain for project '{foldername}'...")
+            proj_res, proj_code = api_request("GET", f"{base_url}/{foldername}", token)
+            if proj_res and proj_res.get("success"):
+                proj = proj_res.get("result", {})
+                if proj.get("latest_deployment") and proj["latest_deployment"].get("url"):
+                    resolved_subdomain = proj["latest_deployment"]["url"].replace("https://", "").replace("http://", "").strip("/")
+                elif proj.get("subdomain"):
+                    resolved_subdomain = proj.get("subdomain")
+                if resolved_subdomain:
+                    print(f"    [DNS LOOKUP] Resolved: {resolved_subdomain}")
+            
+            if not resolved_subdomain:
+                print(f"    [DNS SKIP] Could not resolve real subdomain for '{foldername}'. Skipping DNS to avoid wrong CNAME.")
+                return action_type, f"Processed {domain} (DNS skipped — subdomain unknown)"
+
+        target_content = resolved_subdomain
         cname_payload = {
             "type": "CNAME", "name": domain, "content": target_content,
             "proxied": True, "comment": "Auto-provisioned by QuickUtils orchestrator"
@@ -186,7 +204,7 @@ def assign_domains():
     
     page_num = 1
     while True:
-        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=100&page={page_num}", token)
+        all_projects_res, _ = api_request("GET", f"{base_url}?per_page=50&page={page_num}", token)
         if not all_projects_res or not all_projects_res.get("success"):
             break
         batch = all_projects_res.get("result", [])
@@ -195,8 +213,13 @@ def assign_domains():
             
         for proj in batch:
             proj_name = proj.get("name")
-            if proj.get("subdomain"):
-                project_subdomain_map[proj_name] = proj.get("subdomain")
+            real_subdomain = None
+            if proj.get("latest_deployment") and proj["latest_deployment"].get("url"):
+                real_subdomain = proj["latest_deployment"]["url"].replace("https://", "").replace("http://", "").strip("/")
+            elif proj.get("subdomain"):
+                real_subdomain = proj.get("subdomain")
+            if real_subdomain:
+                project_subdomain_map[proj_name] = real_subdomain
             for d in proj.get("domains", []):
                 if isinstance(d, str): project_domain_map[d] = proj_name
                 elif isinstance(d, dict) and "name" in d: project_domain_map[d["name"]] = proj_name

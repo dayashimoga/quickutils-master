@@ -212,7 +212,7 @@ header {
 
 @media (min-width: 1024px) {
     .dashboard-container {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+        grid-template-columns: minmax(320px, 1.5fr) minmax(0, 2fr) minmax(0, 1fr);
     }
 }
 
@@ -228,11 +228,24 @@ header {
 .comparison-grid {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    position: relative;
 }
 
 .comparison-grid table {
     width: 100%;
-    min-width: 600px;
+    min-width: 520px;
+}
+
+/* Scroll hint gradient on right edge */
+.comparison-grid::after {
+    content: '';
+    position: sticky;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--bg-panel));
 }
 
 /* Canvas containers must have explicit height for Chart.js */
@@ -494,11 +507,12 @@ header {
     letter-spacing: 0.5px;
 }
 
-.signal-badge.strong-buy { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-.signal-badge.buy { background: rgba(134,239,172,0.1); color: #86efac; border: 1px solid rgba(134,239,172,0.2); }
-.signal-badge.hold { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.signal-badge.sell { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
-.signal-badge.strong-sell { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.signal-badge.strong-buy { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); font-weight: 800; }
+.signal-badge.buy { background: rgba(134,239,172,0.15); color: #86efac; border: 1px solid rgba(134,239,172,0.3); font-weight: 800; }
+.signal-badge.hold { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); font-weight: 800; }
+.signal-badge.avoid { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.4); font-weight: 800; }
+.signal-badge.sell { background: rgba(252,165,165,0.15); color: #fca5a5; border: 1px solid rgba(252,165,165,0.3); font-weight: 800; }
+.signal-badge.strong-sell { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); font-weight: 800; }
 
 /* ─── Technical Analysis ─── */
 .ta-grid { display: flex; gap: 1.5rem; flex-wrap: wrap; }

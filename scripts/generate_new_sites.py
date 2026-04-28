@@ -6,7 +6,7 @@ Each gets an index.html, style.css, script.js with full functionality.
 import os
 from pathlib import Path
 
-ROOT = Path(r"j:\quickutils\quickutils-master\projects")
+ROOT = Path(__file__).parent.parent / "projects"
 
 # Common CSS template (shared across all new sites)
 def make_css(accent_color, accent2_color, gradient):
@@ -566,21 +566,22 @@ PROJECTS['unit-converter'] = {
 # ════════════════════════════
 # GENERATE FILES
 # ════════════════════════════
-for name, cfg in PROJECTS.items():
-    proj_dir = ROOT / name
-    proj_dir.mkdir(parents=True, exist_ok=True)
-    
-    # HTML
-    extra_head = cfg.get('extra_head', '')
-    html = make_html(cfg['title'], cfg['emoji'], cfg['brand'], cfg['desc'], cfg['body'], extra_head=extra_head)
-    (proj_dir / 'index.html').write_text(html, encoding='utf-8')
-    
-    # CSS
-    css = make_css(cfg['accent'], cfg['accent2'], cfg['gradient'])
-    css += "\n" + cfg.get('extra_css', '')
-    (proj_dir / 'style.css').write_text(css, encoding='utf-8')
-    
-    print(f"  ✓ Generated {name}/index.html + style.css")
+if __name__ == "__main__":
+    for name, cfg in PROJECTS.items():
+        proj_dir = ROOT / name
+        proj_dir.mkdir(parents=True, exist_ok=True)
+        
+        # HTML
+        extra_head = cfg.get('extra_head', '')
+        html = make_html(cfg['title'], cfg['emoji'], cfg['brand'], cfg['desc'], cfg['body'], extra_head=extra_head)
+        (proj_dir / 'index.html').write_text(html, encoding='utf-8')
+        
+        # CSS
+        css = make_css(cfg['accent'], cfg['accent2'], cfg['gradient'])
+        css += "\n" + cfg.get('extra_css', '')
+        (proj_dir / 'style.css').write_text(css, encoding='utf-8')
+        
+        print(f"  ✓ Generated {name}/index.html + style.css")
 
-print("\n✅ All 8 project HTML+CSS generated!")
-print("Note: script.js files still need individual creation.")
+    print("\n✅ All 8 project HTML+CSS generated!")
+    print("Note: script.js files still need individual creation.")
