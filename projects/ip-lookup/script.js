@@ -1,4 +1,5 @@
-'use strict';
+import { parseBatchInput, calcThreatScore, formatIpData } from './ip-lookup-utils.js';
+
 (function() {
     const $ = s => document.querySelector(s);
 
@@ -10,37 +11,53 @@
     let map = null;
     let marker = null;
     let polyline = null;
-    let lastData = null;
+    let lastData = null; // Can be array for batch
+
 
     async function doLookup(query = '') {
         searchBtn.textContent = 'Looking up...';
         searchBtn.disabled = true;
         errorMsg.classList.add('hidden');
 
-        try {
-            // Using ipapi.co (Free, no required key for low volume)
-            const url = query ? `https://ipapi.co/${query}/json/` : 'https://ipapi.co/json/';
-            const res = await fetch(url);
-            const data = await res.json();
+            // Determine batch vs single
+            const inputs = parseBatchInput(query);
+            const queries = inputs.length > 0 ? inputs : [query];
 
-            if (data.error) {
-                throw new Error(data.reason || 'Invalid IP or Domain');
+            const fetchPromises = queries.map(async (q) => {
+                const url = q ? `https://ipapi.co/${q}/json/` : 'https://ipapi.co/json/';
+                const res = await fetch(url);
+                const d = await res.json();
+                if (d.error) throw new Error(d.reason || `Invalid IP or Domain: ${q}`);
+                return d;
+            });
+
+            const allData = await Promise.all(fetchPromises);
+            const data = allData[0]; // Display the first one in UI
+
+            const formatted = formatIpData(data);
+
+            $('#resLocation').textContent = formatted.city;
+            $('#resRegion').textContent = formatted.region;
+            $('#resCountry').textContent = formatted.country;
+            $('#resIp').textContent = formatted.ip;
+            $('#resAsn').textContent = formatted.asn;
+            $('#resOrg').textContent = formatted.org;
+            $('#resTimezone').textContent = formatted.timezone;
+            $('#resPostal').textContent = formatted.postal;
+            $('#resCoords').textContent = formatted.coords;
+            
+            // Render actual threat score
+            const threat = calcThreatScore(data);
+            const secEl = $('#resSecurity');
+            secEl.textContent = threat.label + (threat.score > 0 ? ` (Score: ${threat.score})` : '');
+            secEl.style.color = threat.color;
+            secEl.style.textShadow = `0 0 10px ${threat.color}66`;
+
+            if (allData.length > 1) {
+                showToast(`Batch lookup complete: ${allData.length} IPs. Use Export to download results.`);
             }
 
-            $('#resLocation').textContent = data.city || 'Unknown City';
-            $('#resRegion').textContent = data.region || '';
-            $('#resCountry').textContent = `${data.country_name || 'Unknown'} ${data.country_code ? `(${data.country_code})` : ''}`;
-            $('#resIp').textContent = data.ip || '--';
-            $('#resAsn').textContent = data.asn || '--';
-            $('#resOrg').textContent = data.org || '--';
-            $('#resTimezone').textContent = data.timezone || '--';
-            $('#resPostal').textContent = data.postal || '--';
-            $('#resCoords').textContent = `Lat: ${data.latitude}, Lng: ${data.longitude}`;
-            
-            // Dummy security parsing (since basic IPAPI doesn't do deep threat detection without paid key)
-            $('#resSecurity').textContent = "Basic IP (No Threat)";
-
-            lastData = data;
+            lastData = allData.length > 1 ? allData : data;
             // Update Map
             if (data.latitude && data.longitude) {
                 if(!map) {
@@ -110,12 +127,22 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `ip_lookup_${lastData.ip ? lastData.ip.replace(/:/g, '_') : 'export'}.json`;
+        const filenameLabel = Array.isArray(lastData) ? `batch_${lastData.length}` : (lastData.ip ? lastData.ip.replace(/:/g, '_') : 'export');
+        a.download = `ip_lookup_${filenameLabel}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     });
+
+    // Toast helper for batch info
+    function showToast(msg) {
+        let t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#3b82f6; color:#fff; padding:10px 20px; border-radius:8px; z-index:9999;';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
 
     // Initial Lookup for user's IP
     doLookup();

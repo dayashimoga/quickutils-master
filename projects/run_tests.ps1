@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "=========================================="
-Write-Host "🚀 QuickUtils — Dockerized Vitest Runner"
+Write-Host " QuickUtils Dockerized Vitest Runner"
 Write-Host "=========================================="
 
 # Ensure Docker is running
@@ -17,17 +17,15 @@ Write-Host "Building test container..."
 docker build -t quickutils-tests $projectRoot
 
 Write-Host "Running tests in isolated container..."
-docker run --rm `
-    -v "$($projectRoot)/coverage:/app/coverage" `
-    quickutils-tests
+docker run --rm -v "$($projectRoot)/coverage:/app/coverage" quickutils-tests
 
 $testResult = $LASTEXITCODE
 
 if ($testResult -eq 0) {
-    Write-Host "✅ All tests passed with target coverage!" -ForegroundColor Green
+    Write-Host "[OK] All tests passed with target coverage!" -ForegroundColor Green
     Write-Host "Coverage report available at: $projectRoot\coverage\index.html"
 } else {
-    Write-Host "❌ Tests failed or coverage was not met!" -ForegroundColor Red
+    Write-Host "[X] Tests failed or coverage was not met!" -ForegroundColor Red
 }
 
 exit $testResult

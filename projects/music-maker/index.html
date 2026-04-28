@@ -104,6 +104,9 @@
                             <option value="2">Pattern 3</option>
                             <option value="3">Pattern 4</option>
                         </select>
+                        <button class="btn btn-sm" id="undoBtn" title="Undo (Ctrl+Z)">↩️</button>
+                        <button class="btn btn-sm" id="redoBtn" title="Redo (Ctrl+Y)">↪️</button>
+                        <button class="btn btn-sm" id="rotateBtn" title="Rotate Pattern">🔄</button>
                         <button class="btn btn-sm" id="clearPattern" title="Clear Pattern">🗑️</button>
                         <button class="btn btn-sm" id="randomPattern" title="Random Pattern">🎲</button>
                     </div>
@@ -348,7 +351,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
     <script>kofiWidgetOverlay.draw('dayatin',{'type':'floating-chat','floating-chat.donateButton.text':'Support Us','floating-chat.donateButton.background-color':'#ff5e5b','floating-chat.donateButton.text-color':'#fff'});</script>
 

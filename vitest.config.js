@@ -16,6 +16,7 @@ export default defineConfig({
         ],
         coverage: {
             provider: 'v8',
+            clean: false,
             reporter: ['text', 'text-summary', 'json', 'html'],
             include: [
                 'projects/speed-test/speed-test-utils.js',

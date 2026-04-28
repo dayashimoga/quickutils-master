@@ -1,4 +1,8 @@
-// Market Digest Application Logic
+import { 
+    formatDelta, formatPrice, formatMarketCap, computeSignal, 
+    calcSMA, calcEMA, calcRSI, calcBollingerBands, calcMACD, 
+    calcSharpeRatio, calcMaxDrawdown, calcDailyReturns 
+} from './market-digest-utils.js';
 
 let lastRefreshTime = 0;
 const REFRESH_COOLDOWN_MS = 60000; // 60 seconds
@@ -787,40 +791,33 @@ function computeSignal(assetObj, macroData) {
     else if (assetObj.delta_1w < -2) { score -= 12; reasons.push('Weak weekly momentum'); }
     
     // Signal text (15%)
-    if (assetObj.signal.includes('Strong Buy')) { score += 15; }
-    else if (assetObj.signal.includes('Buy')) { score += 10; }
-    else if (assetObj.signal.includes('Strong Sell')) { score -= 15; }
-    else if (assetObj.signal.includes('Sell')) { score -= 10; }
+function calculateInvestmentSignal(assetObj) {
+    if (!assetObj || !assetObj.history_30d) return { signal: 'Hold', confidence: 50, reasoning: 'No data' };
     
-    // ─── Advanced Signals ───
-    // Bollinger Band squeeze (volatility compression → breakout imminent)
-    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
-        const prices = assetObj.history_30d;
-        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
-        const stdDev = Math.sqrt(prices.slice(-20).reduce((s, p) => s + Math.pow(p - sma20, 2), 0) / 20);
-        const bbWidth = (stdDev / sma20) * 100;
-        if (bbWidth < 2) { reasons.push('Bollinger squeeze → breakout imminent'); score += 5; }
-        else if (bbWidth > 6) { reasons.push('High volatility band expansion'); }
+    const prices = assetObj.history_30d;
+    const rsi = calcRSI(prices);
+    const sma20 = calcSMA(prices, 20);
+    const sma50 = calcSMA(prices, 50);
+    const delta = assetObj.delta_1d;
+    
+    const { signal } = computeSignal(assetObj.current, sma20, sma50, rsi, delta);
+    
+    let reasons = [];
+    if (rsi < 30) reasons.push(`Oversold RSI (${rsi.toFixed(1)})`);
+    else if (rsi > 70) reasons.push(`Overbought RSI (${rsi.toFixed(1)})`);
+    
+    if (sma20 && sma50) {
+        if (sma20 > sma50) reasons.push('SMA20 > SMA50 (Bullish)');
+        else reasons.push('SMA20 < SMA50 (Bearish)');
     }
     
-    // Moving Average crossover (SMA 10 vs SMA 20)
-    if (assetObj.history_30d && assetObj.history_30d.length >= 20) {
-        const prices = assetObj.history_30d;
-        const sma10 = prices.slice(-10).reduce((a, b) => a + b, 0) / 10;
-        const sma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
-        if (sma10 > sma20) { score += 8; reasons.push('SMA10 > SMA20 → Golden cross'); }
-        else { score -= 8; reasons.push('SMA10 < SMA20 → Death cross'); }
+    const bb = calcBollingerBands(prices);
+    if (bb) {
+        const bbWidth = (bb.stddev / bb.middle) * 100;
+        if (bbWidth < 2) reasons.push('BB Squeeze');
     }
     
-    const confidence = Math.min(95, Math.max(15, 50 + score));
-    let signal;
-    if (score >= 40) signal = 'Strong Buy';
-    else if (score >= 15) signal = 'Buy';
-    else if (score <= -40) signal = 'Strong Sell';
-    else if (score <= -15) signal = 'Sell';
-    else signal = 'Hold';
-    
-    return { signal, confidence, reasoning: reasons.join(' • ') || 'Insufficient data' };
+    return { signal, confidence: 75, reasoning: reasons.join(' • ') || 'Neutral conditions' };
 }
 
 // ─── Paper Trading (merged from stock-simulator) ───
@@ -871,7 +868,18 @@ function renderPaperTrading(marketData, macroData) {
     document.getElementById('ptHoldings').textContent = '$' + holdingsValue.toFixed(2);
     document.getElementById('ptTotal').textContent = '$' + total.toFixed(2);
     document.getElementById('ptTotal').style.color = total >= PT_INITIAL_CASH ? '#22c55e' : '#ef4444';
-    document.getElementById('ptPnl').innerHTML = `<span style="color:${pnl >= 0 ? '#22c55e' : '#ef4444'}">$${pnl.toFixed(2)} (${pnl >= 0 ? '+' : ''}${pnlPct}%)</span>`;
+    
+    // Advanced Metrics
+    const returns = calcDailyReturns(state.portfolioHistory);
+    const sharpe = calcSharpeRatio(returns) || 0;
+    const maxDd = calcMaxDrawdown(state.portfolioHistory) * 100;
+    
+    document.getElementById('ptPnl').innerHTML = `
+        <span style="color:${pnl >= 0 ? '#22c55e' : '#ef4444'}">$${pnl.toFixed(2)} (${pnl >= 0 ? '+' : ''}${pnlPct}%)</span>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+            Sharpe: ${sharpe.toFixed(2)} | Max DD: ${maxDd.toFixed(1)}%
+        </div>
+    `;
     
     // Track portfolio history
     if (state.portfolioHistory[state.portfolioHistory.length - 1] !== total) {

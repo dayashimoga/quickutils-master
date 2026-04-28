@@ -3,6 +3,7 @@
    Professional step sequencer, synthesizer,
    effects processing, and recording.
    ============================================= */
+import { rotatePattern } from './music-maker-utils.js';
 
 (() => {
 'use strict';
@@ -56,6 +57,29 @@ let currentStep = -1;
 let bpm = 120;
 let swing = 0;
 let stepTimer = null;
+
+let history = { stack: [], index: -1 };
+function saveHistory() {
+    const state = JSON.parse(JSON.stringify(PATTERNS));
+    history.stack = history.stack.slice(0, history.index + 1);
+    history.stack.push(state);
+    if (history.stack.length > 50) history.stack.shift();
+    else history.index++;
+}
+function doUndo() {
+    if (history.index > 0) {
+        history.index--;
+        PATTERNS = JSON.parse(JSON.stringify(history.stack[history.index]));
+        buildSequencer();
+    }
+}
+function doRedo() {
+    if (history.index < history.stack.length - 1) {
+        history.index++;
+        PATTERNS = JSON.parse(JSON.stringify(history.stack[history.index]));
+        buildSequencer();
+    }
+}
 
 let synthNoteToPlace = "C4";
 // Synth state
@@ -425,13 +449,25 @@ function buildSequencer() {
             if (s % 4 === 0) step.classList.add('beat-marker');
             if (PATTERNS[currentPattern].drums[drumIdx][s]) step.classList.add('active');
             step.addEventListener('click', () => {
+                saveHistory();
                 PATTERNS[currentPattern].drums[drumIdx][s] = !PATTERNS[currentPattern].drums[drumIdx][s];
                 step.classList.toggle('active');
             });
             row.appendChild(step);
         }
 
-        
+        // Volume slider per row
+        const vol = document.createElement('input');
+        vol.type = 'range';
+        vol.className = 'slider seq-vol';
+        vol.min = 0; vol.max = 100; vol.value = drumVolumes[drumIdx] * 100;
+        vol.title = `${drum.name} volume`;
+        vol.addEventListener('input', () => { drumVolumes[drumIdx] = vol.value / 100; });
+        row.appendChild(vol);
+
+        grid.appendChild(row);
+    });
+
     // Add Synth Roll Row
     const synthRow = document.createElement('div');
     synthRow.className = 'seq-row synth-row';
@@ -452,6 +488,7 @@ function buildSequencer() {
             step.textContent = note.replace(/\d/, '');
         }
         step.addEventListener('click', () => {
+            saveHistory();
             if (step.classList.contains('active')) {
                 PATTERNS[currentPattern].synth[s] = null;
                 step.classList.remove('active');
@@ -465,18 +502,6 @@ function buildSequencer() {
         synthRow.appendChild(step);
     }
     grid.appendChild(synthRow);
-    
-        // Volume slider per row
-        const vol = document.createElement('input');
-        vol.type = 'range';
-        vol.className = 'slider seq-vol';
-        vol.min = 0; vol.max = 100; vol.value = drumVolumes[drumIdx] * 100;
-        vol.title = `${drum.name} volume`;
-        vol.addEventListener('input', () => { drumVolumes[drumIdx] = vol.value / 100; });
-        row.appendChild(vol);
-
-        grid.appendChild(row);
-    });
 }
 
 function buildPiano() {
@@ -540,8 +565,10 @@ document.addEventListener('keydown', (e) => {
         return;
     }
     if (k === 'escape') { stopSequencer(); return; }
-    if (k === 'z') { changeOctave(-1); return; }
-    if (k === 'x') { changeOctave(1); return; }
+    if (k === 'z' && !e.ctrlKey) { changeOctave(-1); return; }
+    if (k === 'x' && !e.ctrlKey) { changeOctave(1); return; }
+    if (k === 'z' && e.ctrlKey) { doUndo(); return; }
+    if (k === 'y' && e.ctrlKey) { doRedo(); return; }
     if (k === 'r' && !e.ctrlKey) { toggleRecording(); return; }
     if (k === '?') { document.getElementById('shortcutsModal').style.display = 'flex'; return; }
 
@@ -720,24 +747,45 @@ function wireControls() {
 
     // Pattern select
     document.getElementById('patternSelect').addEventListener('change', (e) => {
+        saveHistory();
         currentPattern = parseInt(e.target.value);
         buildSequencer();
     });
 
     // Clear pattern
     document.getElementById('clearPattern').addEventListener('click', () => {
+        saveHistory();
         PATTERNS[currentPattern].drums = DRUMS.map(() => Array(STEPS).fill(false)); PATTERNS[currentPattern].synth = Array(STEPS).fill(null);
         buildSequencer();
     });
 
     // Random pattern
     document.getElementById('randomPattern').addEventListener('click', () => {
+        saveHistory();
         PATTERNS[currentPattern].drums = DRUMS.map((_, i) => {
             const density = i === 0 ? 0.25 : i <= 2 ? 0.35 : 0.15;
             return Array.from({ length: STEPS }, () => Math.random() < density);
         });
         buildSequencer();
     });
+
+    // Rotate pattern
+    const rotateBtn = document.getElementById('rotateBtn');
+    if (rotateBtn) {
+        rotateBtn.addEventListener('click', () => {
+            saveHistory();
+            PATTERNS[currentPattern].drums = rotatePattern(PATTERNS[currentPattern].drums, 1);
+            const synth = PATTERNS[currentPattern].synth;
+            PATTERNS[currentPattern].synth = [...synth.slice(-1), ...synth.slice(0, -1)];
+            buildSequencer();
+        });
+    }
+
+    // Undo/Redo
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    if (undoBtn) undoBtn.addEventListener('click', doUndo);
+    if (redoBtn) redoBtn.addEventListener('click', doRedo);
 
     // Waveform selection
     document.querySelectorAll('.wave-btn').forEach(btn => {
@@ -940,9 +988,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const starterKick =  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
     const starterSnare = [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0];
     const starterHat =   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0];
-    starterKick.forEach((v, i) => PATTERNS[0][0][i] = !!v);
-    starterSnare.forEach((v, i) => PATTERNS[0][1][i] = !!v);
-    starterHat.forEach((v, i) => PATTERNS[0][2][i] = !!v);
+    starterKick.forEach((v, i) => PATTERNS[0].drums[0][i] = !!v);
+    starterSnare.forEach((v, i) => PATTERNS[0].drums[1][i] = !!v);
+    starterHat.forEach((v, i) => PATTERNS[0].drums[2][i] = !!v);
+    saveHistory(); // Save initial state
     buildSequencer();
 });
 
