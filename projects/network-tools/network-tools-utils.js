@@ -11,7 +11,11 @@ export function isValidIp(ip) {
 
 export function getIpClass(ip) {
     const f=parseInt(ip.split('.')[0]);
-    if(f<128)return'A'; if(f<192)return'B'; if(f<224)return'C'; if(f<240)return'D'; return'E';
+    if(f<128)return {cls:'A', range:'1.0.0.0 - 126.255.255.255', defaultMask:'/8'};
+    if(f<192)return {cls:'B', range:'128.0.0.0 - 191.255.255.255', defaultMask:'/16'};
+    if(f<224)return {cls:'C', range:'192.0.0.0 - 223.255.255.255', defaultMask:'/24'};
+    if(f<240)return {cls:'D', range:'224.0.0.0 - 239.255.255.255', defaultMask:'N/A'};
+    return {cls:'E', range:'240.0.0.0 - 255.255.255.255', defaultMask:'N/A'};
 }
 
 export function isPrivateIp(ip) {

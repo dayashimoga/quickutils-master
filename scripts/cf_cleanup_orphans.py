@@ -91,7 +91,7 @@ def main():
     all_cf_projects = []
     page = 1
     while True:
-        res, code = api_request("GET", f"{base_url}?per_page=50&page={page}", token)
+        res, code = api_request("GET", f"{base_url}?per_page=100&page={page}", token)
         if not res or not res.get("success"):
             break
         results = res.get("result", [])

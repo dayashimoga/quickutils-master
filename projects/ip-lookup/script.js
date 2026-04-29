@@ -19,6 +19,7 @@ import { parseBatchInput, calcThreatScore, formatIpData } from './ip-lookup-util
         searchBtn.disabled = true;
         errorMsg.classList.add('hidden');
 
+        try {
             // Determine batch vs single
             const inputs = parseBatchInput(query);
             const queries = inputs.length > 0 ? inputs : [query];
@@ -59,9 +60,12 @@ import { parseBatchInput, calcThreatScore, formatIpData } from './ip-lookup-util
 
             lastData = allData.length > 1 ? allData : data;
             // Update Map
-            if (data.latitude && data.longitude) {
+            const lat = parseFloat(data.latitude);
+            const lng = parseFloat(data.longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
                 if(!map) {
-                    map = L.map('mapFrame').setView([data.latitude, data.longitude], 4);
+                    $('#mapFrame').innerHTML = ''; // Clear any error message
+                    map = L.map('mapFrame').setView([lat, lng], 4);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                         attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
                         maxZoom: 18
@@ -69,7 +73,7 @@ import { parseBatchInput, calcThreatScore, formatIpData } from './ip-lookup-util
                 }
                 
                 // Smooth fly-to animation
-                map.flyTo([data.latitude, data.longitude], 10, { duration: 2, easeLinearity: 0.25 });
+                map.flyTo([lat, lng], 10, { duration: 2, easeLinearity: 0.25 });
                 
                 if(marker) map.removeLayer(marker);
                 // Radar-ping CSS marker
@@ -79,26 +83,30 @@ import { parseBatchInput, calcThreatScore, formatIpData } from './ip-lookup-util
                     iconSize: [40, 40],
                     iconAnchor: [20, 20]
                 });
-                marker = L.marker([data.latitude, data.longitude], { icon: pingIcon }).addTo(map);
+                marker = L.marker([lat, lng], { icon: pingIcon }).addTo(map);
                 
                 // Simulate traceroute hops (from user to target)
                 if(polyline) map.removeLayer(polyline);
                 
-                const startLat = data.latitude + (Math.random()-0.5)*40;
-                const startLng = data.longitude + (Math.random()-0.5)*80;
+                const startLat = lat + (Math.random()-0.5)*40;
+                const startLng = lng + (Math.random()-0.5)*80;
                 
                 const hops = [];
                 for(let i=0; i<4; i++) {
                     const t = i/3;
-                    const lat = startLat * (1-t) + data.latitude * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
-                    const lng = startLng * (1-t) + data.longitude * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
-                    hops.push([lat, lng]);
+                    const hopLat = startLat * (1-t) + lat * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
+                    const hopLng = startLng * (1-t) + lng * t + (Math.random()-0.5)*10 * Math.sin(t*Math.PI);
+                    hops.push([hopLat, hopLng]);
                 }
-                hops[3] = [data.latitude, data.longitude];
+                hops[3] = [lat, lng];
                 
                 polyline = L.polyline(hops, {color: '#10b981', weight: 3, dashArray: '5, 10', opacity: 0.7}).addTo(map);
                 setTimeout(() => map.invalidateSize(), 100);
             } else {
+                if (map) {
+                    map.remove();
+                    map = null;
+                }
                 $('#mapFrame').innerHTML = `<div style="color:var(--text-muted); text-align:center; padding-top:20px;">Map not available for this IP</div>`;
             }
 
