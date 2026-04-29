@@ -120,7 +120,7 @@ def test_api_request_generic_error(mock_urlopen):
 def _make_api_responses(cf_projects, config_projects):
     """Helper to build mock api_request responses for main()."""
     def side_effect(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             return {"success": True, "result": [{"name": n} for n in cf_projects]}, 200
         if method == "DELETE":
             return None, 200
@@ -162,7 +162,7 @@ def test_main_delete_orphans_success(tmp_path, capsys):
     delete_called = []
 
     def mock_api(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             return {"success": True, "result": [{"name": n} for n in cf_projects]}, 200
         if method == "DELETE":
             delete_called.append(url)
@@ -192,7 +192,7 @@ def test_main_delete_orphan_failure(tmp_path, capsys):
     cf_projects = ["proj-a", "orphan-fail"]
 
     def mock_api(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             return {"success": True, "result": [{"name": n} for n in cf_projects]}, 200
         if method == "DELETE":
             return None, 403
@@ -240,7 +240,7 @@ def test_main_pagination(tmp_path, capsys):
     page_counter = {"current": 0}
 
     def mock_api(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             page_counter["current"] += 1
             if page_counter["current"] == 1:
                 # Return full page (100 items) to trigger pagination
@@ -312,7 +312,7 @@ def test_main_report_json(tmp_path, capsys):
     cf_projects = ["proj-a", "orphan-r"]
 
     def mock_api(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             return {"success": True, "result": [{"name": n} for n in cf_projects]}, 200
         if method == "DELETE":
             return None, 204
@@ -363,7 +363,7 @@ def test_main_delete_204(tmp_path, capsys):
     cf_projects = ["proj-a", "orphan-204"]
 
     def mock_api(method, url, token, payload=None):
-        if "per_page=100" in url and method == "GET":
+        if "per_page=50" in url and method == "GET":
             return {"success": True, "result": [{"name": n} for n in cf_projects]}, 200
         if method == "DELETE":
             return None, 204

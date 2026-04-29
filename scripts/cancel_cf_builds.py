@@ -42,7 +42,7 @@ def cancel_project_builds(name, base, headers):
         stage = dep.get('latest_stage') or {}
         status = stage.get('status', '')
         sname = stage.get('name', '')
-        if status in ('active', 'idle', '') or sname in ('queued', 'initialize', 'clone_repo', 'build', 'deploy'):
+        if status in ('active', 'idle', 'queued', ''):
             did = dep['id']
             cr = api_call('post', f'{base}/{name}/deployments/{did}/cancel', headers)
             if cr and cr.status_code == 200:
