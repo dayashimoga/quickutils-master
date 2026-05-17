@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-16T02:57:42.469280Z",
+  "updatedAt": "2026-05-17T03:31:54.433167Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 79053.13,
+        "current": 77965.92,
         "history_30d": [
-          75152.13,
           77126.88,
           75726.21,
           73856.35,
@@ -542,41 +541,41 @@
           80477.49,
           79277.12,
           81051.25,
-          79053.13
+          79065.68,
+          77965.92
         ],
-        "delta_1d": -2.47,
-        "delta_1w": -3.76,
-        "delta_1m": 2.06,
-        "delta_3m": 11.01,
-        "delta_6m": -12.54,
-        "delta_1y": -23.61,
-        "signal": "Buy",
-        "rsi": 52.07,
+        "delta_1d": -1.39,
+        "delta_1w": -4.6,
+        "delta_1m": 0.46,
+        "delta_3m": 7.11,
+        "delta_6m": -14.16,
+        "delta_1y": -24.45,
+        "signal": "Sell",
+        "rsi": 48.36,
         "macd": {
-          "macd": 1407.21,
-          "signal": 1705.91,
-          "hist": -298.69
+          "macd": 1143.05,
+          "signal": 1593.5,
+          "hist": -450.44
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 80634.19,
-          "stop_loss": 75100.47,
+          "target": 79525.24,
+          "stop_loss": 74067.62,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          81503.93,
-          81703.69,
-          81903.46,
-          82103.23,
-          82303.0,
-          82502.76,
-          82702.53
+          81207.15,
+          81381.7,
+          81556.24,
+          81730.78,
+          81905.32,
+          82079.87,
+          82254.41
         ]
       },
       "eth": {
-        "current": 2227.17,
+        "current": 2177.6,
         "history_30d": [
-          2348.65,
           2421.07,
           2351.1,
           2264.92,
@@ -605,41 +604,41 @@
           2274.64,
           2257.58,
           2280.93,
-          2227.17
+          2223.33,
+          2177.6
         ],
-        "delta_1d": -2.36,
-        "delta_1w": -5.99,
-        "delta_1m": -3.82,
-        "delta_3m": 6.2,
-        "delta_6m": -27.75,
-        "delta_1y": -12.19,
+        "delta_1d": -2.06,
+        "delta_1w": -6.91,
+        "delta_1m": -6.09,
+        "delta_3m": 0.01,
+        "delta_6m": -30.18,
+        "delta_1y": -12.04,
         "signal": "Strong Sell",
-        "rsi": 42.84,
+        "rsi": 38.66,
         "macd": {
-          "macd": 0.09,
-          "signal": 14.11,
-          "hist": -14.02
+          "macd": -9.41,
+          "signal": 9.36,
+          "hist": -18.77
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2271.71,
-          "stop_loss": 2115.81,
+          "target": 2221.15,
+          "stop_loss": 2068.72,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2286.95,
-          2285.01,
-          2283.08,
-          2281.14,
-          2279.21,
-          2277.28,
-          2275.34
+          2270.22,
+          2267.58,
+          2264.94,
+          2262.31,
+          2259.67,
+          2257.03,
+          2254.39
         ]
       },
       "sol": {
-        "current": 89.08,
+        "current": 86.22,
         "history_30d": [
-          88.99,
           88.87,
           86.2,
           83.58,
@@ -668,35 +667,36 @@
           94.28,
           91.09,
           92.15,
-          89.08
+          89.2,
+          86.22
         ],
-        "delta_1d": -3.33,
-        "delta_1w": -7.62,
-        "delta_1m": 3.31,
-        "delta_3m": 1.15,
-        "delta_6m": -34.37,
-        "delta_1y": -46.76,
-        "signal": "Buy",
-        "rsi": 50.59,
+        "delta_1d": -3.34,
+        "delta_1w": -11.43,
+        "delta_1m": 0.08,
+        "delta_3m": -6.54,
+        "delta_6m": -38.19,
+        "delta_1y": -48.04,
+        "signal": "Sell",
+        "rsi": 45.09,
         "macd": {
-          "macd": 1.95,
-          "signal": 1.75,
-          "hist": 0.2
+          "macd": 1.45,
+          "signal": 1.69,
+          "hist": -0.25
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 90.86,
-          "stop_loss": 84.63,
+          "target": 87.94,
+          "stop_loss": 81.91,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          91.71,
-          91.97,
-          92.22,
-          92.48,
-          92.74,
-          93.0,
-          93.25
+          91.62,
+          91.88,
+          92.13,
+          92.39,
+          92.65,
+          92.9,
+          93.16
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 109.24,
+      "current": 109.26,
       "history_30d": [
         109.77,
         109.27,
@@ -1177,16 +1177,16 @@
         107.77,
         105.63,
         105.72,
-        109.24
+        109.26
       ],
-      "delta_1d": 3.33,
-      "delta_1w": 7.85,
-      "delta_1m": 9.91,
-      "delta_3m": 62.03,
-      "delta_6m": 73.37,
-      "delta_1y": 69.29,
+      "delta_1d": 3.35,
+      "delta_1w": 7.87,
+      "delta_1m": 9.93,
+      "delta_3m": 62.06,
+      "delta_6m": 73.4,
+      "delta_1y": 67.04,
       "signal": "Strong Buy",
-      "rsi": 54.96,
+      "rsi": 54.97,
       "macd": {
         "macd": 1.51,
         "signal": 1.85,
@@ -1194,14 +1194,14 @@
       },
       "pattern": {
         "pattern": "Cup & Handle",
-        "target": 120.16,
+        "target": 120.19,
         "stop_loss": 99.0,
         "strength": "Bullish"
       },
       "forecast_7d": [
-        109.05,
-        109.4,
-        109.75,
+        109.06,
+        109.41,
+        109.76,
         110.1,
         110.45,
         110.8,
@@ -1214,6 +1214,84 @@
     }
   },
   "newsData": [
+    {
+      "title": "India missed out on AI, and now its run as market darling may be over ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/india-missed-out-on-ai-and-now-its-run-as-market-darling-may-be-over/articleshow/131148382.cms",
+      "time": "Sun, 17 May 2026 08:57:05 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Vodafone Idea Q4 Results: Co swings to black, posts profit of Rs 51,970 cr on one-time gain; revenue up 3% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/vodafone-idea-q4-results-co-swings-to-black-posts-profit-of-rs-51970-cr-on-one-time-gain-revenue-up-3-yoy/articleshow/131137813.cms",
+      "time": "Sat, 16 May 2026 18:36:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Delhivery Q4 Results: Net profit flat at Rs 72.4 crore, revenue rises 30% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/delhivery-q4-results-net-profit-flat-at-rs-72-4-crore-revenue-rises-30-yoy/articleshow/131137327.cms",
+      "time": "Sat, 16 May 2026 18:22:39 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Nifty\u2019s fragile trend flags deeper volatility as selling pressure intensifies ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-niftys-fragile-trend-flags-deeper-volatility-as-selling-pressure-intensifies/articleshow/131135872.cms",
+      "time": "Sat, 16 May 2026 16:35:10 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Why Vijay Kedia believes tourism could become India\u2019s next trillion-dollar story ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-vijay-kedia-believes-tourism-could-become-indias-next-trillion-dollar-story/articleshow/131135122.cms",
+      "time": "Sat, 16 May 2026 15:24:34 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Multibaggers, mirages and market math ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/multibaggers-mirages-and-market-math/articleshow/131133450.cms",
+      "time": "Sat, 16 May 2026 12:57:10 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Eternal, HDFC Bank among 10 stocks which saw highest DII buying in Q4. How many do you own? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/eternal-hdfc-bank-among-10-stocks-which-saw-highest-dii-buying-in-q4-how-many-do-you-own/slideshow/131133389.cms",
+      "time": "Sat, 16 May 2026 12:40:32 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Reliance Industries, TCS, HDFC Bank among 10 companies with highest FII selling in Q4. Do you own any? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/reliance-industries-tcs-hdfc-bank-among-10-companies-with-highest-fii-selling-in-q4-do-you-own-any/slideshow/131132836.cms",
+      "time": "Sat, 16 May 2026 11:53:25 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "SBI, Groww among 10 companies which saw the highest increase in FII holdings in value terms in Q4 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sbi-groww-among-10-companies-which-saw-the-highest-increase-in-fii-holdings-in-value-terms-in-q4/slideshow/131132718.cms",
+      "time": "Sat, 16 May 2026 11:44:04 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Nifty faces bearish grip: Key levels to watch and top 3 stock picks for next week ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nifty-faces-bearish-grip-key-levels-to-watch-and-top-3-stock-picks-for-next-week/articleshow/131131611.cms",
+      "time": "Sat, 16 May 2026 10:11:38 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi eases onboarding norms for foreign portfolio investors ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-eases-onboarding-norms-for-foreign-portfolio-investors/articleshow/131131522.cms",
+      "time": "Sat, 16 May 2026 10:04:25 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Fuel hike not enough to offset all losses, oil stocks fall further ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fuel-hike-not-enough-to-offset-all-losses-oil-stocks-fall-further/articleshow/131131383.cms",
+      "time": "Sat, 16 May 2026 09:54:18 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Buyback alert! 4 stocks turning ex-record dates for share buybacks in next two weeks. Check details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/buyback-alert-4-stocks-turning-ex-record-dates-for-share-buybacks-in-next-two-weeks-check-details/slideshow/131131284.cms",
+      "time": "Sat, 16 May 2026 09:27:18 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "JSW Steel posts 13-fold rise in profit for March quarter; to double capacity in 6 years ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jsw-steel-posts-13-fold-rise-in-profit-for-march-quarter-to-double-capacity-in-6-years/articleshow/131122142.cms",
@@ -1314,84 +1392,6 @@
       "title": "The Rs 3 relief that wasn't: Why investors are dumping oil stocks after long-awaited petrol, diesel price hike ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/the-rs-3-relief-that-wasnt-why-investors-are-dumping-oil-stocks-after-long-awaited-petrol-diesel-price-hike/articleshow/131110013.cms",
       "time": "Fri, 15 May 2026 11:51:38 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HUDCO shares crash 8% despite 172% YoY surge in Q4 net profit. What's spooking investors? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hudco-shares-crash-8-despite-172-yoy-surge-in-q4-net-profit-whats-spooking-investors/articleshow/131109926.cms",
-      "time": "Fri, 15 May 2026 11:48:23 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Motors CV shares jump 3% but brokerages are cautious. Here\u2019s why ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tata-motors-cv-shares-jump-3-but-brokerages-are-cautious-heres-why/articleshow/131109873.cms",
-      "time": "Fri, 15 May 2026 11:46:15 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Data Patterns shares tumble 11% after Q4 revenue declines 13% YoY  to Rs 345 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/data-patterns-shares-tumble-11-after-q4-revenue-declines-13-yoy-to-rs-345-crore/articleshow/131109203.cms",
-      "time": "Fri, 15 May 2026 11:08:16 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Kaynes Tech shares fall another 5% a day after crashing 20%. What brokerages fear the most? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/kaynes-tech-shares-fall-another-5-a-day-after-crashing-20-what-brokerages-fear-the-most/articleshow/131108703.cms",
-      "time": "Fri, 15 May 2026 10:43:47 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "NSE EGRs to commence trading from May 18. Here\u2019s what gold investors should know ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nse-egrs-to-commence-trading-from-may-18-heres-what-gold-investors-should-know/articleshow/131108576.cms",
-      "time": "Fri, 15 May 2026 10:31:34 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "620% rally makes Cupid the costliest stock in its category at 197 P/E. Should investors be cautious? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/620-rally-makes-cupid-the-costliest-stock-in-its-category-at-197-p/e-should-investors-be-cautious/articleshow/131108277.cms",
-      "time": "Fri, 15 May 2026 10:12:39 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HAL shares drop over 4% after Q4 results. What are Goldman Sachs and Nomura saying? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hal-shares-drop-over-4-after-q4-results-what-are-goldman-sachs-and-nomura-saying/articleshow/131108072.cms",
-      "time": "Fri, 15 May 2026 09:55:54 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Motors PV shares rally 8% even as Q4 net profit drops 32% YoY. Here's what Macquarie, Jefferies &amp; other brokerages say ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tata-motors-pv-shares-rally-8-even-as-q4-net-profit-drops-32-yoy-heres-what-macquarie-jefferies-other-brokerages-say/articleshow/131107975.cms",
-      "time": "Fri, 15 May 2026 09:49:48 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Should Titan shareholders worry about recent gold import duty hike? Let 2013 customs move explain ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/should-titan-shareholders-worry-about-governments-import-duty-hike-let-2013-customs-hike-explain/articleshow/131107778.cms",
-      "time": "Fri, 15 May 2026 09:39:25 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sensex falls 160 points, Nifty closes below 23,650 as rupee breaches 96 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sensex-rises-over-200-points-nifty-above-23700-even-as-rupee-declines-oil-prices-rise/articleshow/131107560.cms",
-      "time": "Fri, 15 May 2026 09:29:10 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HPCL, BPCL and IOC shares slide up to 3% after petrol, diesel price hike ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hpcl-bpcl-ioc-shares-in-focus-as-petrol-diesel-prices-hiked-by-rs-3/litre/articleshow/131107365.cms",
-      "time": "Fri, 15 May 2026 09:03:11 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "\u200bPaytm, Urban Company among 10 companies with highest FII shareholding in Q4. Check full list ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/paytm-urban-company-among-10-companies-with-highest-fii-shareholding-in-q4-check-full-list/slideshow/131107439.cms",
-      "time": "Fri, 15 May 2026 09:01:15 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Adani Power vs. Green vs. Energy: Why mutual funds are betting billions on this electrification trio ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/adani-power-vs-green-vs-energy-why-mutual-funds-are-betting-billions-on-this-electrification-trio/articleshow/131090905.cms",
-      "time": "Fri, 15 May 2026 08:57:52 +0530",
       "source": "ET Markets"
     }
   ]
