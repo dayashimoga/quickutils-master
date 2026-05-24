@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-23T03:21:32.296809Z",
+  "updatedAt": "2026-05-24T03:40:16.287092Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 75534.59,
+        "current": 76699.99,
         "history_30d": [
-          78268.95,
           77455.31,
           77612.02,
           78657.54,
@@ -542,41 +541,41 @@
           76750.91,
           77457.77,
           77539.17,
-          75534.59
+          75488.24,
+          76699.99
         ],
-        "delta_1d": -2.59,
-        "delta_1w": -2.45,
-        "delta_1m": -3.38,
-        "delta_3m": 9.93,
-        "delta_6m": -20.57,
-        "delta_1y": -29.6,
+        "delta_1d": 1.61,
+        "delta_1w": -0.33,
+        "delta_1m": -2.49,
+        "delta_3m": 13.05,
+        "delta_6m": -18.09,
+        "delta_1y": -28.84,
         "signal": "Strong Sell",
-        "rsi": 40.51,
+        "rsi": 45.66,
         "macd": {
-          "macd": -46.22,
-          "signal": 627.76,
-          "hist": -673.98
+          "macd": -140.35,
+          "signal": 473.54,
+          "hist": -613.89
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 77045.28,
-          "stop_loss": 71757.86,
+          "target": 78233.99,
+          "stop_loss": 72864.99,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          78821.69,
-          78832.24,
-          78842.79,
-          78853.33,
-          78863.88,
-          78874.43,
-          78884.98
+          78526.1,
+          78521.05,
+          78516.01,
+          78510.96,
+          78505.91,
+          78500.86,
+          78495.81
         ]
       },
       "eth": {
-        "current": 2067.75,
+        "current": 2116.83,
         "history_30d": [
-          2331.51,
           2315.69,
           2318.83,
           2369.73,
@@ -605,41 +604,41 @@
           2109.96,
           2126.98,
           2131.41,
-          2067.75
+          2064.64,
+          2116.83
         ],
-        "delta_1d": -2.99,
-        "delta_1w": -2.82,
-        "delta_1m": -9.91,
-        "delta_3m": -0.43,
-        "delta_6m": -37.51,
-        "delta_1y": -18.16,
+        "delta_1d": 2.53,
+        "delta_1w": -0.55,
+        "delta_1m": -8.61,
+        "delta_3m": 3.11,
+        "delta_6m": -35.49,
+        "delta_1y": -16.35,
         "signal": "Strong Sell",
-        "rsi": 31.69,
+        "rsi": 38.94,
         "macd": {
-          "macd": -49.92,
-          "signal": -27.11,
-          "hist": -22.81
+          "macd": -50.79,
+          "signal": -31.89,
+          "hist": -18.9
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2109.11,
-          "stop_loss": 1964.36,
+          "target": 2159.17,
+          "stop_loss": 2010.99,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2151.22,
-          2143.83,
-          2136.45,
-          2129.06,
-          2121.68,
-          2114.29,
-          2106.9
+          2135.82,
+          2127.91,
+          2120.0,
+          2112.08,
+          2104.17,
+          2096.26,
+          2088.35
         ]
       },
       "sol": {
-        "current": 84.5,
+        "current": 85.6,
         "history_30d": [
-          86.14,
           86.23,
           86.15,
           86.97,
@@ -668,35 +667,36 @@
           84.21,
           86.04,
           87.16,
-          84.5
+          84.31,
+          85.6
         ],
-        "delta_1d": -3.05,
-        "delta_1w": -0.79,
-        "delta_1m": 0.93,
-        "delta_3m": -3.4,
-        "delta_6m": -41.21,
-        "delta_1y": -51.39,
+        "delta_1d": 1.53,
+        "delta_1w": 0.35,
+        "delta_1m": 1.57,
+        "delta_3m": -0.62,
+        "delta_6m": -37.97,
+        "delta_1y": -51.37,
         "signal": "Strong Sell",
-        "rsi": 43.26,
+        "rsi": 46.03,
         "macd": {
-          "macd": -0.32,
-          "signal": 0.49,
-          "hist": -0.81
+          "macd": -0.43,
+          "signal": 0.31,
+          "hist": -0.74
         },
         "pattern": {
           "pattern": "Bull Flag",
-          "target": 91.26,
+          "target": 92.45,
           "stop_loss": 81.36,
           "strength": "Strong Bullish"
         },
         "forecast_7d": [
+          88.95,
+          89.05,
+          89.14,
+          89.24,
           89.33,
-          89.45,
-          89.56,
-          89.68,
-          89.8,
-          89.92,
-          90.04
+          89.43,
+          89.53
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 103.94,
+      "current": 103.54,
       "history_30d": [
         99.36,
         94.79,
@@ -1177,35 +1177,35 @@
         111.28,
         105.02,
         102.58,
-        103.94
+        103.54
       ],
-      "delta_1d": 1.33,
-      "delta_1w": -4.87,
-      "delta_1m": -1.08,
-      "delta_3m": 46.87,
-      "delta_6m": 63.99,
-      "delta_1y": 61.3,
+      "delta_1d": 0.94,
+      "delta_1w": -5.24,
+      "delta_1m": -1.46,
+      "delta_3m": 46.3,
+      "delta_6m": 63.36,
+      "delta_1y": 59.83,
       "signal": "Sell",
-      "rsi": 48.58,
+      "rsi": 48.14,
       "macd": {
-        "macd": 0.89,
+        "macd": 0.85,
         "signal": 1.55,
-        "hist": -0.67
+        "hist": -0.69
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 106.02,
-        "stop_loss": 98.74,
+        "target": 105.61,
+        "stop_loss": 98.36,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        110.01,
-        110.36,
-        110.71,
-        111.05,
-        111.4,
-        111.75,
-        112.09
+        109.96,
+        110.3,
+        110.65,
+        110.99,
+        111.34,
+        111.68,
+        112.02
       ]
     },
     "inflation": {
@@ -1214,6 +1214,96 @@
     }
   },
   "newsData": [
+    {
+      "title": "NTPC Q4 Results: Cons PAT jumps 34% YoY to Rs 10,615 crore; Rs 3.5/share dividend announced ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/ntpc-q4-results-cons-pat-jumps-34-yoy-to-rs-10615-crore-rs-3-5/share-dividend-announced/articleshow/131278401.cms",
+      "time": "Sat, 23 May 2026 16:47:59 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Gokaldas Exports posts 9% sequential rise in Q4 revenue ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/gokaldas-exports-posts-9-sequential-rise-in-q4-revenue/articleshow/131278343.cms",
+      "time": "Sat, 23 May 2026 16:45:11 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "FIIs sell over Rs 30K crore worth of Indian equities in May as outflows swell to Rs 2.22 lakh crore. What lies ahead? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fiis-sell-over-rs-30k-crore-worth-of-indian-equities-in-may-as-outflows-swell-to-rs-2-22-lakh-crore-what-lies-ahead/articleshow/131277123.cms",
+      "time": "Sat, 23 May 2026 15:15:49 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Nifty stays range-bound as resistance near 23,800 caps upside move ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nifty-stays-range-bound-as-resistance-near-23800-caps-upside-move/articleshow/131276438.cms",
+      "time": "Sat, 23 May 2026 14:20:28 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Vedanta, MCX, among 10 stocks that saw highest increase in retail shareholding in Q4. Do you own any? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/vedanta-mcx-among-10-stocks-that-saw-highest-increase-in-retail-shareholding-in-q4-do-you-own-any/slideshow/131276400.cms",
+      "time": "Sat, 23 May 2026 14:01:58 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Explained! Modus operandi and how Sebi cracked whip in alleged pump-and-dump scheme involving 82 stocks ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/explained-modus-operandi-and-how-sebi-cracked-whip-in-alleged-pump-and-dump-scheme-involving-82-stocks/articleshow/131276202.cms",
+      "time": "Sat, 23 May 2026 13:58:23 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Divi's Laboratories Q4 Results: Cons PAT grows 13% YoY to Rs 751 crore, revenue up 10%; Rs 30 per share dividend announced ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/divis-laboratories-q4-results-cons-pat-grows-13-yoy-to-rs-751-crore-revenue-up-10-rs-30-per-share-dividend-announced/articleshow/131275374.cms",
+      "time": "Sat, 23 May 2026 13:51:07 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Losers: 13 stocks decline for 5 consecutive sessions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-losers-13-stocks-decline-for-5-consecutive-sessions/slideshow/131273840.cms",
+      "time": "Sat, 23 May 2026 12:42:39 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Nomura picks 6 stocks with up to 49% upside potential that can benefit from India\u2019s EV push ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nomura-picks-6-stocks-with-up-to-49-upside-potential-that-can-benefit-from-indias-ev-push/slideshow/131273685.cms",
+      "time": "Sat, 23 May 2026 12:35:24 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Why organized players like Titan Company could emerge bigger winners in India\u2019s evolving gold market ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-organized-players-like-titan-company-could-emerge-bigger-winners-in-indias-evolving-gold-market/articleshow/131273387.cms",
+      "time": "Sat, 23 May 2026 12:15:06 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Paytm block deal: SocGen, Ghisallo, Viridian among biggest buyers in Rs 964 crore stake sale ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/paytm-block-deal-socgen-ghisallo-viridian-among-biggest-buyers-in-rs-964-crore-stake-sale/articleshow/131273199.cms",
+      "time": "Sat, 23 May 2026 11:56:42 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Reliance Industries, TCS, among 10 stocks with sharpest decrease in retail shareholding in Q4 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/reliance-industries-tcs-among-10-stocks-with-sharpest-decrease-in-retail-shareholding-in-q4/slideshow/131273170.cms",
+      "time": "Sat, 23 May 2026 11:27:53 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Patient capital trusts India as hot money exits; FDI inflow rises 17% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/patient-capital-trusts-india-as-hot-money-exits/articleshow/131271976.cms",
+      "time": "Sat, 23 May 2026 09:49:26 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "D-Street ends week in the green with war and peace on its mind ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/d-street-ends-week-in-the-green-with-war-and-peace-on-its-mind/articleshow/131271963.cms",
+      "time": "Sat, 23 May 2026 09:43:38 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Retail players can skip Central Bank of India OFS, say analysts, cite margin and earnings concerns ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/retail-players-can-skip-central-bank-of-india-ofs-say-analysts-cite-margin-and-earnings-concerns/articleshow/131271911.cms",
+      "time": "Sat, 23 May 2026 09:41:02 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Jewellery retailer DP Abhushan posts 88% rise in PAT; revenue crosses Rs 4,000 crore ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jewellery-retailer-dp-abhushan-posts-88-rise-in-pat-revenue-crosses-rs-4000-crore/articleshow/131265924.cms",
@@ -1302,96 +1392,6 @@
       "title": "Info Edge Q4 Results: Naukri operator's cons PAT grows 22% YoY to Rs 566 crore, revenue rises 16% ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/info-edge-q4-results-naukri-operators-cons-pat-grows-22-yoy-to-rs-566-crore-revenue-rises-16/articleshow/131261384.cms",
       "time": "Fri, 22 May 2026 15:27:49 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sun Pharma Q4 Results: Cons profit rises 26% YoY to Rs 2,714 crore; board approves Rs 5/share dividend ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/sun-pharma-q4-results-cons-profit-rises-26-yoy-to-rs-2714-crore-board-approves-rs-5/share-dividend/articleshow/131260848.cms",
-      "time": "Fri, 22 May 2026 15:03:28 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bernstein initiates coverage on 6 pharma stocks, cites 3 major tailwinds for healthcare sector ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bernstein-initiates-coverage-on-6-pharma-stocks-cites-3-major-tailwinds-for-healthcare-sector/articleshow/131260196.cms",
-      "time": "Fri, 22 May 2026 14:11:03 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "11 MF-backed microcap stocks rallied up to 515% in a year; 7 turned multibaggers ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/11-mf-backed-microcap-stocks-rallied-up-to-515-in-a-year-7-turned-multibaggers/slideshow/131259518.cms",
-      "time": "Fri, 22 May 2026 13:15:40 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Titan shares a golden compounder? Why Morgan Stanley thinks Tata Group stock could rally to Rs 5,182 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/titan-shares-a-golden-compounder-why-morgan-stanley-thinks-tata-group-stock-could-rally-to-rs-5182/articleshow/131259110.cms",
-      "time": "Fri, 22 May 2026 12:57:04 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Nifty Bank rises 650 points as report says RBI unlikely to hike rates to defend rupee; Axis, ICICI, HDFC shares jump up to 2% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nifty-bank-rises-650-points-as-report-says-rbi-unlikely-to-hike-rates-to-defend-rupee-axis-icici-hdfc-shares-jump-up-to-2/articleshow/131258921.cms",
-      "time": "Fri, 22 May 2026 12:50:13 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "ITC has paid dividends worth Rs 90 per share since 2020. Should you buy? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/itc-has-paid-dividends-worth-rs-90-per-share-since-2020-should-you-buy/articleshow/131258558.cms",
-      "time": "Fri, 22 May 2026 12:19:44 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "MTAR Tech shares soar 24% in just three sessions. What\u2019s triggering this renewed buying spree? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/mtar-tech-shares-soar-24-in-just-three-sessions-whats-triggering-this-renewed-buying-spree/articleshow/131258175.cms",
-      "time": "Fri, 22 May 2026 11:53:11 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Picked wrong Melody? Parle Industries shares hit 5% upper circuit for 3rd day ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/picked-wrong-melody-parle-industries-shares-hit-5-upper-circuit-for-3rd-day/articleshow/131257556.cms",
-      "time": "Fri, 22 May 2026 11:21:19 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "JSW Cement shares gain 12% as Q4FY26 profit jumps to Rs 362 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jsw-cement-shares-gain-12-as-q4fy26-profit-jumps-to-rs-362-crore/articleshow/131257341.cms",
-      "time": "Fri, 22 May 2026 11:01:04 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Can Honasa shares rally up to 57% after strong Q4 show? Jefferies, CLSA &amp; two other brokerages weigh in ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/can-honasa-shares-rally-up-to-57-after-strong-q4-show-jefferies-clsa-two-other-brokerages-weigh-in/articleshow/131257301.cms",
-      "time": "Fri, 22 May 2026 10:55:56 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Paytm shares drop 4% after SAIF Partners, others likely sell stake worth Rs 960 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/paytm-shares-drop-4-after-saif-partners-others-likely-sell-stake-worth-rs-960-crore/articleshow/131256679.cms",
-      "time": "Fri, 22 May 2026 10:33:46 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "RCF shares jump 7% as Q4 profit soars 158% YoY to Rs 187 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/rcf-shares-jump-7-as-q4-profit-soars-158-yoy-to-rs-187-crore/articleshow/131256442.cms",
-      "time": "Fri, 22 May 2026 10:18:22 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "LG Electronics India shares fall 4% after Q4 results. What is Morgan Stanley saying? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lg-electronics-india-shares-fall-4-after-q4-results-what-is-morgan-stanley-saying/articleshow/131256363.cms",
-      "time": "Fri, 22 May 2026 10:12:07 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "ITC shares fall 2% after Q4 results. What Goldman Sachs, Morgan Stanley and others are saying? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/itc-shares-fall-2-after-q4-results-what-goldman-sachs-morgan-stanley-and-others-are-saying/articleshow/131256191.cms",
-      "time": "Fri, 22 May 2026 09:58:29 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "LIC shares jump 5% after Q4 results, first-ever bonus issue. Here's what brokerages say ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lic-shares-jump-5-after-q4-results-first-ever-bonus-issue-heres-what-brokerages-say/articleshow/131256110.cms",
-      "time": "Fri, 22 May 2026 09:46:44 +0530",
       "source": "ET Markets"
     }
   ]
