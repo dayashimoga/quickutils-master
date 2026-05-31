@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-30T03:29:43.890816Z",
+  "updatedAt": "2026-05-31T03:56:30.126566Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 73572.23,
+        "current": 74045.68,
         "history_30d": [
-          76304.32,
           78179.0,
           78657.25,
           78538.23,
@@ -542,41 +541,41 @@
           75825.73,
           74344.7,
           73536.55,
-          73572.23
+          73372.52,
+          74045.68
         ],
-        "delta_1d": 0.05,
-        "delta_1w": -4.43,
-        "delta_1m": -8.25,
-        "delta_3m": 10.94,
-        "delta_6m": -17.44,
-        "delta_1y": -29.26,
+        "delta_1d": 0.92,
+        "delta_1w": -4.19,
+        "delta_1m": -8.21,
+        "delta_3m": 12.27,
+        "delta_6m": -14.47,
+        "delta_1y": -29.24,
         "signal": "Strong Sell",
-        "rsi": 35.89,
+        "rsi": 38.78,
         "macd": {
-          "macd": -916.96,
-          "signal": -309.47,
-          "hist": -607.49
+          "macd": -1008.9,
+          "signal": -451.9,
+          "hist": -556.99
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 75043.67,
-          "stop_loss": 69893.62,
+          "target": 75526.59,
+          "stop_loss": 70343.4,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          75372.23,
-          75188.87,
-          75005.52,
-          74822.17,
-          74638.82,
-          74455.46,
-          74272.11
+          74650.68,
+          74426.06,
+          74201.44,
+          73976.82,
+          73752.21,
+          73527.59,
+          73302.97
         ]
       },
       "eth": {
-        "current": 2017.66,
+        "current": 2030.82,
         "history_30d": [
-          2256.25,
           2295.09,
           2316.23,
           2321.64,
@@ -605,41 +604,41 @@
           2070.86,
           2022.2,
           2007.55,
-          2017.66
+          2011.98,
+          2030.82
         ],
-        "delta_1d": 0.5,
-        "delta_1w": -3.83,
-        "delta_1m": -12.54,
-        "delta_3m": 1.25,
-        "delta_6m": -31.58,
-        "delta_1y": -20.25,
+        "delta_1d": 0.94,
+        "delta_1w": -3.82,
+        "delta_1m": -12.72,
+        "delta_3m": 2.43,
+        "delta_6m": -27.88,
+        "delta_1y": -19.7,
         "signal": "Strong Sell",
-        "rsi": 32.58,
+        "rsi": 34.81,
         "macd": {
-          "macd": -65.17,
-          "signal": -52.22,
-          "hist": -12.95
+          "macd": -65.24,
+          "signal": -54.9,
+          "hist": -10.34
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2058.01,
-          "stop_loss": 1916.78,
+          "target": 2071.44,
+          "stop_loss": 1929.28,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2019.93,
-          2007.82,
-          1995.71,
-          1983.6,
-          1971.49,
-          1959.38,
-          1947.27
+          1999.21,
+          1986.26,
+          1973.31,
+          1960.36,
+          1947.41,
+          1934.46,
+          1921.5
         ]
       },
       "sol": {
-        "current": 82.76,
+        "current": 83.08,
         "history_30d": [
-          83.02,
           83.72,
           84.28,
           83.9,
@@ -668,35 +667,36 @@
           83.59,
           82.37,
           81.99,
-          82.76
+          81.93,
+          83.08
         ],
-        "delta_1d": 0.94,
-        "delta_1w": -2.92,
-        "delta_1m": -9.99,
-        "delta_3m": 0.9,
-        "delta_6m": -34.86,
-        "delta_1y": -47.03,
+        "delta_1d": 1.4,
+        "delta_1w": -2.27,
+        "delta_1m": -10.81,
+        "delta_3m": 2.04,
+        "delta_6m": -30.05,
+        "delta_1y": -46.96,
         "signal": "Strong Sell",
-        "rsi": 41.05,
+        "rsi": 42.34,
         "macd": {
-          "macd": -1.31,
-          "signal": -0.68,
-          "hist": -0.63
+          "macd": -1.38,
+          "signal": -0.83,
+          "hist": -0.55
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 84.42,
-          "stop_loss": 78.62,
+          "target": 84.74,
+          "stop_loss": 78.93,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          84.96,
-          84.82,
-          84.68,
-          84.54,
-          84.4,
-          84.26,
-          84.13
+          84.02,
+          83.82,
+          83.62,
+          83.42,
+          83.22,
+          83.02,
+          82.82
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 91.7,
+      "current": 92.05,
       "history_30d": [
         90.38,
         95.48,
@@ -1177,35 +1177,35 @@
         99.58,
         94.29,
         93.71,
-        91.7
+        92.05
       ],
-      "delta_1d": -2.14,
-      "delta_1w": -10.61,
-      "delta_1m": -22.31,
-      "delta_3m": 17.96,
-      "delta_6m": 45.26,
-      "delta_1y": 42.95,
+      "delta_1d": -1.77,
+      "delta_1w": -10.27,
+      "delta_1m": -22.01,
+      "delta_3m": 18.41,
+      "delta_6m": 45.81,
+      "delta_1y": 44.05,
       "signal": "Strong Sell",
-      "rsi": 37.14,
+      "rsi": 37.43,
       "macd": {
-        "macd": -2.07,
-        "signal": -0.05,
-        "hist": -2.02
+        "macd": -2.04,
+        "signal": -0.04,
+        "hist": -2.0
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 93.53,
-        "stop_loss": 87.11,
+        "target": 93.89,
+        "stop_loss": 87.45,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        102.53,
-        102.41,
-        102.3,
-        102.18,
-        102.07,
-        101.95,
-        101.84
+        102.58,
+        102.46,
+        102.35,
+        102.24,
+        102.12,
+        102.01,
+        101.9
       ]
     },
     "inflation": {
@@ -1214,6 +1214,120 @@
     }
   },
   "newsData": [
+    {
+      "title": "Market Outlook: US-Iran talks, crude oil among 5 factors to drive D-St in first week of June ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-outlook-us-iran-talks-crude-oil-among-5-factors-to-drive-d-st-in-first-week-of-june/articleshow/131418464.cms",
+      "time": "Sun, 31 May 2026 09:21:36 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Why do smart investors still lose money? Bernard Baruch\u2019s guide to investing discipline ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-do-smart-investors-still-lose-money-bernard-baruchs-guide-to-investing-discipline/articleshow/131418435.cms",
+      "time": "Sun, 31 May 2026 09:17:20 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Bonus issues, dividends and more: Reliance Industries, Trent among 20 stocks turning ex-date this week ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bonus-issues-dividends-and-more-reliance-industries-trent-among-20-stocks-turning-ex-date-this-week/articleshow/131418356.cms",
+      "time": "Sun, 31 May 2026 09:03:58 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Jupiter Wagons Q4 Results: Cons PAT tumbles 72% to Rs 29 crore, revenue falls 25% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jupiter-wagons-q4-results-cons-pat-tumbles-72-to-rs-29-crore-revenue-falls-25-yoy/articleshow/131409045.cms",
+      "time": "Sat, 30 May 2026 17:34:46 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Triveni Engineering Q4 profit falls to Rs 167.4 crore; FY26 profit rises 12.8% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/triveni-engineering-q4-profit-falls-to-rs-167-4-crore-fy26-profit-rises-12-8/articleshow/131407258.cms",
+      "time": "Sat, 30 May 2026 15:21:00 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Zara's India FY26 profit falls 32% to Rs 204 crore; revenue slips ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/zaras-india-fy26-profit-falls-32-pc-to-rs-204-cr-revenue-slips/articleshow/131407207.cms",
+      "time": "Sat, 30 May 2026 15:14:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Shalibhadra Finance eyes Rs 500 crore AUM as FY26 profit climbs 22% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/shalibhadra-finance-eyes-rs-500-crore-aum-as-fy26-profit-climbs-22/articleshow/131407133.cms",
+      "time": "Sat, 30 May 2026 15:09:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "NSE Social Stock Exchange gets CSR boost as MCA clears corporate funding route. Check details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nse-social-stock-exchange-gets-csr-boost-as-mca-clears-corporate-funding-route-check-details/articleshow/131407114.cms",
+      "time": "Sat, 30 May 2026 15:09:18 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Nifty stuck in consolidation zone; 23,800 remains key breakout hurdle ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-nifty-stuck-in-consolidation-zone-23800-remains-key-breakout-hurdle/articleshow/131407082.cms",
+      "time": "Sat, 30 May 2026 15:06:45 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sunil Singhania\u2019s Abakkus Portfolio: 6 stocks rally up to 75% in CY26; 5 new buys added in Q4 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sunil-singhanias-abakkus-portfolio-6-stocks-rally-up-to-75-in-cy26-5-new-buys-added-in-q4/slideshow/131405936.cms",
+      "time": "Sat, 30 May 2026 13:12:09 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "FIIs pull out massive Rs 20,637 crore in single day on Friday. What led to this sharp exit? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fiis-pull-out-massive-rs-20637-crore-in-single-day-on-friday-what-led-to-this-sharp-exit/articleshow/131405729.cms",
+      "time": "Sat, 30 May 2026 13:10:16 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Losers: 14 smallcap stocks decline for 5 consecutive sessions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-losers-14-smallcap-stocks-decline-for-5-consecutive-sessions/slideshow/131405355.cms",
+      "time": "Sat, 30 May 2026 11:59:18 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "NSE extends equity F&amp;O segment timings till 3:40 pm from August ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nse-extends-equity-fo-segment-timings-till-340-pm-from-august/articleshow/131404896.cms",
+      "time": "Sat, 30 May 2026 11:52:06 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ET Alpha Wealth Summit: Learn the secrets of finding alpha &amp; what it takes to build a Rs 100 crore portfolio ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/et-alpha-wealth-summit-learn-the-secrets-of-finding-alpha-what-it-takes-to-build-a-rs-100-crore-portfolio/articleshow/131403685.cms",
+      "time": "Sat, 30 May 2026 11:30:15 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "FPIs remain net sellers for 3rd straight month, offload Rs 32,963 cr worth equities in May: NSDL data ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fpis-remain-net-sellers-for-3rd-straight-month-offload-rs-32963-cr-worth-equities-in-may-nsdl-data/articleshow/131404637.cms",
+      "time": "Sat, 30 May 2026 11:25:06 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Coal India, ONGC, among 10 stocks with highest increase in government holding in Q4. Do you own any? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/coal-india-ongc-among-10-stocks-with-highest-increase-in-government-holding-in-q4-do-you-own-any/slideshow/131404514.cms",
+      "time": "Sat, 30 May 2026 10:56:02 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "LIC, HAL, among 10 stocks that saw sharpest decrease in government shareholding in Q4. Check list ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lic-hal-among-10-stocks-that-saw-sharpest-decrease-in-government-shareholding-in-q4-check-list/slideshow/131403961.cms",
+      "time": "Sat, 30 May 2026 10:04:03 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ICICI Bank, AU Small Finance Bank top picks as banking sector gears up for earnings revival ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/icici-bank-au-small-finance-bank-top-picks-as-banking-sector-gears-up-for-earnings-revival/articleshow/131403752.cms",
+      "time": "Sat, 30 May 2026 09:51:04 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Why the stock market has begun to climb the wall of worry ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-the-stock-market-has-begun-to-climb-the-wall-of-worry/articleshow/131403580.cms",
+      "time": "Sat, 30 May 2026 09:37:12 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Sebi imposes penalty on Suzlon, executives for misstating financials ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-imposes-penalty-on-suzlon-executives-for-misstating-financials/articleshow/131402942.cms",
@@ -1278,120 +1392,6 @@
       "title": "Sebi eases nomination rules for demat accounts, mutual funds. Check full details ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-eases-nomination-rules-for-demat-accounts-mutual-funds-check-full-details/articleshow/131392441.cms",
       "time": "Fri, 29 May 2026 19:23:57 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi drops disclosure case against NDTV, closes proceedings without penalty ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-drops-disclosure-case-against-ndtv-closes-proceedings-without-penalty/articleshow/131392335.cms",
-      "time": "Fri, 29 May 2026 19:15:20 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Moody's upgrades Reliance Industries rating to Baa1, now 2 notches above India's sovereign rating ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/moodys-upgrades-reliance-industries-rating-to-baa1-now-2-notches-above-indias-sovereign-rating/articleshow/131392282.cms",
-      "time": "Fri, 29 May 2026 19:12:36 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Inox Wind Q4 Results: Profit slumps 45% to Rs 106 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/inox-wind-q4-results-profit-slumps-45-to-rs-106-crore/articleshow/131391256.cms",
-      "time": "Fri, 29 May 2026 18:27:30 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Solar Industries &amp; 8 large caps hit fresh 52-week high;stocksrally up to 20% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/solar-industries-amp-8-largecaps-hit-fresh-52-week-highstocksrally-up-to-20-in-a-month/slideshow/131391248.cms",
-      "time": "Fri, 29 May 2026 18:16:54 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "ET Alpha Wealth Summit: Mapping the road to India\u2019s next growth wave ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/et-alpha-wealth-summit-mapping-the-road-to-indias-next-growth-wave/articleshow/131390706.cms",
-      "time": "Fri, 29 May 2026 18:02:16 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "IndiGo Q4 Results: Co reports loss of Rs 2,536 crore vs profit a year ago ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indigo-q4-results-co-reports-loss-of-rs-2536-crore-vs-profit-year-ago/articleshow/131389129.cms",
-      "time": "Fri, 29 May 2026 16:36:17 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Natco Pharma shares crash 15% after weak Q4 results; net profit tanks 34% YoY ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/natco-pharma-shares-crash-15-after-weak-q4-results-net-profit-tanks-34-yoy/articleshow/131388521.cms",
-      "time": "Fri, 29 May 2026 16:03:02 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Why stock market crashed today? Sensex sinks 1,100 points, Nifty below 23,550. 4 key factors ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-is-market-crashing-today-sensex-sinks-over-1100-points-nifty-below-23550-4-key-factors/articleshow/131387583.cms",
-      "time": "Fri, 29 May 2026 15:20:25 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bank RoA to slip 10-15 bps to 1.15-1.2% this fiscal for 2 reasons: Crisil ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bank-roa-to-slip-10-15-bps-to-1-15-1-2-this-fiscal-for-2-reasons-crisil/articleshow/131387319.cms",
-      "time": "Fri, 29 May 2026 15:17:52 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Netweb Technologies jumps 15%, hits fresh 52-week high after rating upgrade ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/netweb-technologies-jumps-15-hits-fresh-52-week-high-after-rating-upgrade/articleshow/131386573.cms",
-      "time": "Fri, 29 May 2026 14:48:33 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Asian Paints' board announces Rs 23/share dividend, sets June 23 as record date ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/asian-paints-board-announces-rs-23/share-dividend-sets-june-23-as-record-date/articleshow/131386308.cms",
-      "time": "Fri, 29 May 2026 14:26:54 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Asian Paints Q4 Results: Net profit surges 69% YoY to Rs 1,172 crore, revenue rises 11% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/asian-paints-q4-results-net-profit-surges-69-yoy-to-rs-1172-crore-revenue-rises-11/articleshow/131386151.cms",
-      "time": "Fri, 29 May 2026 14:19:14 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HFCL shares soar 17% in two days, rally 170% in 2026. Should you buy, sell or hold? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hfcl-shares-soar-17-in-two-days-rally-170-in-2026-should-you-buy-sell-or-hold/articleshow/131386095.cms",
-      "time": "Fri, 29 May 2026 14:11:53 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Ola Electric shares jump 9%, skyrocket 93% in 2 months. What's fuelling the rally? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/ola-electric-shares-jump-9-skyrocket-93-in-2-months-whats-fuelling-the-rally/articleshow/131385689.cms",
-      "time": "Fri, 29 May 2026 14:01:02 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Multibaggers: 15 stocks with 25%+ sales and profit growth in Q4 March 2026 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/multibaggers-15-stocks-with-25-sales-and-profit-growth-in-q4-march-2026/slideshow/131385400.cms",
-      "time": "Fri, 29 May 2026 13:19:58 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "PC Jeweller shares soar 14% on Q4 PAT jumps 58% YoY, strong management commentary ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/pc-jeweller-shares-soar-14-on-q4-pat-jumps-58-yoy-strong-management-commentary/articleshow/131384891.cms",
-      "time": "Fri, 29 May 2026 13:14:20 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Nomura downgrades Cummins India shares to Neutral despite raising target price by 25%. Here\u2019s why ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nomura-downgrades-cummins-india-shares-to-neutral-despite-raising-target-price-by-25-heres-why/articleshow/131384323.cms",
-      "time": "Fri, 29 May 2026 12:39:53 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Vedanta shares jump 2% to hit fresh 52-week high. What\u2019s behind the surge? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/vedanta-shares-jump-2-to-hit-fresh-52-week-high-whats-behind-the-surge/articleshow/131383904.cms",
-      "time": "Fri, 29 May 2026 12:14:29 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Supriya Lifescience shares surge 17% on strong Q4 earnings; PAT rises 47% YoY ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/supriya-lifescience-shares-surge-17-on-strong-q4-earnings-pat-rises-47-yoy/articleshow/131383156.cms",
-      "time": "Fri, 29 May 2026 11:29:38 +0530",
       "source": "ET Markets"
     }
   ]
