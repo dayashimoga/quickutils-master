@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessOS | Interactive Chess Learning Operating System</title>
+    <meta name="description" content="ChessOS: The world's first Chess Learning Operating System. Learn chess through interaction, discovery, and play — never through reading. AI coach, adaptive puzzles, and Duolingo-style progression.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟️</text></svg>">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="toast-wrap" id="toastWrap"></div>
+
+    <div class="app-shell">
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-icon">♟️</span>
+                <span class="brand-name">ChessOS</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="home"><span class="nav-icon">🏠</span> Home</button>
+                <button class="nav-item" data-view="journey"><span class="nav-icon">🗺️</span> Journey</button>
+                <button class="nav-item" data-view="learn"><span class="nav-icon">📖</span> Learn</button>
+                <button class="nav-item" data-view="play"><span class="nav-icon">⚔️</span> Play</button>
+                <button class="nav-item" data-view="analyze"><span class="nav-icon">🔍</span> Analyze</button>
+                <button class="nav-item" data-view="coach"><span class="nav-icon">🧠</span> Coach</button>
+                <button class="nav-item" data-view="progress"><span class="nav-icon">📊</span> Progress</button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="userAvatar">GM</div>
+                    <div class="user-meta">
+                        <span class="user-name" id="userName">Chess Learner</span>
+                        <span class="user-rank" id="userRank">ELO 850</span>
+                    </div>
+                </div>
+                <div class="sidebar-actions">
+                    <button id="themeBtn" class="sidebar-btn">🌙</button>
+                    <button id="exportBtn" class="sidebar-btn" title="Export Progress">💾</button>
+                    <a href="https://ko-fi.com/dayatin" target="_blank" class="sidebar-btn">☕</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-area">
+            <!-- TOP BAR -->
+            <header class="top-bar">
+                <div class="page-title" id="pageTitle">Home</div>
+                <div class="top-badges">
+                    <div class="badge badge-streak" id="streakBadge">🔥 <span id="streakCount">0</span></div>
+                    <div class="badge badge-xp">⚡ <span id="xpCount">0</span> XP</div>
+                    <div class="badge badge-level">🎖️ Lv <span id="levelCount">1</span></div>
+                    <div class="badge badge-elo">♟️ <span id="eloCount">850</span></div>
+                </div>
+            </header>
+
+            <!-- ═══ 1. HOME VIEW ═══ -->
+            <section id="view-home" class="view active">
+                <!-- Continue Learning Hero -->
+                <div class="hero-continue" id="heroContinue">
+                    <div class="hero-label">Continue Learning</div>
+                    <div class="hero-title" id="heroTitle">Start Your Chess Journey</div>
+                    <div class="hero-desc" id="heroDesc">Pick up right where you left off</div>
+                    <div class="hero-arrow">→</div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Today's Mission -->
+                    <div class="card">
+                        <h2 class="card-title">🎯 Today's Mission</h2>
+                        <p class="card-subtitle">Personalized training based on your weakness analysis.</p>
+                        <div id="missionList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+                        <div style="border-top:1px solid var(--border-color);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:0.72rem;color:var(--text-muted);">Est. <strong id="missionTime">0</strong> min • <strong id="missionXP">0</strong> XP • +<strong id="missionElo">0</strong> Elo</span>
+                            <button class="btn btn-primary btn-sm" id="btnClaimMission">Claim XP ⚡</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Coach Card -->
+                    <div class="card">
+                        <h2 class="card-title">🧠 AI Coach Insight</h2>
+                        <div id="coachInsight" style="font-size:0.82rem;color:var(--text-secondary);line-height:1.6;">Analyzing your chess patterns...</div>
+                        <div style="margin-top:14px;">
+                            <button class="btn btn-primary btn-sm" id="btnStartTraining">Start Training →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="card">
+                    <h2 class="card-title">🏅 Achievements</h2>
+                    <div class="achievements-wrap" id="achieveGrid"></div>
+                </div>
+            </section>
+
+            <!-- ═══ 2. JOURNEY VIEW ═══ -->
+            <section id="view-journey" class="view">
+                <div class="card" style="position:relative;overflow:hidden;">
+                    <h2 class="card-title">🗺️ Your Grandmaster Journey</h2>
+                    <p class="card-subtitle">Follow the path from beginner to master. Click nodes to start interactive lessons.</p>
+                    <div class="journey-container" id="journeyContainer">
+                        <svg class="journey-svg" id="journeySvg"></svg>
+                    </div>
+                    <div class="journey-popup" id="journeyPopup"></div>
+                </div>
+            </section>
+
+            <!-- ═══ 3. LEARN VIEW ═══ -->
+            <section id="view-learn" class="view">
+                <!-- Tab Bar -->
+                <div class="tab-bar" id="learnTabs">
+                    <button class="tab-btn active" data-tab="tactics">🎯 Tactics</button>
+                    <button class="tab-btn" data-tab="strategy">🏛️ Strategy</button>
+                    <button class="tab-btn" data-tab="endgames">♟️ Endgames</button>
+                    <button class="tab-btn" data-tab="openings">🧪 Openings</button>
+                </div>
+
+                <!-- Tactics Panel -->
+                <div class="tab-panel active" id="panel-tactics">
+                    <div class="puzzle-grid" id="tacticsGrid"></div>
+                </div>
+
+                <!-- Strategy Panel -->
+                <div class="tab-panel" id="panel-strategy">
+                    <div class="puzzle-grid" id="strategyGrid"></div>
+                </div>
+
+                <!-- Endgames Panel -->
+                <div class="tab-panel" id="panel-endgames">
+                    <div class="puzzle-grid" id="endgameGrid"></div>
+                </div>
+
+                <!-- Openings Panel -->
+                <div class="tab-panel" id="panel-openings">
+                    <div class="opening-grid">
+                        <div>
+                            <h3 style="font-size:0.88rem;font-weight:800;margin-bottom:10px;">Your Repertoire Lines</h3>
+                            <div id="repList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                        </div>
+                        <div class="card" style="background:rgba(255,255,255,0.01);">
+                            <h3 id="repTitle" style="font-size:0.92rem;font-weight:800;">Select a line</h3>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:10px;"><strong>Moves:</strong> <span id="repMoves" style="font-family:var(--font-mono);color:var(--accent-indigo);">—</span></div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;"><strong>Plans:</strong> <span id="repPlans">—</span></div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;"><strong>Traps:</strong> <span id="repTraps">—</span></div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;"><strong>Goals:</strong> <span id="repGoals">—</span></div>
+                            <div style="margin-top:14px;display:flex;gap:8px;">
+                                <button class="btn btn-primary btn-sm" id="btnDrillOpening">📖 Practice Recall</button>
+                                <button class="btn btn-sm" id="btnExplainPlans">💡 Explain Plans</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Puzzle Workspace (hidden by default, shown when solving) -->
+                <div id="puzzleWorkspace" style="display:none;" class="card">
+                    <div class="puzzle-workspace">
+                        <div class="puzzle-board-wrap">
+                            <div class="puzzle-board" id="puzzleBoard"></div>
+                        </div>
+                        <div class="puzzle-info">
+                            <div class="puzzle-prompt" id="puzzlePrompt">Find the best move!</div>
+                            <div class="puzzle-hint" id="puzzleHint"></div>
+                            <div class="mastery-bar" style="margin-top:8px;"><div class="mastery-fill" id="puzzleMastery" style="width:0%"></div></div>
+                            <div style="display:flex;gap:8px;margin-top:12px;">
+                                <button class="btn btn-sm" id="btnPuzzleHint">💡 Hint</button>
+                                <button class="btn btn-sm" id="btnPuzzleSkip">⏭️ Skip</button>
+                                <button class="btn btn-sm btn-danger" id="btnPuzzleBack">← Back</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ 4. PLAY VIEW ═══ -->
+            <section id="view-play" class="view">
+                <div class="card">
+                    <div class="game-layout">
+                        <div class="board-wrap">
+                            <div class="eval-container">
+                                <div class="eval-bar" id="evalBar"></div>
+                                <span class="eval-text" id="evalText">0.0</span>
+                            </div>
+                            <div class="chess-board" id="board"></div>
+                        </div>
+                        <div class="ctrl-panel">
+                            <div class="game-hud">
+                                <div class="clock" id="clockWhite">10:00</div>
+                                <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted)">vs Stockfish AI</div>
+                                <div class="clock" id="clockBlack">10:00</div>
+                            </div>
+                            <div class="moves-panel">
+                                <div class="moves-header">
+                                    <span>Moves</span>
+                                    <span id="openingLabel" style="color:var(--accent-indigo)">Standard</span>
+                                </div>
+                                <div class="moves-scroll"><table class="moves-table"><tbody id="movesList"></tbody></table></div>
+                            </div>
+                            <div class="coach-card">
+                                <div class="coach-head">
+                                    <div class="coach-face">🧙‍♂️</div>
+                                    <div class="coach-info">
+                                        <span class="coach-name-label">GM Coach AI</span>
+                                        <span class="coach-role-label">Live Advisor</span>
+                                    </div>
+                                </div>
+                                <div class="coach-body" id="coachAdvice">White plays first. I'll evaluate positions dynamically.</div>
+                            </div>
+                            <div class="btn-row">
+                                <button class="btn" id="btnRestart">🔄 Reset</button>
+                                <button class="btn" id="btnUndo">↩️ Undo</button>
+                                <button class="btn btn-primary" id="btnHint">💡 Hint</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ 5. ANALYZE VIEW ═══ -->
+            <section id="view-analyze" class="view">
+                <div class="card">
+                    <h2 class="card-title">🔍 Game Analysis</h2>
+                    <p class="card-subtitle">Paste PGN to analyze accuracy, find blunders, and get instant practice recommendations.</p>
+                    <textarea id="pgnInput" class="input" style="height:80px;resize:none;margin-bottom:12px;" placeholder="Paste PGN here..."></textarea>
+                    <div style="display:flex;gap:8px;margin-bottom:16px;">
+                        <button class="btn btn-primary" id="btnAnalyze">🔍 Analyze</button>
+                        <button class="btn" id="btnLoadDemo">📝 Load Demo</button>
+                    </div>
+                    <div id="reviewResults" style="display:none;">
+                        <div class="review-grid">
+                            <div class="review-box"><div class="review-val" id="valAccuracy" style="color:var(--success)">--</div><div class="review-lbl">Accuracy</div></div>
+                            <div class="review-box"><div class="review-val" id="valBrilliant" style="color:var(--accent-violet)">0</div><div class="review-lbl">Brilliant</div></div>
+                            <div class="review-box"><div class="review-val" id="valBlunders" style="color:var(--danger)">0</div><div class="review-lbl">Blunders</div></div>
+                            <div class="review-box"><div class="review-val" id="valPerf">--</div><div class="review-lbl">Performance</div></div>
+                        </div>
+                        <div class="card" style="background:rgba(255,255,255,0.01)">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px;">Move-by-Move Analysis</h3>
+                            <div id="reviewLog" style="max-height:200px;overflow-y:auto;font-size:0.78rem;display:flex;flex-direction:column;gap:6px;"></div>
+                        </div>
+                        <div class="card" style="margin-top:12px;background:rgba(255,255,255,0.01)">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px;">🎯 Practice Your Mistakes</h3>
+                            <div id="mistakeDrills" style="display:flex;flex-direction:column;gap:6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ 6. COACH VIEW ═══ -->
+            <section id="view-coach" class="view">
+                <div class="card">
+                    <h2 class="card-title">🧠 AI Coach — Weakness Detection</h2>
+                    <p class="card-subtitle">Your personal coach analyzes patterns and tells you exactly what to study and <em>why</em>.</p>
+                    <div class="grid-2" id="weaknessCards"></div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">📋 Personalized Training Plan</h2>
+                    <div id="coachRecs" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">📈 Grandmaster Roadmap</h2>
+                    <div style="display:flex;flex-direction:column;gap:10px;font-size:0.82rem;color:var(--text-secondary);">
+                        <div style="display:flex;justify-content:space-between;"><span>Current:</span><strong style="color:var(--text-primary)" id="roadCurrent">850 ELO</strong></div>
+                        <div style="display:flex;justify-content:space-between;"><span>Target:</span><strong style="color:var(--accent-amber)" id="roadTarget">2200 ELO</strong></div>
+                        <div style="display:flex;justify-content:space-between;"><span>Projected:</span><strong style="color:var(--accent-indigo)" id="roadTime">—</strong></div>
+                        <div style="margin-top:6px;">
+                            <span style="font-size:0.72rem;font-weight:700;">Weekly Intensity:</span>
+                            <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+                                <input type="range" id="intensitySlider" min="2" max="30" value="10" style="flex-grow:1;accent-color:var(--accent-indigo);">
+                                <span id="intensityLabel" style="font-family:var(--font-mono);font-weight:800;width:50px;font-size:0.78rem;">10h/wk</span>
+                            </div>
+                        </div>
+                        <div id="roadSummary" style="background:rgba(255,255,255,0.02);border:1px solid var(--border-color);padding:10px;border-radius:var(--radius-sm);font-size:0.72rem;margin-top:4px;line-height:1.5;">Loading projection...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ 7. PROGRESS VIEW ═══ -->
+            <section id="view-progress" class="view">
+                <div class="grid-2">
+                    <div class="card">
+                        <h2 class="card-title">🕸️ Skill Radar</h2>
+                        <svg class="radar-svg" id="radarSvg"></svg>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title">📈 ELO Growth</h2>
+                        <div style="height:220px;border-left:2px solid var(--border-color);border-bottom:2px solid var(--border-color);position:relative;padding:10px;margin-top:10px;">
+                            <div style="position:absolute;bottom:15px;left:8px;font-size:0.62rem;color:var(--text-muted)">Elo <span id="chartStart">850</span></div>
+                            <div style="position:absolute;top:25px;right:12px;font-size:0.62rem;color:var(--accent-amber)">Elo <span id="chartEnd">2200</span></div>
+                            <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" id="growthSvg">
+                                <defs><linearGradient id="growthGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:var(--accent-indigo);stop-opacity:0.8"/><stop offset="100%" style="stop-color:var(--accent-amber);stop-opacity:0.8"/></linearGradient></defs>
+                                <path d="M 10 180 Q 140 140 300 40" fill="none" stroke="url(#growthGrad)" stroke-width="3" stroke-dasharray="5,3"/>
+                                <circle cx="10" cy="180" r="5" fill="var(--accent-indigo)"/><circle cx="300" cy="40" r="5" fill="var(--accent-amber)"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">🔥 Knowledge Mastery Heatmap</h2>
+                    <p class="card-subtitle">Each cell = a concept. Green = mastered, Yellow = learning, Red = weak.</p>
+                    <div class="heatmap-grid" id="heatmapGrid"></div>
+                </div>
+                <div class="grid-4" id="statsGrid">
+                    <div class="stat-box"><div class="stat-value" style="color:var(--accent-indigo)" id="statGames">0</div><div class="stat-label">Games Played</div></div>
+                    <div class="stat-box"><div class="stat-value" style="color:var(--accent-violet)" id="statPuzzles">0</div><div class="stat-label">Puzzles Solved</div></div>
+                    <div class="stat-box"><div class="stat-value" style="color:var(--accent-emerald)" id="statMastered">0</div><div class="stat-label">Concepts Mastered</div></div>
+                    <div class="stat-box"><div class="stat-value" style="color:var(--accent-amber)" id="statStreak">0</div><div class="stat-label">Best Streak</div></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="quickutils-core.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

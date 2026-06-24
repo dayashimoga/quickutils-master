@@ -13,6 +13,7 @@ export default defineConfig({
             'tests/solar-system.test.js',
             'tests/music-maker.test.js',
             'tests/web-chess.test.js',
+            'tests/chessmaster-ai.test.js',
         ],
         coverage: {
             provider: 'v8',
@@ -25,6 +26,7 @@ export default defineConfig({
                 'projects/market-digest/market-digest-utils.js',
                 'projects/solar-system/solar-system-utils.js',
                 'projects/music-maker/music-maker-utils.js',
+                'projects/chessmaster-ai/chessmaster-ai-utils.js',
             ],
             thresholds: {
                 lines: 90,
@@ -43,6 +45,7 @@ export default defineConfig({
             '@market-digest': path.resolve(__dirname, 'projects/market-digest'),
             '@solar-system': path.resolve(__dirname, 'projects/solar-system'),
             '@music-maker': path.resolve(__dirname, 'projects/music-maker'),
+            '@chessmaster-ai': path.resolve(__dirname, 'projects/chessmaster-ai'),
         },
     },
 });
