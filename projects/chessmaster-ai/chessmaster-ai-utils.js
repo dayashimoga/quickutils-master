@@ -477,8 +477,20 @@ export class UserProfile {
     this.openingDrills = data.openingDrills || 0;
     this.brilliantMoves = data.brilliantMoves || 0;
     this.dailyCompleted = data.dailyCompleted || {};
-    this.openingRepSR = data.openingRepSR || {}; // Spaced repetition state per opening line
+    this.openingRepSR = data.openingRepSR || {};
     this.createdAt = data.createdAt || new Date().toISOString();
+    // === NEW: Mastery tracking ===
+    this.masteryMap = data.masteryMap || {};
+    this.assessmentHistory = data.assessmentHistory || [];
+    this.certifications = data.certifications || [];
+    this.bossBattleScores = data.bossBattleScores || {};
+    this.totalTrainingMinutes = data.totalTrainingMinutes || 0;
+    this.journeyStage = data.journeyStage || 'beginner';
+    this.eloHistory = data.eloHistory || [{ elo: this.elo, date: new Date().toISOString().split('T')[0] }];
+    this.weeklyReports = data.weeklyReports || [];
+    this.skillScores = data.skillScores || { tactical:50, strategic:50, opening:50, endgame:50, calculation:50, visualization:50 };
+    this.assessmentCompleted = data.assessmentCompleted || false;
+    this.guessTheMoveStats = data.guessTheMoveStats || { attempted:0, correct:0, totalScore:0 };
   }
 
   save() {
@@ -488,7 +500,16 @@ export class UserProfile {
   }
 
   addXP(amount) { this.xp += amount; this.save(); }
-  updateElo(newElo) { this.elo = newElo; this.save(); }
+  updateElo(newElo) {
+    this.elo = newElo;
+    const today = new Date().toISOString().split('T')[0];
+    const last = this.eloHistory[this.eloHistory.length - 1];
+    if (last && last.date === today) last.elo = newElo;
+    else this.eloHistory.push({ elo: newElo, date: today });
+    if (this.eloHistory.length > 365) this.eloHistory = this.eloHistory.slice(-365);
+    this.updateJourneyStage();
+    this.save();
+  }
   masterConcept(id) { if (!this.masteredConcepts.includes(id)) { this.masteredConcepts.push(id); this.save(); } }
 
   updateStreak() {
@@ -520,6 +541,247 @@ export class UserProfile {
     if (typeof localStorage !== 'undefined') localStorage.removeItem(PROFILE_KEY);
     return new UserProfile();
   }
+
+  // === MASTERY TRACKING ===
+  updateMastery(conceptId, correct, difficulty = 5) {
+    if (!this.masteryMap[conceptId]) {
+      this.masteryMap[conceptId] = { conceptId, confidence:30, retention:30, successRate:0, attempts:0, correct:0, difficulty, lastPracticed:Date.now(), streak:0, mastered:false };
+    }
+    const e = this.masteryMap[conceptId];
+    e.attempts++;
+    if (correct) { e.correct++; e.streak++; e.confidence = Math.min(100, e.confidence + 8*(1-e.confidence/100)); e.retention = Math.min(100, e.retention+12); }
+    else { e.streak = 0; e.confidence = Math.max(0, e.confidence - 6); e.retention = Math.max(0, e.retention - 4); }
+    e.successRate = e.attempts > 0 ? e.correct / e.attempts : 0;
+    e.lastPracticed = Date.now();
+    e.mastered = e.confidence >= 80 && e.successRate >= 0.75 && e.attempts >= 8;
+    if (e.mastered && !this.masteredConcepts.includes(conceptId)) this.masteredConcepts.push(conceptId);
+    this.save();
+    return e;
+  }
+
+  getMasteryFor(conceptId) {
+    const e = this.masteryMap[conceptId];
+    if (!e) return { confidence:0, retention:0, mastered: this.masteredConcepts.includes(conceptId), attempts:0 };
+    const daysSince = (Date.now() - e.lastPracticed) / 86400000;
+    const decayed = Math.max(0, e.retention - daysSince * 2);
+    return { ...e, retention: Math.round(decayed) };
+  }
+
+  // === JOURNEY STAGE ===
+  updateJourneyStage() {
+    const stages = [
+      { min:0, stage:'beginner' }, { min:1000, stage:'novice' }, { min:1200, stage:'club' },
+      { min:1400, stage:'advanced' }, { min:1600, stage:'expert' }, { min:1800, stage:'candidate-master' },
+      { min:2000, stage:'fide-master' }, { min:2200, stage:'international-master' }, { min:2500, stage:'grandmaster' }
+    ];
+    for (let i = stages.length - 1; i >= 0; i--) {
+      if (this.elo >= stages[i].min) { this.journeyStage = stages[i].stage; break; }
+    }
+  }
+
+  // === CERTIFICATIONS ===
+  addCertification(certId) {
+    if (!this.certifications.includes(certId)) { this.certifications.push(certId); this.save(); }
+  }
+
+  hasCertification(certId) { return this.certifications.includes(certId); }
+
+  // === BOSS BATTLES ===
+  recordBossBattle(bossId, score, passed) {
+    if (!this.bossBattleScores[bossId]) this.bossBattleScores[bossId] = { bestScore:0, attempts:0, passed:false };
+    const b = this.bossBattleScores[bossId];
+    b.attempts++; b.bestScore = Math.max(b.bestScore, score); b.passed = b.passed || passed;
+    if (passed) this.addCertification(bossId);
+    this.save();
+  }
+
+  // === TRAINING TIME ===
+  addTrainingTime(mins) { this.totalTrainingMinutes += mins; this.save(); }
+
+  // === ASSESSMENT ===
+  saveAssessment(result) {
+    this.assessmentHistory.push(result);
+    this.skillScores = result.skillScores;
+    this.assessmentCompleted = true;
+    if (this.assessmentHistory.length > 50) this.assessmentHistory = this.assessmentHistory.slice(-50);
+    // Update elo estimate from assessment
+    if (result.estimatedElo) this.updateElo(result.estimatedElo);
+    this.save();
+  }
+
+  // === WEEKLY REPORT ===
+  generateWeeklyReport() {
+    const now = Date.now();
+    const weekAgo = now - 7 * 86400000;
+    const recentPuzzles = this.practiceHistory.filter(p => p.timestamp > weekAgo);
+    const recentGames = this.gameHistory.filter(g => g.timestamp > weekAgo);
+    const puzzleAccuracy = recentPuzzles.length > 0 ? Math.round(recentPuzzles.filter(p => p.correct).length / recentPuzzles.length * 100) : 0;
+    const eloChange = this.eloHistory.length >= 2 ? this.elo - this.eloHistory[Math.max(0, this.eloHistory.length - 8)].elo : 0;
+    const report = {
+      date: new Date().toISOString().split('T')[0],
+      puzzlesSolved: recentPuzzles.filter(p => p.correct).length,
+      puzzleAccuracy,
+      gamesPlayed: recentGames.length,
+      eloChange,
+      trainingMinutes: Math.round(this.totalTrainingMinutes),
+      newConceptsMastered: Object.values(this.masteryMap).filter(m => m.mastered && m.lastPracticed > weekAgo).length,
+      strengths: Object.entries(this.skillScores).sort((a,b) => b[1]-a[1]).slice(0,2).map(([k]) => k),
+      weaknesses: Object.entries(this.skillScores).sort((a,b) => a[1]-b[1]).slice(0,2).map(([k]) => k),
+    };
+    this.weeklyReports.push(report);
+    if (this.weeklyReports.length > 52) this.weeklyReports = this.weeklyReports.slice(-52);
+    this.save();
+    return report;
+  }
+
+  // === LEARNING VELOCITY ===
+  getLearningVelocity() {
+    if (this.eloHistory.length < 2) return { eloPerWeek: 0, trend: 'new' };
+    const recent = this.eloHistory.slice(-14);
+    if (recent.length < 2) return { eloPerWeek: 0, trend: 'new' };
+    const change = recent[recent.length-1].elo - recent[0].elo;
+    const weeks = Math.max(1, recent.length / 7);
+    const rate = Math.round(change / weeks);
+    return { eloPerWeek: rate, trend: rate > 5 ? 'accelerating' : rate > 0 ? 'steady' : rate > -5 ? 'plateau' : 'declining' };
+  }
+
+  // === NEXT BEST ACTION ===
+  getNextBestAction() {
+    const weakest = Object.entries(this.skillScores).sort((a,b) => a[1]-b[1])[0];
+    const roi = getHighestROIConcept(this);
+    const needsAssessment = !this.assessmentCompleted || (this.assessmentHistory.length > 0 && Date.now() - new Date(this.assessmentHistory[this.assessmentHistory.length-1].timestamp).getTime() > 7*86400000);
+    if (needsAssessment) return { type:'assessment', title:'Take Skill Assessment', desc:'Evaluate your current level to personalize your training.', icon:'📋', route:'assessment-view' };
+    if (roi) return { type:'study', title:`Study: ${roi.name}`, desc:roi.desc, icon:'📖', route:'tactics-view', conceptId:roi.id };
+    if (weakest && weakest[1] < 60) return { type:'train', title:`Train ${weakest[0]}`, desc:`Your ${weakest[0]} skill needs improvement (${weakest[1]}%)`, icon:'🎯', route:'daily-view' };
+    return { type:'play', title:'Play a Game', desc:'Apply your knowledge in a real game.', icon:'⚔️', route:'play' };
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SKILL ASSESSMENT ENGINE
+// ═══════════════════════════════════════════════════
+
+export const ASSESSMENT_PUZZLES = {
+  tactical: [
+    { fen:'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4', solution:'Qxf7#', concept:'Scholar\'s Mate', difficulty:1 },
+    { fen:'r2qk2r/ppp2ppp/2np4/2b1p1B1/2B1P1b1/3P1N2/PPP2PPP/RN1QK2R w KQkq - 0 7', solution:'Bxf7+', concept:'Fork/Discovery', difficulty:2 },
+    { fen:'r1b1k2r/ppppqppp/2n2n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 6 5', solution:'Nd5', concept:'Knight outpost', difficulty:3 },
+    { fen:'2rq1rk1/pp1bppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/2KR1B1R w - - 0 11', solution:'Nd5', concept:'Central domination', difficulty:4 },
+    { fen:'r1bqk2r/pppp1Bpp/2n2n2/2b1p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 4', solution:'Ke7', concept:'King safety', difficulty:2 },
+  ],
+  strategic: [
+    { fen:'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1', solution:'e5', concept:'Mirror center control', difficulty:1 },
+    { fen:'rnbqkb1r/pppppppp/5n2/8/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2', solution:'e6', concept:'Solid structure', difficulty:2 },
+    { fen:'r1bqk2r/ppp2ppp/2n2n2/3pp3/2B1P3/2PP1N2/PP3PPP/RNBQK2R b KQkq - 0 5', solution:'Be7', concept:'Development priority', difficulty:2 },
+  ],
+  endgame: [
+    { fen:'8/8/8/8/3k4/8/4KP2/8 w - - 0 1', solution:'Kf3', concept:'Opposition', difficulty:2 },
+    { fen:'8/5pk1/8/8/8/8/6PP/6K1 w - - 0 1', solution:'h4', concept:'Pawn breakthrough', difficulty:3 },
+    { fen:'8/8/4k3/8/8/3K4/8/4R3 w - - 0 1', solution:'Re1', concept:'Rook cutting off king', difficulty:2 },
+  ],
+  calculation: [
+    { fen:'r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/2N2N2/PPP1PPPP/R2QKB1R w KQkq - 4 4', solution:'Ne5', concept:'Centralization + attack', difficulty:3 },
+    { fen:'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3', solution:'Nf6', concept:'Development with defense', difficulty:2 },
+  ],
+  visualization: [
+    { fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', solution:'e4', concept:'Opening principles', difficulty:1 },
+  ]
+};
+
+export function runAssessment(profile, answers) {
+  const skillScores = { tactical:50, strategic:50, endgame:50, calculation:50, visualization:50, opening:50 };
+  const categories = Object.keys(ASSESSMENT_PUZZLES);
+  let totalCorrect = 0, totalAttempted = 0;
+
+  categories.forEach(cat => {
+    const puzzles = ASSESSMENT_PUZZLES[cat] || [];
+    const catAnswers = answers.filter(a => a.category === cat);
+    let correct = 0;
+    catAnswers.forEach(a => {
+      totalAttempted++;
+      if (a.correct) { correct++; totalCorrect++; }
+    });
+    const accuracy = catAnswers.length > 0 ? correct / catAnswers.length : 0.5;
+    const difficultyBonus = catAnswers.reduce((s, a) => s + (a.correct ? a.difficulty * 5 : 0), 0);
+    skillScores[cat] = Math.min(100, Math.round(accuracy * 70 + difficultyBonus));
+  });
+
+  const overall = Math.round(Object.values(skillScores).reduce((a,b)=>a+b,0) / Object.keys(skillScores).length);
+  const estimatedElo = Math.round(800 + (overall / 100) * 1400);
+
+  return {
+    timestamp: Date.now(),
+    skillScores,
+    overallScore: overall,
+    estimatedElo,
+    totalCorrect,
+    totalAttempted,
+    strengths: Object.entries(skillScores).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k])=>k),
+    weaknesses: Object.entries(skillScores).sort((a,b)=>a[1]-b[1]).slice(0,2).map(([k])=>k),
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// BOSS BATTLE SYSTEM
+// ═══════════════════════════════════════════════════
+
+export const BOSS_BATTLES = [
+  { id:'fork_master', name:'Fork Master', icon:'♞', category:'tactic', description:'Prove your mastery of forks by solving 10 fork puzzles with 80%+ accuracy under time pressure.',
+    requiredConcepts:['fork','double_attack'], puzzleCount:10, timeLimit:300, passThreshold:0.8, xpReward:100, eloReward:15,
+    color:'#10b981', difficulty:2 },
+  { id:'pin_master', name:'Pin & Skewer Master', icon:'📌', category:'tactic', description:'Master pins and skewers. Solve 10 puzzles with 80%+ accuracy.',
+    requiredConcepts:['pin','skewer'], puzzleCount:10, timeLimit:300, passThreshold:0.8, xpReward:120, eloReward:18,
+    color:'#3b82f6', difficulty:3 },
+  { id:'endgame_master', name:'Endgame Fundamentals', icon:'♟️', category:'endgame', description:'Prove your endgame basics. Opposition, square rule, and K+P endings.',
+    requiredConcepts:['king_pawn_eg','opposition','square_rule'], puzzleCount:8, timeLimit:400, passThreshold:0.75, xpReward:150, eloReward:20,
+    color:'#eab308', difficulty:3 },
+  { id:'tactics_warrior', name:'Tactics Warrior', icon:'⚔️', category:'tactic', description:'Conquer all intermediate tactics. Discovered attacks, deflections, and more.',
+    requiredConcepts:['discovered_attack','deflection','decoy','removing_defender'], puzzleCount:12, timeLimit:360, passThreshold:0.75, xpReward:200, eloReward:25,
+    color:'#f43f5e', difficulty:4 },
+  { id:'strategy_sage', name:'Strategy Sage', icon:'🏛️', category:'strategy', description:'Demonstrate strategic understanding. Pawn structures, weak squares, and outposts.',
+    requiredConcepts:['pawn_structure','weak_squares','outposts','open_files'], puzzleCount:10, timeLimit:500, passThreshold:0.7, xpReward:180, eloReward:22,
+    color:'#8b5cf6', difficulty:4 },
+  { id:'calculation_king', name:'Calculation King', icon:'🧮', category:'calculation', description:'Calculate 5+ moves deep. Candidate moves and deep calculation trees.',
+    requiredConcepts:['candidate_moves','deep_calculation'], puzzleCount:8, timeLimit:480, passThreshold:0.7, xpReward:250, eloReward:30,
+    color:'#ec4899', difficulty:6 },
+  { id:'grandmaster_gauntlet', name:'Grandmaster Gauntlet', icon:'👑', category:'all', description:'The ultimate challenge. All categories combined in a 20-puzzle marathon.',
+    requiredConcepts:[], puzzleCount:20, timeLimit:900, passThreshold:0.8, xpReward:500, eloReward:50,
+    color:'#fbbf24', difficulty:8 },
+];
+
+export function getBossBattlePuzzles(bossId) {
+  const boss = BOSS_BATTLES.find(b => b.id === bossId);
+  if (!boss) return [];
+  const relevant = boss.category === 'all'
+    ? TACTICS_DB
+    : TACTICS_DB.filter(t => {
+        if (boss.category === 'tactic') return true;
+        return boss.requiredConcepts.some(c => t.category.includes(c) || t.name.toLowerCase().includes(c.replace(/_/g,' ')));
+      });
+  const shuffled = [...relevant].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, boss.puzzleCount);
+}
+
+// ═══════════════════════════════════════════════════
+// GUESS THE MOVE ENGINE
+// ═══════════════════════════════════════════════════
+
+export function getGuessTheMovePosition(gameIndex) {
+  const game = FAMOUS_GAMES_DB[gameIndex % FAMOUS_GAMES_DB.length];
+  if (!game || !game.pgn) return null;
+  // Pick a mid-game position (move 10-25)
+  const moveMatch = game.pgn.match(/\d+\.\s*\S+\s+\S+/g);
+  if (!moveMatch || moveMatch.length < 10) return null;
+  const targetMove = Math.min(10 + Math.floor(Math.random() * 15), moveMatch.length - 1);
+  return {
+    gameTitle: game.title,
+    white: game.white,
+    black: game.black,
+    event: game.event,
+    targetMoveIndex: targetMove,
+    themes: game.themes,
+    pgn: game.pgn,
+  };
 }
 
 // ═══════════════════════════════════════════════════

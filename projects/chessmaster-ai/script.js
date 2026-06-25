@@ -7,7 +7,10 @@ import {
   getUnlockedConcepts, getHighestROIConcept, getCurrentMilestone,
   analyzeWeaknesses, generateRemediationPlan, generateDailyMission,
   calculateXP, checkAchievements, getMasteryLevel, sm2Calculate,
-  UserProfile
+  UserProfile,
+  ASSESSMENT_PUZZLES, runAssessment,
+  BOSS_BATTLES, getBossBattlePuzzles,
+  getGuessTheMovePosition
 } from './chessmaster-ai-utils.js';
 
 // ═══════════════════════════════════════════════════
@@ -43,6 +46,7 @@ let profile = new UserProfile();
 document.addEventListener('DOMContentLoaded', () => {
   profile.updateStreak();
   initNavigation();
+  initHeroSection();
   initHomeView();
   initJourneyView();
   initOpeningLab();
@@ -55,6 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initAchievements();
   updateHeaderStats();
   initRoadmap();
+  initSkillTree();
+  initBossBattles();
+  initDeepAnalytics();
+  initAssessmentView();
+  initHomeSkillBars();
 
   // Play view buttons
   document.getElementById('btnRestart')?.addEventListener('click', resetGame);
@@ -805,4 +814,551 @@ function reviewPGN() {
 function loadDemoGame() {
   document.getElementById('pgnInput').value = FAMOUS_GAMES_DB[0].pgn;
   showToast('📝 Loaded: ' + FAMOUS_GAMES_DB[0].title);
+}
+
+// ═══════════════════════════════════════════════════
+// HERO SECTION
+// ═══════════════════════════════════════════════════
+function initHeroSection() {
+  // Add SVG gradient for progress ring
+  const ringSvg = document.querySelector('.ring-svg');
+  if (ringSvg) {
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = '<linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient>';
+    ringSvg.prepend(defs);
+  }
+
+  updateHeroSection();
+
+  document.getElementById('btnHeroAction')?.addEventListener('click', () => {
+    const action = profile.getNextBestAction();
+    // Navigate to the recommended view
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      if (item.dataset.target === action.route) item.click();
+    });
+  });
+}
+
+function updateHeroSection() {
+  const el = id => document.getElementById(id);
+  const milestone = getCurrentMilestone(profile.elo);
+  const velocity = profile.getLearningVelocity();
+  const action = profile.getNextBestAction();
+
+  // Stage badge
+  el('heroStageBadge').textContent = `${milestone.current.icon} ${milestone.current.title}`;
+  el('heroStageBadge').style.borderColor = milestone.current.color;
+  el('heroStageBadge').style.color = milestone.current.color;
+
+  // Title & subtitle
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  el('heroTitle').textContent = `${greeting}, Chess Student`;
+  el('heroSubtitle').textContent = action.desc;
+
+  // CTA
+  el('btnHeroAction').textContent = `${action.icon} ${action.title}`;
+
+  // Stats
+  el('heroElo').textContent = profile.elo;
+  el('heroMastered').textContent = profile.masteredConcepts.length;
+  el('heroCerts').textContent = profile.certifications.length;
+  el('heroVelocity').textContent = velocity.eloPerWeek > 0 ? `+${velocity.eloPerWeek}` : velocity.eloPerWeek === 0 ? '—' : `${velocity.eloPerWeek}`;
+
+  // Progress ring (daily completion)
+  const checks = document.querySelectorAll('#missionTasks input[type="checkbox"]:checked');
+  const total = document.querySelectorAll('#missionTasks input[type="checkbox"]');
+  const pct = total.length > 0 ? Math.round(checks.length / total.length * 100) : 0;
+  const ring = el('heroRing');
+  if (ring) {
+    const circumference = 2 * Math.PI * 52;
+    ring.setAttribute('stroke-dasharray', circumference);
+    ring.setAttribute('stroke-dashoffset', circumference - (pct / 100) * circumference);
+    ring.style.stroke = pct >= 100 ? '#10b981' : '';
+  }
+  el('heroRingPct').textContent = `${pct}%`;
+}
+
+// ═══════════════════════════════════════════════════
+// HOME SKILL BARS
+// ═══════════════════════════════════════════════════
+function initHomeSkillBars() {
+  renderSkillBars('homeSkillBars', profile.skillScores);
+}
+
+function renderSkillBars(containerId, scores) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const colors = { tactical:'#ef4444', strategic:'#8b5cf6', opening:'#3b82f6', endgame:'#eab308', calculation:'#ec4899', visualization:'#10b981' };
+  Object.entries(scores).forEach(([key, val]) => {
+    const color = colors[key] || '#3b82f6';
+    const div = document.createElement('div');
+    div.className = 'skill-bar-row';
+    div.innerHTML = `<span class="skill-bar-label">${key}</span><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${val}%;background:${color};"></div></div><span class="skill-bar-val" style="color:${color}">${val}%</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// SKILL ASSESSMENT VIEW
+// ═══════════════════════════════════════════════════
+let assessState = { puzzles:[], currentIdx:0, answers:[], timer:null, startTime:0 };
+
+function initAssessmentView() {
+  // Build category cards
+  const cats = document.getElementById('assessmentCategoryCards');
+  if (!cats) return;
+  const icons = { tactical:'⚔️', strategic:'🏗️', endgame:'♟️', calculation:'🧠', visualization:'👁️' };
+  Object.entries(ASSESSMENT_PUZZLES).forEach(([cat, puzzles]) => {
+    const div = document.createElement('div');
+    div.className = 'tactic-card';
+    div.innerHTML = `<div class="tactic-icon">${icons[cat]||'🎯'}</div><div class="tactic-name">${cat.charAt(0).toUpperCase()+cat.slice(1)}</div><div class="tactic-desc">${puzzles.length} puzzles</div>`;
+    cats.appendChild(div);
+  });
+
+  document.getElementById('btnStartAssessment')?.addEventListener('click', startAssessment);
+  document.getElementById('btnSubmitAssessMove')?.addEventListener('click', submitAssessMove);
+  document.getElementById('btnRetakeAssessment')?.addEventListener('click', startAssessment);
+  document.getElementById('btnGoToDashboard')?.addEventListener('click', () => {
+    document.querySelector('.nav-item[data-target="home-view"]')?.click();
+  });
+  document.getElementById('assessMoveInput')?.addEventListener('keypress', e => { if (e.key==='Enter') submitAssessMove(); });
+}
+
+function startAssessment() {
+  // Flatten all puzzles
+  const allPuzzles = [];
+  Object.entries(ASSESSMENT_PUZZLES).forEach(([cat, puzzles]) => {
+    puzzles.forEach(p => allPuzzles.push({ ...p, category: cat }));
+  });
+  assessState = { puzzles: allPuzzles, currentIdx: 0, answers: [], timer: null, startTime: Date.now() };
+
+  document.getElementById('assessmentIntro').style.display = 'none';
+  document.getElementById('assessmentResults').style.display = 'none';
+  document.getElementById('assessmentActive').style.display = 'block';
+  document.getElementById('assessPuzzleTotal').textContent = allPuzzles.length;
+
+  showAssessPuzzle();
+}
+
+function showAssessPuzzle() {
+  const p = assessState.puzzles[assessState.currentIdx];
+  if (!p) { finishAssessment(); return; }
+  const el = id => document.getElementById(id);
+  el('assessPuzzleNum').textContent = assessState.currentIdx + 1;
+  el('assessCategory').textContent = p.category.charAt(0).toUpperCase() + p.category.slice(1);
+  el('assessConcept').textContent = p.concept;
+  el('assessDifficulty').textContent = '⭐'.repeat(Math.min(p.difficulty, 5));
+  el('assessFen').textContent = p.fen;
+  el('assessBoard').textContent = p.fen.split(' ')[0].replace(/\//g, ' / ');
+  el('assessMoveInput').value = '';
+  el('assessMoveInput').focus();
+  el('assessFeedback').style.display = 'none';
+
+  // Progress dots
+  const dots = el('assessProgressDots');
+  dots.innerHTML = '';
+  assessState.puzzles.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'assess-dot';
+    if (i < assessState.currentIdx) {
+      const a = assessState.answers[i];
+      dot.classList.add(a && a.correct ? 'correct' : 'wrong');
+    } else if (i === assessState.currentIdx) {
+      dot.classList.add('current');
+    }
+    dots.appendChild(dot);
+  });
+}
+
+function submitAssessMove() {
+  const input = document.getElementById('assessMoveInput');
+  const userMove = input.value.trim();
+  if (!userMove) return;
+  const p = assessState.puzzles[assessState.currentIdx];
+  const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
+  const correct = normalize(userMove) === normalize(p.solution);
+
+  assessState.answers.push({ category: p.category, correct, difficulty: p.difficulty, userMove, solution: p.solution });
+
+  // Update mastery
+  const conceptId = KNOWLEDGE_GRAPH.find(c => c.name.toLowerCase().includes(p.concept.toLowerCase()))?.id;
+  if (conceptId) profile.updateMastery(conceptId, correct, p.difficulty);
+
+  // Show feedback
+  const fb = document.getElementById('assessFeedback');
+  fb.style.display = 'block';
+  fb.style.background = correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+  fb.style.border = `1px solid ${correct ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`;
+  fb.style.color = correct ? 'var(--success)' : 'var(--danger)';
+  fb.textContent = correct ? `✅ Correct! ${p.concept}` : `❌ Incorrect. Solution: ${p.solution} (${p.concept})`;
+
+  setTimeout(() => {
+    assessState.currentIdx++;
+    if (assessState.currentIdx >= assessState.puzzles.length) finishAssessment();
+    else showAssessPuzzle();
+  }, 1500);
+}
+
+function finishAssessment() {
+  document.getElementById('assessmentActive').style.display = 'none';
+  document.getElementById('assessmentResults').style.display = 'block';
+
+  const result = runAssessment(profile, assessState.answers);
+  profile.saveAssessment(result);
+
+  document.getElementById('assessEstElo').textContent = result.estimatedElo;
+  document.getElementById('assessOverall').textContent = `${result.overallScore}%`;
+
+  renderSkillBars('assessSkillBars', result.skillScores);
+
+  document.getElementById('assessStrengths').innerHTML = result.strengths.map(s => `<div>✅ <strong>${s}</strong> — ${result.skillScores[s]}%</div>`).join('');
+  document.getElementById('assessWeaknesses').innerHTML = result.weaknesses.map(s => `<div>🎯 <strong>${s}</strong> — ${result.skillScores[s]}%</div>`).join('');
+
+  showToast(`🏆 Assessment complete! Estimated ELO: ${result.estimatedElo}`);
+  updateHeaderStats();
+  updateHeroSection();
+  initHomeSkillBars();
+}
+
+// ═══════════════════════════════════════════════════
+// SKILL TREE VIEW
+// ═══════════════════════════════════════════════════
+function initSkillTree() {
+  const grid = document.getElementById('skillTreeGrid');
+  const filters = document.getElementById('stFilterBtns');
+  if (!grid) return;
+
+  const cats = ['all',...new Set(KNOWLEDGE_GRAPH.map(c => c.category))];
+  const catIcons = { all:'🌳', fundamentals:'🎯', tactic:'⚔️', strategy:'🏗️', opening:'🧪', endgame:'📖', calculation:'🧠' };
+
+  // Filter buttons
+  if (filters) {
+    filters.innerHTML = '';
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'gm-btn' + (cat === 'all' ? ' active' : '');
+      btn.textContent = `${catIcons[cat]||'📚'} ${cat === 'all' ? 'All' : cat.charAt(0).toUpperCase()+cat.slice(1)}`;
+      btn.addEventListener('click', () => {
+        filters.querySelectorAll('.gm-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderSkillTreeGrid(cat === 'all' ? null : cat);
+      });
+      filters.appendChild(btn);
+    });
+  }
+
+  renderSkillTreeGrid(null);
+}
+
+function renderSkillTreeGrid(filterCat) {
+  const grid = document.getElementById('skillTreeGrid');
+  grid.innerHTML = '';
+  const mastered = new Set(profile.masteredConcepts);
+  let masteredCount = 0, unlockedCount = 0, lockedCount = 0;
+
+  const concepts = filterCat ? KNOWLEDGE_GRAPH.filter(c => c.category === filterCat) : KNOWLEDGE_GRAPH;
+  const catIcons = { fundamentals:'🎯', tactic:'⚔️', strategy:'🏗️', opening:'🧪', endgame:'📖', calculation:'🧠' };
+
+  concepts.forEach(concept => {
+    const isMastered = mastered.has(concept.id);
+    const isUnlocked = concept.prerequisites.every(p => mastered.has(p));
+    const mastery = profile.getMasteryFor(concept.id);
+    const confidence = mastery.confidence || (isMastered ? 100 : 0);
+
+    if (isMastered) masteredCount++;
+    else if (isUnlocked) unlockedCount++;
+    else lockedCount++;
+
+    const node = document.createElement('div');
+    node.className = `st-node ${isMastered ? 'mastered' : isUnlocked ? 'unlocked' : 'locked'}`;
+    node.innerHTML = `
+      <div class="st-node-icon">${catIcons[concept.category]||'📚'}</div>
+      <div class="st-node-name">${concept.name}</div>
+      <div class="st-node-cat">${concept.category} • Diff ${concept.difficulty}</div>
+      <div class="st-node-bar"><div class="st-node-bar-fill" style="width:${confidence}%"></div></div>
+    `;
+    node.addEventListener('click', () => showSkillTreeDetail(concept, mastery, isMastered, isUnlocked));
+    grid.appendChild(node);
+  });
+
+  document.getElementById('stMasteredCount').textContent = masteredCount;
+  document.getElementById('stUnlockedCount').textContent = unlockedCount;
+  document.getElementById('stLockedCount').textContent = lockedCount;
+}
+
+function showSkillTreeDetail(concept, mastery, isMastered, isUnlocked) {
+  const panel = document.getElementById('stDetailPanel');
+  panel.style.display = 'block';
+  document.getElementById('stDetailName').textContent = concept.name;
+  document.getElementById('stDetailCategory').textContent = concept.category;
+  document.getElementById('stDetailDesc').textContent = concept.desc;
+  document.getElementById('stDetailConf').textContent = `${Math.round(mastery.confidence||0)}%`;
+  document.getElementById('stDetailConf').style.color = mastery.confidence > 70 ? 'var(--success)' : mastery.confidence > 40 ? 'var(--warning)' : 'var(--danger)';
+  document.getElementById('stDetailRet').textContent = `${Math.round(mastery.retention||0)}%`;
+  document.getElementById('stDetailAttempts').textContent = mastery.attempts || 0;
+  document.getElementById('stDetailRate').textContent = `${Math.round((mastery.successRate||0)*100)}%`;
+  document.getElementById('stDetailTime').textContent = concept.studyMin;
+  document.getElementById('stDetailXP').textContent = concept.xp;
+  document.getElementById('stDetailRating').textContent = `${concept.ratingRange[0]}–${concept.ratingRange[1]}`;
+  document.getElementById('stDetailPrereqs').textContent = concept.prerequisites.length > 0 ? concept.prerequisites.map(p => KNOWLEDGE_GRAPH.find(c => c.id === p)?.name || p).join(', ') : 'None';
+}
+
+// ═══════════════════════════════════════════════════
+// BOSS BATTLES VIEW
+// ═══════════════════════════════════════════════════
+let bossState = { bossId:null, puzzles:[], currentIdx:0, correct:0, timer:null, startTime:0, timeLimit:300 };
+
+function initBossBattles() {
+  const grid = document.getElementById('bossGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  BOSS_BATTLES.forEach(boss => {
+    const certified = profile.hasCertification(boss.id);
+    const score = profile.bossBattleScores[boss.id];
+    const card = document.createElement('div');
+    card.className = 'boss-card' + (certified ? ' certified' : '');
+    card.style.borderColor = certified ? boss.color+'80' : '';
+    card.innerHTML = `
+      <div class="boss-card-icon">${boss.icon}</div>
+      <div class="boss-card-name" style="color:${boss.color}">${boss.name}</div>
+      <div class="boss-card-desc">${boss.description}</div>
+      <div class="boss-card-meta">
+        <span>🧩 ${boss.puzzleCount} puzzles</span>
+        <span>⏱️ ${Math.floor(boss.timeLimit/60)}:${String(boss.timeLimit%60).padStart(2,'0')}</span>
+        <span>⚡ ${boss.xpReward} XP</span>
+        <span>📈 +${boss.eloReward} Elo</span>
+        ${score ? `<span>🏆 Best: ${score.bestScore}%</span>` : ''}
+      </div>
+      <div class="boss-difficulty">${Array.from({length:8}, (_,i) => `<div class="boss-difficulty-dot ${i < boss.difficulty ? 'active' : ''}"></div>`).join('')}</div>
+    `;
+    card.addEventListener('click', () => startBossBattle(boss.id));
+    grid.appendChild(card);
+  });
+
+  document.getElementById('btnBossSubmit')?.addEventListener('click', submitBossMove);
+  document.getElementById('bossMoveInput')?.addEventListener('keypress', e => { if (e.key==='Enter') submitBossMove(); });
+}
+
+function startBossBattle(bossId) {
+  const boss = BOSS_BATTLES.find(b => b.id === bossId);
+  if (!boss) return;
+  const puzzles = getBossBattlePuzzles(bossId);
+  if (!puzzles.length) { showToast('⚠️ Not enough puzzles for this challenge.'); return; }
+
+  bossState = { bossId, puzzles, currentIdx:0, correct:0, timer:null, startTime:Date.now(), timeLimit:boss.timeLimit };
+
+  document.getElementById('bossActivePanel').style.display = 'block';
+  document.getElementById('bossResultPanel').style.display = 'none';
+  document.getElementById('bossActiveName').textContent = `${boss.icon} ${boss.name}`;
+  document.getElementById('bossActiveName').style.color = boss.color;
+
+  // Start timer
+  if (bossState.timer) clearInterval(bossState.timer);
+  bossState.timer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - bossState.startTime) / 1000);
+    const remaining = Math.max(0, bossState.timeLimit - elapsed);
+    document.getElementById('bossTimer').textContent = `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}`;
+    if (remaining <= 0) finishBossBattle();
+  }, 1000);
+
+  showBossPuzzle();
+}
+
+function showBossPuzzle() {
+  const p = bossState.puzzles[bossState.currentIdx];
+  if (!p) { finishBossBattle(); return; }
+  document.getElementById('bossBoard').textContent = p.fen.split(' ')[0].replace(/\//g, ' / ');
+  document.getElementById('bossPuzzleInfo').textContent = `${p.name} — ${p.category.replace(/_/g,' ')} | ${p.explanation?.slice(0,80)||''}`;
+  document.getElementById('bossScore').textContent = `${bossState.correct}/${bossState.currentIdx}`;
+  document.getElementById('bossMoveInput').value = '';
+  document.getElementById('bossMoveInput').focus();
+  document.getElementById('bossFeedback').style.display = 'none';
+
+  // Progress dots
+  const dots = document.getElementById('bossProgressDots');
+  dots.innerHTML = '';
+  bossState.puzzles.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'assess-dot';
+    if (i < bossState.currentIdx) dot.classList.add(i < bossState.correct ? 'correct' : 'wrong');
+    else if (i === bossState.currentIdx) dot.classList.add('current');
+    dots.appendChild(dot);
+  });
+}
+
+function submitBossMove() {
+  const input = document.getElementById('bossMoveInput');
+  const move = input.value.trim();
+  if (!move) return;
+  const p = bossState.puzzles[bossState.currentIdx];
+  const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
+  const userNorm = normalize(move);
+  const expNorm = normalize(`${p.expected.from}${p.expected.to}`);
+  // Also try SAN match by comparing piece movement
+  const correct = userNorm === expNorm || userNorm === normalize(p.expected.to) || (move.length >= 2 && p.expected.to.includes(move.slice(-2)));
+
+  if (correct) bossState.correct++;
+  profile.updateMastery(p.category, correct, p.difficulty || 3);
+
+  const fb = document.getElementById('bossFeedback');
+  fb.style.display = 'block';
+  fb.style.background = correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+  fb.style.border = `1px solid ${correct ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`;
+  fb.style.color = correct ? 'var(--success)' : 'var(--danger)';
+  fb.textContent = correct ? `✅ Correct! ${p.explanation||''}` : `❌ Incorrect. Expected: ${p.expected.from}→${p.expected.to}`;
+
+  setTimeout(() => {
+    bossState.currentIdx++;
+    if (bossState.currentIdx >= bossState.puzzles.length) finishBossBattle();
+    else showBossPuzzle();
+  }, 1200);
+}
+
+function finishBossBattle() {
+  if (bossState.timer) clearInterval(bossState.timer);
+  const boss = BOSS_BATTLES.find(b => b.id === bossState.bossId);
+  if (!boss) return;
+
+  const accuracy = bossState.puzzles.length > 0 ? bossState.correct / bossState.puzzles.length : 0;
+  const passed = accuracy >= boss.passThreshold;
+  const elapsed = Math.floor((Date.now() - bossState.startTime) / 1000);
+  const score = Math.round(accuracy * 100);
+
+  profile.recordBossBattle(bossState.bossId, score, passed);
+  if (passed) {
+    profile.addXP(boss.xpReward);
+    profile.updateElo(profile.elo + boss.eloReward);
+  }
+
+  document.getElementById('bossActivePanel').style.display = 'none';
+  document.getElementById('bossResultPanel').style.display = 'block';
+  document.getElementById('bossResultIcon').textContent = passed ? '🏆' : '💥';
+  document.getElementById('bossResultTitle').textContent = passed ? `${boss.name} — CERTIFIED!` : `${boss.name} — Not Yet...`;
+  document.getElementById('bossResultTitle').style.color = passed ? boss.color : 'var(--danger)';
+  document.getElementById('bossResultDesc').textContent = passed ? `You passed with ${score}% accuracy! Certification earned.` : `${score}% accuracy (need ${Math.round(boss.passThreshold*100)}%). Keep practicing!`;
+  document.getElementById('bossResScore').textContent = `${score}%`;
+  document.getElementById('bossResTime').textContent = `${elapsed}s`;
+  document.getElementById('bossResXP').textContent = passed ? `+${boss.xpReward}` : '0';
+  document.getElementById('bossResElo').textContent = passed ? `+${boss.eloReward}` : '+0';
+
+  showToast(passed ? `🏆 ${boss.name} certified! +${boss.xpReward} XP` : `💥 ${score}% — Keep training!`);
+  updateHeaderStats();
+  initBossBattles(); // Refresh cards
+}
+
+// ═══════════════════════════════════════════════════
+// DEEP LEARNING ANALYTICS VIEW
+// ═══════════════════════════════════════════════════
+function initDeepAnalytics() {
+  renderAnalyticsStats();
+  document.getElementById('btnGenReport')?.addEventListener('click', () => {
+    const report = profile.generateWeeklyReport();
+    const panel = document.getElementById('weeklyReportPanel');
+    panel.style.display = 'block';
+    document.getElementById('weeklyReportContent').innerHTML = `
+      <div class="grid-4" style="margin-bottom:12px;">
+        <div class="stat-card"><div class="stat-val" style="font-size:1rem;color:var(--accent-blue)">${report.puzzlesSolved}</div><div class="stat-lbl">Puzzles Solved</div></div>
+        <div class="stat-card"><div class="stat-val" style="font-size:1rem;color:var(--success)">${report.puzzleAccuracy}%</div><div class="stat-lbl">Accuracy</div></div>
+        <div class="stat-card"><div class="stat-val" style="font-size:1rem;color:var(--accent-purple)">${report.gamesPlayed}</div><div class="stat-lbl">Games</div></div>
+        <div class="stat-card"><div class="stat-val" style="font-size:1rem;color:${report.eloChange >= 0 ? 'var(--success)' : 'var(--danger)'}">${report.eloChange >= 0 ? '+' : ''}${report.eloChange}</div><div class="stat-lbl">Elo Change</div></div>
+      </div>
+      <p><strong>Training Time:</strong> ${report.trainingMinutes} minutes</p>
+      <p><strong>New Concepts Mastered:</strong> ${report.newConceptsMastered}</p>
+      <p><strong>Strengths:</strong> ${report.strengths.join(', ')}</p>
+      <p><strong>Focus Areas:</strong> ${report.weaknesses.join(', ')}</p>
+    `;
+    showToast('📄 Weekly report generated!');
+  });
+}
+
+function renderAnalyticsStats() {
+  const container = document.getElementById('analyticsStatCards');
+  if (!container) return;
+  const velocity = profile.getLearningVelocity();
+  const trendColors = { accelerating:'var(--success)', steady:'var(--accent-blue)', plateau:'var(--warning)', declining:'var(--danger)', new:'var(--text-muted)' };
+  container.innerHTML = [
+    { icon:'📈', val:profile.elo, label:'Current ELO', color:'var(--accent-blue)' },
+    { icon:'📚', val:profile.masteredConcepts.length + '/' + KNOWLEDGE_GRAPH.length, label:'Concepts Mastered', color:'var(--success)' },
+    { icon:'🏅', val:profile.certifications.length, label:'Certifications', color:'var(--accent-gold)' },
+    { icon:'📉', val:(velocity.eloPerWeek > 0 ? '+' : '') + velocity.eloPerWeek, label:`Trend: ${velocity.trend}`, color:trendColors[velocity.trend] },
+  ].map(s => `<div class="stat-card"><div class="stat-val" style="font-size:1.2rem;color:${s.color}">${s.icon} ${s.val}</div><div class="stat-lbl">${s.label}</div></div>`).join('');
+
+  // Render ELO chart
+  renderEloChart();
+  // Render radar
+  renderDeepRadar();
+  // Render heatmap
+  renderDeepHeatmap();
+}
+
+function renderEloChart() {
+  const svg = document.getElementById('eloChartSvg');
+  if (!svg || !profile.eloHistory.length) return;
+  const data = profile.eloHistory.slice(-30);
+  const minElo = Math.min(...data.map(d => d.elo)) - 20;
+  const maxElo = Math.max(...data.map(d => d.elo)) + 20;
+  const range = maxElo - minElo || 1;
+  const w = svg.clientWidth || 300;
+  const h = svg.clientHeight || 180;
+  let path = '';
+  data.forEach((d, i) => {
+    const x = (i / Math.max(1, data.length - 1)) * w;
+    const y = h - ((d.elo - minElo) / range) * h;
+    path += (i === 0 ? 'M' : 'L') + `${x},${y} `;
+  });
+  svg.innerHTML = `<defs><linearGradient id="eloGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.8"/><stop offset="100%" style="stop-color:#eab308;stop-opacity:0.8"/></linearGradient></defs><path d="${path}" fill="none" stroke="url(#eloGrad)" stroke-width="2.5" stroke-linecap="round"/>` + data.map((d,i) => {
+    const x = (i / Math.max(1, data.length-1)) * w;
+    const y = h - ((d.elo - minElo) / range) * h;
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent-blue)"><title>${d.date}: ${d.elo}</title></circle>`;
+  }).join('');
+}
+
+function renderDeepRadar() {
+  const svg = document.getElementById('deepRadarSvg');
+  if (!svg) return;
+  const scores = profile.skillScores;
+  const labels = Object.keys(scores);
+  const values = Object.values(scores);
+  const cx = 140, cy = 120, r = 90, n = labels.length;
+  let html = '';
+  [0.25,0.5,0.75,1.0].forEach(s => {
+    const pts = [];
+    for (let i = 0; i < n; i++) { const a = (Math.PI*2*i)/n - Math.PI/2; pts.push(`${cx+r*s*Math.cos(a)},${cy+r*s*Math.sin(a)}`); }
+    html += `<polygon class="radar-grid-ring" points="${pts.join(' ')}"/>`;
+  });
+  for (let i = 0; i < n; i++) {
+    const a = (Math.PI*2*i)/n - Math.PI/2;
+    html += `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}"/>`;
+    const lx = cx+(r+18)*Math.cos(a), ly = cy+(r+18)*Math.sin(a);
+    html += `<text class="radar-label" x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle">${labels[i]}</text>`;
+  }
+  const pts = [];
+  for (let i = 0; i < n; i++) { const a = (Math.PI*2*i)/n - Math.PI/2; const v = values[i]/100; pts.push(`${cx+r*v*Math.cos(a)},${cy+r*v*Math.sin(a)}`); }
+  html += `<polygon class="radar-polygon" points="${pts.join(' ')}"/>`;
+  pts.forEach(pt => { const [x,y] = pt.split(','); html += `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent-blue)"/>`; });
+  svg.innerHTML = html;
+}
+
+function renderDeepHeatmap() {
+  const grid = document.getElementById('deepHeatmapGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const mastered = new Set(profile.masteredConcepts);
+  KNOWLEDGE_GRAPH.forEach(concept => {
+    const isMastered = mastered.has(concept.id);
+    const isUnlocked = concept.prerequisites.every(p => mastered.has(p));
+    const m = profile.getMasteryFor(concept.id);
+    let color = 'rgba(239,68,68,0.3)';
+    if (isMastered) color = `rgba(16,185,129,${0.3 + (m.confidence||80)/200})`;
+    else if (isUnlocked) color = `rgba(234,179,8,${0.2 + (m.confidence||0)/200})`;
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    cell.style.background = color;
+    cell.title = `${concept.name} (${isMastered ? 'Mastered' : isUnlocked ? `${Math.round(m.confidence||0)}% conf` : 'Locked'})`;
+    grid.appendChild(cell);
+  });
 }

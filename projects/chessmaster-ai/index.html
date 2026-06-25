@@ -33,6 +33,11 @@
                 <button class="nav-item" data-target="tournament-view"><span class="nav-item-icon">🏆</span> Tournaments</button>
                 <button class="nav-item" data-target="analytics-view"><span class="nav-item-icon">📊</span> Analytics</button>
                 <button class="nav-item" data-target="community-view"><span class="nav-item-icon">👥</span> Community</button>
+                <div style="border-top:1px solid var(--border-color);margin:6px 0;opacity:0.4;"></div>
+                <button class="nav-item" data-target="assessment-view"><span class="nav-item-icon">📋</span> Skill Assessment</button>
+                <button class="nav-item" data-target="skilltree-view"><span class="nav-item-icon">🌳</span> Skill Tree</button>
+                <button class="nav-item" data-target="boss-view"><span class="nav-item-icon">🐉</span> Boss Battles</button>
+                <button class="nav-item" data-target="deep-analytics-view"><span class="nav-item-icon">📉</span> Learning Analytics</button>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-badge">
@@ -61,8 +66,39 @@
                 </div>
             </header>
 
-            <!-- 1. HOME — Daily Mission -->
+            <!-- 1. HOME — Adaptive Learning Hub -->
             <section id="home-view" class="view-panel active">
+                <!-- Hero: Next Best Action -->
+                <div class="hero-section" id="heroSection">
+                    <div class="hero-left">
+                        <div class="hero-stage-badge" id="heroStageBadge">♟️ Beginner</div>
+                        <h1 class="hero-title" id="heroTitle">Welcome to ChessOS</h1>
+                        <p class="hero-subtitle" id="heroSubtitle">Your adaptive chess training begins here.</p>
+                        <div class="hero-action" id="heroAction">
+                            <button id="btnHeroAction" class="hud-btn primary-btn hero-cta">📋 Take Skill Assessment</button>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="hero-stat"><span class="hero-stat-val" id="heroElo">850</span><span class="hero-stat-lbl">ELO</span></div>
+                            <div class="hero-stat"><span class="hero-stat-val" id="heroMastered">5</span><span class="hero-stat-lbl">Mastered</span></div>
+                            <div class="hero-stat"><span class="hero-stat-val" id="heroCerts">0</span><span class="hero-stat-lbl">Certs</span></div>
+                            <div class="hero-stat"><span class="hero-stat-val" id="heroVelocity">—</span><span class="hero-stat-lbl">Elo/wk</span></div>
+                        </div>
+                    </div>
+                    <div class="hero-right">
+                        <div class="hero-progress-ring">
+                            <svg viewBox="0 0 120 120" class="ring-svg">
+                                <circle cx="60" cy="60" r="52" class="ring-bg"/>
+                                <circle cx="60" cy="60" r="52" class="ring-fill" id="heroRing" stroke-dasharray="327" stroke-dashoffset="327"/>
+                            </svg>
+                            <div class="ring-center">
+                                <span class="ring-pct" id="heroRingPct">0%</span>
+                                <span class="ring-label">Daily</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mission Flow -->
                 <div class="grid-2">
                     <div class="glass-card">
                         <h2 class="card-title">🎯 Today's Mission</h2>
@@ -90,14 +126,20 @@
                         </div>
                     </div>
                 </div>
-                <!-- ROI Recommendation -->
-                <div class="glass-card" id="roiCard">
-                    <h2 class="card-title">🚀 Highest-ROI Activity</h2>
-                    <div id="roiContent" style="font-size:0.8rem;color:var(--text-secondary);line-height:1.6;">Calculating your optimal next study topic...</div>
+                <!-- ROI + Skill Snapshot -->
+                <div class="grid-2">
+                    <div class="glass-card" id="roiCard">
+                        <h2 class="card-title">🚀 Highest-ROI Activity</h2>
+                        <div id="roiContent" style="font-size:0.8rem;color:var(--text-secondary);line-height:1.6;">Calculating your optimal next study topic...</div>
+                    </div>
+                    <div class="glass-card">
+                        <h2 class="card-title">📊 Skill Snapshot</h2>
+                        <div id="homeSkillBars" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    </div>
                 </div>
                 <!-- Achievements -->
                 <div class="glass-card">
-                    <h2 class="card-title">🏅 Achievements</h2>
+                    <h2 class="card-title">🏅 Achievements <span id="achievementCount" style="font-size:0.68rem;color:var(--text-muted);font-weight:500;margin-left:6px;"></span></h2>
                     <div class="achievements-grid" id="achievementsGrid"></div>
                 </div>
             </section>
@@ -390,6 +432,192 @@
                             <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:4px;">320 Members | Weekly Endgame Drills</div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- 15. SKILL ASSESSMENT -->
+            <section id="assessment-view" class="view-panel">
+                <div class="glass-card" id="assessmentIntro">
+                    <h2 class="card-title">📋 Comprehensive Skill Assessment</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;line-height:1.6;">Solve puzzles across Tactics, Strategy, Endgames, Calculation, and Visualization. Your results personalize your entire learning path.</p>
+                    <div class="grid-3" id="assessmentCategoryCards"></div>
+                    <div style="margin-top:16px;text-align:center;">
+                        <button id="btnStartAssessment" class="hud-btn primary-btn" style="padding:10px 28px;font-size:0.82rem;">🚀 Begin Assessment</button>
+                    </div>
+                </div>
+                <div class="glass-card" id="assessmentActive" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="font-size:0.85rem;font-weight:700;">Puzzle <span id="assessPuzzleNum">1</span> of <span id="assessPuzzleTotal">14</span></h3>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <span class="theme-tag" id="assessCategory">Tactical</span>
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--accent-gold);font-weight:700;" id="assessTimer">5:00</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:4px;margin-bottom:14px;" id="assessProgressDots"></div>
+                    <div style="display:flex;gap:16px;align-items:start;">
+                        <div style="flex:1;">
+                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;" id="assessInstruction">Find the best move in this position.</p>
+                            <div class="lesson-board-mini" id="assessBoard" style="max-width:340px;height:340px;font-size:0.7rem;">Board loads here</div>
+                        </div>
+                        <div style="flex:1;">
+                            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;">💡 <strong id="assessConcept">Concept</strong> — Difficulty: <span id="assessDifficulty">⭐⭐</span></p>
+                            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:12px;">FEN: <code id="assessFen" style="font-size:0.65rem;"></code></div>
+                            <label style="font-size:0.75rem;font-weight:600;display:block;margin-bottom:6px;">Your Move (SAN notation):</label>
+                            <div style="display:flex;gap:8px;">
+                                <input type="text" id="assessMoveInput" class="elo-input" style="flex:1;" placeholder="e.g. Nf3, Qxf7#">
+                                <button id="btnSubmitAssessMove" class="hud-btn primary-btn" style="padding:7px 14px;">Submit</button>
+                            </div>
+                            <div id="assessFeedback" style="margin-top:12px;padding:10px;border-radius:8px;font-size:0.75rem;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card" id="assessmentResults" style="display:none;">
+                    <h2 class="card-title">🏆 Assessment Complete!</h2>
+                    <div class="grid-2" style="margin-bottom:16px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent-blue);" id="assessEstElo">1200</div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">Estimated ELO</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent-gold);" id="assessOverall">65%</div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">Overall Score</div>
+                        </div>
+                    </div>
+                    <div id="assessSkillBars" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+                    <div class="grid-2">
+                        <div class="glass-card" style="background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.2);">
+                            <h4 style="font-size:0.78rem;font-weight:700;color:var(--success);margin-bottom:6px;">💪 Strengths</h4>
+                            <div id="assessStrengths" style="font-size:0.75rem;color:var(--text-secondary);"></div>
+                        </div>
+                        <div class="glass-card" style="background:rgba(239,68,68,0.05);border-color:rgba(239,68,68,0.2);">
+                            <h4 style="font-size:0.78rem;font-weight:700;color:var(--danger);margin-bottom:6px;">🎯 Focus Areas</h4>
+                            <div id="assessWeaknesses" style="font-size:0.75rem;color:var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:14px;text-align:center;">
+                        <button id="btnRetakeAssessment" class="hud-btn" style="padding:8px 20px;">🔄 Retake Assessment</button>
+                        <button id="btnGoToDashboard" class="hud-btn primary-btn" style="padding:8px 20px;margin-left:8px;">🏠 Go to Dashboard</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 16. SKILL TREE -->
+            <section id="skilltree-view" class="view-panel">
+                <div class="glass-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <div>
+                            <h2 class="card-title">🌳 Knowledge Skill Tree</h2>
+                            <p style="color:var(--text-secondary);font-size:0.72rem;">Master concepts to unlock advanced skills. Green = mastered, Blue = unlocked, Gray = locked.</p>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <span class="theme-tag" style="background:var(--success-glow);color:var(--success);border-color:rgba(16,185,129,0.3);">● Mastered: <strong id="stMasteredCount">0</strong></span>
+                            <span class="theme-tag" style="background:var(--accent-blue-glow);color:var(--accent-blue);border-color:rgba(59,130,246,0.3);">● Unlocked: <strong id="stUnlockedCount">0</strong></span>
+                            <span class="theme-tag">● Locked: <strong id="stLockedCount">0</strong></span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;" id="stFilterBtns"></div>
+                    <div class="skilltree-grid" id="skillTreeGrid"></div>
+                </div>
+                <div class="glass-card" id="stDetailPanel" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:start;">
+                        <div>
+                            <h3 id="stDetailName" style="font-size:0.9rem;font-weight:700;"></h3>
+                            <span class="theme-tag" id="stDetailCategory" style="margin-top:4px;"></span>
+                        </div>
+                        <button class="hud-btn" style="padding:4px 10px;font-size:0.68rem;" onclick="document.getElementById('stDetailPanel').style.display='none'">✕ Close</button>
+                    </div>
+                    <p id="stDetailDesc" style="font-size:0.78rem;color:var(--text-secondary);margin-top:8px;line-height:1.5;"></p>
+                    <div class="grid-4" style="margin-top:12px;">
+                        <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="stDetailConf">0%</div><div class="stat-lbl">Confidence</div></div>
+                        <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="stDetailRet">0%</div><div class="stat-lbl">Retention</div></div>
+                        <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="stDetailAttempts">0</div><div class="stat-lbl">Attempts</div></div>
+                        <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="stDetailRate">0%</div><div class="stat-lbl">Success Rate</div></div>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:8px;">
+                        <span style="font-size:0.72rem;color:var(--text-muted);">⏱️ <span id="stDetailTime">0</span> min study</span>
+                        <span style="font-size:0.72rem;color:var(--accent-gold);">⚡ <span id="stDetailXP">0</span> XP</span>
+                        <span style="font-size:0.72rem;color:var(--text-muted);">🎯 Rating: <span id="stDetailRating">0-0</span></span>
+                    </div>
+                    <div style="margin-top:8px;font-size:0.72rem;color:var(--text-muted);">Prerequisites: <span id="stDetailPrereqs" style="color:var(--accent-blue);">None</span></div>
+                </div>
+            </section>
+
+            <!-- 17. BOSS BATTLES -->
+            <section id="boss-view" class="view-panel">
+                <div class="glass-card">
+                    <h2 class="card-title">🐉 Boss Battles & Certifications</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Prove your mastery through timed challenges. Earn certifications and unlock rewards.</p>
+                    <div class="grid-2" id="bossGrid"></div>
+                </div>
+                <div class="glass-card" id="bossActivePanel" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <h3 id="bossActiveName" style="font-size:0.9rem;font-weight:700;"></h3>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--danger);" id="bossTimer">5:00</span>
+                            <span style="font-size:0.75rem;font-weight:700;" id="bossScore">0/0</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:4px;margin-bottom:12px;" id="bossProgressDots"></div>
+                    <div style="display:flex;gap:16px;align-items:start;">
+                        <div class="lesson-board-mini" id="bossBoard" style="max-width:300px;height:300px;">Board</div>
+                        <div style="flex:1;">
+                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;" id="bossPuzzleInfo"></p>
+                            <div style="display:flex;gap:8px;">
+                                <input type="text" id="bossMoveInput" class="elo-input" style="flex:1;" placeholder="Your move (SAN)">
+                                <button id="btnBossSubmit" class="hud-btn primary-btn" style="padding:7px 14px;">⚔️ Attack</button>
+                            </div>
+                            <div id="bossFeedback" style="margin-top:10px;padding:10px;border-radius:8px;font-size:0.75rem;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card" id="bossResultPanel" style="display:none;">
+                    <div style="text-align:center;">
+                        <div style="font-size:3rem;margin-bottom:8px;" id="bossResultIcon">🏆</div>
+                        <h3 id="bossResultTitle" style="font-size:1.1rem;font-weight:800;">Challenge Complete!</h3>
+                        <p id="bossResultDesc" style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"></p>
+                        <div class="grid-4" style="margin-top:16px;">
+                            <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="bossResScore">0%</div><div class="stat-lbl">Accuracy</div></div>
+                            <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="bossResTime">0s</div><div class="stat-lbl">Time</div></div>
+                            <div class="stat-card"><div class="stat-val" style="font-size:1rem;color:var(--accent-gold);" id="bossResXP">0</div><div class="stat-lbl">XP Earned</div></div>
+                            <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="bossResElo">+0</div><div class="stat-lbl">Elo Change</div></div>
+                        </div>
+                        <button class="hud-btn primary-btn" style="margin-top:14px;padding:8px 20px;" onclick="document.getElementById('bossResultPanel').style.display='none'">Continue →</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 18. DEEP LEARNING ANALYTICS -->
+            <section id="deep-analytics-view" class="view-panel">
+                <div class="glass-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <div>
+                            <h2 class="card-title">📉 Learning Analytics Dashboard</h2>
+                            <p style="color:var(--text-secondary);font-size:0.72rem;">Track your growth, identify trends, and optimize your training.</p>
+                        </div>
+                        <button id="btnGenReport" class="hud-btn" style="padding:6px 12px;font-size:0.72rem;">📄 Generate Weekly Report</button>
+                    </div>
+                </div>
+                <div class="grid-4" id="analyticsStatCards"></div>
+                <div class="grid-2">
+                    <div class="glass-card">
+                        <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:10px;">📈 ELO Progression</h3>
+                        <div style="height:200px;position:relative;border-left:2px solid var(--border-color);border-bottom:2px solid var(--border-color);padding:10px;">
+                            <svg style="width:100%;height:100%;" id="eloChartSvg"></svg>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:10px;">🕸️ Skill Evolution</h3>
+                        <svg class="radar-chart-svg" id="deepRadarSvg" style="max-width:280px;"></svg>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:10px;">📊 Concept Mastery Heatmap</h3>
+                    <p style="color:var(--text-secondary);font-size:0.72rem;margin-bottom:10px;">Hover over cells to see concept details. Green=mastered, Yellow=learning, Red=weak.</p>
+                    <div class="heatmap-grid" id="deepHeatmapGrid"></div>
+                </div>
+                <div class="glass-card" id="weeklyReportPanel" style="display:none;">
+                    <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📄 Weekly Report</h3>
+                    <div id="weeklyReportContent" style="font-size:0.78rem;color:var(--text-secondary);line-height:1.6;"></div>
                 </div>
             </section>
         </main>
