@@ -5,6 +5,7 @@ export default defineConfig({
     test: {
         environment: 'jsdom',
         globals: true,
+        setupFiles: ['./tests/jsdom-setup.js'],
         include: [
             'tests/speed-test.test.js',
             'tests/ip-lookup.test.js',

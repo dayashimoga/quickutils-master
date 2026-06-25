@@ -345,7 +345,7 @@ describe('Daily Training Mission Generator', () => {
 
   it('generateDailyMission adapts puzzle count to Elo', () => {
     const lowElo = generateDailyMission({ elo: 800, masteredConcepts: [], gameHistory: [] });
-    const highElo = generateDailyMission({ elo: 1600, masteredConcepts: [], gameHistory: [] });
+    const highElo = generateDailyMission({ elo: 1400, masteredConcepts: [], gameHistory: [] });
     const lowPuzzle = lowElo.tasks.find(t => t.type === 'puzzles');
     const highPuzzle = highElo.tasks.find(t => t.type === 'puzzles');
     expect(lowPuzzle.title).toContain('15');

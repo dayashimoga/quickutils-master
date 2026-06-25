@@ -24,13 +24,13 @@ describe('isValidIp()', () => {
 
 // ═══════ IP CLASS ═══════
 describe('getIpClass()', () => {
-    it('A for 10.x', () => expect(getIpClass('10.0.0.1')).toBe('A'));
-    it('B for 172.x', () => expect(getIpClass('172.16.0.1')).toBe('B'));
-    it('C for 192.x', () => expect(getIpClass('192.168.1.1')).toBe('C'));
-    it('D for 224.x', () => expect(getIpClass('224.0.0.1')).toBe('D'));
-    it('E for 240.x', () => expect(getIpClass('240.0.0.1')).toBe('E'));
-    it('A for 0.x', () => expect(getIpClass('0.0.0.0')).toBe('A'));
-    it('A for 127.x', () => expect(getIpClass('127.0.0.1')).toBe('A'));
+    it('A for 10.x', () => expect(getIpClass('10.0.0.1').cls).toBe('A'));
+    it('B for 172.x', () => expect(getIpClass('172.16.0.1').cls).toBe('B'));
+    it('C for 192.x', () => expect(getIpClass('192.168.1.1').cls).toBe('C'));
+    it('D for 224.x', () => expect(getIpClass('224.0.0.1').cls).toBe('D'));
+    it('E for 240.x', () => expect(getIpClass('240.0.0.1').cls).toBe('E'));
+    it('A for 0.x', () => expect(getIpClass('0.0.0.0').cls).toBe('A'));
+    it('A for 127.x', () => expect(getIpClass('127.0.0.1').cls).toBe('A'));
 });
 
 // ═══════ PRIVATE IP ═══════

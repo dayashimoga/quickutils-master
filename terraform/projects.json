@@ -682,5 +682,13 @@
         "root_dir": "projects/chessmaster-ai",
         "custom_domain": "chessmaster.quickutils.top",
         "destination_dir": "dist"
+    },
+    "earthexplorer": {
+        "directory": "projects/earthexplorer",
+        "repo_name": "earthexplorer",
+        "build_command": "npm install && npm run build",
+        "destination_dir": "out",
+        "custom_domain": "earthexplorer.quickutils.top",
+        "root_dir": "projects/earthexplorer"
     }
 }
