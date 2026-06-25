@@ -1,0 +1,12 @@
+{
+  "name": "chessmaster-ai",
+  "version": "2.0.0",
+  "description": "ChessOS V2 - Grandmaster Learning Platform E2E Tests",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.40.0"
+  }
+}

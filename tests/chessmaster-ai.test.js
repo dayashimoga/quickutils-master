@@ -17,7 +17,11 @@ import {
   generateDailyMission, generateWeeklyPlan,
   calculateXP, checkAchievements, updateStreak, getMasteryLevel,
   sm2Calculate,
-  UserProfile
+  UserProfile,
+  runAssessment,
+  getBossBattlePuzzles,
+  getGuessTheMovePosition,
+  ASSESSMENT_PUZZLES
 } from '../projects/chessmaster-ai/chessmaster-ai-utils.js';
 
 // ═══════════════════════════════════════════════════
@@ -134,10 +138,24 @@ describe('Knowledge Graph Engine', () => {
   });
 
   it('getHighestROIConcept returns best concept for profile', () => {
-    const profile = { elo: 1000, masteredConcepts: ['board_setup', 'piece_movement', 'check_checkmate', 'captures_exchanges', 'castling'] };
+    const profile = { elo: 1000, masteredConcepts: ['board_setup', 'piece_movement', 'check_checkmate', 'captures_exchanges', 'castling'], masteryMap: {} };
     const best = getHighestROIConcept(profile);
     expect(best).toBeTruthy();
     expect(best.ratingRange[0]).toBeLessThanOrEqual(1000);
+  });
+
+  it('getHighestROIConcept prioritizes low retention reviews', () => {
+    const p = new UserProfile();
+    p.elo = 1000;
+    // Set up a mastered concept with low retention in masteryMap
+    p.masteryMap['board_setup'] = {
+      conceptId: 'board_setup',
+      retention: 45,
+      mastered: true,
+      lastPracticed: Date.now() - 10 * 86400000
+    };
+    const best = getHighestROIConcept(p);
+    expect(best.id).toBe('board_setup');
   });
 
   it('getCurrentMilestone returns correct milestone', () => {
@@ -194,16 +212,15 @@ describe('FEN Parsing & Opening Detection', () => {
 // 4. MOVE CLASSIFICATION & ACCURACY
 // ═══════════════════════════════════════════════════
 describe('Move Classification & Accuracy', () => {
-  it('classifyEvalDiff identifies blunders', () => {
-    expect(classifyEvalDiff(-2.5).type).toBe('blunder');
-  });
-
-  it('classifyEvalDiff identifies best moves', () => {
-    expect(classifyEvalDiff(0.05).type).toBe('best');
-  });
-
-  it('classifyEvalDiff identifies brilliant moves', () => {
+  it('classifyEvalDiff identifies all move types', () => {
     expect(classifyEvalDiff(2.5).type).toBe('brilliant');
+    expect(classifyEvalDiff(1.2).type).toBe('great');
+    expect(classifyEvalDiff(0.1).type).toBe('best');
+    expect(classifyEvalDiff(0.3).type).toBe('excellent');
+    expect(classifyEvalDiff(0.6).type).toBe('good');
+    expect(classifyEvalDiff(-2.5).type).toBe('blunder');
+    expect(classifyEvalDiff(-1.2).type).toBe('mistake');
+    expect(classifyEvalDiff(-0.8).type).toBe('inaccuracy');
   });
 
   it('calcAccuracy returns 100 for empty moves', () => {
@@ -232,19 +249,70 @@ describe('Coach Commentary', () => {
     expect(getCoachCommentary(null, null, null, null)).toContain('Setup your game');
   });
 
-  it('returns commentary for brilliant moves', () => {
-    const c = getCoachCommentary('Nxf7+', { from: 'e5', to: 'f7', flags: 'c' }, { type: 'brilliant' }, 'Sicilian');
-    expect(c).toContain('Brilliant');
+  it('returns commentary for checkmate', () => {
+    const c = getCoachCommentary('Qxh7#', { from: 'h5', to: 'h7', flags: 'c', san: 'Qxh7#' }, { type: 'best' }, null);
+    expect(c).toContain('Checkmate');
   });
 
-  it('returns commentary for blunders', () => {
-    const c = getCoachCommentary('Qh4', { from: 'd1', to: 'h4', flags: '' }, { type: 'blunder' }, null);
-    expect(c).toContain('Blunder');
+  it('returns commentary for brilliant capture and non-capture', () => {
+    const c1 = getCoachCommentary('Nxf7+', { from: 'e5', to: 'f7', flags: 'c' }, { type: 'brilliant' }, 'Sicilian');
+    expect(c1).toContain('Brilliant');
+    expect(c1).toContain('sacrifice');
+
+    const c2 = getCoachCommentary('d4', { from: 'd2', to: 'd4', flags: '' }, { type: 'brilliant' }, null);
+    expect(c2).toContain('Brilliant');
+    expect(c2).toContain('disrupts');
+  });
+
+  it('returns commentary for great check and non-check', () => {
+    const c1 = getCoachCommentary('Re8+', { from: 'e1', to: 'e8', flags: '', san: 'Re8+' }, { type: 'great' }, null);
+    expect(c1).toContain('Great');
+    expect(c1).toContain('under heavy fire');
+
+    const c2 = getCoachCommentary('a4', { from: 'a3', to: 'a4', flags: '' }, { type: 'great' }, null);
+    expect(c2).toContain('Great');
+    expect(c2).toContain('controls key squares');
   });
 
   it('includes opening name for best moves', () => {
-    const c = getCoachCommentary('e4', { from: 'e2', to: 'e4' }, { type: 'best' }, 'Ruy Lopez');
-    expect(c).toContain('Ruy Lopez');
+    const c1 = getCoachCommentary('e4', { from: 'e2', to: 'e4' }, { type: 'best' }, 'Ruy Lopez');
+    expect(c1).toContain('Ruy Lopez');
+
+    const c2 = getCoachCommentary('e4', { from: 'e2', to: 'e4' }, { type: 'best' }, null);
+    expect(c2).not.toContain('Following');
+  });
+
+  it('returns commentary for excellent and good moves', () => {
+    const c1 = getCoachCommentary('Nf3', { from: 'g1', to: 'f3', flags: '' }, { type: 'excellent' }, null);
+    expect(c1).toContain('Excellent');
+
+    const c2 = getCoachCommentary('c3', { from: 'c2', to: 'c3', flags: '' }, { type: 'good' }, null);
+    expect(c2).toContain('Good');
+  });
+
+  it('returns commentary for blunders', () => {
+    const c1 = getCoachCommentary('Qxh4', { from: 'd1', to: 'h4', flags: 'c' }, { type: 'blunder' }, null);
+    expect(c1).toContain('Blunder');
+    expect(c1).toContain('trade');
+
+    const c2 = getCoachCommentary('Qh4', { from: 'd1', to: 'h4', flags: '' }, { type: 'blunder' }, null);
+    expect(c2).toContain('Blunder');
+    expect(c2).toContain('severely damages');
+  });
+
+  it('returns commentary for mistakes', () => {
+    const c1 = getCoachCommentary('e5', { from: 'e4', to: 'e5', piece: 'p' }, { type: 'mistake' }, null);
+    expect(c1).toContain('Mistake');
+    expect(c1).toContain('pawn structure');
+
+    const c2 = getCoachCommentary('Nf6', { from: 'g8', to: 'f6', piece: 'n' }, { type: 'mistake' }, null);
+    expect(c2).toContain('Mistake');
+    expect(c2).toContain('allows opponent');
+  });
+
+  it('returns commentary for inaccuracies', () => {
+    const c = getCoachCommentary('h3', { from: 'h2', to: 'h3', flags: '' }, { type: 'inaccuracy' }, null);
+    expect(c).toContain('Inaccuracy');
   });
 });
 
@@ -269,6 +337,11 @@ describe('Roadmap & Projection Engine', () => {
   it('calcRoadmapProjection handles zero gap', () => {
     const p = calcRoadmapProjection(2000, 2000, 10);
     expect(p.gap).toBe(0);
+  });
+
+  it('calcRoadmapProjection handles master ELO and long timeline', () => {
+    const p = calcRoadmapProjection(1000, 2600, 2);
+    expect(p.totalHours).toBeGreaterThan(0);
   });
 
   it('estimateLearningVelocity handles insufficient data', () => {
@@ -503,5 +576,282 @@ describe('UserProfile State Management', () => {
     const earned = p.checkAndAwardAchievements();
     expect(earned.some(a => a.id === 'first_game')).toBe(true);
     expect(p.achievements).toContain('first_game');
+  });
+
+  it('updateMastery initializes and updates concept card logic', () => {
+    const p = new UserProfile();
+    p.updateMastery('fork', true, 3);
+    const m = p.getMasteryFor('fork');
+    expect(m).toBeDefined();
+    expect(m.attempts).toBe(1);
+    expect(m.correct).toBe(1);
+    expect(m.confidence).toBeGreaterThan(30);
+
+    // Update again with failure
+    p.updateMastery('fork', false, 3);
+    const m2 = p.getMasteryFor('fork');
+    expect(m2.streak).toBe(0);
+    expect(m2.attempts).toBe(2);
+  });
+
+  it('updateJourneyStage adjusts stage based on ELO', () => {
+    const p = new UserProfile();
+    p.elo = 1200;
+    p.updateJourneyStage();
+    expect(p.journeyStage).toBe('club');
+
+    p.elo = 2300;
+    p.updateJourneyStage();
+    expect(p.journeyStage).toBe('international-master');
+  });
+
+  it('addCertification and hasCertification checks certification status', () => {
+    const p = new UserProfile();
+    expect(p.hasCertification('tactics_master')).toBe(false);
+    p.addCertification('tactics_master');
+    expect(p.hasCertification('tactics_master')).toBe(true);
+  });
+
+  it('recordBossBattle records battle stats and checks unlocking', () => {
+    const p = new UserProfile();
+    p.recordBossBattle('pin_master', 95, true);
+    expect(p.bossBattleScores['pin_master'].passed).toBe(true);
+    expect(p.hasCertification('pin_master')).toBe(true);
+  });
+
+  it('addTrainingTime increments training minutes', () => {
+    const p = new UserProfile();
+    p.addTrainingTime(30);
+    expect(p.totalTrainingMinutes).toBe(30);
+  });
+
+  it('saveAssessment updates elo and saves result', () => {
+    const p = new UserProfile();
+    const result = { estimatedElo: 1050, overallScore: 65, skillScores: { tactical: 70 } };
+    p.saveAssessment(result);
+    expect(p.elo).toBe(1050);
+    expect(p.assessmentHistory.length).toBe(1);
+    expect(p.assessmentHistory[0].overallScore).toBe(65);
+  });
+
+  it('updateElo updates history by pushing or overwriting', () => {
+    const p = new UserProfile();
+    p.eloHistory = [];
+    p.updateElo(900);
+    expect(p.eloHistory.length).toBe(1);
+    expect(p.eloHistory[0].elo).toBe(900);
+
+    // Call again on the same day, should overwrite instead of pushing
+    p.updateElo(950);
+    expect(p.eloHistory.length).toBe(1);
+    expect(p.eloHistory[0].elo).toBe(950);
+  });
+
+  it('generateWeeklyReport returns summary report object', () => {
+    const p = new UserProfile();
+    p.totalTrainingMinutes = 60;
+    p.gamesPlayed = 5;
+    p.puzzlesSolved = 20;
+    const report = p.generateWeeklyReport();
+    expect(report).toHaveProperty('trainingMinutes');
+    expect(report.trainingMinutes).toBe(60);
+    expect(p.weeklyReports.length).toBe(1);
+  });
+
+  it('generateWeeklyReport calculates accuracy and ELO changes correctly', () => {
+    const p = new UserProfile();
+    p.totalTrainingMinutes = 60;
+    p.gamesPlayed = 5;
+    p.elo = 850;
+    
+    // Add recent puzzles
+    p.practiceHistory = [
+      { timestamp: Date.now(), correct: true },
+      { timestamp: Date.now(), correct: false }
+    ];
+    
+    // Add recent games
+    p.gameHistory = [
+      { timestamp: Date.now() }
+    ];
+
+    // Add ELO history
+    p.eloHistory = [
+      { timestamp: Date.now() - 5 * 86400000, elo: 800 },
+      { timestamp: Date.now(), elo: 850 }
+    ];
+
+    const report = p.generateWeeklyReport();
+    expect(report.puzzleAccuracy).toBe(50);
+    expect(report.eloChange).toBe(50);
+    expect(report.gamesPlayed).toBe(1);
+  });
+
+  it('generateWeeklyReport slices weeklyReports when length > 52', () => {
+    const p = new UserProfile();
+    p.weeklyReports = Array(60).fill({});
+    p.generateWeeklyReport();
+    expect(p.weeklyReports.length).toBe(52);
+  });
+
+  it('generateWeeklyReport counts new concepts correctly', () => {
+    const p = new UserProfile();
+    p.masteryMap = {
+      c1: { mastered: true, lastPracticed: Date.now() },
+      c2: { mastered: false, lastPracticed: Date.now() },
+      c3: { mastered: true, lastPracticed: Date.now() - 10 * 86400000 }
+    };
+    const report = p.generateWeeklyReport();
+    expect(report.newConceptsMastered).toBe(1);
+  });
+
+  it('getLearningVelocity calculates elo changes and trends', () => {
+    const p = new UserProfile();
+    p.eloHistory = [
+      { timestamp: Date.now() - 7 * 86400000, elo: 850 },
+      { timestamp: Date.now(), elo: 950 }
+    ];
+    const velocity = p.getLearningVelocity();
+    expect(velocity.eloPerWeek).toBeGreaterThan(0);
+    expect(velocity.trend).toBe('accelerating');
+
+    p.eloHistory = [
+      { timestamp: Date.now() - 7 * 86400000, elo: 850 },
+      { timestamp: Date.now(), elo: 849 }
+    ];
+    const velocityPlateau = p.getLearningVelocity();
+    expect(velocityPlateau.trend).toBe('plateau');
+
+    p.eloHistory = [
+      { timestamp: Date.now() - 7 * 86400000, elo: 850 },
+      { timestamp: Date.now(), elo: 840 }
+    ];
+    const velocityDeclining = p.getLearningVelocity();
+    expect(velocityDeclining.trend).toBe('declining');
+  });
+
+  it('getLearningVelocity handles empty or short eloHistory', () => {
+    const p = new UserProfile();
+    p.eloHistory = [];
+    expect(p.getLearningVelocity().trend).toBe('new');
+
+    p.eloHistory = [{ timestamp: Date.now(), elo: 850 }];
+    expect(p.getLearningVelocity().trend).toBe('new');
+  });
+
+  it('getNextBestAction suggests next step based on profile', () => {
+    const p = new UserProfile();
+    p.assessmentCompleted = false;
+    const action = p.getNextBestAction();
+    expect(action.type).toBe('assessment');
+
+    // Case where ROI study concept exists
+    p.assessmentCompleted = true;
+    p.assessmentHistory = [{ timestamp: Date.now() }];
+    p.masteredConcepts = ['board_setup']; // board_setup is mastered, next unlocked is piece_movement (an ROI study concept)
+    const actionStudy = p.getNextBestAction();
+    expect(actionStudy.type).toBe('study');
+
+    // Case where ROI is null, but weakest concept is < 60
+    p.masteredConcepts = KNOWLEDGE_GRAPH.map(c => c.id); // no ROI study concept
+    p.skillScores = { tactical: 50, strategic: 80, endgame: 80, calculation: 80, visualization: 80, opening: 80 };
+    const actionTrain = p.getNextBestAction();
+    expect(actionTrain.type).toBe('train');
+
+    // Case where ROI is null, and all skill scores are >= 60
+    p.skillScores = { tactical: 90, strategic: 90, endgame: 90, calculation: 90, visualization: 90, opening: 90 };
+    const actionPlay = p.getNextBestAction();
+    expect(actionPlay.type).toBe('play');
+  });
+
+  it('reset clears profile data', () => {
+    const p = UserProfile.reset();
+    expect(p.elo).toBe(850);
+  });
+
+  it('updateStreak resets or increments streak', () => {
+    const p = new UserProfile();
+    p.lastActiveDate = null;
+    p.updateStreak();
+    expect(p.streak).toBe(1);
+
+    // Yesterday's date
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    p.lastActiveDate = yesterday;
+    p.updateStreak();
+    expect(p.streak).toBe(2);
+  });
+
+  it('importJSON imports profile correctly', () => {
+    const json = '{"elo": 1500, "xp": 100}';
+    const profile = UserProfile.importJSON(json);
+    expect(profile.elo).toBe(1500);
+    expect(profile.xp).toBe(100);
+  });
+});
+
+describe('Additional Utility Functions', () => {
+  it('getBossBattlePuzzles returns correct puzzles', () => {
+    // Tactic boss category
+    const puzzles = getBossBattlePuzzles('fork_master');
+    expect(puzzles.length).toBeGreaterThan(0);
+
+    // All boss category
+    const puzzlesAll = getBossBattlePuzzles('grandmaster_gauntlet');
+    expect(puzzlesAll.length).toBe(20);
+
+    // Specific category boss (endgame)
+    const puzzlesEndgame = getBossBattlePuzzles('endgame_master');
+    expect(puzzlesEndgame.length).toBeGreaterThanOrEqual(0);
+
+    const nonexistent = getBossBattlePuzzles('nonexistent_boss');
+    expect(nonexistent.length).toBe(0);
+  });
+
+  it('getGuessTheMovePosition returns valid game sequence metadata', () => {
+    const result = getGuessTheMovePosition(0);
+    expect(result).toBeDefined();
+    expect(result.pgn).toBeDefined();
+    expect(result.targetMoveIndex).toBeGreaterThanOrEqual(10);
+
+    // Temporarily push invalid game
+    FAMOUS_GAMES_DB.push({ id: 'invalid_game', pgn: '' });
+    const res1 = getGuessTheMovePosition(FAMOUS_GAMES_DB.length - 1);
+    expect(res1).toBeNull();
+    FAMOUS_GAMES_DB.pop();
+
+    // Temporarily push short game
+    FAMOUS_GAMES_DB.push({ id: 'short_game', pgn: '1.e4 e5' });
+    const res2 = getGuessTheMovePosition(FAMOUS_GAMES_DB.length - 1);
+    expect(res2).toBeNull();
+    FAMOUS_GAMES_DB.pop();
+  });
+
+  it('runAssessment computes correct ELO and skill scores', () => {
+    const p = new UserProfile();
+    const answers = [
+      { category: 'tactical', correct: true, difficulty: 2, timeTaken: 15 },
+      { category: 'tactical', correct: true, difficulty: 3, timeTaken: 10 },
+      { category: 'strategic', correct: false, difficulty: 3, timeTaken: 40 }
+    ];
+    const result = runAssessment(p, answers);
+    expect(result).toHaveProperty('skillScores');
+    expect(result).toHaveProperty('estimatedElo');
+    expect(result.totalCorrect).toBe(2);
+    expect(result.totalAttempted).toBe(3);
+
+    // Test missing difficulty and timeTaken, and force ASSESSMENT_PUZZLES fallback branch
+    const originalTactical = ASSESSMENT_PUZZLES.tactical;
+    ASSESSMENT_PUZZLES.tactical = undefined;
+
+    const answers2 = [
+      { category: 'tactical', correct: true }
+    ];
+    const result2 = runAssessment(p, answers2);
+    expect(result2.totalCorrect).toBe(1);
+    expect(result2.totalAttempted).toBe(1);
+
+    // Restore
+    ASSESSMENT_PUZZLES.tactical = originalTactical;
   });
 });

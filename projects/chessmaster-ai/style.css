@@ -269,6 +269,15 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
   .hero-section { flex-direction: column; gap: 16px; }
   .hero-right { justify-content: center; }
 }
+@media (max-width: 768px) {
+  .sidebar { flex-direction: column; align-items: center; gap: 8px; }
+  .brand-section { border-bottom: none; margin-bottom: 0; }
+  .nav-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px; overflow-x: visible; }
+  .nav-item { font-size: 0; padding: 6px 10px; }
+  .nav-item-icon { font-size: 1.15rem; margin-right: 0 !important; }
+  .user-info { display: none; }
+  .sidebar-footer { margin-top: 4px; gap: 8px; }
+}
 @media (max-width: 640px) {
   .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .review-stats-grid { grid-template-columns: 1fr 1fr; }

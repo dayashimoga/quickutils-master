@@ -38,6 +38,7 @@
                 <button class="nav-item" data-target="skilltree-view"><span class="nav-item-icon">🌳</span> Skill Tree</button>
                 <button class="nav-item" data-target="boss-view"><span class="nav-item-icon">🐉</span> Boss Battles</button>
                 <button class="nav-item" data-target="deep-analytics-view"><span class="nav-item-icon">📉</span> Learning Analytics</button>
+                <button class="nav-item" data-target="vis-lab-view"><span class="nav-item-icon">👁️</span> Visualization Lab</button>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-badge">
@@ -243,6 +244,11 @@
                             <h3 style="font-size:0.82rem;font-weight:600;margin-bottom:8px;">Analysis Log</h3>
                             <div style="max-height:150px;overflow-y:auto;font-size:0.75rem;display:flex;flex-direction:column;gap:6px;" id="reviewMovesLog"></div>
                         </div>
+                        <div class="glass-card" id="reviewRemediationCard" style="background:rgba(239,68,68,0.02);border-color:rgba(239,68,68,0.15);display:none;">
+                            <h3 style="font-size:0.82rem;font-weight:700;color:var(--danger);margin-bottom:6px;">🎯 Remediation Plan</h3>
+                            <p style="color:var(--text-secondary);font-size:0.72rem;margin-bottom:8px;" id="reviewRemediationText"></p>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="reviewRemediationBtns"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -294,6 +300,7 @@
                         <div>
                             <div id="strategyLesson" class="lesson-text"></div>
                             <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Squares:</strong> <span id="strategySquares" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);font-size:0.75rem;"></span></div>
+                            <button id="btnPlayStrategy" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
                         </div>
                         <div>
                             <div class="lesson-board-mini" id="strategyBoard">Interactive board position</div>
@@ -618,6 +625,80 @@
                 <div class="glass-card" id="weeklyReportPanel" style="display:none;">
                     <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📄 Weekly Report</h3>
                     <div id="weeklyReportContent" style="font-size:0.78rem;color:var(--text-secondary);line-height:1.6;"></div>
+                </div>
+            </section>
+
+            <!-- 19. VISUALIZATION & CALCULATION LAB -->
+            <section id="vis-lab-view" class="view-panel">
+                <div class="glass-card">
+                    <h2 class="card-title">👁️ Visualization & Calculation Lab</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Train your chess vision and calculate multiple moves ahead mentally.</p>
+                    
+                    <div class="grid-2">
+                        <!-- Blindfold Board Color Trainer -->
+                        <div class="glass-card" style="background:rgba(255,255,255,0.01);">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">🧑‍🦯 Blindfold Color Trainer</h3>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:10px;">Identify the color of a square from coordinates without looking at the board.</p>
+                            <div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;text-align:center;margin-bottom:10px;">
+                                <div id="bfQuestion" style="font-size:1.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent-blue);margin-bottom:10px;">Press Start</div>
+                                <div style="display:flex;gap:8px;justify-content:center;">
+                                    <button id="btnBfLight" class="hud-btn" style="padding:6px 16px;background:#f8fafc;color:#1e293b;font-weight:700;display:none;">Light Square</button>
+                                    <button id="btnBfDark" class="hud-btn" style="padding:6px 16px;background:#334155;color:#f8fafc;font-weight:700;display:none;">Dark Square</button>
+                                </div>
+                                <button id="btnBfStart" class="hud-btn primary-btn" style="padding:6px 16px;font-size:0.75rem;">Start Trainer</button>
+                            </div>
+                            <div id="bfScore" style="font-size:0.75rem;font-weight:700;text-align:center;">Score: 0/0</div>
+                        </div>
+
+                        <!-- Board Memory Trainer -->
+                        <div class="glass-card" style="background:rgba(255,255,255,0.01);">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">🧠 Position Memory Trainer</h3>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:10px;">Remember piece positions shown for 5 seconds and reconstruct the board.</p>
+                            <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
+                                <div id="memBoardText" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">Board Hidden</div>
+                                <div id="memTimer" style="font-size:1.5rem;font-weight:800;color:var(--accent-gold);margin-bottom:8px;display:none;">5</div>
+                                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+                                    <button id="btnMemReveal" class="hud-btn primary-btn" style="padding:6px 16px;font-size:0.75rem;">Generate Position</button>
+                                    <button id="btnMemVerify" class="hud-btn" style="padding:6px 16px;font-size:0.75rem;display:none;">Verify Memory</button>
+                                </div>
+                                <input type="text" id="memInputFEN" class="elo-input" style="width:100%;font-size:0.7rem;display:none;" placeholder="Enter FEN of reconstructed board...">
+                            </div>
+                            <div id="memFeedback" style="font-size:0.72rem;text-align:center;"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2" style="margin-top:12px;">
+                        <!-- Move Sequence Trainer -->
+                        <div class="glass-card" style="background:rgba(255,255,255,0.01);">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">🎬 Move Sequence Memory</h3>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:10px;">Mentally follow a list of chess moves and type the final position coordinates.</p>
+                            <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
+                                <div id="seqMoves" style="font-size:0.9rem;font-weight:700;color:var(--accent-blue);margin-bottom:8px;min-height:24px;">Click Start to begin</div>
+                                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+                                    <button id="btnSeqStart" class="hud-btn primary-btn" style="padding:6px 16px;font-size:0.75rem;">Start Sequence</button>
+                                    <button id="btnSeqSubmit" class="hud-btn" style="padding:6px 16px;font-size:0.75rem;display:none;">Submit</button>
+                                </div>
+                                <input type="text" id="seqInputSquare" class="elo-input" style="width:100%;font-size:0.75rem;display:none;text-align:center;" placeholder="Where did the last piece land? (e.g. e4, f3)">
+                            </div>
+                            <div id="seqFeedback" style="font-size:0.72rem;text-align:center;"></div>
+                        </div>
+
+                        <!-- Calculation Trainer -->
+                        <div class="glass-card" style="background:rgba(255,255,255,0.01);">
+                            <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">🧮 Candidate Moves Calculation</h3>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:10px;">Find checkmates and combinations 3-5 moves deep from candidates.</p>
+                            <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
+                                <div id="calcFen" style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">Press Start</div>
+                                <div id="calcGoal" style="font-size:0.78rem;font-weight:700;color:var(--accent-blue);margin-bottom:8px;">Find candidate moves</div>
+                                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+                                    <button id="btnCalcStart" class="hud-btn primary-btn" style="padding:6px 16px;font-size:0.75rem;">Start Puzzle</button>
+                                    <button id="btnCalcSubmit" class="hud-btn" style="padding:6px 16px;font-size:0.75rem;display:none;">Check Answer</button>
+                                </div>
+                                <input type="text" id="calcInputMove" class="elo-input" style="width:100%;font-size:0.75rem;display:none;text-align:center;" placeholder="Enter best candidate move (SAN)">
+                            </div>
+                            <div id="calcFeedback" style="font-size:0.72rem;text-align:center;"></div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

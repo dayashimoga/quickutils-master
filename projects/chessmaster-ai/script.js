@@ -39,6 +39,7 @@ const STOCKFISH_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.
 
 // User profile
 let profile = new UserProfile();
+let activeLesson = null;
 
 // ═══════════════════════════════════════════════════
 // INITIALIZATION
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDeepAnalytics();
   initAssessmentView();
   initHomeSkillBars();
+  initVisLab();
 
   // Play view buttons
   document.getElementById('btnRestart')?.addEventListener('click', resetGame);
@@ -169,7 +171,10 @@ function completeMission() {
   const xpGain = checks.length * 15;
   profile.addXP(xpGain);
   const newAch = profile.checkAndAwardAchievements();
-  newAch.forEach(a => showToast(`🏅 Achievement Unlocked: ${a.icon} ${a.name}`));
+  if (newAch.length > 0) {
+    triggerConfetti();
+    newAch.forEach(a => showToast(`🏅 Achievement Unlocked: ${a.icon} ${a.name}`));
+  }
   showToast(`⚡ +${xpGain} XP earned!`);
   updateHeaderStats();
   initAchievements();
@@ -235,14 +240,22 @@ function initJourneyView() {
 function showMilestoneDetails(m, idx, nodeEl) {
   const overlay = document.getElementById('journeyOverlay');
   const pct = Math.min(100, Math.max(0, ((profile.elo - (MILESTONES[idx-1]?.elo || 0)) / (m.elo - (MILESTONES[idx-1]?.elo || 0))) * 100));
+  
+  const challengeList = (m.challenges || []).map(c => `<li>${c}</li>`).join('');
+
   overlay.innerHTML = `
     <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:6px;">${m.icon} ${m.title} (${m.elo} ELO)</h3>
     <div class="milestone-progress"><div class="milestone-progress-fill" style="width:${profile.elo >= m.elo ? 100 : pct}%"></div></div>
     <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:8px;">${profile.elo >= m.elo ? '✅ Completed' : `${Math.round(pct)}% Progress`}</div>
-    <div style="font-size:0.75rem;margin-bottom:6px;"><strong>Required Skills:</strong><br>${Array.isArray(m.skills) ? m.skills.join(', ') : m.skills}</div>
-    <div style="font-size:0.75rem;margin-bottom:6px;"><strong>Openings:</strong><br>${Array.isArray(m.openings) ? m.openings.join(', ') : m.openings}</div>
-    <div style="font-size:0.75rem;margin-bottom:6px;"><strong>Endgames:</strong><br>${Array.isArray(m.endgames) ? m.endgames.join(', ') : m.endgames}</div>
-    <div style="font-size:0.75rem;color:var(--accent-blue);"><strong>Target:</strong> ${m.target}</div>`;
+    <div style="font-size:0.72rem;margin-bottom:6px;background:rgba(255,255,255,0.02);padding:6px;border-radius:4px;border:1px solid var(--border-color);">
+      <strong>🏆 Rank Challenges:</strong>
+      <ul style="margin:4px 0 0 12px;padding:0;list-style-type:disc;">${challengeList}</ul>
+    </div>
+    <div style="font-size:0.72rem;margin-bottom:6px;color:var(--accent-emerald);"><strong>🎁 Unlockable Content:</strong> ${m.unlockableContent || 'None'}</div>
+    <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Required Skills:</strong> ${Array.isArray(m.skills) ? m.skills.join(', ') : m.skills}</div>
+    <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Openings:</strong> ${Array.isArray(m.openings) ? m.openings.join(', ') : m.openings}</div>
+    <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Endgames:</strong> ${Array.isArray(m.endgames) ? m.endgames.join(', ') : m.endgames}</div>
+    <div style="font-size:0.72rem;color:var(--accent-blue);margin-top:4px;"><strong>Target:</strong> ${m.target}</div>`;
   overlay.style.display = 'block';
   overlay.style.top = (nodeEl.offsetTop + 70) + 'px';
   overlay.style.left = '50%';
@@ -348,6 +361,23 @@ function initStrategyAcademy() {
       document.getElementById('strategySquares').textContent = s.keySquares.join(', ');
       document.getElementById('strategyFen').textContent = s.fen;
       document.getElementById('strategyBoard').textContent = `Position: ${s.fen.split(' ')[0].replace(/\//g, ' / ')}`;
+
+      // Wire play button click
+      const playBtn = document.getElementById('btnPlayStrategy');
+      if (playBtn) {
+        const newPlayBtn = playBtn.cloneNode(true);
+        playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+        newPlayBtn.addEventListener('click', () => {
+          activeLesson = { ...s, type: 'strategy' };
+          document.querySelector('.nav-item[data-target="play"]')?.click();
+          chess = new Chess(s.fen);
+          playerColor = 'w';
+          isGameActive = true;
+          buildBoard();
+          document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Strategic Lesson: ${s.name}</strong><br>${s.lesson}<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Play a move that targets or lands on one of the key squares: <strong>${s.keySquares.join(', ')}</strong>.</span>`;
+          showToast(`📖 Strategy: ${s.name} loaded on the board!`);
+        });
+      }
     });
     list.appendChild(div);
   });
@@ -372,7 +402,16 @@ function initEndgameAcademy() {
       const card = document.createElement('div');
       card.className = 'tactic-card';
       card.innerHTML = `<div class="tactic-name">${eg.name}</div><div class="tactic-desc">${eg.desc}</div><div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;">💡 ${eg.keyIdea}</div>`;
-      card.addEventListener('click', () => showToast(`📖 Loading endgame drill: ${eg.name}`));
+      card.addEventListener('click', () => {
+        activeLesson = { ...eg, type: 'endgame' };
+        document.querySelector('.nav-item[data-target="play"]')?.click();
+        chess = new Chess(eg.fen);
+        playerColor = eg.fen.split(' ')[1] || 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning key move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+        showToast(`📖 Endgame: ${eg.name} loaded on the board!`);
+      });
       grid.appendChild(card);
     });
     section.appendChild(grid);
@@ -631,6 +670,32 @@ function handleSquareClick(sq) {
     // Try move
     const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
     if (move) {
+      // Check Active Lesson Goal
+      if (activeLesson) {
+        let isCorrect = false;
+        if (activeLesson.type === 'strategy') {
+          isCorrect = activeLesson.keySquares.includes(move.to);
+        } else if (activeLesson.type === 'endgame') {
+          const solMove = activeLesson.solution[0];
+          const normalize = s => s.replace(/[+#!?]/g,'').toLowerCase().trim();
+          isCorrect = normalize(move.san) === normalize(solMove) || normalize(`${move.from}${move.to}`) === normalize(solMove);
+        }
+
+        if (isCorrect) {
+          showToast(`🎉 Correct! Lesson Mastered. +15 XP`);
+          profile.addXP(15);
+          profile.updateMastery(activeLesson.id || activeLesson.name, true, 3);
+          document.getElementById('coachAdvice').innerHTML = `🏆 <strong>Excellent job!</strong> You successfully found the move to solve the lesson: ${activeLesson.name}.`;
+          activeLesson = null; // complete the lesson
+        } else {
+          showToast(`❌ Incorrect move for this lesson. Try again!`);
+          chess.undo();
+          selectedSquare = null;
+          buildBoard();
+          return;
+        }
+      }
+
       lastMoveSquares = [move.from, move.to];
       selectedSquare = null;
       buildBoard();
@@ -671,45 +736,122 @@ function detectAndShowOpening() {
 }
 
 // ═══════════════════════════════════════════════════
-// STOCKFISH ENGINE
+// STOCKFISH ENGINE (WITH BLOB CORS WORKAROUND & MOCK FALLBACK)
 // ═══════════════════════════════════════════════════
+let isMockEngine = false;
+
 function initEngine() {
   try {
-    engine = new Worker(STOCKFISH_CDN);
-    engine.onmessage = (e) => {
-      const line = e.data;
-      if (line === 'uciok') { engine.postMessage('isready'); }
-      if (line === 'readyok') { engineReady = true; engine.postMessage('ucinewgame'); }
-      if (typeof line === 'string' && line.startsWith('bestmove')) {
-        const best = line.split(' ')[1];
-        if (best && chess.turn() !== playerColor && isGameActive) {
-          const move = chess.move({ from: best.slice(0, 2), to: best.slice(2, 4), promotion: best[4] || 'q' });
-          if (move) {
-            lastMoveSquares = [move.from, move.to];
-            buildBoard();
-            addMoveToList(move);
-            detectAndShowOpening();
-            if (chess.isGameOver()) handleGameOver();
-          }
-        }
-      }
-      // Parse eval from info lines
-      if (typeof line === 'string' && line.includes('score cp')) {
-        const match = line.match(/score cp (-?\d+)/);
-        if (match) {
-          const cp = parseInt(match[1]) * (playerColor === 'w' ? 1 : -1);
-          updateEvalBar(cp / 100);
-        }
-      }
-    };
-    engine.postMessage('uci');
+    fetch(STOCKFISH_CDN)
+      .then(res => {
+        if (!res.ok) throw new Error('CDN response not ok');
+        return res.text();
+      })
+      .then(code => {
+        const blob = new Blob([code], { type: 'application/javascript' });
+        engine = new Worker(URL.createObjectURL(blob));
+        setupEngineListeners();
+      })
+      .catch(err => {
+        console.warn('Stockfish CDN load failed, using local mock AI engine:', err);
+        setupMockEngine();
+      });
   } catch (e) {
-    console.warn('Stockfish failed to load:', e);
+    console.warn('Stockfish failed to initialize:', e);
+    setupMockEngine();
   }
+}
+
+function setupMockEngine() {
+  isMockEngine = true;
+  engineReady = true;
+  console.log('Mock engine fallback initialized successfully.');
+}
+
+function setupEngineListeners() {
+  if (!engine) return;
+  engine.onmessage = (e) => {
+    const line = e.data;
+    if (line === 'uciok') { engine.postMessage('isready'); }
+    if (line === 'readyok') { engineReady = true; engine.postMessage('ucinewgame'); }
+    if (typeof line === 'string' && line.startsWith('bestmove')) {
+      const best = line.split(' ')[1];
+      if (best && chess.turn() !== playerColor && isGameActive) {
+        const move = chess.move({ from: best.slice(0, 2), to: best.slice(2, 4), promotion: best[4] || 'q' });
+        if (move) {
+          lastMoveSquares = [move.from, move.to];
+          buildBoard();
+          addMoveToList(move);
+          detectAndShowOpening();
+          if (chess.isGameOver()) handleGameOver();
+        }
+      }
+    }
+    // Parse eval from info lines
+    if (typeof line === 'string' && line.includes('score cp')) {
+      const match = line.match(/score cp (-?\d+)/);
+      if (match) {
+        const cp = parseInt(match[1]) * (playerColor === 'w' ? 1 : -1);
+        updateEvalBar(cp / 100);
+      }
+    }
+  };
+  engine.postMessage('uci');
+}
+
+function makeHeuristicMove() {
+  if (!isGameActive || chess.turn() === playerColor) return;
+  const moves = chess.moves({ verbose: true });
+  if (moves.length === 0) return;
+
+  // 1. Find checkmates
+  let selectedMove = moves.find(m => m.san && m.san.includes('#'));
+
+  // 2. Find highest value captures
+  if (!selectedMove) {
+    const val = { q: 9, r: 5, b: 3, n: 3, p: 1 };
+    let bestCaptureVal = 0;
+    moves.forEach(m => {
+      if (m.captured) {
+        const capturedVal = val[m.captured] || 0;
+        if (capturedVal > bestCaptureVal) {
+          bestCaptureVal = capturedVal;
+          selectedMove = m;
+        }
+      }
+    });
+  }
+
+  // 3. Find checks
+  if (!selectedMove) {
+    selectedMove = moves.find(m => m.san && m.san.includes('+'));
+  }
+
+  // 4. Fallback to random
+  if (!selectedMove) {
+    selectedMove = moves[Math.floor(Math.random() * moves.length)];
+  }
+
+  // Execute the move after delay
+  setTimeout(() => {
+    if (!isGameActive || chess.turn() === playerColor) return;
+    const move = chess.move(selectedMove);
+    if (move) {
+      lastMoveSquares = [move.from, move.to];
+      buildBoard();
+      addMoveToList(move);
+      detectAndShowOpening();
+      if (chess.isGameOver()) handleGameOver();
+    }
+  }, 600 + Math.random() * 400);
 }
 
 function makeAIMove() {
   if (!engineReady || !isGameActive) return;
+  if (isMockEngine) {
+    makeHeuristicMove();
+    return;
+  }
   engine.postMessage(`position fen ${chess.fen()}`);
   engine.postMessage(`go depth ${8 + Math.floor(Math.random() * 4)}`);
 }
@@ -768,7 +910,10 @@ function handleGameOver() {
   profile.gamesPlayed++;
   profile.addXP(calculateXP('game', chess.turn() !== playerColor ? 'win' : 'loss'));
   const newAch = profile.checkAndAwardAchievements();
-  newAch.forEach(a => showToast(`🏅 ${a.icon} ${a.name} unlocked!`));
+  if (newAch.length > 0) {
+    triggerConfetti();
+    newAch.forEach(a => showToast(`🏅 ${a.icon} ${a.name} unlocked!`));
+  }
   updateHeaderStats();
 }
 
@@ -807,6 +952,45 @@ function reviewPGN() {
     div.innerHTML = `<span style="color:${r.color};font-weight:700;">${r.icon}</span> Move ${r.moveNum}: <strong>${r.san}</strong> — ${r.label}`;
     log.appendChild(div);
   });
+
+  // Adaptive Remediation Plan
+  const missedConcepts = new Set();
+  evalResults.forEach(r => {
+    if (r.type === 'blunder' || r.type === 'mistake') {
+      const pool = ['fork', 'pin', 'skewer', 'discovered_attack', 'removing_defender', 'deflection', 'decoy'];
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      missedConcepts.add(chosen);
+    }
+  });
+
+  const card = document.getElementById('reviewRemediationCard');
+  if (card) {
+    if (missedConcepts.size > 0) {
+      card.style.display = 'block';
+      const text = document.getElementById('reviewRemediationText');
+      text.textContent = `Based on your analyzed game, we detected weak execution in the following chess concepts. Click to practice these specific motifs:`;
+      const btnContainer = document.getElementById('reviewRemediationBtns');
+      btnContainer.innerHTML = '';
+      
+      missedConcepts.forEach(cid => {
+        const concept = KNOWLEDGE_GRAPH.find(c => c.id === cid);
+        if (concept) {
+          const btn = document.createElement('button');
+          btn.className = 'hud-btn primary-btn';
+          btn.style.padding = '5px 10px';
+          btn.style.fontSize = '0.68rem';
+          btn.textContent = `Practice: ${concept.name}`;
+          btn.addEventListener('click', () => {
+            document.querySelector('.nav-item[data-target="tactics-view"]')?.click();
+            showToast(`🎯 Loading drills for ${concept.name}...`);
+          });
+          btnContainer.appendChild(btn);
+        }
+      });
+    } else {
+      card.style.display = 'none';
+    }
+  }
 
   showToast(`🔍 Analysis complete: ${accuracy}% accuracy`);
 }
@@ -957,6 +1141,8 @@ function showAssessPuzzle() {
   el('assessMoveInput').focus();
   el('assessFeedback').style.display = 'none';
 
+  assessState.puzzleStartTime = Date.now(); // track puzzle start time
+
   // Progress dots
   const dots = el('assessProgressDots');
   dots.innerHTML = '';
@@ -981,7 +1167,9 @@ function submitAssessMove() {
   const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
   const correct = normalize(userMove) === normalize(p.solution);
 
-  assessState.answers.push({ category: p.category, correct, difficulty: p.difficulty, userMove, solution: p.solution });
+  const timeTaken = Math.max(1, Math.floor((Date.now() - (assessState.puzzleStartTime || Date.now())) / 1000));
+
+  assessState.answers.push({ category: p.category, correct, difficulty: p.difficulty, userMove, solution: p.solution, timeTaken });
 
   // Update mastery
   const conceptId = KNOWLEDGE_GRAPH.find(c => c.name.toLowerCase().includes(p.concept.toLowerCase()))?.id;
@@ -1006,8 +1194,11 @@ function finishAssessment() {
   document.getElementById('assessmentActive').style.display = 'none';
   document.getElementById('assessmentResults').style.display = 'block';
 
+  const oldElo = profile.elo;
   const result = runAssessment(profile, assessState.answers);
   profile.saveAssessment(result);
+  triggerConfetti();
+  handleEloChange(oldElo, profile.elo);
 
   document.getElementById('assessEstElo').textContent = result.estimatedElo;
   document.getElementById('assessOverall').textContent = `${result.overallScore}%`;
@@ -1228,10 +1419,13 @@ function finishBossBattle() {
   const elapsed = Math.floor((Date.now() - bossState.startTime) / 1000);
   const score = Math.round(accuracy * 100);
 
+  const oldElo = profile.elo;
   profile.recordBossBattle(bossState.bossId, score, passed);
   if (passed) {
     profile.addXP(boss.xpReward);
     profile.updateElo(profile.elo + boss.eloReward);
+    triggerConfetti();
+    handleEloChange(oldElo, profile.elo);
   }
 
   document.getElementById('bossActivePanel').style.display = 'none';
@@ -1361,4 +1555,294 @@ function renderDeepHeatmap() {
     cell.title = `${concept.name} (${isMastered ? 'Mastered' : isUnlocked ? `${Math.round(m.confidence||0)}% conf` : 'Locked'})`;
     grid.appendChild(cell);
   });
+}
+
+// ═══════════════════════════════════════════════════
+// VISUALIZATION & CALCULATION LAB
+// ═══════════════════════════════════════════════════
+let bfState = { active: false, square: '', correct: 0, total: 0 };
+let memState = { targetPiece: null, targetSquare: '', fen: '' };
+let seqState = { moves: [], finalSquare: '', pieceName: '' };
+let calcState = { puzzle: null };
+
+function initVisLab() {
+  // 1. Blindfold Color Trainer
+  document.getElementById('btnBfStart')?.addEventListener('click', startBfTrainer);
+  document.getElementById('btnBfLight')?.addEventListener('click', () => handleBfGuess(true));
+  document.getElementById('btnBfDark')?.addEventListener('click', () => handleBfGuess(false));
+
+  // 2. Position Memory Trainer
+  document.getElementById('btnMemReveal')?.addEventListener('click', startMemTrainer);
+  document.getElementById('btnMemVerify')?.addEventListener('click', verifyMemGuess);
+
+  // 3. Move Sequence Trainer
+  document.getElementById('btnSeqStart')?.addEventListener('click', startSeqTrainer);
+  document.getElementById('btnSeqSubmit')?.addEventListener('click', verifySeqGuess);
+
+  // 4. Calculation Trainer
+  document.getElementById('btnCalcStart')?.addEventListener('click', startCalcTrainer);
+  document.getElementById('btnCalcSubmit')?.addEventListener('click', verifyCalcGuess);
+}
+
+// --- Blindfold Color Trainer ---
+function startBfTrainer() {
+  bfState = { active: true, square: '', correct: 0, total: 0 };
+  document.getElementById('btnBfStart').style.display = 'none';
+  document.getElementById('btnBfLight').style.display = 'inline-block';
+  document.getElementById('btnBfDark').style.display = 'inline-block';
+  nextBfQuestion();
+}
+
+function nextBfQuestion() {
+  if (bfState.total >= 10) {
+    document.getElementById('bfQuestion').textContent = 'Completed!';
+    document.getElementById('btnBfStart').textContent = 'Restart Trainer';
+    document.getElementById('btnBfStart').style.display = 'inline-block';
+    document.getElementById('btnBfLight').style.display = 'none';
+    document.getElementById('btnBfDark').style.display = 'none';
+    profile.addXP(bfState.correct * 3);
+    profile.updateMastery('visualization_coordinate', bfState.correct >= 8, 2);
+    showToast(`👁️ Color trainer done: +${bfState.correct * 3} XP!`);
+    updateHeaderStats();
+    return;
+  }
+  const files = ['a','b','c','d','e','f','g','h'];
+  const ranks = ['1','2','3','4','5','6','7','8'];
+  bfState.square = files[Math.floor(Math.random()*8)] + ranks[Math.floor(Math.random()*8)];
+  document.getElementById('bfQuestion').textContent = bfState.square;
+  document.getElementById('bfScore').textContent = `Score: ${bfState.correct}/${bfState.total}`;
+}
+
+function handleBfGuess(guessedLight) {
+  if (!bfState.active) return;
+  const f = bfState.square.charCodeAt(0) - 97;
+  const r = 8 - parseInt(bfState.square[1]);
+  const isLight = (f + r) % 2 === 0;
+  
+  if (guessedLight === isLight) {
+    bfState.correct++;
+    showToast('✅ Correct!');
+  } else {
+    showToast(`❌ Wrong. ${bfState.square} is ${isLight ? 'light' : 'dark'}.`);
+  }
+  bfState.total++;
+  nextBfQuestion();
+}
+
+// --- Position Memory Trainer ---
+function startMemTrainer() {
+  const pList = TACTICS_DB.filter(t => t.fen);
+  if (!pList.length) return;
+  const p = pList[Math.floor(Math.random() * pList.length)];
+  memState.fen = p.fen;
+
+  // Find a piece to recall
+  const tempChess = new Chess(p.fen);
+  const squaresWithPieces = [];
+  for (let r = 1; r <= 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = String.fromCharCode(97 + c) + r;
+      const piece = tempChess.get(sq);
+      if (piece && piece.type !== 'k') {
+        squaresWithPieces.push({ square: sq, piece });
+      }
+    }
+  }
+  
+  if (!squaresWithPieces.length) { startMemTrainer(); return; }
+  const target = squaresWithPieces[Math.floor(Math.random() * squaresWithPieces.length)];
+  memState.targetSquare = target.square;
+  const names = { p:'Pawn', r:'Rook', n:'Knight', b:'Bishop', q:'Queen' };
+  const pieceColor = target.piece.color === 'w' ? 'White' : 'Black';
+  memState.targetPiece = `${pieceColor} ${names[target.piece.type]}`;
+
+  // Hide verify buttons, show timer
+  document.getElementById('btnMemReveal').style.display = 'none';
+  document.getElementById('btnMemVerify').style.display = 'none';
+  document.getElementById('memInputFEN').style.display = 'none';
+  document.getElementById('memFeedback').textContent = '';
+  
+  // Navigate to Play tab to show board
+  document.querySelector('.nav-item[data-target="play"]')?.click();
+  chess = new Chess(p.fen);
+  isGameActive = false; // block play
+  buildBoard();
+  
+  // Start 5 second countdown overlay
+  let seconds = 5;
+  const timerDiv = document.getElementById('memTimer');
+  timerDiv.style.display = 'block';
+  timerDiv.textContent = seconds;
+  
+  const interval = setInterval(() => {
+    seconds--;
+    timerDiv.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(interval);
+      timerDiv.style.display = 'none';
+      
+      // Clear board and ask question
+      chess = new Chess();
+      buildBoard();
+      
+      // Go back to Vis Lab
+      document.querySelector('.nav-item[data-target="vis-lab-view"]')?.click();
+      
+      document.getElementById('memBoardText').innerHTML = `Where was the <strong>${memState.targetPiece}</strong>?`;
+      document.getElementById('memInputFEN').style.display = 'inline-block';
+      document.getElementById('memInputFEN').value = '';
+      document.getElementById('memInputFEN').focus();
+      document.getElementById('btnMemVerify').style.display = 'inline-block';
+    }
+  }, 1000);
+}
+
+function verifyMemGuess() {
+  const guess = document.getElementById('memInputFEN').value.trim().toLowerCase();
+  const fb = document.getElementById('memFeedback');
+  if (guess === memState.targetSquare) {
+    fb.innerHTML = '<span style="color:var(--success);font-weight:700;">✅ Excellent! That is correct. +15 XP</span>';
+    profile.addXP(15);
+    profile.updateMastery('board_memory', true, 3);
+  } else {
+    fb.innerHTML = `<span style="color:var(--danger);font-weight:700;">❌ Incorrect. The ${memState.targetPiece} was on ${memState.targetSquare}.</span>`;
+  }
+  document.getElementById('btnMemReveal').style.display = 'inline-block';
+  document.getElementById('btnMemReveal').textContent = 'Train Next Position';
+  document.getElementById('btnMemVerify').style.display = 'none';
+  document.getElementById('memInputFEN').style.display = 'none';
+  updateHeaderStats();
+}
+
+// --- Move Sequence Trainer ---
+function startSeqTrainer() {
+  const tempChess = new Chess();
+  const movesPlayed = [];
+  
+  // Make 3 simple random valid moves
+  for (let i = 0; i < 3; i++) {
+    const moves = tempChess.moves({ verbose: true });
+    if (!moves.length) break;
+    const m = moves[Math.floor(Math.random() * moves.length)];
+    tempChess.move(m);
+    movesPlayed.push(m.san);
+    if (i === 2) {
+      seqState.finalSquare = m.to;
+      const names = { p:'Pawn', r:'Rook', n:'Knight', b:'Bishop', q:'Queen', k:'King' };
+      seqState.pieceName = names[m.piece] || 'Piece';
+    }
+  }
+  
+  document.getElementById('seqMoves').innerHTML = `Follow mentally:<br><strong style="font-size:1.1rem;color:var(--accent-gold);">${movesPlayed.join('  →  ')}</strong>`;
+  document.getElementById('seqInputSquare').style.display = 'inline-block';
+  document.getElementById('seqInputSquare').value = '';
+  document.getElementById('seqInputSquare').focus();
+  document.getElementById('btnSeqStart').style.display = 'none';
+  document.getElementById('btnSeqSubmit').style.display = 'inline-block';
+  document.getElementById('seqFeedback').textContent = '';
+}
+
+function verifySeqGuess() {
+  const guess = document.getElementById('seqInputSquare').value.trim().toLowerCase();
+  const fb = document.getElementById('seqFeedback');
+  if (guess === seqState.finalSquare) {
+    fb.innerHTML = `<span style="color:var(--success);font-weight:700;">✅ Correct! The ${seqState.pieceName} landed on ${seqState.finalSquare}. +12 XP</span>`;
+    profile.addXP(12);
+    profile.updateMastery('move_visualization', true, 3);
+  } else {
+    fb.innerHTML = `<span style="color:var(--danger);font-weight:700;">❌ Incorrect. The last move landed on ${seqState.finalSquare}.</span>`;
+  }
+  document.getElementById('btnSeqStart').style.display = 'inline-block';
+  document.getElementById('btnSeqStart').textContent = 'Next Sequence';
+  document.getElementById('btnSeqSubmit').style.display = 'none';
+  document.getElementById('seqInputSquare').style.display = 'none';
+  updateHeaderStats();
+}
+
+// --- Calculation Trainer ---
+function startCalcTrainer() {
+  const calcPuzzles = TACTICS_DB.filter(t => t.difficulty >= 3);
+  const p = calcPuzzles[Math.floor(Math.random() * calcPuzzles.length)];
+  calcState.puzzle = p;
+
+  document.getElementById('calcFen').textContent = `FEN: ${p.fen}`;
+  document.getElementById('calcGoal').innerHTML = `Goal: Calculate candidates and find the winning move for ${p.fen.split(' ')[1] === 'w' ? 'White' : 'Black'}:`;
+  
+  document.getElementById('calcInputMove').style.display = 'inline-block';
+  document.getElementById('calcInputMove').value = '';
+  document.getElementById('calcInputMove').focus();
+  document.getElementById('btnCalcStart').style.display = 'none';
+  document.getElementById('btnCalcSubmit').style.display = 'inline-block';
+  document.getElementById('calcFeedback').textContent = '';
+}
+
+function verifyCalcGuess() {
+  const guess = document.getElementById('calcInputMove').value.trim().toLowerCase();
+  const fb = document.getElementById('calcFeedback');
+  const p = calcState.puzzle;
+  if (!p) return;
+  const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
+  const correct = normalize(guess) === normalize(p.expected.from + p.expected.to) || normalize(guess) === normalize(p.expected.to);
+  
+  if (correct) {
+    fb.innerHTML = `<span style="color:var(--success);font-weight:700;">✅ Brilliant! That is correct. ${p.explanation||''} +20 XP</span>`;
+    profile.addXP(20);
+    profile.updateMastery('candidate_moves', true, 4);
+  } else {
+    fb.innerHTML = `<span style="color:var(--danger);font-weight:700;">❌ Incorrect. The best move was ${p.expected.from}→${p.expected.to}.</span>`;
+  }
+  document.getElementById('btnCalcStart').style.display = 'inline-block';
+  document.getElementById('btnCalcStart').textContent = 'Next Calculation';
+  document.getElementById('btnCalcSubmit').style.display = 'none';
+  document.getElementById('calcInputMove').style.display = 'none';
+  updateHeaderStats();
+}
+
+// ═══════════════════════════════════════════════════
+// CELEBRATION & CONFETTI ENGINE
+// ═══════════════════════════════════════════════════
+function triggerConfetti() {
+  const container = document.body;
+  const colors = ['#f43f5e', '#3b82f6', '#10b981', '#eab308', '#8b5cf6', '#ec4899', '#fb923c'];
+  const count = 80;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.style.position = 'fixed';
+    el.style.width = Math.random() * 8 + 5 + 'px';
+    el.style.height = Math.random() * 8 + 5 + 'px';
+    el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = '105vh';
+    el.style.borderRadius = '50%';
+    el.style.zIndex = '9999';
+    el.style.pointerEvents = 'none';
+    el.style.transform = `rotate(${Math.random() * 360}deg)`;
+    container.appendChild(el);
+
+    const destX = (Math.random() - 0.5) * 400;
+    const destY = -(Math.random() * 500 + 400);
+    const duration = Math.random() * 1.5 + 1.2;
+
+    el.animate([
+      { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${destX}px, ${destY}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+    ], {
+      duration: duration * 1000,
+      easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
+      fill: 'forwards'
+    });
+
+    setTimeout(() => el.remove(), duration * 1000);
+  }
+}
+
+function handleEloChange(oldElo, newElo) {
+  const oldMilestone = getCurrentMilestone(oldElo);
+  const newMilestone = getCurrentMilestone(newElo);
+  if (newMilestone.current.title !== oldMilestone.current.title) {
+    triggerConfetti();
+    setTimeout(() => {
+      showToast(`🎉 Level Up! You unlocked the **${newMilestone.current.title}** rank!`);
+    }, 500);
+  }
 }

@@ -96,6 +96,27 @@ export function getConceptsByCategory(category) {
 }
 
 export function getHighestROIConcept(userProfile) {
+  // 1. Spaced Repetition check: Find any concept whose retention has decayed below 60%
+  const reviewQueue = [];
+  if (userProfile.masteryMap) {
+    Object.keys(userProfile.masteryMap).forEach(id => {
+      const mastery = userProfile.getMasteryFor(id);
+      if (mastery && mastery.mastered && mastery.retention < 60) {
+        const conceptNode = KNOWLEDGE_GRAPH.find(c => c.id === id);
+        if (conceptNode) {
+          reviewQueue.push({ concept: conceptNode, retention: mastery.retention });
+        }
+      }
+    });
+  }
+  
+  if (reviewQueue.length > 0) {
+    // Sort by lowest retention first to reinforce the weakest
+    reviewQueue.sort((a, b) => a.retention - b.retention);
+    return reviewQueue[0].concept;
+  }
+
+  // 2. Otherwise, study new unlocked concepts
   const unlocked = getUnlockedConcepts(userProfile.masteredConcepts);
   if (!unlocked.length) return null;
   // Sort by: closest to current rating range, then by XP reward
@@ -113,15 +134,87 @@ export function getHighestROIConcept(userProfile) {
 // ═══════════════════════════════════════════════════
 
 export const MILESTONES = [
-  { elo:800, title:'Beginner', icon:'♟️', color:'#94a3b8', skills:['board_setup','piece_movement','check_checkmate','captures_exchanges','castling'], openings:['Any — focus on principles'], endgames:['Basic checkmates (K+Q vs K, K+R vs K)'], target:'Learn all piece movements and basic checkmate patterns.' },
-  { elo:1000, title:'Novice', icon:'🐴', color:'#60a5fa', skills:['fork','pin','center_control','development','king_safety'], openings:['Italian Game','London System'], endgames:['King & Pawn basics','Opposition'], target:'Spot 1-move tactics and develop pieces before attacking.' },
-  { elo:1200, title:'Intermediate', icon:'🏇', color:'#34d399', skills:['skewer','double_attack','back_rank_mate','opening_principles','pawn_structure'], openings:['Ruy Lopez','Caro-Kann','Queen\'s Gambit'], endgames:['Square Rule','Basic Rook endgames'], target:'Consistently avoid blunders and see 2-move combinations.' },
-  { elo:1400, title:'Club Player', icon:'🏰', color:'#a78bfa', skills:['discovered_attack','deflection','removing_defender','outposts','open_files'], openings:['Sicilian Defense','Nimzo-Indian'], endgames:['Lucena','Philidor'], target:'Calculate 3 moves deep and understand positional concepts.' },
-  { elo:1600, title:'Tournament Player', icon:'⚔️', color:'#f59e0b', skills:['zwischenzug','candidate_moves','space_advantage','initiative','minority_attack'], openings:['Deep repertoire with 2 systems per color'], endgames:['Rook endgames','Passed pawn play'], target:'Play with plans, not just reactions. Manage time effectively.' },
-  { elo:1800, title:'Advanced', icon:'♝', color:'#ec4899', skills:['prophylaxis','planning','exchange_sacrifice','deep_calculation'], openings:['Complete repertoire with sideline preparation'], endgames:['Minor piece endgames','Queen endgames'], target:'Think about what opponent wants before making your move.' },
-  { elo:2000, title:'Expert', icon:'🛡️', color:'#f43f5e', skills:['positional_sacrifice','fortress','complex_endgames'], openings:['Full theoretical preparation'], endgames:['All endgame types to master level'], target:'Deep strategic understanding and precise endgame technique.' },
-  { elo:2200, title:'Candidate Master', icon:'🏅', color:'#eab308', skills:['All tactics mastered','All strategy mastered'], openings:['Professional-level repertoire'], endgames:['Complete endgame mastery'], target:'Consistent tournament results and FIDE-level play.' },
-  { elo:2500, title:'Grandmaster Knowledge', icon:'👑', color:'#fbbf24', skills:['Complete chess understanding'], openings:['World-class preparation'], endgames:['Endgame artistry'], target:'You understand chess at the highest human level.' },
+  { elo:800, title:'Beginner', icon:'♟️', color:'#94a3b8', 
+    skills:['board_setup','piece_movement','check_checkmate','captures_exchanges','castling'], 
+    openings:['Any — focus on principles'], 
+    endgames:['Basic checkmates (K+Q vs K, K+R vs K)'], 
+    target:'Learn all piece movements and basic checkmate patterns.',
+    requiredBoss:null,
+    challenges:['Complete onboarding assessment', 'Master basic coordinates'],
+    unlockableContent:'London System Repertoire, Tactics Academy Basics'
+  },
+  { elo:1000, title:'Novice', icon:'🐴', color:'#60a5fa', 
+    skills:['fork','pin','center_control','development','king_safety'], 
+    openings:['Italian Game','London System'], 
+    endgames:['King & Pawn basics','Opposition'], 
+    target:'Spot 1-move tactics and develop pieces before attacking.',
+    requiredBoss:'fork_master',
+    challenges:['Solve 15 tactical puzzles', 'Beat Fork Master Boss Battle'],
+    unlockableContent:'Tactics Level 2, Italian Game Repertoire'
+  },
+  { elo:1200, title:'Intermediate', icon:'🏇', color:'#34d399', 
+    skills:['skewer','double_attack','back_rank_mate','opening_principles','pawn_structure'], 
+    openings:['Ruy Lopez','Caro-Kann','Queen\'s Gambit'], 
+    endgames:['Square Rule','Basic Rook endgames'], 
+    target:'Consistently avoid blunders and see 2-move combinations.',
+    requiredBoss:'pin_master',
+    challenges:['Solve 30 puzzles', 'Beat Pin Master Boss Battle'],
+    unlockableContent:'Visualization Trainer, Ruy Lopez Repertoire'
+  },
+  { elo:1400, title:'Club Player', icon:'🏰', color:'#a78bfa', 
+    skills:['discovered_attack','deflection','removing_defender','outposts','open_files'], 
+    openings:['Sicilian Defense','Nimzo-Indian'], 
+    endgames:['Lucena','Philidor'], 
+    target:'Calculate 3 moves deep and understand positional concepts.',
+    requiredBoss:'endgame_master',
+    challenges:['Play 10 rapid matches', 'Beat Endgame Fundamentals Boss'],
+    unlockableContent:'Blindfold Coordinate Trainer, Sicilian Najdorf Repertoire'
+  },
+  { elo:1600, title:'Tournament Player', icon:'⚔️', color:'#f59e0b', 
+    skills:['zwischenzug','candidate_moves','space_advantage','initiative','minority_attack'], 
+    openings:['Deep repertoire with 2 systems per color'], 
+    endgames:['Rook endgames','Passed pawn play'], 
+    target:'Play with plans, not just reactions. Manage time effectively.',
+    requiredBoss:'tactics_warrior',
+    challenges:['Solve 50 puzzles', 'Beat Tactics Warrior Boss Battle'],
+    unlockableContent:'Calculation Trainer, Candidate Move Puzzles'
+  },
+  { elo:1800, title:'Advanced', icon:'♝', color:'#ec4899', 
+    skills:['prophylaxis','planning','exchange_sacrifice','deep_calculation'], 
+    openings:['Complete repertoire with sideline preparation'], 
+    endgames:['Minor piece endgames','Queen endgames'], 
+    target:'Think about what opponent wants before making your move.',
+    requiredBoss:'strategy_sage',
+    challenges:['Record 20 games played', 'Beat Strategy Sage Boss Battle'],
+    unlockableContent:'Deep Calculation Trees, Advanced Endgames'
+  },
+  { elo:2000, title:'Expert', icon:'🛡️', color:'#f43f5e', 
+    skills:['positional_sacrifice','fortress','complex_endgames'], 
+    openings:['Full theoretical preparation'], 
+    endgames:['All endgame types to master level'], 
+    target:'Deep strategic understanding and precise endgame technique.',
+    requiredBoss:'calculation_king',
+    challenges:['Solve 100 puzzles', 'Beat Calculation King Boss Battle'],
+    unlockableContent:'Grandmaster Challenge Mode'
+  },
+  { elo:2200, title:'Candidate Master', icon:'🏅', color:'#eab308', 
+    skills:['All tactics mastered','All strategy mastered'], 
+    openings:['Professional-level repertoire'], 
+    endgames:['Complete endgame mastery'], 
+    target:'Consistent tournament results and FIDE-level play.',
+    requiredBoss:'grandmaster_gauntlet',
+    challenges:['Win 5 rapid games in a row', 'Pass Grandmaster Gauntlet'],
+    unlockableContent:'Candidate Master Badge & Profile Border'
+  },
+  { elo:2500, title:'Grandmaster Knowledge', icon:'👑', color:'#fbbf24', 
+    skills:['Complete chess understanding'], 
+    openings:['World-class preparation'], 
+    endgames:['Endgame artistry'], 
+    target:'You understand chess at the highest human level.',
+    requiredBoss:null,
+    challenges:['Master 30 distinct chess concepts', 'Estimate rating above 2500'],
+    unlockableContent:'Grandmaster Certification'
+  },
 ];
 
 export function getCurrentMilestone(elo) {
@@ -697,14 +790,30 @@ export function runAssessment(profile, answers) {
     const puzzles = ASSESSMENT_PUZZLES[cat] || [];
     const catAnswers = answers.filter(a => a.category === cat);
     let correct = 0;
+    let speedBonusTotal = 0;
+
     catAnswers.forEach(a => {
       totalAttempted++;
-      if (a.correct) { correct++; totalCorrect++; }
+      if (a.correct) {
+        correct++;
+        totalCorrect++;
+        // Target solving time based on difficulty (e.g. 20s per difficulty point)
+        const targetTime = (a.difficulty || 2) * 20;
+        const timeSpent = a.timeTaken || targetTime;
+        if (timeSpent < targetTime) {
+          const savings = (targetTime - timeSpent) / targetTime;
+          speedBonusTotal += Math.round(savings * 6); // up to +6 points speed bonus
+        }
+      }
     });
+
     const accuracy = catAnswers.length > 0 ? correct / catAnswers.length : 0.5;
-    const difficultyBonus = catAnswers.reduce((s, a) => s + (a.correct ? a.difficulty * 5 : 0), 0);
-    skillScores[cat] = Math.min(100, Math.round(accuracy * 70 + difficultyBonus));
+    const difficultyBonus = catAnswers.reduce((s, a) => s + (a.correct ? a.difficulty * 6 : 0), 0);
+    skillScores[cat] = Math.min(100, Math.max(10, Math.round(accuracy * 60 + difficultyBonus + speedBonusTotal)));
   });
+
+  // Dynamically estimate opening rating as average of strategic and tactical skills
+  skillScores.opening = Math.round((skillScores.strategic + skillScores.tactical) / 2);
 
   const overall = Math.round(Object.values(skillScores).reduce((a,b)=>a+b,0) / Object.keys(skillScores).length);
   const estimatedElo = Math.round(800 + (overall / 100) * 1400);
