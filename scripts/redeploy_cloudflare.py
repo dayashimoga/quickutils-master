@@ -32,8 +32,7 @@ def run_build_and_deploy(project_key, config):
             print(f"⚠️ [{repo_name}] Directory {full_cwd} does not exist. Skipping.")
             return repo_name, False
 
-        subprocess.run(build_cmd, shell=True, cwd=full_cwd, check=True,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(build_cmd, shell=True, cwd=full_cwd, check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ [{repo_name}] Build failed: {e}")
         return repo_name, False
