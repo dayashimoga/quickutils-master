@@ -160,3 +160,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "✅ No project changes detected. Skipping deployment."
+# Trigger redeploy with updated GH_PAT
