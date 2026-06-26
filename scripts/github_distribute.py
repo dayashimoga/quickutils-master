@@ -116,7 +116,7 @@ def sync_repo(local_path, remote_url):
 
         # Copy new files
         for item in os.listdir(local_path):
-            if item == ".git": # Don't copy local .git if it inadvertently exists
+            if item in [".git", "node_modules", "playwright-report", "test-results"]:
                 continue
             s = os.path.join(local_path, item)
             d = os.path.join(temp_dir, item)

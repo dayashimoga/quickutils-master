@@ -52,6 +52,17 @@ let gtmState = {
   attemptedCount: 0
 };
 
+// Puzzle Blitz state
+let blitzState = {
+  active: false,
+  puzzles: [],
+  currentIdx: 0,
+  correctCount: 0,
+  startTime: 0,
+  timer: null,
+  timeLimit: 120 // 2 minutes
+};
+
 
 // ═══════════════════════════════════════════════════
 // INITIALIZATION
@@ -86,6 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnReviewPgn')?.addEventListener('click', reviewPGN);
   document.getElementById('btnLoadDemoGame')?.addEventListener('click', loadDemoGame);
   document.getElementById('btnCompleteMission')?.addEventListener('click', completeMission);
+
+  // Daily training buttons
+  document.getElementById('btnDailyBlitz')?.addEventListener('click', startPuzzleBlitz);
+  document.getElementById('btnDailyGuess')?.addEventListener('click', startDailyGuess);
+  document.getElementById('btnDailyEndgame')?.addEventListener('click', startDailyEndgame);
   document.getElementById('exportBtn')?.addEventListener('click', () => {
     const blob = new Blob([profile.exportJSON()], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -513,13 +529,24 @@ function initTacticsAcademy() {
   const icons = { fork:'♞', pin:'📌', skewer:'🗡️', discovered_attack:'💥', back_rank_mate:'🏰', deflection:'↩️', decoy:'🎭', smothered_mate:'😤', zwischenzug:'⚡', double_attack:'⚔️', removing_defender:'🛡️' };
   categories.forEach(cat => {
     const puzzles = TACTICS_DB.filter(t => t.category === cat);
-    const mastery = Math.floor(Math.random() * 80);
+    const masteryData = profile.getMasteryFor(cat);
+    const mastery = Math.round(masteryData.confidence);
     const div = document.createElement('div');
     div.className = 'tactic-card';
+    div.style.cursor = 'pointer';
     div.innerHTML = `<div class="tactic-icon">${icons[cat] || '🎯'}</div><div class="tactic-name">${cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div><div class="tactic-desc">${puzzles[0]?.explanation?.slice(0, 80) || 'Practice tactical patterns'}...</div><div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:6px;">${puzzles.length} puzzles</div><div class="mastery-bar"><div class="mastery-bar-fill" style="width:${mastery}%"></div></div>`;
     div.addEventListener('click', () => {
       const p = puzzles[0];
-      if (p) showToast(`🎯 Loading ${cat.replace(/_/g, ' ')} puzzle: ${p.name}`);
+      if (p) {
+        activeLesson = { ...p, type: 'tactic' };
+        navigateToView('play');
+        chess = new Chess(p.fen);
+        playerColor = p.fen.split(' ')[1] || 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `<strong>🎯 Tactic motif: ${p.name}</strong><br>${p.explanation || ''}<br><br><span style="color:var(--accent-rose);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+        showToast(`🎯 Tactic loaded: ${p.name}`);
+      }
     });
     grid.appendChild(div);
   });
@@ -543,7 +570,8 @@ function initStrategyAcademy() {
       document.getElementById('strategyLesson').textContent = s.lesson;
       document.getElementById('strategySquares').textContent = s.keySquares.join(', ');
       document.getElementById('strategyFen').textContent = s.fen;
-      document.getElementById('strategyBoard').textContent = `Position: ${s.fen.split(' ')[0].replace(/\//g, ' / ')}`;
+      const sChess = new Chess(s.fen);
+      renderBoardTo('strategyBoard', sChess, null, [], null);
 
       // Wire play button click
       const playBtn = document.getElementById('btnPlayStrategy');
@@ -983,11 +1011,17 @@ function handleSquareClick(sq) {
           const solMove = activeLesson.solution[0];
           const normalize = s => s.replace(/[+#!?]/g,'').toLowerCase().trim();
           isCorrect = normalize(move.san) === normalize(solMove) || normalize(`${move.from}${move.to}`) === normalize(solMove);
-        } else if (activeLesson.type === 'tactic') {
+        } else if (activeLesson.type === 'tactic' || activeLesson.type === 'blitz') {
           isCorrect = move.from === activeLesson.expected.from && move.to === activeLesson.expected.to;
         }
 
         if (isCorrect) {
+          if (activeLesson.type === 'blitz') {
+            showToast(`🎉 Correct!`);
+            activeLesson = null;
+            advancePuzzleBlitz();
+            return;
+          }
           showToast(`🎉 Correct! Lesson Mastered. +15 XP`);
           profile.addXP(15);
           profile.updateMastery(activeLesson.id || activeLesson.name, true, 3);
@@ -1082,14 +1116,30 @@ function setupEngineListeners() {
     if (line === 'readyok') { engineReady = true; engine.postMessage('ucinewgame'); }
     if (typeof line === 'string' && line.startsWith('bestmove')) {
       const best = line.split(' ')[1];
-      if (best && chess.turn() !== playerColor && isGameActive) {
-        const move = chess.move({ from: best.slice(0, 2), to: best.slice(2, 4), promotion: best[4] || 'q' });
-        if (move) {
-          lastMoveSquares = [move.from, move.to];
-          buildBoard();
-          addMoveToList(move);
-          detectAndShowOpening();
-          if (chess.isGameOver()) handleGameOver();
+      if (best) {
+        if (chess.turn() === playerColor) {
+          const moves = chess.moves({ verbose: true });
+          const matchingMove = moves.find(m => m.from === best.slice(0, 2) && m.to === best.slice(2, 4));
+          if (matchingMove) {
+            showToast(`💡 Coach suggestion: Consider ${matchingMove.san}`);
+            const board = document.getElementById('board');
+            if (board) {
+              board.querySelectorAll('.square').forEach(s => s.classList.remove('selected', 'highlight'));
+              const fromSq = board.querySelector(`[data-square="${matchingMove.from}"]`);
+              const toSq = board.querySelector(`[data-square="${matchingMove.to}"]`);
+              if (fromSq) fromSq.classList.add('selected');
+              if (toSq) toSq.classList.add('highlight');
+            }
+          }
+        } else if (isGameActive) {
+          const move = chess.move({ from: best.slice(0, 2), to: best.slice(2, 4), promotion: best[4] || 'q' });
+          if (move) {
+            lastMoveSquares = [move.from, move.to];
+            buildBoard();
+            addMoveToList(move);
+            detectAndShowOpening();
+            if (chess.isGameOver()) handleGameOver();
+          }
         }
       }
     }
@@ -1201,6 +1251,26 @@ function undoMove() {
 }
 
 function getHint() {
+  if (isMockEngine) {
+    const moves = chess.moves({ verbose: true });
+    if (moves.length === 0) return;
+    let hintMove = moves.find(m => m.san && m.san.includes('#')) ||
+                   moves.find(m => m.captured && m.captured === 'q') ||
+                   moves.find(m => m.san && m.san.includes('+')) ||
+                   moves[Math.floor(Math.random() * moves.length)];
+    if (hintMove) {
+      showToast(`💡 Coach suggestion: Consider ${hintMove.san}!`);
+      const board = document.getElementById('board');
+      if (board) {
+        board.querySelectorAll('.square').forEach(s => s.classList.remove('selected', 'highlight'));
+        const fromSq = board.querySelector(`[data-square="${hintMove.from}"]`);
+        const toSq = board.querySelector(`[data-square="${hintMove.to}"]`);
+        if (fromSq) fromSq.classList.add('selected');
+        if (toSq) toSq.classList.add('highlight');
+      }
+    }
+    return;
+  }
   if (!engineReady) { showToast('⏳ Engine loading...'); return; }
   engine.postMessage(`position fen ${chess.fen()}`);
   engine.postMessage('go depth 12');
@@ -1453,7 +1523,8 @@ function showAssessPuzzle() {
   el('assessConcept').textContent = p.concept;
   el('assessDifficulty').textContent = '⭐'.repeat(Math.min(p.difficulty, 5));
   el('assessFen').textContent = p.fen;
-  el('assessBoard').textContent = p.fen.split(' ')[0].replace(/\//g, ' / ');
+  const aChess = new Chess(p.fen);
+  renderBoardTo('assessBoard', aChess, null, [], null);
   el('assessMoveInput').value = '';
   el('assessMoveInput').focus();
   el('assessFeedback').style.display = 'none';
@@ -1679,7 +1750,8 @@ function startBossBattle(bossId) {
 function showBossPuzzle() {
   const p = bossState.puzzles[bossState.currentIdx];
   if (!p) { finishBossBattle(); return; }
-  document.getElementById('bossBoard').textContent = p.fen.split(' ')[0].replace(/\//g, ' / ');
+  const bChess = new Chess(p.fen);
+  renderBoardTo('bossBoard', bChess, null, [], null);
   document.getElementById('bossPuzzleInfo').textContent = `${p.name} — ${p.category.replace(/_/g,' ')} | ${p.explanation?.slice(0,80)||''}`;
   document.getElementById('bossScore').textContent = `${bossState.correct}/${bossState.currentIdx}`;
   document.getElementById('bossMoveInput').value = '';
@@ -2389,5 +2461,129 @@ function renderActionableInsights() {
       }
     });
   }
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY TRAINING IMPLEMENTATION
+// ═══════════════════════════════════════════════════
+function startPuzzleBlitz() {
+  const shuffled = [...TACTICS_DB].sort(() => 0.5 - Math.random());
+  blitzState.puzzles = shuffled.slice(0, 5);
+  blitzState.currentIdx = 0;
+  blitzState.correctCount = 0;
+  blitzState.active = true;
+  blitzState.startTime = Date.now();
+  
+  if (blitzState.timer) clearInterval(blitzState.timer);
+  
+  blitzState.timer = setInterval(() => {
+    if (!blitzState.active) {
+      clearInterval(blitzState.timer);
+      return;
+    }
+    const elapsed = Math.floor((Date.now() - blitzState.startTime) / 1000);
+    const remaining = Math.max(0, blitzState.timeLimit - elapsed);
+    
+    if (activeLesson && activeLesson.type === 'blitz') {
+      updateBlitzAdvice(remaining);
+    }
+    
+    if (remaining <= 0) {
+      endPuzzleBlitz(false);
+    }
+  }, 1000);
+  
+  navigateToView('play');
+  loadBlitzPuzzle();
+  showToast('🧩 Puzzle Blitz Started! 5 puzzles, 2 minutes.');
+}
+
+function loadBlitzPuzzle() {
+  if (!blitzState.active) return;
+  const p = blitzState.puzzles[blitzState.currentIdx];
+  if (!p) {
+    endPuzzleBlitz(true);
+    return;
+  }
+  activeLesson = { ...p, type: 'blitz' };
+  chess = new Chess(p.fen);
+  playerColor = p.fen.split(' ')[1] || 'w';
+  isGameActive = true;
+  buildBoard();
+  
+  const elapsed = Math.floor((Date.now() - blitzState.startTime) / 1000);
+  const remaining = Math.max(0, blitzState.timeLimit - elapsed);
+  updateBlitzAdvice(remaining);
+}
+
+function updateBlitzAdvice(remaining) {
+  const min = Math.floor(remaining / 60);
+  const sec = String(remaining % 60).padStart(2, '0');
+  const adviceEl = document.getElementById('coachAdvice');
+  if (adviceEl) {
+    adviceEl.innerHTML = `
+      <strong>⚡ PUZZLE BLITZ ACTIVE ⚡</strong><br>
+      Solve 5 puzzles under 2 minutes. Race the clock!<br><br>
+      <strong>Puzzle:</strong> ${blitzState.currentIdx + 1} / 5<br>
+      <strong>Time Remaining:</strong> <span style="font-family:'JetBrains Mono',monospace;color:var(--accent-gold);font-weight:bold;font-size:1.1rem;">${min}:${sec}</span><br><br>
+      <span style="color:var(--accent-rose);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>
+    `;
+  }
+}
+
+function advancePuzzleBlitz() {
+  blitzState.correctCount++;
+  blitzState.currentIdx++;
+  if (blitzState.currentIdx >= blitzState.puzzles.length) {
+    endPuzzleBlitz(true);
+  } else {
+    loadBlitzPuzzle();
+  }
+}
+
+function endPuzzleBlitz(success) {
+  blitzState.active = false;
+  if (blitzState.timer) {
+    clearInterval(blitzState.timer);
+    blitzState.timer = null;
+  }
+  activeLesson = null;
+  
+  if (success) {
+    triggerConfetti();
+    profile.addXP(30);
+    profile.puzzlesSolved += 5;
+    profile.updateStreak();
+    updateHeaderStats();
+    showToast('🏆 Puzzle Blitz completed! +30 XP');
+    const adviceEl = document.getElementById('coachAdvice');
+    if (adviceEl) {
+      adviceEl.innerHTML = `
+        <strong>🏆 Puzzle Blitz Completed! 🏆</strong><br>
+        Amazing job! You solved all 5 puzzles in time.<br><br>
+        ⚡ Earned <strong>30 XP</strong>! Keep up the great pace.
+      `;
+    }
+  } else {
+    showToast('⏱️ Time is up! Puzzle Blitz failed.');
+    const adviceEl = document.getElementById('coachAdvice');
+    if (adviceEl) {
+      adviceEl.innerHTML = `
+        <strong>⏱️ Time is Up! ⏱️</strong><br>
+        You ran out of time. You solved ${blitzState.correctCount} of 5 puzzles.<br><br>
+        Don't worry, try again to build speed and accuracy!
+      `;
+    }
+  }
+}
+
+function startDailyGuess() {
+  navigateToView('famous-view');
+  showToast('🎯 Select a famous game and click "Start Guess the Move"!');
+}
+
+function startDailyEndgame() {
+  navigateToView('endgame-view');
+  showToast('♟️ Select an endgame drill from the curriculum to practice!');
 }
 
