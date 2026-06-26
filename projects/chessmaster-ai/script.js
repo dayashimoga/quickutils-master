@@ -10,7 +10,8 @@ import {
   UserProfile,
   ASSESSMENT_PUZZLES, runAssessment,
   BOSS_BATTLES, getBossBattlePuzzles,
-  getGuessTheMovePosition
+  getGuessTheMovePosition,
+  getCoachResponse
 } from './chessmaster-ai-utils.js';
 
 // ═══════════════════════════════════════════════════
@@ -516,6 +517,46 @@ function initOpeningLab() {
     document.getElementById('repTraps').textContent = f.traps;
     document.getElementById('repGoals').textContent = f.goals || '—';
   }
+
+  // Wire Practice Recall button
+  document.getElementById('btnDrillOpening')?.addEventListener('click', () => {
+    const title = document.getElementById('repTitle').textContent;
+    const movesText = document.getElementById('repMoves').textContent;
+    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+    // Navigate to play view with the opening moves partially applied
+    navigateToView('play');
+    chess = new Chess();
+    const moves = movesText.split(/\s+/).filter(m => m && !m.includes('.'));
+    let applied = 0;
+    for (const m of moves) {
+      try { chess.move(m); applied++; } catch(e) { break; }
+    }
+    playerColor = chess.turn();
+    isGameActive = true;
+    activeLesson = { name: title, type: 'opening_drill', id: 'opening_drill_' + title.toLowerCase().replace(/\s+/g,'_') };
+    buildBoard();
+    document.getElementById('coachAdvice').innerHTML = `<strong>📖 Opening Drill: ${title}</strong><br>The opening moves have been played out on the board. Continue from this position against the AI.<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Practice the middle-game plans for this opening. Focus on the key ideas you studied.</span>`;
+    showToast(`📖 Opening drill started: ${title}`);
+  });
+
+  // Wire Explain Plans button
+  document.getElementById('btnExplainPlans')?.addEventListener('click', () => {
+    const title = document.getElementById('repTitle').textContent;
+    const plans = document.getElementById('repPlans').textContent;
+    const traps = document.getElementById('repTraps').textContent;
+    const goals = document.getElementById('repGoals').textContent;
+    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+    showToast(`💡 ${title} — Study the plans, traps and goals shown in the detail panel!`);
+    // Scroll to detail panel and highlight it
+    const detailPanel = document.querySelector('.opening-tree-grid .glass-card');
+    if (detailPanel) {
+      detailPanel.style.animation = 'none';
+      detailPanel.offsetHeight; // trigger reflow
+      detailPanel.style.animation = 'pulseHighlight 1s ease-out';
+      detailPanel.style.borderColor = 'var(--border-glow)';
+      setTimeout(() => { detailPanel.style.borderColor = ''; }, 2000);
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -1208,6 +1249,7 @@ function makeAIMove() {
     makeHeuristicMove();
     return;
   }
+  if (!engine) { makeHeuristicMove(); return; }
   engine.postMessage(`position fen ${chess.fen()}`);
   engine.postMessage(`go depth ${8 + Math.floor(Math.random() * 4)}`);
 }
@@ -1240,7 +1282,7 @@ function resetGame() {
   document.getElementById('coachAdvice').textContent = 'White plays first. I\'ll evaluate positions dynamically.';
   updateEvalBar(0);
   buildBoard();
-  if (engineReady) engine.postMessage('ucinewgame');
+  if (engineReady && engine) engine.postMessage('ucinewgame');
 }
 
 function undoMove() {
@@ -1271,7 +1313,7 @@ function getHint() {
     }
     return;
   }
-  if (!engineReady) { showToast('⏳ Engine loading...'); return; }
+  if (!engineReady || !engine) { showToast('⏳ Engine loading...'); return; }
   engine.postMessage(`position fen ${chess.fen()}`);
   engine.postMessage('go depth 12');
   showToast('💡 Calculating best move...');
