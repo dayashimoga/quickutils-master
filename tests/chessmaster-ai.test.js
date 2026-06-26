@@ -20,7 +20,7 @@ import {
   UserProfile,
   runAssessment,
   getBossBattlePuzzles,
-  getGuessTheMovePosition,
+  getGuessTheMovePosition, getCoachResponse,
   ASSESSMENT_PUZZLES
 } from '../projects/chessmaster-ai/chessmaster-ai-utils.js';
 
@@ -592,6 +592,11 @@ describe('UserProfile State Management', () => {
     const m2 = p.getMasteryFor('fork');
     expect(m2.streak).toBe(0);
     expect(m2.attempts).toBe(2);
+
+    // Test getMasteryFor with retention >= 60
+    p.masteryMap['piece_movement'] = { conceptId: 'piece_movement', confidence: 90, retention: 90, lastPracticed: Date.now() };
+    const pieceMastery = p.getMasteryFor('piece_movement');
+    expect(pieceMastery.recommendedReviewDate).not.toBe('Immediate Review');
   });
 
   it('updateJourneyStage adjusts stage based on ELO', () => {
@@ -632,6 +637,10 @@ describe('UserProfile State Management', () => {
     expect(p.elo).toBe(1050);
     expect(p.assessmentHistory.length).toBe(1);
     expect(p.assessmentHistory[0].overallScore).toBe(65);
+
+    // Test without estimatedElo to cover the else branch
+    p.saveAssessment({ overallScore: 50, skillScores: { tactical: 50 } });
+    expect(p.assessmentHistory.length).toBe(2);
   });
 
   it('updateElo updates history by pushing or overwriting', () => {
@@ -728,6 +737,22 @@ describe('UserProfile State Management', () => {
     ];
     const velocityDeclining = p.getLearningVelocity();
     expect(velocityDeclining.trend).toBe('declining');
+
+    // Test steady trend
+    p.eloHistory = [
+      { timestamp: Date.now() - 7 * 86400000, elo: 850 },
+      { timestamp: Date.now(), elo: 853 }
+    ];
+    const velocitySteady = p.getLearningVelocity();
+    expect(velocitySteady.trend).toBe('steady');
+
+    // Test history with length >= 14
+    p.eloHistory = [];
+    for (let i = 0; i < 20; i++) {
+      p.eloHistory.push({ elo: 800 + i * 5, timestamp: Date.now() - (20 - i) * 86400000 });
+    }
+    const velocityLong = p.getLearningVelocity();
+    expect(velocityLong.eloPerWeek).toBeGreaterThan(0);
   });
 
   it('getLearningVelocity handles empty or short eloHistory', () => {
@@ -853,5 +878,53 @@ describe('Additional Utility Functions', () => {
 
     // Restore
     ASSESSMENT_PUZZLES.tactical = originalTactical;
+  });
+
+  it('getCoachResponse returns personalized answers based on profile and question content', () => {
+    const p = new UserProfile();
+    p.elo = 900;
+    p.skillScores = { tactical: 40, strategic: 80, endgame: 80, calculation: 80, visualization: 80, opening: 80 };
+    
+    // Test improve query
+    const resImprove = getCoachResponse('How can I improve?', p);
+    expect(resImprove).toContain('tactical');
+    expect(resImprove).toContain('40%');
+
+    // Test boss query with milestone having requiredBoss
+    const resBoss = getCoachResponse('Tell me about boss battles', p);
+    expect(resBoss).toContain('Boss Battle');
+
+    // Test boss query with no nextMilestone requiredBoss
+    p.elo = 2400; // elo > 2200, so next milestone is fide-master or similar, or next is null
+    const resBoss2 = getCoachResponse('boss battle details', p);
+    expect(resBoss2).toContain('excellent standing');
+
+    // Test elo query
+    const resElo = getCoachResponse('what is my elo projection?', p);
+    expect(resElo).toContain('2400 ELO');
+
+    // Test streak query
+    p.streak = 5;
+    const resStreak = getCoachResponse('my streak status', p);
+    expect(resStreak).toContain('5-day streak');
+
+    // Test default query
+    const resDefault = getCoachResponse('Random chess question?', p);
+    expect(resDefault).toContain('excellent chess question');
+
+    // Test case where roi is null (all concepts mastered)
+    p.masteredConcepts = KNOWLEDGE_GRAPH.map(c => c.id);
+    const resImproveNoRoi = getCoachResponse('How can I improve?', p);
+    expect(resImproveNoRoi).toContain('Tactics');
+
+    // Test case with hoursPerWeek = 0
+    p.hoursPerWeek = 0;
+    const resEloZeroHours = getCoachResponse('what is my elo rating forecast?', p);
+    expect(resEloZeroHours).toContain('rating is');
+    
+    // Test learning velocity with short history
+    p.eloHistory = [{ elo: 850, date: '2026-06-26' }];
+    const velShort = p.getLearningVelocity();
+    expect(velShort.eloPerWeek).toBe(0);
   });
 });

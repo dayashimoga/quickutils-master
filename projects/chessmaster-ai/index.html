@@ -138,6 +138,13 @@
                         <div id="homeSkillBars" style="display:flex;flex-direction:column;gap:8px;"></div>
                     </div>
                 </div>
+                <!-- Quests & Streaks Overhaul -->
+                <div class="glass-card" id="questsCard" style="margin-top:16px;margin-bottom:16px;">
+                    <h2 class="card-title">⚡ Daily Quests & Streaks</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:12px;">Complete tasks to earn bonus XP. Practice daily to maintain streaks!</p>
+                    <div id="questsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+                    <div id="streaksList" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+                </div>
                 <!-- Achievements -->
                 <div class="glass-card">
                     <h2 class="card-title">🏅 Achievements <span id="achievementCount" style="font-size:0.68rem;color:var(--text-muted);font-weight:500;margin-left:6px;"></span></h2>
@@ -331,6 +338,29 @@
                     <h3 id="gameTitle" style="font-size:0.9rem;font-weight:700;margin-bottom:4px;"></h3>
                     <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;" id="gameMeta"></div>
                     <div id="gameThemes" style="margin-bottom:12px;"></div>
+                    <div style="margin-bottom:14px;display:flex;gap:8px;">
+                        <button id="btnStartGuessChallenge" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;">🎮 Start Guess the Move Challenge</button>
+                    </div>
+                    <div id="guessTheMoveChallenge" style="display:none;margin-bottom:14px;background:rgba(245,158,11,0.02);border:1px solid rgba(245,158,11,0.15);padding:12px;border-radius:8px;">
+                        <h4 style="font-size:0.82rem;font-weight:700;color:var(--accent-gold);margin-bottom:6px;">🎯 Guess the Move Challenge</h4>
+                        <p id="guessPrompt" style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:10px;">Follow the game moves. We will pause at critical points and ask you to guess the GM's choice!</p>
+                        <div class="board-container" style="max-width:320px;margin:10px auto;"><div class="chess-board" id="famousBoard" style="width:300px;height:300px;font-size:0.6rem;"></div></div>
+                        <div style="display:flex;gap:12px;margin-bottom:10px;align-items:center;">
+                            <button id="btnGuessNext" class="hud-btn" style="padding:6px 14px;font-size:0.72rem;">Next Move →</button>
+                            <div id="guessStats" style="font-size:0.72rem;color:var(--text-muted);font-weight:600;"></div>
+                        </div>
+                        <div id="guessInputArea" style="display:none;margin-bottom:10px;">
+                            <label style="font-size:0.75rem;font-weight:600;display:block;margin-bottom:4px;">Predict the GM's Move (SAN or algebraic):</label>
+                            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                                <input type="text" id="guessInputMove" class="elo-input" style="flex:1;font-size:0.75rem;" placeholder="e.g. Nxb5, Rxd7">
+                                <button id="btnSubmitGuess" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;">Submit Prediction</button>
+                            </div>
+                            <div style="margin-top:6px;">
+                                <textarea id="guessReasoning" class="elo-input" style="width:100%;height:48px;font-size:0.72rem;resize:none;" placeholder="Explain your reasoning (optional)..."></textarea>
+                            </div>
+                        </div>
+                        <div id="guessFeedback" style="padding:10px;border-radius:8px;font-size:0.75rem;margin-bottom:10px;display:none;"></div>
+                    </div>
                     <div class="game-viewer">
                         <div>
                             <h4 style="font-size:0.8rem;font-weight:600;margin-bottom:6px;">Moves</h4>
@@ -356,8 +386,32 @@
                     <div class="grid-2" id="weaknessCards"></div>
                 </div>
                 <div class="glass-card">
+                    <h2 class="card-title">🧙‍♂️ Coach's Speech Bubble & Forecast</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:12px;">Your personal coach's daily analysis and ELO improvement projections.</p>
+                    <div id="coachSpeechBubble" class="coach-speech-bubble" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);padding:14px;border-radius:12px;font-size:0.8rem;line-height:1.5;margin-bottom:12px;">
+                        🧙‍♂️ Coach AI: Evaluating your games...
+                    </div>
+                    <div id="coachForecastCard" style="background:rgba(16,185,129,0.03);border:1px solid rgba(16,185,129,0.15);padding:10px;border-radius:8px;font-size:0.75rem;line-height:1.5;">
+                        📈 <strong>Weekly ELO Forecast:</strong> <span id="coachForecastText">Calculating forecast...</span>
+                    </div>
+                </div>
+                <div class="glass-card">
                     <h2 class="card-title">📋 Personalized Recommendations</h2>
-                    <div id="coachRecommendations" style="display:flex;flex-direction:column;gap:10px;"></div>
+                    <div id="coachRecommendations" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+                    <div style="text-align:center;">
+                        <button id="btnCoachStartMission" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.75rem;">⚡ Start Today's Mission</button>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2 class="card-title">💬 Chat with Coach AI</h2>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:10px;">Ask your coach about ELO requirements, specific bosses, or study options.</p>
+                    <div id="coachChatLog" class="coach-chat-log" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;padding:10px;background:rgba(255,255,255,0.01);border:1px solid var(--border-color);border-radius:8px;font-size:0.75rem;">
+                        <div class="coach-chat-msg coach" style="color:var(--accent-blue);">🧙‍♂️ Coach AI: Hi! Ask me how to improve or what you need to study.</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="coachChatInput" class="elo-input" style="flex:1;font-size:0.75rem;" placeholder="Ask: 'How do I improve?' or 'Tell me my ELO forecast'">
+                        <button id="btnSendCoachMsg" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.75rem;">Send</button>
+                    </div>
                 </div>
             </section>
 
@@ -626,6 +680,12 @@
                     <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📄 Weekly Report</h3>
                     <div id="weeklyReportContent" style="font-size:0.78rem;color:var(--text-secondary);line-height:1.6;"></div>
                 </div>
+                <div class="glass-card" id="analyticsActionableInsights" style="margin-top:14px;background:rgba(245,158,11,0.03);border:1px solid rgba(245,158,11,0.15);">
+                    <h3 style="font-size:0.85rem;font-weight:700;color:var(--accent-gold);margin-bottom:6px;">⚡ Actionable Insights & Targeted Training</h3>
+                    <p style="color:var(--text-secondary);font-size:0.75rem;margin-bottom:10px;" id="analyticsActionableText">Analyzing your recent game errors to recommend targeted puzzles...</p>
+                    <div id="analyticsRecentErrors" style="font-size:0.75rem;margin-bottom:12px;color:var(--text-secondary);line-height:1.5;"></div>
+                    <button id="btnGenerateCustomTraining" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;display:none;">⚡ Generate Custom Training Session</button>
+                </div>
             </section>
 
             <!-- 19. VISUALIZATION & CALCULATION LAB -->
@@ -702,6 +762,31 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- FIDE Certification Modal Overlay -->
+    <div id="certificateModal" class="modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;">
+        <div class="certificate-card" style="background:#fefdf6;border:10px double #d4af37;padding:30px;max-width:540px;width:90%;color:#1c1917;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.5);border-radius:4px;font-family:'Georgia',serif;position:relative;">
+            <button onclick="document.getElementById('certificateModal').style.display='none'" style="position:absolute;top:10px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#78716c;">✕</button>
+            <div style="font-size:1.8rem;color:#b45309;font-weight:700;margin-bottom:10px;letter-spacing:1px;">CHESSOS CERTIFICATE OF MASTERY</div>
+            <div style="width:60px;height:2px;background:#d4af37;margin:12px auto;"></div>
+            <p style="font-style:italic;font-size:0.9rem;margin-bottom:15px;color:#44403c;">This document proudly certifies that</p>
+            <h3 id="certUserName" style="font-size:1.6rem;font-weight:800;color:#1c1917;margin-bottom:15px;border-bottom:1px solid #e7e5e4;padding-bottom:5px;display:inline-block;min-width:200px;">Chess Student</h3>
+            <p style="font-size:0.85rem;color:#44403c;line-height:1.6;margin-bottom:15px;">has successfully completed all required skill examinations and defeated the boss</p>
+            <h4 id="certBossName" style="font-size:1.2rem;font-weight:800;color:#b45309;margin-bottom:20px;">Fork Master</h4>
+            <p style="font-size:0.85rem;color:#44403c;margin-bottom:25px;">thereby earning a FIDE-equivalent rating projection of <strong id="certEloVal">1000 ELO</strong> and the designation of certified practitioner.</p>
+            <div style="display:flex;justify-content:space-between;margin-top:20px;padding:0 30px;font-size:0.75rem;color:#78716c;">
+                <div style="border-top:1px solid #a8a29e;padding-top:5px;width:120px;">
+                    Date: <span id="certDate">2026-06-26</span>
+                </div>
+                <div style="border-top:1px solid #a8a29e;padding-top:5px;width:120px;font-style:italic;font-family:'Brush Script MT',cursive;font-size:1.1rem;color:#1c1917;">
+                    GM Coach AI
+                </div>
+            </div>
+            <div style="margin-top:25px;">
+                <button class="hud-btn primary-btn" style="background:#b45309;color:#fff;border:none;padding:8px 24px;font-size:0.8rem;border-radius:4px;cursor:pointer;" onclick="window.print()">Print Certificate 🖨️</button>
+            </div>
+        </div>
     </div>
 
     <script src="quickutils-core.js"></script>

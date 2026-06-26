@@ -423,23 +423,62 @@ export function generateDailyMission(userProfile) {
   const weakest = Object.entries(weaknesses).sort((a,b) => a[1].score - b[1].score)[0];
   if (weakest) {
     const puzzleCount = elo < 1200 ? 15 : elo < 1600 ? 20 : 25;
-    tasks.push({ type:'puzzles', title:`🧩 Solve ${puzzleCount} ${weakest[0]} puzzles`, desc:`Target your weakest area: ${weakest[0]} (${weakest[1].score}%)`, minutes:20, xp:30, eloGain:3, knowledgeNodeId:null });
+    tasks.push({ 
+      type:'puzzles', 
+      title:`🧩 Solve ${puzzleCount} ${weakest[0]} puzzles`, 
+      desc:`Target your weakest area: ${weakest[0]} (${weakest[1].score}%)`, 
+      minutes:20, 
+      xp:30, 
+      eloGain:3, 
+      knowledgeNodeId:null,
+      targetRoute:'tactics-view',
+      targetCategory:weakest[0]
+    });
     totalMinutes += 20; totalXP += 30;
   }
 
   // 30% — Current milestone skills
   if (roiConcept) {
-    tasks.push({ type:'study', title:`📖 Study: ${roiConcept.name}`, desc:roiConcept.desc, minutes:roiConcept.studyMin, xp:roiConcept.xp, eloGain:2, knowledgeNodeId:roiConcept.id });
+    const route = roiConcept.category === 'tactic' ? 'tactics-view' : roiConcept.category === 'strategy' ? 'strategy-view' : roiConcept.category === 'endgame' ? 'endgame-view' : 'skilltree-view';
+    tasks.push({ 
+      type:'study', 
+      title:`📖 Study: ${roiConcept.name}`, 
+      desc:roiConcept.desc, 
+      minutes:roiConcept.studyMin, 
+      xp:roiConcept.xp, 
+      eloGain:2, 
+      knowledgeNodeId:roiConcept.id,
+      targetRoute:route,
+      targetConcept:roiConcept.id
+    });
     totalMinutes += roiConcept.studyMin; totalXP += roiConcept.xp;
   }
 
   // 20% — Review/Reinforcement
-  tasks.push({ type:'review', title:'🔍 Analyze yesterday\'s game', desc:'Run AI analysis on your most recent game to find mistakes.', minutes:15, xp:15, eloGain:2, knowledgeNodeId:null });
+  tasks.push({ 
+    type:'review', 
+    title:'🔍 Analyze yesterday\'s game', 
+    desc:'Run AI analysis on your most recent game to find mistakes.', 
+    minutes:15, 
+    xp:15, 
+    eloGain:2, 
+    knowledgeNodeId:null,
+    targetRoute:'review'
+  });
   totalMinutes += 15; totalXP += 15;
 
   // 10% — Play
   const gameCount = elo < 1200 ? 2 : 3;
-  tasks.push({ type:'play', title:`⚔️ Play ${gameCount} rapid games`, desc:'Apply today\'s learning in real games against Stockfish AI.', minutes:20, xp:20, eloGain:1, knowledgeNodeId:null });
+  tasks.push({ 
+    type:'play', 
+    title:`⚔️ Play ${gameCount} rapid games`, 
+    desc:'Apply today\'s learning in real games against Stockfish AI.', 
+    minutes:20, 
+    xp:20, 
+    eloGain:1, 
+    knowledgeNodeId:null,
+    targetRoute:'play'
+  });
   totalMinutes += 20; totalXP += 20;
 
   return { tasks, totalMinutes, totalXP, estimatedEloGain: tasks.reduce((s,t) => s + t.eloGain, 0), date: new Date().toISOString().split('T')[0] };
@@ -584,6 +623,16 @@ export class UserProfile {
     this.skillScores = data.skillScores || { tactical:50, strategic:50, opening:50, endgame:50, calculation:50, visualization:50 };
     this.assessmentCompleted = data.assessmentCompleted || false;
     this.guessTheMoveStats = data.guessTheMoveStats || { attempted:0, correct:0, totalScore:0 };
+    
+    // === V2 OVERHAUL: Deep tracking properties ===
+    this.gameErrors = data.gameErrors || { forksMissed: 0, pinsMissed: 0, endgameFails: 0, blunders: 0, inaccuracies: 0 };
+    this.quests = data.quests || [
+      { id: 'solve_5_tactics', title: '🧩 Solve 5 tactics puzzles', progress: 0, target: 5, xp: 20, done: false },
+      { id: 'win_1_game', title: '⚔️ Win 1 game against AI', progress: 0, target: 1, xp: 25, done: false },
+      { id: 'study_1_concept', title: '📖 Study a new concept in Academies', progress: 0, target: 1, xp: 15, done: false }
+    ];
+    this.studyHistory = data.studyHistory || {};
+    this.streakByCategory = data.streakByCategory || { tactical: 0, strategic: 0, opening: 0, endgame: 0, calculation: 0, visualization: 0 };
   }
 
   save() {
@@ -654,10 +703,21 @@ export class UserProfile {
 
   getMasteryFor(conceptId) {
     const e = this.masteryMap[conceptId];
-    if (!e) return { confidence:0, retention:0, mastered: this.masteredConcepts.includes(conceptId), attempts:0 };
-    const daysSince = (Date.now() - e.lastPracticed) / 86400000;
-    const decayed = Math.max(0, e.retention - daysSince * 2);
-    return { ...e, retention: Math.round(decayed) };
+    if (!e) return { confidence:0, retention:0, mastered: this.masteredConcepts.includes(conceptId), attempts:0, predictedDecay: '2% / day', recommendedReviewDate: 'Never' };
+    const lastPracticed = typeof e.lastPracticed === 'number' ? e.lastPracticed : Date.now();
+    const baseRetention = typeof e.retention === 'number' && !isNaN(e.retention) ? e.retention : (typeof e.confidence === 'number' && !isNaN(e.confidence) ? e.confidence : 50);
+    const daysSince = Math.max(0, (Date.now() - lastPracticed) / 86400000);
+    const decayed = Math.max(0, baseRetention - daysSince * 2);
+    // Spaced repetition recommended review date: when retention falls below 60%
+    const daysRemaining = Math.max(0, (decayed - 60) / 2);
+    const reviewTimestamp = Date.now() + daysRemaining * 86400000;
+    const recommendedReviewDate = new Date(reviewTimestamp).toISOString().split('T')[0];
+    return {
+      ...e,
+      retention: Math.round(decayed),
+      predictedDecay: '2% / day',
+      recommendedReviewDate: decayed < 60 ? 'Immediate Review' : recommendedReviewDate
+    };
   }
 
   // === JOURNEY STAGE ===
@@ -731,7 +791,6 @@ export class UserProfile {
   getLearningVelocity() {
     if (this.eloHistory.length < 2) return { eloPerWeek: 0, trend: 'new' };
     const recent = this.eloHistory.slice(-14);
-    if (recent.length < 2) return { eloPerWeek: 0, trend: 'new' };
     const change = recent[recent.length-1].elo - recent[0].elo;
     const weeks = Math.max(1, recent.length / 7);
     const rate = Math.round(change / weeks);
@@ -966,76 +1025,134 @@ export const ENDGAME_DB = [
   { id:'fortress_draw', name:'Fortress Defense', tier:'Master', desc:'Create an impregnable position that draws despite being down material.', fen:'8/8/1p6/1P2k3/8/4K3/8/8 w - - 0 1', solution:['Ke3','Maintain blockade'], keyIdea:'Sometimes the best result is a draw. Recognize fortress patterns to save half a point.' },
 ];
 
-// --- FAMOUS GAMES DATABASE (10 real annotated games) ---
 export const FAMOUS_GAMES_DB = [
   {
     id:'opera_game', white:'Paul Morphy', black:'Duke of Brunswick & Count Isouard', event:'Opera House, Paris 1858', result:'1-0', title:'The Opera Game',
     pgn:'1.e4 e5 2.Nf3 d6 3.d4 Bg4 4.dxe5 Bxf3 5.Qxf3 dxe5 6.Bc4 Nf6 7.Qb3 Qe7 8.Nc3 c6 9.Bg5 b5 10.Nxb5 cxb5 11.Bxb5+ Nbd7 12.O-O-O Rd8 13.Rxd7 Rxd7 14.Rd1 Qe6 15.Bxd7+ Nxd7 16.Qb8+ Nxb8 17.Rd8#',
     annotations:{ 3:'Morphy opens with e4 and immediately seizes the center.', 7:'Bc4 develops with tempo, targeting the weak f7 square.', 13:'A stunning rook sacrifice! Morphy gives up the rook to deflect the defender.', 15:'Another sacrifice! Bxd7+ removes the last defender of the back rank.', 17:'The final blow — Qb8+! forces Nxb8, then Rd8# is checkmate. Pure brilliance in development and attack.' },
     themes:['Rapid Development','Back Rank Mate','Piece Sacrifice','Open Lines'],
-    lessonSummary:'Morphy demonstrates that rapid piece development creates devastating attacking chances. Every move develops a piece or creates a threat. The final combination sacrifices queen and rook to exploit the back rank.'
+    lessonSummary:'Morphy demonstrates that rapid piece development creates devastating attacking chances. Every move develops a piece or creates a threat. The final combination sacrifices queen and rook to exploit the back rank.',
+    guessMoves: [
+      { ply: 19, expected: 'Nxb5', prompt: 'Morphy chose to sacrifice a piece here to expose the Black king. Find the winning knight move.' },
+      { ply: 25, expected: 'Rxd7', prompt: 'Deflect the Black defender to open the lines. What rook move did Morphy play?' },
+      { ply: 31, expected: 'Qb8+', prompt: 'Find the spectacular final sacrifice to force checkmate next move!' }
+    ]
   },
   {
     id:'game_of_century', white:'Donald Byrne', black:'Bobby Fischer', event:'New York 1956', result:'0-1', title:'Game of the Century',
     pgn:'1.Nf3 Nf6 2.c4 g6 3.Nc3 Bg7 4.d4 O-O 5.Bf4 d5 6.Qb3 dxc4 7.Qxc4 c6 8.e4 Nbd7 9.Rd1 Nb6 10.Qc5 Bg4 11.Bg5 Na4 12.Qa3 Nxc3 13.bxc3 Nxe4 14.Bxe7 Qb6 15.Bc4 Nxc3 16.Bc5 Rfe8+ 17.Kf1 Be6 18.Bxb6 Bxc4+ 19.Kg1 Ne2+ 20.Kf1 Nxd4+ 21.Kg1 Ne2+ 22.Kf1 Nc3+ 23.Kg1 axb6 24.Qb4 Ra4 25.Qxb6 Nxd1 26.h3 Rxa2 27.Kh2 Nxf2 28.Re1 Rxe1 29.Qd8+ Bf8 30.Nxe1 Bd5 31.Nf3 Ne4 32.Qb8 b5 33.h4 h5 34.Ne5 Kg7 35.Kg1 Bc5+ 36.Kf1 Ng3+ 37.Ke1 Bb4+ 38.Kd1 Bb3+ 39.Kc1 Ne2+ 40.Kb1 Nc3+ 41.Kc1 Rc2#',
     annotations:{ 11:'Fischer begins his famous combination with the surprising Na4!', 14:'The incredible queen sacrifice! Fischer gives up his queen for a devastating attack.', 17:'After Rfe8+, Fischer has rook, two minor pieces, and a pawn for the queen — with a raging attack.', 41:'A beautiful finish — Rc2# delivers checkmate. The 13-year-old Bobby Fischer plays one of the greatest games ever.' },
     themes:['Queen Sacrifice','Piece Coordination','Calculation','Attack on the King'],
-    lessonSummary:'13-year-old Bobby Fischer sacrifices his queen at move 17 and demonstrates that piece activity and coordination can be more powerful than material advantage. A masterclass in attacking chess.'
+    lessonSummary:'13-year-old Bobby Fischer sacrifices his queen at move 17 and demonstrates that piece activity and coordination can be more powerful than material advantage. A masterclass in attacking chess.',
+    guessMoves: [
+      { ply: 34, expected: 'Be6', prompt: 'Fischer played one of the most famous queen sacrifices here. What did he play?' },
+      { ply: 36, expected: 'Bxc4+', prompt: 'Fischer captures the bishop with check. Find the move.' }
+    ]
   },
   {
     id:'kasparov_immortal', white:'Garry Kasparov', black:'Veselin Topalov', event:'Wijk aan Zee 1999', result:'1-0', title:'Kasparov\'s Immortal',
     pgn:'1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.Be3 Bg7 5.Qd2 c6 6.f3 b5 7.Nge2 Nbd7 8.Bh6 Bxh6 9.Qxh6 Bb7 10.a3 e5 11.O-O-O Qe7 12.Kb1 a6 13.Nc1 O-O-O 14.Nb3 exd4 15.Rxd4 c5 16.Rd1 Nb6 17.g3 Kb8 18.Na5 Ba8 19.Bh3 d5 20.Qf4+ Ka7 21.Re1 d4 22.Nd5 Nbxd5 23.exd5 Qd6 24.Rxd4 cxd4 25.Re7+ Kb6 26.Qxd4+ Kxa5 27.b4+ Ka4 28.Qc3 Qxd5 29.Ra7 Bb7 30.Rxb7 Qc4 31.Qxf6 Kxa3 32.Qxa6+ Kxb4 33.c3+ Kxc3 34.Qa1+ Kd2 35.Qb2+ Kd1 36.Bf1 Rd2 37.Rd7 Rxd7 38.Bxc4 bxc4 39.Qxh8 Rd3 40.Qa8 c3 41.Qa4+ Ke1 42.f4 f5 43.Kc1 Rd2 44.Qa7',
     annotations:{ 24:'Kasparov sacrifices the exchange with Rxd4! beginning an incredible king hunt.', 25:'Re7+! Another sacrifice, driving Black\'s king on a forced march across the entire board.', 27:'b4+! The king is chased from a5 to a4 and eventually all the way to d1 — an extraordinary journey.', 44:'After an epic king chase spanning the entire board, Kasparov wins. One of the greatest games ever played.' },
     themes:['King Hunt','Exchange Sacrifice','Attack','Deep Calculation'],
-    lessonSummary:'Kasparov sacrifices a rook and hunts Topalov\'s king from c8 all the way across the board to d1. An extraordinary display of attacking genius and precise calculation.'
+    lessonSummary:'Kasparov sacrifices a rook and hunts Topalov\'s king from c8 all the way across the board to d1. An extraordinary display of attacking genius and precise calculation.',
+    guessMoves: [
+      { ply: 47, expected: 'Rxd4', prompt: 'Kasparov sacrificed the exchange here to hunt the king. Find the move.' }
+    ]
   },
   {
     id:'evergreen', white:'Adolf Anderssen', black:'Jean Dufresne', event:'Berlin 1852', result:'1-0', title:'The Evergreen Game',
     pgn:'1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O d3 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 b5 12.Qxb5 Rb8 13.Qa4 Bb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+ gxf6 18.exf6 Rg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8 23.Bd7+ Kf8 24.Bxe7#',
     annotations:{ 4:'The Evans Gambit! Anderssen sacrifices a pawn for rapid development.', 17:'Nf6+! A powerful knight sacrifice opening lines to the black king.', 20:'Rxe7+! Anderssen sacrifices the rook to clear the way for the bishops.', 24:'Bxe7# — A beautiful checkmate delivered by the bishop pair. The romantic era of chess at its finest.' },
     themes:['Gambit Play','Bishop Pair','Piece Sacrifice','Romantic Chess'],
-    lessonSummary:'Anderssen plays the Evans Gambit and sacrifices multiple pieces to create a devastating attack. The final checkmate with the bishop is one of the most elegant finishes in chess history.'
+    lessonSummary:'Anderssen plays the Evans Gambit and sacrifices multiple pieces to create a devastating attack. The final checkmate with the bishop is one of the most elegant finishes in chess history.',
+    guessMoves: [
+      { ply: 41, expected: 'Qxd7+', prompt: 'Anderssen sacrifices the queen to force a beautiful checkmate sequence. What did he play?' }
+    ]
   },
   {
     id:'carlsen_anand_2013', white:'Magnus Carlsen', black:'Viswanathan Anand', event:'World Championship 2013, Game 6', result:'1-0', title:'Carlsen\'s Squeeze',
     pgn:'1.e4 e5 2.Nf3 Nc6 3.Bb5 Nf6 4.d3 Bc5 5.c3 O-O 6.O-O Re8 7.Re1 a6 8.Ba4 b5 9.Bb3 d6 10.Bg5 Be6 11.Nbd2 h6 12.Bh4 Bxb3 13.axb3 Nb8 14.h3 Nbd7 15.Nh2 Qe7 16.Ndf1 Bb6 17.Ne3 Qe6 18.Nhf1 a5 19.g4 d5 20.Nd5 Nxd5 21.exd5 Qd7 22.Bg3 c6 23.dxc6 Qxc6 24.Ne3 a4 25.bxa4 bxa4 26.Bg2 Qc4 27.Qf3 Nc5 28.Rec1 Nb3 29.Rd1 a3 30.bxa3 Bxa3 31.Bf1 Qc7 32.Bg2 Bb4 33.Nc4 Qa7 34.Rxa7 Rxa7 35.Nd6 Re6 36.Nxf7 Rxf7 37.d4 exd4 38.Qe4 Bc5 39.cxd4 Bd6 40.Qa8+ Kh7 41.d5 Re7 42.Qd8 Ref7 43.d6 Rd7 44.Bf1 Kh8 45.Qg8+',
     annotations:{ 19:'Carlsen plays g4!? — a committal but ambitious pawn thrust typical of his style.', 36:'Nxf7! Carlsen wins a key pawn, converting his positional pressure into material.', 40:'Qa8+ begins the final combination. Carlsen demonstrates his legendary endgame technique.', 45:'Forced checkmate follows. Carlsen becomes the youngest World Champion since Kasparov.' },
     themes:['Positional Squeeze','Endgame Technique','Pawn Play','World Championship'],
-    lessonSummary:'Carlsen demonstrates his trademark positional grinding style. He slowly improves his position, creates small advantages, and converts them with precise endgame technique to win the World Championship match.'
+    lessonSummary:'Carlsen demonstrates his trademark positional grinding style. He slowly improves his position, creates small advantages, and converts them with precise endgame technique to win the World Championship match.',
+    guessMoves: [
+      { ply: 71, expected: 'Nxf7', prompt: 'Carlsen converts his endgame pressure. Find the winning knight move.' }
+    ]
   },
   {
     id:'tal_sacrifice', white:'Mikhail Tal', black:'Vasily Smyslov', event:'Candidates 1959', result:'1-0', title:'Tal\'s Brilliancy',
-    pgn:'1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Nf3 Ngf6 6.Nxf6+ Nxf6 7.Bc4 Bf5 8.Qe2 e6 9.Bg5 Bg4 10.O-O-O Qa5 11.d5 O-O-O 12.Nd4 exd5 13.Bxd5 Nxd5 14.Qe8+ Rxe8 15.Rd8+ Rxd8 16.Nf5+ Rd7 17.Bxd8',
+    pgn:'1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Nf3 Ngf6 6.Nxf6+ Nxf6+ Nxf6 7.Bc4 Bf5 8.Qe2 e6 9.Bg5 Bg4 10.O-O-O Qa5 11.d5 O-O-O 12.Nd4 exd5 13.Bxd5 Nxd5 14.Qe8+ Rxe8 15.Rd8+ Rxd8 16.Nf5+ Rd7 17.Bxd8',
     annotations:{ 14:'Qe8+!! The stunning queen sacrifice that defines Tal. He gives up the queen to force checkmate.', 15:'Rd8+! Another sacrifice — this time the rook. Tal is playing pure fire.', 17:'After Bxd8, White has won back enough material with a decisive advantage. The Magician from Riga strikes again!' },
     themes:['Queen Sacrifice','Tactical Vision','Forcing Moves','Attack'],
-    lessonSummary:'Mikhail Tal, the "Magician from Riga," demonstrates his legendary sacrificial style. He offers his queen to create an unstoppable attack, proving that initiative can be worth more than material.'
+    lessonSummary:'Mikhail Tal, the "Magician from Riga," demonstrates his legendary sacrificial style. He offers his queen to create an unstoppable attack, proving that initiative can be worth more than material.',
+    guessMoves: [
+      { ply: 26, expected: 'Qe8+', prompt: 'Tal plays a shocking sacrifice to break open the Black king. What is the move?' }
+    ]
   },
   {
     id:'capablanca_endgame', white:'Jose Raul Capablanca', black:'Frank Marshall', event:'New York 1918', result:'1-0', title:'Capablanca\'s Endgame Mastery',
     pgn:'1.d4 d5 2.Nf3 Nf6 3.c4 e6 4.Nc3 Nbd7 5.Bg5 Be7 6.e3 O-O 7.Rc1 b6 8.cxd5 exd5 9.Qa4 Bb7 10.Ba6 Bxa6 11.Qxa6 c5 12.Bxf6 Nxf6 13.dxc5 bxc5 14.O-O Qb6 15.Qe2 c4 16.Rfd1 Rfd8 17.Nd4 Bb4 18.b3 Rac8 19.bxc4 dxc4 20.Rc2 Bxc3 21.Rxc3 Nd5 22.Rc2 c3',
     annotations:{ 8:'cxd5 exd5 creates an isolated queen pawn — Capablanca\'s favorite structure to exploit.', 12:'Bxf6 removes the active knight and saddles Black with structural weaknesses.', 20:'Capablanca begins his famous technique of slowly exploiting the weak pawns.', 22:'Despite Black\'s active play, Capablanca\'s endgame technique will eventually grind out the win.' },
     themes:['Isolated Queen Pawn','Endgame Technique','Positional Play','Strategic Mastery'],
-    lessonSummary:'Capablanca demonstrates how to exploit an isolated queen pawn. His clean, logical play shows that understanding pawn structure is the key to winning endgames. A model game for strategic chess.'
+    lessonSummary:'Capablanca demonstrates how to exploit an isolated queen pawn. His clean, logical play shows that understanding pawn structure is the key to winning endgames. A model game for strategic chess.',
+    guessMoves: [
+      { ply: 18, expected: 'Ba6', prompt: 'Capablanca decides to exchange Black\'s active light-squared bishop. What is the move?' }
+    ]
   },
   {
     id:'anand_topalov', white:'Viswanathan Anand', black:'Veselin Topalov', event:'World Championship 2010, Game 4', result:'1-0', title:'Anand\'s Preparation',
     pgn:'1.d4 Nf6 2.c4 e6 3.Nf3 d5 4.g3 dxc4 5.Bg2 a6 6.Ne5 c5 7.Na3 cxd4 8.Naxc4 Bc5 9.O-O O-O 10.Bg5 h6 11.Bxf6 Qxf6 12.Nd3 Ba7 13.Qa4 Nc6 14.Rac1 e5 15.Qb5 Be6 16.Nce5 Rab8 17.Nc4 Rfd8 18.Nce5 Bb6 19.Qb3 Ne7 20.Rc2 Bxb3 21.axb3 Nf5 22.Nc4 Nd6 23.Nxb6 Rxb6 24.Rc5 Rd7 25.Nf4 g5 26.Nh5 Qg6 27.f4 gxf4 28.gxf4 Ne4 29.Rc2 exf4 30.Nxf4 Qe8',
     annotations:{ 6:'Ne5!? — Anand\'s deep home preparation in the Catalan Opening.', 15:'Qb5! Anand builds pressure with precise piece placement.', 25:'Nf4! The knight heads to the dominant h5 square.', 30:'Anand converts his positional advantage into a winning endgame. Masterful preparation and execution.' },
     themes:['Opening Preparation','Positional Play','Knight Maneuvers','World Championship'],
-    lessonSummary:'Anand shows the power of deep opening preparation combined with precise positional play. His knight maneuvers and pawn structure understanding give him a lasting advantage that he converts cleanly.'
+    lessonSummary:'Anand shows the power of deep opening preparation combined with precise positional play. His knight maneuvers and pawn structure understanding give him a lasting advantage that he converts cleanly.',
+    guessMoves: [
+      { ply: 22, expected: 'Nd3', prompt: 'Anand pressures the black bishop and center. Find the knight maneuver.' }
+    ]
   },
   {
     id:'immortal_game', white:'Adolf Anderssen', black:'Lionel Kieseritzky', event:'London 1851', result:'1-0', title:'The Immortal Game',
     pgn:'1.e4 e5 2.f4 exf4 3.Bc4 Qh4+ 4.Kf1 b5 5.Bxb5 Nf6 6.Nf3 Qh6 7.d3 Nh5 8.Nh4 Qg5 9.Nf5 c6 10.g4 Nf6 11.Rg1 cxb5 12.h4 Qg6 13.h5 Qg5 14.Qf3 Ng8 15.Bxf4 Qf6 16.Nc3 Bc5 17.Nd5 Qxb2 18.Bd6 Bxg1 19.e5 Qxa1+ 20.Ke2 Na6 21.Nxg7+ Kd8 22.Qf6+ Nxf6 23.Be7#',
     annotations:{ 2:'The King\'s Gambit! The most romantic opening in chess.', 18:'Bd6!! Anderssen sacrifices BOTH rooks — the queen can take either one.', 21:'Nxg7+ continues the attack despite being down massive material.', 23:'Be7# — Checkmate with a quiet bishop move! Anderssen sacrificed both rooks, his bishop, and still checkmated.' },
     themes:['King\'s Gambit','Double Rook Sacrifice','Romantic Chess','Spectacular Attack'],
-    lessonSummary:'The most famous game in chess history. Anderssen sacrifices both rooks and a bishop to deliver a stunning checkmate. This game embodies the romantic era of chess where attack and beauty reigned supreme.'
+    lessonSummary:'The most famous game in chess history. Anderssen sacrifices both rooks and a bishop to deliver a stunning checkmate. This game embodies the romantic era of chess where attack and beauty reigned supreme.',
+    guessMoves: [
+      { ply: 35, expected: 'Bd6', prompt: 'Anderssen plays a legendary double rook sacrifice. Find the move.' }
+    ]
   },
   {
     id:'fischer_spassky_6', white:'Bobby Fischer', black:'Boris Spassky', event:'World Championship 1972, Game 6', result:'1-0', title:'Fischer\'s Masterpiece',
     pgn:'1.c4 e6 2.Nf3 d5 3.d4 Nf6 4.Nc3 Be7 5.Bg5 O-O 6.e3 h6 7.Bh4 b6 8.cxd5 Nxd5 9.Bxe7 Qxe7 10.Nxd5 exd5 11.Rc1 Be6 12.Qa4 c5 13.Qa3 Rc8 14.Bb5 a6 15.dxc5 bxc5 16.O-O Ra7 17.Be2 Nd7 18.Nd4 Qf8 19.Nxe6 fxe6 20.e4 d4 21.f4 Qe7 22.e5 Rb8 23.Bc4 Kh8 24.Qh3 Nf8 25.b3 a5 26.f5 exf5 27.Rxf5 Nh7 28.Rcf1 Qd8 29.Qg3 Re7 30.h4 Rbb7 31.e6 Rbc7 32.Qe5 Qe8 33.a4 Qd8 34.R1f2 Qe8 35.R2f3 Qd8 36.Bd3 Qe8 37.Qe4 Nf6 38.Rxf6 gxf6 39.Rxf6 Kg8 40.Bc4 Kh8 41.Qf4',
     annotations:{ 7:'Fischer surprises with the Queen\'s Gambit — departing from his beloved 1.e4!', 13:'Qa3! Fischer begins his famous queenside pressure.', 22:'e5! The central breakthrough that signals White\'s crushing advantage.', 38:'Rxf6! A brilliant exchange sacrifice that opens all lines to the Black king. Fischer is completely winning.' },
     themes:['Positional Mastery','Queen\'s Gambit','Exchange Sacrifice','World Championship'],
-    lessonSummary:'Fischer\'s greatest game — he surprises Spassky with 1.c4, builds slow positional pressure, and finishes with a devastating exchange sacrifice. The audience gave him a standing ovation. This game effectively won Fischer the World Championship.'
-  },
+    lessonSummary:'Fischer\'s greatest game — he surprises Spassky with 1.c4, builds slow positional pressure, and finishes with a devastating exchange sacrifice. The audience gave him a standing ovation. This game effectively won Fischer the World Championship.',
+    guessMoves: [
+      { ply: 75, expected: 'Rxf6', prompt: 'Fischer plays a brilliant exchange sacrifice to seal the game. Find it.' }
+    ]
+  }
 ];
+
+export function getCoachResponse(question, profile) {
+  const q = question.toLowerCase();
+  const weakest = Object.entries(profile.skillScores).sort((a,b) => a[1]-b[1])[0];
+  const roi = getHighestROIConcept(profile);
+  
+  if (q.includes('improve') || q.includes('study') || q.includes('what should i do') || q.includes('help')) {
+    return `Coach AI: To improve your game, I recommend focusing on your weakest skill right now: **${weakest[0]}** (currently at **${weakest[1]}%**). You should complete your Daily Mission tasks, specifically starting with the **${roi ? roi.name : 'Tactics'}** training. Consistency is key!`;
+  }
+  if (q.includes('boss') || q.includes('battle') || q.includes('cert')) {
+    const nextMilestone = getCurrentMilestone(profile.elo).next;
+    if (nextMilestone && nextMilestone.requiredBoss) {
+      return `Coach AI: To unlock your next milestone (**${nextMilestone.title}**), you must conquer the **${nextMilestone.requiredBoss.replace(/_/g, ' ')}** Boss Battle. Try to review the required concepts first!`;
+    }
+    return `Coach AI: You are in excellent standing. Challenge any Boss Battle in the Battles view to earn certifications and show off your mastery.`;
+  }
+  if (q.includes('elo') || q.includes('rating') || q.includes('grandmaster')) {
+    const proj = calcRoadmapProjection(profile.elo, profile.targetElo, profile.hoursPerWeek || 10);
+    return `Coach AI: Your current rating is **${profile.elo} ELO**. To reach your target of **${profile.targetElo} ELO**, you need to study for approximately **${proj.totalHours} hours**. At your current pace of ${profile.hoursPerWeek}h/week, you'll reach it in **${proj.timelineYears} years**. Let's accelerate this by fixing errors!`;
+  }
+  if (q.includes('streak') || q.includes('active')) {
+    return `Coach AI: You have an active **${profile.streak}-day streak**! Keep logging in and completing daily tasks daily to maintain your momentum and avoid memory decay.`;
+  }
+  return `Coach AI: That is an excellent chess question. Focus on calculating candidate moves, controlling the center, and keeping your king safe. Let me know if you'd like a custom training session!`;
+}
+

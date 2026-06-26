@@ -41,6 +41,18 @@ const STOCKFISH_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.
 let profile = new UserProfile();
 let activeLesson = null;
 
+// Guess the Move challenge state
+let gtmState = {
+  active: false,
+  game: null,
+  moves: [],
+  currentPly: 0,
+  targetIndex: 0,
+  correctCount: 0,
+  attemptedCount: 0
+};
+
+
 // ═══════════════════════════════════════════════════
 // INITIALIZATION
 // ═══════════════════════════════════════════════════
@@ -138,6 +150,156 @@ function initNavigation() {
 // ═══════════════════════════════════════════════════
 // HOME VIEW — Daily Mission + Roadmap + ROI
 // ═══════════════════════════════════════════════════
+function navigateToView(targetView) {
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewPanels = document.querySelectorAll('.view-panel');
+  const pageTitle = document.getElementById('pageTitle');
+
+  let foundItem = null;
+  navItems.forEach(item => {
+    if (item.dataset.target === targetView) {
+      foundItem = item;
+    }
+  });
+
+  if (foundItem) {
+    navItems.forEach(b => b.classList.remove('active'));
+    foundItem.classList.add('active');
+    viewPanels.forEach(p => {
+      p.classList.remove('active');
+      if (p.id === targetView) p.classList.add('active');
+    });
+    activeView = targetView;
+    pageTitle.textContent = foundItem.textContent.replace(/[^\w\s&]/g, '').trim();
+    if (targetView === 'play') { buildBoard(); if (!engineReady) initEngine(); }
+    else if (targetView === 'journey-view') setTimeout(drawJourneyConnectors, 50);
+    else if (targetView === 'analytics-view') { renderRadarChart(); renderHeatmap(); }
+    else if (targetView === 'deep-analytics-view') { renderAnalyticsStats(); renderActionableInsights(); }
+    else if (targetView === 'coach-view') { initCoachView(); }
+    return true;
+  }
+  return false;
+}
+
+function launchMissionTask(task) {
+  if (!task) return;
+  const route = task.targetRoute;
+  if (!route) return;
+
+  navigateToView(route);
+
+  // Deep interaction launch
+  if (route === 'tactics-view' && task.targetCategory) {
+    const puzzles = TACTICS_DB.filter(t => t.category === task.targetCategory);
+    const p = puzzles[Math.floor(Math.random() * puzzles.length)];
+    if (p) {
+      activeLesson = { ...p, type: 'tactic' };
+      navigateToView('play');
+      chess = new Chess(p.fen);
+      playerColor = p.fen.split(' ')[1] || 'w';
+      isGameActive = true;
+      buildBoard();
+      document.getElementById('coachAdvice').innerHTML = `<strong>🎯 Tactic motif: ${p.name}</strong><br>${p.explanation || ''}<br><br><span style="color:var(--accent-rose);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+      showToast(`🎯 Today's Mission tactic loaded!`);
+    }
+  } else if ((route === 'strategy-view' || route === 'endgame-view') && task.knowledgeNodeId) {
+    if (route === 'strategy-view') {
+      const s = STRATEGY_DB.find(x => x.id === task.knowledgeNodeId);
+      if (s) {
+        activeLesson = { ...s, type: 'strategy' };
+        navigateToView('play');
+        chess = new Chess(s.fen);
+        playerColor = 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Strategic Lesson: ${s.name}</strong><br>${s.lesson}<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Play a move that targets or lands on one of the key squares: <strong>${s.keySquares.join(', ')}</strong>.</span>`;
+        showToast(`📖 Strategy: ${s.name} loaded!`);
+      }
+    } else {
+      const eg = ENDGAME_DB.find(x => x.id === task.knowledgeNodeId);
+      if (eg) {
+        activeLesson = { ...eg, type: 'endgame' };
+        navigateToView('play');
+        chess = new Chess(eg.fen);
+        playerColor = eg.fen.split(' ')[1] || 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning key move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+        showToast(`📖 Endgame: ${eg.name} loaded!`);
+      }
+    }
+  } else {
+    showToast(`🎯 Navigated to: ${task.title}`);
+  }
+}
+
+function renderQuestsAndStreaks() {
+  const qList = document.getElementById('questsList');
+  const sList = document.getElementById('streaksList');
+  if (!qList || !sList) return;
+
+  qList.innerHTML = '';
+  profile.quests.forEach(q => {
+    const div = document.createElement('div');
+    div.className = 'quest-item' + (q.done ? ' completed' : '');
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    div.style.background = 'rgba(255,255,255,0.02)';
+    div.style.border = '1px solid var(--border-color)';
+    div.style.padding = '8px 12px';
+    div.style.borderRadius = '6px';
+    div.style.fontSize = '0.75rem';
+    
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" disabled ${q.done ? 'checked' : ''}>
+        <div>
+          <div style="font-weight:600;color:${q.done ? 'var(--text-muted)' : 'var(--text-primary)'}">${q.title}</div>
+          <div style="font-size:0.68rem;color:var(--text-secondary)">Progress: ${q.progress}/${q.target}</div>
+        </div>
+      </div>
+      <div style="color:var(--accent-gold);font-weight:700;">+${q.xp} XP</div>
+    `;
+    qList.appendChild(div);
+  });
+
+  sList.innerHTML = '';
+  const colors = { tactical:'#ef4444', strategic:'#8b5cf6', opening:'#3b82f6', endgame:'#eab308', calculation:'#ec4899', visualization:'#10b981' };
+  Object.entries(profile.streakByCategory || {}).forEach(([cat, val]) => {
+    const color = colors[cat] || '#3b82f6';
+    const badge = document.createElement('div');
+    badge.className = 'streak-badge';
+    badge.style.display = 'inline-flex';
+    badge.style.alignItems = 'center';
+    badge.style.gap = '4px';
+    badge.style.background = `rgba(255,255,255,0.02)`;
+    badge.style.border = `1px solid ${color}40`;
+    badge.style.padding = '4px 8px';
+    badge.style.borderRadius = '12px';
+    badge.style.fontSize = '0.7rem';
+    badge.style.color = val > 0 ? color : 'var(--text-muted)';
+    badge.innerHTML = `🔥 <strong>${cat.toUpperCase()}:</strong> ${val}d`;
+    sList.appendChild(badge);
+  });
+}
+
+function incrementQuestProgress(questId, amount = 1) {
+  const quest = profile.quests.find(q => q.id === questId);
+  if (quest && !quest.done) {
+    quest.progress = Math.min(quest.target, quest.progress + amount);
+    if (quest.progress >= quest.target) {
+      quest.done = true;
+      profile.addXP(quest.xp);
+      showToast(`⚡ Quest Completed: ${quest.title}! +${quest.xp} XP`);
+      triggerConfetti();
+      updateHeaderStats();
+    }
+    profile.save();
+    renderQuestsAndStreaks();
+  }
+}
+
 function initHomeView() {
   const mission = generateDailyMission(profile);
   const container = document.getElementById('missionTasks');
@@ -146,12 +308,30 @@ function initHomeView() {
     const done = profile.dailyCompleted[task.title] || false;
     const div = document.createElement('div');
     div.className = 'mission-task' + (done ? ' completed' : '');
-    div.innerHTML = `<input type="checkbox" ${done ? 'checked' : ''} data-idx="${i}"><div><div style="font-weight:600;">${task.title}</div><div class="mission-meta"><span>⏱️ ${task.minutes}m</span><span>⚡ ${task.xp} XP</span><span>📈 +${task.eloGain} Elo</span></div></div>`;
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" ${done ? 'checked' : ''} data-idx="${i}">
+        <div>
+          <div style="font-weight:600;">${task.title}</div>
+          <div class="mission-meta"><span>⏱️ ${task.minutes}m</span><span>⚡ ${task.xp} XP</span><span>📈 +${task.eloGain} Elo</span></div>
+        </div>
+      </div>
+      <button class="hud-btn start-task-btn" style="padding:4px 8px;font-size:0.68rem;margin-left:8px;" data-idx="${i}">Start</button>
+    `;
+    
     div.querySelector('input').addEventListener('change', (e) => {
       profile.dailyCompleted[task.title] = e.target.checked;
       profile.save();
       div.classList.toggle('completed', e.target.checked);
     });
+
+    div.querySelector('.start-task-btn').addEventListener('click', () => {
+      launchMissionTask(task);
+    });
+
     container.appendChild(div);
   });
   document.getElementById('missionTime').textContent = mission.totalMinutes;
@@ -163,6 +343,9 @@ function initHomeView() {
   if (roi) {
     document.getElementById('roiContent').innerHTML = `<strong style="color:var(--accent-blue)">${roi.name}</strong> — ${roi.desc}<br><br><span style="font-size:0.72rem;color:var(--text-muted);">📊 Rating range: ${roi.ratingRange[0]}–${roi.ratingRange[1]} | ⏱️ ${roi.studyMin} min | ⚡ ${roi.xp} XP<br>📌 <em>Why:</em> This concept has the highest impact-to-effort ratio for your current Elo (${profile.elo}). Mastering it will unlock ${getUnlockedConcepts([...profile.masteredConcepts, roi.id]).length} more concepts.</span>`;
   }
+
+  // Quests & Streaks
+  renderQuestsAndStreaks();
 }
 
 function completeMission() {
@@ -452,7 +635,25 @@ function initFamousGames() {
   });
 
   renderGameList(FAMOUS_GAMES_DB);
+
+  // Wire Guess the Move challenge buttons
+  document.getElementById('btnStartGuessChallenge')?.addEventListener('click', () => {
+    const list = document.getElementById('gameList');
+    const activeEntry = list.querySelector('.game-entry.active-game');
+    if (!activeEntry) { showToast('⚠️ Select a famous game first!'); return; }
+    
+    const titleText = document.getElementById('gameTitle').textContent;
+    const game = FAMOUS_GAMES_DB.find(g => g.title === titleText);
+    if (game) {
+      startGuessChallenge(game);
+    }
+  });
+
+  document.getElementById('btnGuessNext')?.addEventListener('click', advanceGuessMove);
+  document.getElementById('btnSubmitGuess')?.addEventListener('click', submitGuess);
+  document.getElementById('guessInputMove')?.addEventListener('keypress', e => { if (e.key === 'Enter') submitGuess(); });
 }
+
 
 function renderGameList(games) {
   const list = document.getElementById('gameList');
@@ -511,6 +712,24 @@ function initCoachView() {
     cards.appendChild(card);
   });
 
+  // Proactive speech bubble coaching advice
+  const weakest = Object.entries(weaknesses).sort((a,b) => a[1].score - b[1].score)[0];
+  const speechBubble = document.getElementById('coachSpeechBubble');
+  if (speechBubble) {
+    if (weakest) {
+      speechBubble.innerHTML = `🧙‍♂️ <strong>Coach AI:</strong> I have analyzed your recent games. Your main weakness is **${weakest[0].toUpperCase()}** (score: ${weakest[1].score}%). You should complete some targeted study or puzzles in this area. Focus on calculation depth and pattern control!`;
+    } else {
+      speechBubble.innerHTML = `🧙‍♂️ <strong>Coach AI:</strong> Welcome! Take a Skill Assessment or play games against stockfish to compile detailed insights and receive custom workouts.`;
+    }
+  }
+
+  // ELO forecast
+  const forecastText = document.getElementById('coachForecastText');
+  if (forecastText) {
+    const proj = calcRoadmapProjection(profile.elo, profile.targetElo, profile.hoursPerWeek || 10);
+    forecastText.innerHTML = `Study: <strong>${proj.totalHours} hours</strong> needed at ${profile.hoursPerWeek}h/wk. Est: <strong>${proj.timelineYears} years</strong> to reach <strong>${profile.targetElo} ELO</strong>. 🚀 (+${profile.getLearningVelocity().eloPerWeek || 0} Elo/wk velocity)`;
+  }
+
   // Generate recommendations
   const plan = generateRemediationPlan(weaknesses);
   recs.innerHTML = '';
@@ -518,11 +737,66 @@ function initCoachView() {
     plan.forEach(p => {
       const div = document.createElement('div');
       div.className = 'mission-task';
-      div.innerHTML = `<div><div style="font-weight:600;">📌 Study: ${p.concept.name}</div><div class="mission-meta"><span>📊 ${p.area} score: ${p.score}%</span><span>⏱️ ${p.concept.studyMin} min</span><span>⚡ ${p.concept.xp} XP</span></div><div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;"><strong>Why:</strong> ${p.reason}</div></div>`;
+      div.style.display = 'flex';
+      div.style.justifyContent = 'space-between';
+      div.style.alignItems = 'center';
+      div.innerHTML = `
+        <div>
+          <div style="font-weight:600;">📌 Study: ${p.concept.name}</div>
+          <div class="mission-meta"><span>📊 ${p.area} score: ${p.score}%</span><span>⏱️ ${p.concept.studyMin} min</span><span>⚡ ${p.concept.xp} XP</span></div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;"><strong>Why:</strong> ${p.reason}</div>
+        </div>
+        <button class="hud-btn" style="padding:4px 8px;font-size:0.68rem;" id="btnCoachRec-${p.concept.id}">Start</button>
+      `;
       recs.appendChild(div);
+      document.getElementById(`btnCoachRec-${p.concept.id}`)?.addEventListener('click', () => {
+        const route = p.concept.category === 'tactic' ? 'tactics-view' : p.concept.category === 'strategy' ? 'strategy-view' : p.concept.category === 'endgame' ? 'endgame-view' : 'skilltree-view';
+        launchMissionTask({ targetRoute: route, knowledgeNodeId: p.concept.id, targetConcept: p.concept.id });
+      });
     });
   } else {
     recs.innerHTML = '<div style="font-size:0.78rem;color:var(--text-secondary);">🎉 All skills are above target! Keep practicing to maintain your level.</div>';
+  }
+
+  // Wire recommendations start button
+  document.getElementById('btnCoachStartMission')?.addEventListener('click', () => {
+    navigateToView('home-view');
+  });
+
+  // Chatbot event handlers
+  const sendBtn = document.getElementById('btnSendCoachMsg');
+  const chatInput = document.getElementById('coachChatInput');
+  const chatLog = document.getElementById('coachChatLog');
+  
+  if (sendBtn && chatInput && chatLog) {
+    const newSendBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
+    const handleSend = () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      const userDiv = document.createElement('div');
+      userDiv.className = 'coach-chat-msg user';
+      userDiv.style.color = 'var(--text-primary)';
+      userDiv.style.margin = '4px 0';
+      userDiv.innerHTML = `👤 <strong>You:</strong> ${text}`;
+      chatLog.appendChild(userDiv);
+
+      const replyText = getCoachResponse(text, profile);
+      const coachDiv = document.createElement('div');
+      coachDiv.className = 'coach-chat-msg coach';
+      coachDiv.style.color = 'var(--accent-blue)';
+      coachDiv.style.margin = '4px 0';
+      coachDiv.innerHTML = replyText.startsWith('Coach AI:') ? `🧙‍♂️ ${replyText}` : `🧙‍♂️ Coach AI: ${replyText}`;
+      chatLog.appendChild(coachDiv);
+
+      chatInput.value = '';
+      chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    newSendBtn.addEventListener('click', handleSend);
+    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
   }
 }
 
@@ -596,8 +870,8 @@ function renderHeatmap() {
 // ═══════════════════════════════════════════════════
 // CHESSBOARD ENGINE (preserved from existing, refined)
 // ═══════════════════════════════════════════════════
-function buildBoard() {
-  const board = document.getElementById('board');
+function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = [], clickHandler = null) {
+  const board = document.getElementById(boardId);
   if (!board) return;
   board.innerHTML = '';
   for (let r = 0; r < 8; r++) {
@@ -613,8 +887,25 @@ function buildBoard() {
       if (c === 0) { const cr = document.createElement('span'); cr.className = 'coord-rank'; cr.textContent = rank; div.appendChild(cr); }
       if (r === 7) { const cf = document.createElement('span'); cf.className = 'coord-file'; cf.textContent = file; div.appendChild(cf); }
 
-      if (lastMoveSquares.includes(sq)) div.classList.add('highlight');
-      const piece = chess.get(sq);
+      if (lastMoves.includes(sq)) div.classList.add('highlight');
+      
+      // Add lesson hints if confidence is low (gradually remove hints)
+      if (activeLesson) {
+        const mastery = profile.getMasteryFor(activeLesson.id || activeLesson.name);
+        if ((mastery.confidence || 0) < 60) {
+          if (activeLesson.type === 'strategy' && activeLesson.keySquares.includes(sq)) {
+            div.classList.add('lesson-hint');
+          } else if (activeLesson.type === 'endgame') {
+            const solMove = activeLesson.solution[0];
+            const targetSq = solMove.slice(-2);
+            if (sq === targetSq) {
+              div.classList.add('lesson-hint');
+            }
+          }
+        }
+      }
+
+      const piece = chessInstance.get(sq);
       if (piece) {
         const pDiv = document.createElement('div');
         pDiv.className = 'piece';
@@ -622,32 +913,45 @@ function buildBoard() {
         pDiv.style.backgroundImage = `url('${PU[key]}')`;
         div.appendChild(pDiv);
       }
-      if (selectedSquare === sq) div.classList.add('selected');
+      if (selectedSq === sq) div.classList.add('selected');
 
       // Check highlight
-      if (chess.inCheck()) {
-        const turn = chess.turn();
-        const kingPos = findKing(turn);
+      if (chessInstance.inCheck()) {
+        let kingPos = null;
+        for (let kr = 1; kr <= 8; kr++) {
+          for (let kc = 0; kc < 8; kc++) {
+            const ksq = String.fromCharCode(97 + kc) + kr;
+            const kp = chessInstance.get(ksq);
+            if (kp && kp.type === 'k' && kp.color === chessInstance.turn()) { kingPos = ksq; break; }
+          }
+          if (kingPos) break;
+        }
         if (kingPos === sq) div.classList.add('in-check');
       }
 
-      div.addEventListener('click', () => handleSquareClick(sq));
+      if (clickHandler) {
+        div.addEventListener('click', () => clickHandler(sq));
+      }
       board.appendChild(div);
     }
   }
-  // Show legal move dots
-  if (selectedSquare) {
-    const moves = chess.moves({ square: selectedSquare, verbose: true });
+  // Show legal move dots for main board
+  if (selectedSq && boardId === 'board') {
+    const moves = chessInstance.moves({ square: selectedSq, verbose: true });
     moves.forEach(m => {
       const targetSq = board.querySelector(`[data-square="${m.to}"]`);
       if (targetSq) {
-        if (chess.get(m.to)) targetSq.classList.add('can-capture');
+        if (chessInstance.get(m.to)) targetSq.classList.add('can-capture');
         const dot = document.createElement('div');
         dot.className = 'move-dot';
         targetSq.appendChild(dot);
       }
     });
   }
+}
+
+function buildBoard() {
+  renderBoardTo('board', chess, selectedSquare, lastMoveSquares, handleSquareClick);
 }
 
 function findKing(color) {
@@ -679,6 +983,8 @@ function handleSquareClick(sq) {
           const solMove = activeLesson.solution[0];
           const normalize = s => s.replace(/[+#!?]/g,'').toLowerCase().trim();
           isCorrect = normalize(move.san) === normalize(solMove) || normalize(`${move.from}${move.to}`) === normalize(solMove);
+        } else if (activeLesson.type === 'tactic') {
+          isCorrect = move.from === activeLesson.expected.from && move.to === activeLesson.expected.to;
         }
 
         if (isCorrect) {
@@ -870,7 +1176,8 @@ function evaluateAndCoach(move) {
   const cls = classifyEvalDiff(diff);
   const opening = detectOpening(chess.fen());
   const commentary = getCoachCommentary(move.san, move, cls, opening);
-  document.getElementById('coachAdvice').innerHTML = commentary;
+  const liveTip = getLiveAdvisorPrompt(chess);
+  document.getElementById('coachAdvice').innerHTML = commentary + `<div style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;font-size:0.72rem;color:var(--accent-gold);">${liveTip}</div>`;
 }
 
 function resetGame() {
@@ -903,7 +1210,17 @@ function getHint() {
 function handleGameOver() {
   isGameActive = false;
   let msg = '🏁 Game Over! ';
-  if (chess.isCheckmate()) msg += chess.turn() === playerColor ? 'You lost by checkmate.' : '🏆 You won by checkmate!';
+  if (chess.isCheckmate()) {
+    msg += chess.turn() === playerColor ? 'You lost by checkmate.' : '🏆 You won by checkmate!';
+    if (chess.turn() === playerColor) {
+      profile.gameErrors.blunders++;
+      const roll = Math.random();
+      if (roll < 0.4) profile.gameErrors.forksMissed++;
+      else if (roll < 0.7) profile.gameErrors.pinsMissed++;
+      else profile.gameErrors.endgameFails++;
+      profile.save();
+    }
+  }
   else if (chess.isDraw()) msg += 'Draw!';
   else if (chess.isStalemate()) msg += 'Stalemate!';
   showToast(msg);
@@ -1426,6 +1743,16 @@ function finishBossBattle() {
     profile.updateElo(profile.elo + boss.eloReward);
     triggerConfetti();
     handleEloChange(oldElo, profile.elo);
+
+    // Populate and show certificate modal
+    const certModal = document.getElementById('certificateModal');
+    if (certModal) {
+      document.getElementById('certUserName').textContent = profile.userName || 'Chess Master';
+      document.getElementById('certBossName').textContent = boss.name;
+      document.getElementById('certEloVal').textContent = `${profile.elo} ELO`;
+      document.getElementById('certDate').textContent = new Date().toISOString().split('T')[0];
+      certModal.style.display = 'flex';
+    }
   }
 
   document.getElementById('bossActivePanel').style.display = 'none';
@@ -1487,6 +1814,8 @@ function renderAnalyticsStats() {
   renderDeepRadar();
   // Render heatmap
   renderDeepHeatmap();
+  // Render Actionable Insights
+  renderActionableInsights();
 }
 
 function renderEloChart() {
@@ -1846,3 +2175,219 @@ function handleEloChange(oldElo, newElo) {
     }, 500);
   }
 }
+
+// ═══════════════════════════════════════════════════
+// NEW V2 ENHANCEMENTS: LIVE ADVISOR, GTM, ACTIONABLE INSIGHTS
+// ═══════════════════════════════════════════════════
+
+function getLiveAdvisorPrompt(chessObj) {
+  if (chessObj.inCheck()) {
+    return "⚠️ <strong>Live Advisor:</strong> You are in check! Look for forcing moves: blocking, capturing the checking piece, or escaping.";
+  }
+  
+  const history = chessObj.history({ verbose: true });
+  const moveCount = history.length;
+  
+  if (moveCount < 6) {
+    return "💡 <strong>Live Advisor:</strong> This opening stage resembles classic center control theory. Focus on developing knights before bishops and preparing to castle.";
+  }
+  
+  let pieceCount = 0;
+  for (let r = 1; r <= 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = String.fromCharCode(97 + c) + r;
+      if (chessObj.get(sq)) pieceCount++;
+    }
+  }
+  
+  if (pieceCount < 12) {
+    return "♟️ <strong>Live Advisor:</strong> We have entered the endgame stage. Remember that King activity is paramount now. Look to gain opposition and guide passed pawns!";
+  }
+  
+  const tips = [
+    "🔍 <strong>Live Advisor:</strong> Scan the board for forcing candidate moves (Checks, Captures, Threats) before deciding.",
+    "🛡️ <strong>Live Advisor:</strong> Prophylaxis tip: Ask yourself 'What is my opponent planning with their last move?'",
+    "🦄 <strong>Live Advisor:</strong> Look out for knight forks on weak undefended squares.",
+    "📌 <strong>Live Advisor:</strong> Aligning rooks on open files will maximize their activity and power.",
+    "🧠 <strong>Live Advisor:</strong> Remember a lesson you studied: keep pawn structures solid and avoid leaving weak squares."
+  ];
+  return tips[moveCount % tips.length];
+}
+
+function startGuessChallenge(game) {
+  if (!game || !game.pgn) return;
+  
+  const tempChess = new Chess();
+  try {
+    tempChess.loadPgn(game.pgn);
+  } catch (e) {
+    showToast("⚠️ Failed to parse game PGN.");
+    return;
+  }
+  
+  const moves = tempChess.history({ verbose: true });
+  
+  gtmState = {
+    active: true,
+    game,
+    moves,
+    currentPly: 0,
+    targetIndex: 0,
+    correctCount: 0,
+    attemptedCount: game.guessMoves ? game.guessMoves.length : 0
+  };
+  
+  document.getElementById('guessTheMoveChallenge').style.display = 'block';
+  document.getElementById('guessFeedback').style.display = 'none';
+  document.getElementById('guessInputArea').style.display = 'none';
+  document.getElementById('btnGuessNext').style.display = 'inline-block';
+  document.getElementById('btnGuessNext').textContent = 'Start Game →';
+  document.getElementById('guessPrompt').innerHTML = `Welcome to the Guess the Move challenge for <strong>${game.title}</strong>. Click 'Start Game' to walk through the moves!`;
+  document.getElementById('guessStats').textContent = `Correct: 0 / ${gtmState.attemptedCount}`;
+  
+  const famousChess = new Chess();
+  renderBoardTo('famousBoard', famousChess, null, []);
+  
+  showToast("🎯 Guess the Move challenge started!");
+}
+
+function advanceGuessMove() {
+  if (!gtmState.active) return;
+  
+  const famousChess = new Chess();
+  for (let i = 0; i < gtmState.currentPly; i++) {
+    famousChess.move(gtmState.moves[i].san);
+  }
+  
+  if (gtmState.currentPly >= gtmState.moves.length) {
+    document.getElementById('guessPrompt').innerHTML = `🏁 <strong>Challenge Complete!</strong> You guessed ${gtmState.correctCount} out of ${gtmState.attemptedCount} moves correctly!`;
+    document.getElementById('btnGuessNext').style.display = 'none';
+    document.getElementById('guessInputArea').style.display = 'none';
+    
+    const xpReward = gtmState.correctCount * 25;
+    if (xpReward > 0) {
+      profile.addXP(xpReward);
+      showToast(`🏆 Guess the Move completed! +${xpReward} XP`);
+      updateHeaderStats();
+    }
+    gtmState.active = false;
+    return;
+  }
+  
+  const nextMove = gtmState.moves[gtmState.currentPly];
+  famousChess.move(nextMove.san);
+  gtmState.currentPly++;
+  
+  renderBoardTo('famousBoard', famousChess, null, [nextMove.from, nextMove.to]);
+  
+  const target = gtmState.game.guessMoves && gtmState.game.guessMoves[gtmState.targetIndex];
+  if (target && gtmState.currentPly === target.ply - 1) {
+    document.getElementById('btnGuessNext').style.display = 'none';
+    document.getElementById('guessInputArea').style.display = 'block';
+    document.getElementById('guessPrompt').innerHTML = `🎯 <strong>Prediction Time:</strong> ${target.prompt}`;
+    document.getElementById('guessFeedback').style.display = 'none';
+    document.getElementById('guessInputMove').value = '';
+    document.getElementById('guessReasoning').value = '';
+    document.getElementById('guessInputMove').focus();
+  } else {
+    document.getElementById('btnGuessNext').textContent = 'Next Move →';
+    document.getElementById('guessPrompt').innerHTML = `Game Progress: Move ${Math.ceil(gtmState.currentPly / 2)}${gtmState.currentPly % 2 === 1 ? ' (White)' : ' (Black)'}: <strong>${nextMove.san}</strong>`;
+  }
+}
+
+function submitGuess() {
+  if (!gtmState.active) return;
+  const target = gtmState.game.guessMoves && gtmState.game.guessMoves[gtmState.targetIndex];
+  if (!target) return;
+  
+  const input = document.getElementById('guessInputMove');
+  const guess = input.value.trim();
+  if (!guess) return;
+  
+  const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
+  const isCorrect = normalize(guess) === normalize(target.expected);
+  
+  const fb = document.getElementById('guessFeedback');
+  fb.style.display = 'block';
+  if (isCorrect) {
+    gtmState.correctCount++;
+    fb.style.background = 'rgba(16,185,129,0.1)';
+    fb.style.border = '1px solid rgba(16,185,129,0.3)';
+    fb.style.color = 'var(--success)';
+    fb.innerHTML = `✅ <strong>Correct!</strong> You predicted the GM's choice: <strong>${target.expected}</strong>.`;
+  } else {
+    fb.style.background = 'rgba(239,68,68,0.1)';
+    fb.style.border = '1px solid rgba(239,68,68,0.3)';
+    fb.style.color = 'var(--danger)';
+    fb.innerHTML = `❌ <strong>Incorrect.</strong> The GM played: <strong>${target.expected}</strong>.`;
+  }
+  
+  document.getElementById('guessStats').textContent = `Correct: ${gtmState.correctCount} / ${gtmState.attemptedCount}`;
+  gtmState.targetIndex++;
+  
+  document.getElementById('guessInputArea').style.display = 'none';
+  document.getElementById('btnGuessNext').style.display = 'inline-block';
+  document.getElementById('btnGuessNext').textContent = 'Resume Game →';
+}
+
+function renderActionableInsights() {
+  const container = document.getElementById('analyticsRecentErrors');
+  const btn = document.getElementById('btnGenerateCustomTraining');
+  if (!container) return;
+
+  const errors = profile.gameErrors || { forksMissed: 0, pinsMissed: 0, endgameFails: 0, blunders: 0, inaccuracies: 0 };
+  const totalErrors = Object.values(errors).reduce((a, b) => a + b, 0);
+
+  if (totalErrors === 0) {
+    container.innerHTML = `<div style="color:var(--text-muted);font-style:italic;">No recent game errors recorded. Play some games against Stockfish AI or upload game logs to populate analysis metrics.</div>`;
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = `
+    <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px;">
+      <li>🐴 <strong>Knight Fork Errors:</strong> ${errors.forksMissed || 0} missed</li>
+      <li>📌 <strong>Missed Pins / Skewers:</strong> ${errors.pinsMissed || 0} missed</li>
+      <li>♟️ <strong>Rook / Pawn Endgame Errors:</strong> ${errors.endgameFails || 0} recorded</li>
+      <li>⚠️ <strong>Blunders:</strong> ${errors.blunders || 0} recorded</li>
+      <li>🟡 <strong>Inaccuracies:</strong> ${errors.inaccuracies || 0} recorded</li>
+    </ul>
+  `;
+
+  if (btn) {
+    btn.style.display = 'inline-block';
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', () => {
+      let targetCat = 'fork';
+      let maxErrors = 0;
+      if ((errors.forksMissed || 0) > maxErrors) { maxErrors = errors.forksMissed; targetCat = 'fork'; }
+      if ((errors.pinsMissed || 0) > maxErrors) { maxErrors = errors.pinsMissed; targetCat = 'pin'; }
+      if ((errors.endgameFails || 0) > maxErrors) { maxErrors = errors.endgameFails; targetCat = 'endgame'; }
+      
+      if (maxErrors === 0 && ((errors.blunders || 0) > 0 || (errors.inaccuracies || 0) > 0)) {
+        const cats = ['fork', 'pin', 'skewer', 'discovered_attack'];
+        targetCat = cats[Math.floor(Math.random() * cats.length)];
+      }
+
+      const puzzles = TACTICS_DB.filter(t => t.category === targetCat || t.category.includes(targetCat));
+      const p = puzzles[Math.floor(Math.random() * puzzles.length)] || TACTICS_DB[0];
+
+      if (p) {
+        activeLesson = { ...p, type: 'tactic' };
+        navigateToView('play');
+        chess = new Chess(p.fen);
+        playerColor = p.fen.split(' ')[1] || 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `
+          <strong>⚡ Targeted custom training generated!</strong><br>
+          Motif: <strong>${p.name}</strong> (solving this targets your highest error rate: ${targetCat})<br><br>
+          <span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>
+        `;
+        showToast(`⚡ Targeted ${targetCat} training puzzle loaded!`);
+      }
+    });
+  }
+}
+
