@@ -30,7 +30,7 @@ let lastMoveSquares = [];
 let activeView = 'home-view';
 let playerColor = 'w';
 let engineReady = false;
-let isGameActive = true;
+let isGameActive = false;
 let engine = null;
 let timerInterval = null;
 let whiteTimeMs = 600000;
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initVisLab();
 
   // Play view buttons
-  document.getElementById('btnRestart')?.addEventListener('click', resetGame);
+  initPlaySetup();
   document.getElementById('btnUndo')?.addEventListener('click', undoMove);
   document.getElementById('btnGetHint')?.addEventListener('click', getHint);
   document.getElementById('btnReviewPgn')?.addEventListener('click', reviewPGN);
@@ -150,7 +150,17 @@ function initNavigation() {
       viewPanels.forEach(p => { p.classList.remove('active'); if (p.id === target) p.classList.add('active'); });
       activeView = target;
       pageTitle.textContent = item.textContent.replace(/[^\w\s&]/g, '').trim();
-      if (target === 'play') { buildBoard(); if (!engineReady) initEngine(); }
+      if (target === 'play') {
+        if (!engineReady) initEngine();
+        if (isGameActive) {
+          document.getElementById('gameSetupPanel').style.display = 'none';
+          document.getElementById('gamePlayArea').style.display = 'grid';
+          buildBoard();
+        } else {
+          document.getElementById('gameSetupPanel').style.display = 'block';
+          document.getElementById('gamePlayArea').style.display = 'none';
+        }
+      }
       else if (target === 'journey-view') setTimeout(drawJourneyConnectors, 50);
       else if (target === 'analytics-view') { renderRadarChart(); renderHeatmap(); }
     });
@@ -943,10 +953,13 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
   const board = document.getElementById(boardId);
   if (!board) return;
   board.innerHTML = '';
+  
+  const isFlipped = playerColor === 'b' && boardId === 'board';
+  
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
-      const file = String.fromCharCode(97 + c);
-      const rank = 8 - r;
+      const file = isFlipped ? String.fromCharCode(104 - c) : String.fromCharCode(97 + c);
+      const rank = isFlipped ? r + 1 : 8 - r;
       const sq = file + rank;
       const isLight = (r + c) % 2 === 0;
       const div = document.createElement('div');
@@ -956,7 +969,13 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       if (c === 0) { const cr = document.createElement('span'); cr.className = 'coord-rank'; cr.textContent = rank; div.appendChild(cr); }
       if (r === 7) { const cf = document.createElement('span'); cf.className = 'coord-file'; cf.textContent = file; div.appendChild(cf); }
 
-      if (lastMoves.includes(sq)) div.classList.add('highlight');
+      // Dual-tone highlights for the last move, fallback to simple highlight
+      if (lastMoves.length === 2) {
+        if (lastMoves[0] === sq) div.classList.add('last-from');
+        if (lastMoves[1] === sq) div.classList.add('last-to');
+      } else if (lastMoves.includes(sq)) {
+        div.classList.add('highlight');
+      }
       
       // Add lesson hints if confidence is low (gradually remove hints)
       if (activeLesson) {
@@ -978,6 +997,9 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       if (piece) {
         const pDiv = document.createElement('div');
         pDiv.className = 'piece';
+        if (lastMoves.length === 2 && lastMoves[1] === sq) {
+          pDiv.classList.add('piece-animated');
+        }
         const key = piece.color + piece.type;
         pDiv.style.backgroundImage = `url('${PU[key]}')`;
         div.appendChild(pDiv);
@@ -1004,8 +1026,8 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       board.appendChild(div);
     }
   }
-  // Show legal move dots for main board
-  if (selectedSq && boardId === 'board') {
+  // Show legal move dots for main board and assessment board
+  if (selectedSq && (boardId === 'board' || boardId === 'assessBoard')) {
     const moves = chessInstance.moves({ square: selectedSq, verbose: true });
     moves.forEach(m => {
       const targetSq = board.querySelector(`[data-square="${m.to}"]`);
@@ -1041,7 +1063,12 @@ function handleSquareClick(sq) {
 
   if (selectedSquare) {
     // Try move
-    const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+    let move = null;
+    try {
+      move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+    } catch (e) {
+      // Invalid move
+    }
     if (move) {
       // Check Active Lesson Goal
       if (activeLesson) {
@@ -1087,8 +1114,12 @@ function handleSquareClick(sq) {
       setTimeout(makeAIMove, 300);
       return;
     }
-    // If clicking own piece, reselect
-    if (piece && piece.color === playerColor) { selectedSquare = sq; buildBoard(); return; }
+    // If clicking own piece, reselect (or deselect if already selected)
+    if (piece && piece.color === playerColor) {
+      selectedSquare = selectedSquare === sq ? null : sq;
+      buildBoard();
+      return;
+    }
     selectedSquare = null;
     buildBoard();
     return;
@@ -1272,6 +1303,45 @@ function evaluateAndCoach(move) {
   document.getElementById('coachAdvice').innerHTML = commentary + `<div style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;font-size:0.72rem;color:var(--accent-gold);">${liveTip}</div>`;
 }
 
+let selectedColor = 'w';
+
+function initPlaySetup() {
+  const btnWhite = document.getElementById('btnPickWhite');
+  const btnBlack = document.getElementById('btnPickBlack');
+  const btnRandom = document.getElementById('btnPickRandom');
+  const btnStart = document.getElementById('btnStartNewGame');
+  const btnRestart = document.getElementById('btnRestart');
+
+  const colorBtns = [btnWhite, btnBlack, btnRandom];
+
+  colorBtns.forEach(btn => {
+    btn?.addEventListener('click', () => {
+      colorBtns.forEach(b => b?.classList.remove('active-color'));
+      btn.classList.add('active-color');
+      selectedColor = btn.dataset.color;
+    });
+  });
+
+  btnStart?.addEventListener('click', () => {
+    if (selectedColor === 'random') {
+      playerColor = Math.random() < 0.5 ? 'w' : 'b';
+    } else {
+      playerColor = selectedColor;
+    }
+
+    document.getElementById('gameSetupPanel').style.display = 'none';
+    document.getElementById('gamePlayArea').style.display = 'grid';
+
+    resetGame();
+  });
+
+  btnRestart?.addEventListener('click', () => {
+    isGameActive = false;
+    document.getElementById('gameSetupPanel').style.display = 'block';
+    document.getElementById('gamePlayArea').style.display = 'none';
+  });
+}
+
 function resetGame() {
   chess = new Chess();
   selectedSquare = null;
@@ -1283,6 +1353,10 @@ function resetGame() {
   updateEvalBar(0);
   buildBoard();
   if (engineReady && engine) engine.postMessage('ucinewgame');
+  
+  if (playerColor === 'b') {
+    setTimeout(makeAIMove, 500);
+  }
 }
 
 function undoMove() {
@@ -1565,8 +1639,12 @@ function showAssessPuzzle() {
   el('assessConcept').textContent = p.concept;
   el('assessDifficulty').textContent = '⭐'.repeat(Math.min(p.difficulty, 5));
   el('assessFen').textContent = p.fen;
-  const aChess = new Chess(p.fen);
-  renderBoardTo('assessBoard', aChess, null, [], null);
+  
+  assessState.chess = new Chess(p.fen);
+  assessState.selectedSquare = null;
+  assessState.lastMoves = [];
+  renderAssessBoard();
+  
   el('assessMoveInput').value = '';
   el('assessMoveInput').focus();
   el('assessFeedback').style.display = 'none';
@@ -1587,6 +1665,46 @@ function showAssessPuzzle() {
     }
     dots.appendChild(dot);
   });
+}
+
+function renderAssessBoard() {
+  renderBoardTo('assessBoard', assessState.chess, assessState.selectedSquare, assessState.lastMoves, handleAssessSquareClick);
+}
+
+function handleAssessSquareClick(sq) {
+  const chessInstance = assessState.chess;
+  if (!chessInstance) return;
+  const piece = chessInstance.get(sq);
+  const activeColor = chessInstance.turn();
+
+  if (assessState.selectedSquare) {
+    try {
+      const move = chessInstance.move({ from: assessState.selectedSquare, to: sq, promotion: 'q' });
+      if (move) {
+        assessState.lastMoves = [move.from, move.to];
+        assessState.selectedSquare = null;
+        document.getElementById('assessMoveInput').value = move.san;
+        renderAssessBoard();
+        return;
+      }
+    } catch (e) {
+      // Invalid move
+    }
+
+    if (piece && piece.color === activeColor) {
+      assessState.selectedSquare = assessState.selectedSquare === sq ? null : sq;
+      renderAssessBoard();
+      return;
+    }
+
+    assessState.selectedSquare = null;
+    renderAssessBoard();
+  } else {
+    if (piece && piece.color === activeColor) {
+      assessState.selectedSquare = sq;
+      renderAssessBoard();
+    }
+  }
 }
 
 function submitAssessMove() {

@@ -120,7 +120,10 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
 .eval-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-90deg); font-family: 'JetBrains Mono',monospace; font-size: 0.55rem; font-weight: 700; color: #0b0e14; mix-blend-mode: difference; z-index: 2; }
 .board-container { position: relative; width: 420px; height: 420px; }
 .chess-board { display: grid; grid-template-columns: repeat(8,1fr); grid-template-rows: repeat(8,1fr); width: 100%; height: 100%; border-radius: 4px; overflow: hidden; }
-.square { position: relative; display: flex; align-items: center; justify-content: center; }
+.piece { position: absolute; width: 85%; height: 85%; background-size: contain; background-repeat: no-repeat; background-position: center; z-index: 5; cursor: grab; transition: transform 0.15s ease; }
+.piece:active { cursor: grabbing; transform: scale(1.15); }
+.square { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.12s ease; }
+.square:hover { filter: brightness(1.08); }
 .square.light { background: var(--board-light); }
 .square.dark { background: var(--board-dark); }
 .coord-rank, .coord-file { position: absolute; font-size: 0.55rem; font-weight: 700; pointer-events: none; font-family: 'JetBrains Mono',monospace; }
@@ -128,13 +131,24 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
 .square.light .coord-rank, .square.light .coord-file { color: var(--board-dark); }
 .square.dark .coord-rank, .square.dark .coord-file { color: var(--board-light); }
 .coord-file { bottom: 1px; right: 2px; }
-.piece { width: 85%; height: 85%; background-size: contain; background-repeat: no-repeat; background-position: center; z-index: 5; cursor: grab; }
-.piece:active { cursor: grabbing; }
-.square.selected { background-color: var(--board-selected) !important; }
+.square.selected { background-color: var(--board-selected) !important; box-shadow: inset 0 0 0 2px rgba(96,165,250,0.6); }
 .square.highlight { background-color: var(--board-highlight) !important; }
-.square.in-check { box-shadow: inset 0 0 12px var(--board-check); background-color: var(--board-check) !important; }
-.move-dot { width: 11px; height: 11px; background: rgba(0,0,0,0.15); border-radius: 50%; z-index: 6; }
-.square.can-capture .move-dot { width: 82%; height: 82%; border: 3px solid rgba(0,0,0,0.15); background: transparent; }
+.square.last-from { background-color: rgba(245, 158, 11, 0.12) !important; box-shadow: inset 0 0 0 1.5px rgba(245, 158, 11, 0.3); }
+.square.last-to { background-color: rgba(245, 158, 11, 0.25) !important; box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.55); animation: lastToPulse 1.8s infinite alternate ease-in-out; }
+@keyframes lastToPulse {
+  from { filter: brightness(0.95); box-shadow: inset 0 0 4px rgba(245, 158, 11, 0.4); }
+  to { filter: brightness(1.15); box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.7); }
+}
+.square.in-check { box-shadow: inset 0 0 14px 2px var(--board-check); background-color: var(--board-check) !important; animation: checkPulse 0.8s ease infinite alternate; }
+@keyframes checkPulse { from { box-shadow: inset 0 0 14px 2px var(--board-check); } to { box-shadow: inset 0 0 20px 4px var(--board-check); } }
+.square.lesson-hint { box-shadow: inset 0 0 10px 2px rgba(251,191,36,0.5); animation: hintPulse 1.2s ease infinite alternate; }
+@keyframes hintPulse { from { box-shadow: inset 0 0 10px 2px rgba(251,191,36,0.3); } to { box-shadow: inset 0 0 16px 4px rgba(251,191,36,0.6); } }
+.move-dot { position: absolute; width: 12px; height: 12px; background: rgba(96, 165, 250, 0.45); border-radius: 50%; z-index: 6; transition: transform var(--t-fast) ease; box-shadow: 0 0 8px rgba(96, 165, 250, 0.3); }
+.square:hover .move-dot { transform: scale(1.35); background: rgba(96, 165, 250, 0.7); }
+.square.can-capture .move-dot { width: 78%; height: 78%; border: 3px solid rgba(96, 165, 250, 0.5); background: transparent; box-shadow: none; }
+.square.can-capture:hover { filter: brightness(0.92); }
+@keyframes pieceLand { from { transform: scale(1.2); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
+.piece-animated { animation: pieceLand 0.18s ease-out; }
 
 /* === CONTROL SIDEBAR === */
 .control-sidebar { display: flex; flex-direction: column; gap: 10px; }
@@ -148,6 +162,17 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
 .hud-btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); border-color: var(--text-muted); }
 .primary-btn { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-color: transparent; color: white; font-weight: 600; }
 .primary-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+/* === NEW GAME PANEL === */
+.new-game-panel { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
+.new-game-panel h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 10px; }
+.color-picker-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.color-pick-btn { flex: 1; padding: 10px 8px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-surface); cursor: pointer; text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); transition: all var(--t-fast); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.color-pick-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); transform: translateY(-2px); }
+.color-pick-btn.active-color { border-color: var(--accent-blue); background: var(--accent-blue-glow); color: var(--text-primary); box-shadow: 0 0 12px rgba(96,165,250,0.15); }
+.color-pick-btn .pick-icon { font-size: 1.5rem; }
+.new-game-go-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all var(--t-fast); }
+.new-game-go-btn:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(96,165,250,0.25); }
 
 /* === COACH BUBBLE === */
 .coach-bubble-wrapper { background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid var(--border-glow); border-radius: 10px; padding: 12px; }
@@ -184,7 +209,7 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
 /* === STRATEGY & LESSON PANELS === */
 .lesson-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .lesson-text { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
-.lesson-board-mini { width: 100%; max-width: 280px; aspect-ratio: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-muted); }
+.lesson-board-mini { width: 100%; max-width: 340px; aspect-ratio: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; display: grid; grid-template-columns: repeat(8,1fr); grid-template-rows: repeat(8,1fr); overflow: hidden; }
 
 /* === FAMOUS GAMES === */
 .gm-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
