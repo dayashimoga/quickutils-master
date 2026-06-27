@@ -121,6 +121,10 @@ function updateHeaderStats() {
   el('statPuzzles') && (el('statPuzzles').textContent = profile.puzzlesSolved);
   el('statMastered') && (el('statMastered').textContent = profile.masteredConcepts.length);
   el('statStreak') && (el('statStreak').textContent = profile.streak);
+  
+  // Sync to mobile header
+  el('mobileXp') && (el('mobileXp').textContent = profile.xp);
+  el('mobileElo') && (el('mobileElo').textContent = profile.elo);
 }
 
 // ═══════════════════════════════════════════════════
@@ -142,8 +146,35 @@ function initNavigation() {
   const viewPanels = document.querySelectorAll('.view-panel');
   const pageTitle = document.getElementById('pageTitle');
 
+  // Mobile menu drawer toggle logic
+  const menuBtn = document.getElementById('mobileMenuBtn');
+  const sidebar = document.querySelector('.sidebar');
+  
+  // Create backdrop element if it doesn't exist
+  let backdrop = document.getElementById('sidebarBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'sidebarBackdrop';
+    backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+  }
+
+  menuBtn?.addEventListener('click', () => {
+    sidebar.classList.add('open');
+    backdrop.classList.add('active');
+  });
+
+  backdrop.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('active');
+  });
+
   navItems.forEach(item => {
     item.addEventListener('click', () => {
+      // Close mobile menu drawer on selection
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+
       const target = item.dataset.target;
       navItems.forEach(b => b.classList.remove('active'));
       item.classList.add('active');
@@ -181,6 +212,12 @@ function navigateToView(targetView) {
   const navItems = document.querySelectorAll('.nav-item');
   const viewPanels = document.querySelectorAll('.view-panel');
   const pageTitle = document.getElementById('pageTitle');
+
+  // Close mobile menu drawer on programmatic navigation
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('active');
 
   let foundItem = null;
   navItems.forEach(item => {
@@ -465,12 +502,42 @@ function showMilestoneDetails(m, idx, nodeEl) {
     <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Required Skills:</strong> ${Array.isArray(m.skills) ? m.skills.join(', ') : m.skills}</div>
     <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Openings:</strong> ${Array.isArray(m.openings) ? m.openings.join(', ') : m.openings}</div>
     <div style="font-size:0.72rem;margin-bottom:4px;"><strong>Endgames:</strong> ${Array.isArray(m.endgames) ? m.endgames.join(', ') : m.endgames}</div>
-    <div style="font-size:0.72rem;color:var(--accent-blue);margin-top:4px;"><strong>Target:</strong> ${m.target}</div>`;
+    <div style="font-size:0.72rem;color:var(--accent-blue);margin-top:4px;margin-bottom:12px;"><strong>Target:</strong> ${m.target}</div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button class="hud-btn primary-btn" style="font-size:0.7rem;padding:6px 10px;flex:1;" onclick="launchJourneyLab('${m.title}')">🚀 Launch Practice Lab</button>
+      <button class="hud-btn" style="font-size:0.7rem;padding:6px 10px;" onclick="document.getElementById('journeyOverlay').style.display='none'">✕ Close</button>
+    </div>`;
   overlay.style.display = 'block';
   overlay.style.top = (nodeEl.offsetTop + 70) + 'px';
   overlay.style.left = '50%';
   overlay.style.transform = 'translateX(-50%)';
 }
+
+window.launchJourneyLab = function(title) {
+  const overlay = document.getElementById('journeyOverlay');
+  if (overlay) overlay.style.display = 'none';
+
+  showToast(`🚀 Launching Lab for ${title}...`);
+  const t = title.toLowerCase();
+  
+  if (t.includes('beginner')) {
+    navigateToView('tactics-view');
+  } else if (t.includes('novice')) {
+    navigateToView('opening-view');
+  } else if (t.includes('intermediate')) {
+    navigateToView('vis-lab-view');
+  } else if (t.includes('club')) {
+    navigateToView('strategy-view');
+  } else if (t.includes('tournament')) {
+    navigateToView('endgame-view');
+  } else if (t.includes('advanced')) {
+    navigateToView('famous-view');
+  } else if (t.includes('expert') || t.includes('master')) {
+    navigateToView('boss-view');
+  } else {
+    navigateToView('tactics-view');
+  }
+};
 
 function drawJourneyConnectors() {
   const svg = document.getElementById('journeyConnector');
@@ -498,15 +565,91 @@ function drawJourneyConnectors() {
 // ═══════════════════════════════════════════════════
 // OPENING LAB
 // ═══════════════════════════════════════════════════
+// --- OPENING GUIDES COMMENTARY DATABASE ---
+const OPENING_GUIDES = {
+  // Ruy Lopez
+  'e4': "1. e4 (King's Pawn) — Seizes central space and opens diagonals for the Queen and light-squared Bishop.",
+  'e4 e5': "1... e5 — Symmetrical response, asserting a claim in the center and stopping e4-e5 advances.",
+  'e4 e5 Nf3': "2. Nf3 — Develops the knight, attacks Black's e5 pawn, and prepares to castle kingside.",
+  'e4 e5 Nf3 Nc6': "2... Nc6 — Develops the knight to defend the threatened e5 pawn.",
+  'e4 e5 Nf3 Nc6 Bb5': "3. Bb5 — The Ruy Lopez! White develops the bishop to attack the knight, indirectly putting pressure on the e5 pawn's defender.",
+  
+  // Open Sicilian
+  'e4 c5': "1... c5 — The Sicilian Defense! Black fights for control of d4 asynchronously using a flank pawn.",
+  'e4 c5 Nf3': "2. Nf3 — Develops the knight, preparing the d4 pawn break to open central lines.",
+  'e4 c5 Nf3 d6': "2... d6 — Prevents e4-e5 pushes and prepares to develop the light-squared bishop.",
+  'e4 c5 Nf3 d6 d4': "3. d4 — Challenges the c5 pawn, initiating the central pawn trade.",
+  'e4 c5 Nf3 d6 d4 cxd4': "3... cxd4 — Trades the flank c-pawn for White's central d-pawn to create structural asymmetry.",
+  'e4 c5 Nf3 d6 d4 cxd4 Nxd4': "4. Nxd4 — White recaptures with the knight, establishing an active central post.",
+
+  // Caro-Kann Advance
+  'e4 c6': "1... c6 — The Caro-Kann Defense! Black prepares to support the d5 center break securely.",
+  'e4 c6 d4': "2. d4 — White occupies the center with both pawns, gaining space.",
+  'e4 c6 d4 d5': "2... d5 — Black strikes at White's e4 pawn, contesting center control.",
+  'e4 c6 d4 d5 e5': "3. e5 — The Advance Variation! White pushes e5 to restrict Black's kingside knight development.",
+
+  // French Defense Advance
+  'e4 e6': "1... e6 — The French Defense! Black prepares ...d5, accepting a temporarily locked light-squared bishop.",
+  'e4 e6 d4': "2. d4 — White seizes complete control of the center with both pawns.",
+  'e4 e6 d4 d5': "2... d5 — Black challenges the e4 pawn, establishing a solid pawn chain.",
+  'e4 e6 d4 d5 e5': "3. e5 — The Advance Variation! White closes the center, focusing space towards the kingside.",
+
+  // Caro-Kann Defense
+  'e4 c6 d4 d5': "2... d5 — Contesting the center. White will likely capture or play Nc3.",
+
+  // Slav Defense
+  'd4': "1. d4 — White occupies the center and opens lines for the dark-squared bishop.",
+  'd4 d5': "1... d5 — Symmetrical queen's pawn defense.",
+  'd4 d5 c4': "2. c4 — The Queen's Gambit! White offers a flank pawn to attract Black's d-pawn away.",
+  'd4 d5 c4 c6': "2... c6 — The Slav Defense! Black supports d5 with a pawn without blocking the light-squared bishop.",
+
+  // King's Indian Defense
+  'd4 Nf6': "1... Nf6 — Black develops the knight, preventing e2-e4 and preparing kingside safety.",
+  'd4 Nf6 c4': "2. c4 — White claims space on the queenside, preparing development.",
+  'd4 Nf6 c4 g6': "2... g6 — Black prepares to fianchetto the bishop to g7 for dark-squared control.",
+  'd4 Nf6 c4 g6 Nc3': "3. Nc3 — White develops the knight to control e4 and support d5.",
+  'd4 Nf6 c4 g6 Nc3 Bg7': "3... Bg7 — Black completes the kingside fianchetto, ready for kingside castling.",
+
+  // Sicilian Najdorf
+  'e4 c5 Nf3 d6 d4 cxd4 Nxd4 a6': "5... a6 — Najdorf! Controls b5 and prepares ...b5 space expansion.",
+
+  // Queen's Gambit
+  'd4 d5 c4': "2. c4 — The Queen's Gambit! White offers the c-pawn to undermine Black's center pawn on d5.",
+
+  // Italian Game
+  'e4 e5 Nf3 Nc6 Bc4': "3. Bc4 — The Italian Game! Develops the bishop to attack Black's f7 weakness.",
+
+  // Scandinavian Defense
+  'e4 d5': "1... d5 — The Scandinavian! Challenges e4 immediately.",
+  'e4 d5 exd5': "2. exd5 — White exchanges pawns, freeing lines.",
+  'e4 d5 exd5 Qxd5': "2... Qxd5 — Black recaptures with the queen, creating an early active queen.",
+
+  // Grunfeld Defense
+  'd4 Nf6 c4 g6 Nc3 d5': "4... d5 — The Grunfeld! Black attacks the center immediately, allowing White to build a large center."
+};
+
+let openingStudyState = {
+  active: false,
+  game: null,
+  currentPly: 0
+};
+let openingSelectedSquare = null;
+
 function initOpeningLab() {
   const list = document.getElementById('repertoireList');
   if (!list) return;
   list.innerHTML = '';
-  const allLines = [...REPERTOIRE_DB.white.map((r,i) => ({...r, side:'white', idx:i})), ...REPERTOIRE_DB.black.map((r,i) => ({...r, side:'black', idx:i}))];
+  
+  const allLines = [
+    ...REPERTOIRE_DB.white.map((r,i) => ({...r, side:'white', idx:i})), 
+    ...REPERTOIRE_DB.black.map((r,i) => ({...r, side:'black', idx:i}))
+  ];
+  
   allLines.forEach((line, i) => {
     const div = document.createElement('div');
     div.className = 'repertoire-branch' + (i === 0 ? ' active-rep' : '');
     div.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.78rem;"><span>${line.side === 'white' ? '⬜' : '⬛'} ${line.repertoireName}</span><span style="color:var(--accent-gold);font-size:0.7rem;">⭐ ${70 + Math.floor(Math.random() * 25)}%</span></div><div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">${line.moves.join(' ')}</div>`;
+    
     div.addEventListener('click', () => {
       list.querySelectorAll('.repertoire-branch').forEach(b => b.classList.remove('active-rep'));
       div.classList.add('active-rep');
@@ -515,9 +658,17 @@ function initOpeningLab() {
       document.getElementById('repPlans').textContent = line.plans;
       document.getElementById('repTraps').textContent = line.traps;
       document.getElementById('repGoals').textContent = line.goals || '—';
+      
+      openingStudyState = {
+        active: true,
+        game: line,
+        currentPly: 0
+      };
+      jumpToOpeningPly(0);
     });
     list.appendChild(div);
   });
+
   // Init first line
   if (allLines.length) {
     const f = allLines[0];
@@ -526,48 +677,195 @@ function initOpeningLab() {
     document.getElementById('repPlans').textContent = f.plans;
     document.getElementById('repTraps').textContent = f.traps;
     document.getElementById('repGoals').textContent = f.goals || '—';
+    
+    openingStudyState = {
+      active: true,
+      game: f,
+      currentPly: 0
+    };
+    setTimeout(() => jumpToOpeningPly(0), 50);
+  }
+
+  // Wire navigation buttons
+  const btnFirst = document.getElementById('btnOpeningFirst');
+  const btnPrev = document.getElementById('btnOpeningPrev');
+  const btnNext = document.getElementById('btnOpeningNext');
+  const btnLast = document.getElementById('btnOpeningLast');
+
+  if (btnFirst) {
+    const newFirst = btnFirst.cloneNode(true);
+    btnFirst.parentNode.replaceChild(newFirst, btnFirst);
+    newFirst.addEventListener('click', () => jumpToOpeningPly(0));
+  }
+  if (btnPrev) {
+    const newPrev = btnPrev.cloneNode(true);
+    btnPrev.parentNode.replaceChild(newPrev, btnPrev);
+    newPrev.addEventListener('click', () => {
+      if (openingStudyState.active && openingStudyState.currentPly > 0) {
+        jumpToOpeningPly(openingStudyState.currentPly - 1);
+      }
+    });
+  }
+  if (btnNext) {
+    const newNext = btnNext.cloneNode(true);
+    btnNext.parentNode.replaceChild(newNext, btnNext);
+    newNext.addEventListener('click', () => {
+      if (openingStudyState.active && openingStudyState.currentPly < openingStudyState.game.moves.length) {
+        jumpToOpeningPly(openingStudyState.currentPly + 1);
+      }
+    });
+  }
+  if (btnLast) {
+    const newLast = btnLast.cloneNode(true);
+    btnLast.parentNode.replaceChild(newLast, btnLast);
+    newLast.addEventListener('click', () => {
+      if (openingStudyState.active) {
+        jumpToOpeningPly(openingStudyState.game.moves.length);
+      }
+    });
   }
 
   // Wire Practice Recall button
-  document.getElementById('btnDrillOpening')?.addEventListener('click', () => {
-    const title = document.getElementById('repTitle').textContent;
-    const movesText = document.getElementById('repMoves').textContent;
-    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
-    // Navigate to play view with the opening moves partially applied
-    navigateToView('play');
-    chess = new Chess();
-    const moves = movesText.split(/\s+/).filter(m => m && !m.includes('.'));
-    let applied = 0;
-    for (const m of moves) {
-      try { chess.move(m); applied++; } catch(e) { break; }
-    }
-    playerColor = chess.turn();
-    isGameActive = true;
-    activeLesson = { name: title, type: 'opening_drill', id: 'opening_drill_' + title.toLowerCase().replace(/\s+/g,'_') };
-    buildBoard();
-    document.getElementById('coachAdvice').innerHTML = `<strong>📖 Opening Drill: ${title}</strong><br>The opening moves have been played out on the board. Continue from this position against the AI.<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Practice the middle-game plans for this opening. Focus on the key ideas you studied.</span>`;
-    showToast(`📖 Opening drill started: ${title}`);
-  });
+  const drillBtn = document.getElementById('btnDrillOpening');
+  if (drillBtn) {
+    const newDrillBtn = drillBtn.cloneNode(true);
+    drillBtn.parentNode.replaceChild(newDrillBtn, drillBtn);
+    newDrillBtn.addEventListener('click', () => {
+      const title = document.getElementById('repTitle').textContent;
+      const movesText = document.getElementById('repMoves').textContent;
+      if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+      
+      navigateToView('play');
+      chess = new Chess();
+      const moves = movesText.split(/\s+/).filter(m => m && !m.includes('.'));
+      for (const m of moves) {
+        try { chess.move(m); } catch(e) { break; }
+      }
+      playerColor = chess.turn();
+      isGameActive = true;
+      activeLesson = { name: title, type: 'opening_drill', id: 'opening_drill_' + title.toLowerCase().replace(/\s+/g,'_') };
+      buildBoard();
+      document.getElementById('coachAdvice').innerHTML = `<strong>📖 Opening Drill: ${title}</strong><br>The opening moves have been played out on the board. Continue from this position against the AI.<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Practice the middle-game plans for this opening. Focus on the key ideas you studied.</span>`;
+      showToast(`📖 Opening drill started: ${title}`);
+    });
+  }
 
   // Wire Explain Plans button
-  document.getElementById('btnExplainPlans')?.addEventListener('click', () => {
-    const title = document.getElementById('repTitle').textContent;
-    const plans = document.getElementById('repPlans').textContent;
-    const traps = document.getElementById('repTraps').textContent;
-    const goals = document.getElementById('repGoals').textContent;
-    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
-    showToast(`💡 ${title} — Study the plans, traps and goals shown in the detail panel!`);
-    // Scroll to detail panel and highlight it
-    const detailPanel = document.querySelector('.opening-tree-grid .glass-card');
-    if (detailPanel) {
-      detailPanel.style.animation = 'none';
-      detailPanel.offsetHeight; // trigger reflow
-      detailPanel.style.animation = 'pulseHighlight 1s ease-out';
-      detailPanel.style.borderColor = 'var(--border-glow)';
-      setTimeout(() => { detailPanel.style.borderColor = ''; }, 2000);
-    }
-  });
+  const explainBtn = document.getElementById('btnExplainPlans');
+  if (explainBtn) {
+    const newExplainBtn = explainBtn.cloneNode(true);
+    explainBtn.parentNode.replaceChild(newExplainBtn, explainBtn);
+    newExplainBtn.addEventListener('click', () => {
+      const title = document.getElementById('repTitle').textContent;
+      if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+      showToast(`💡 ${title} — Study the plans, traps and goals shown in the detail panel!`);
+    });
+  }
 }
+
+function jumpToOpeningPly(ply) {
+  if (!openingStudyState.active) return;
+  openingStudyState.currentPly = ply;
+  
+  const opChess = new Chess();
+  const moves = openingStudyState.game.moves;
+  for (let i = 0; i < ply; i++) {
+    opChess.move(moves[i]);
+  }
+  
+  const guideText = document.getElementById('openingGuideText');
+  const currentMovesStr = moves.slice(0, ply).join(' ');
+  const comm = OPENING_GUIDES[currentMovesStr];
+  if (comm) {
+    guideText.innerHTML = comm;
+  } else if (ply === 0) {
+    guideText.innerHTML = "Study mode. Click <strong>▶️</strong> or make a move on the board to start.";
+  } else {
+    guideText.innerHTML = `Move ${ply}: <strong>${moves[ply - 1]}</strong> played. Analyze the position or continue.`;
+  }
+  
+  if (ply >= moves.length) {
+    guideText.innerHTML += "<br><span style='color:var(--success);font-weight:700;'>🎉 Opening sequence completed!</span>";
+  }
+  
+  let lastMove = [];
+  if (ply > 0) {
+    const temp = new Chess();
+    for (let i = 0; i < ply - 1; i++) temp.move(moves[i]);
+    try {
+      const m = temp.move(moves[ply - 1]);
+      lastMove = [m.from, m.to];
+    } catch(e) {}
+  }
+  
+  openingSelectedSquare = null;
+  renderBoardTo('openingBoard', opChess, null, lastMove, handleOpeningSquareClick);
+}
+
+function handleOpeningSquareClick(sq) {
+  if (!openingStudyState.active) return;
+  const line = openingStudyState.game;
+  const moves = line.moves;
+  const currentPly = openingStudyState.currentPly;
+  
+  if (currentPly >= moves.length) {
+    showToast("🎉 Opening sequence completed! Click <strong>⏮️</strong> to reset.");
+    return;
+  }
+  
+  const opChess = new Chess();
+  for (let i = 0; i < currentPly; i++) {
+    opChess.move(moves[i]);
+  }
+  
+  if (openingSelectedSquare === sq) {
+    openingSelectedSquare = null;
+    renderBoardTo('openingBoard', opChess, null, [], handleOpeningSquareClick);
+    return;
+  }
+  
+  if (!openingSelectedSquare) {
+    const piece = opChess.get(sq);
+    if (piece && piece.color === opChess.turn()) {
+      openingSelectedSquare = sq;
+      renderBoardTo('openingBoard', opChess, sq, [], handleOpeningSquareClick);
+    }
+    return;
+  }
+  
+  const expectedMoveStr = moves[currentPly];
+  const tempChess = new Chess(opChess.fen());
+  let moveSuccess = false;
+  let playedMove = null;
+  
+  try {
+    playedMove = tempChess.move({ from: openingSelectedSquare, to: sq, promotion: 'q' });
+    moveSuccess = true;
+  } catch(e) {
+    const piece = opChess.get(sq);
+    if (piece && piece.color === opChess.turn()) {
+      openingSelectedSquare = sq;
+      renderBoardTo('openingBoard', opChess, sq, [], handleOpeningSquareClick);
+      return;
+    }
+  }
+  
+  if (moveSuccess && playedMove) {
+    if (playedMove.san === expectedMoveStr) {
+      openingSelectedSquare = null;
+      jumpToOpeningPly(currentPly + 1);
+      showToast("✅ Correct move!");
+    } else {
+      openingSelectedSquare = null;
+      renderBoardTo('openingBoard', opChess, null, [], handleOpeningSquareClick);
+      showToast("❌ Not the correct opening move. Try again!");
+    }
+  } else {
+    openingSelectedSquare = null;
+    renderBoardTo('openingBoard', opChess, null, [], handleOpeningSquareClick);
+  }
+}
+
 
 // ═══════════════════════════════════════════════════
 // TACTICS ACADEMY
@@ -1311,6 +1609,8 @@ function initPlaySetup() {
   const btnRandom = document.getElementById('btnPickRandom');
   const btnStart = document.getElementById('btnStartNewGame');
   const btnRestart = document.getElementById('btnRestart');
+  const btnRestartGame = document.getElementById('btnRestartGame');
+  const btnResign = document.getElementById('btnResign');
 
   const colorBtns = [btnWhite, btnBlack, btnRandom];
 
@@ -1323,6 +1623,7 @@ function initPlaySetup() {
   });
 
   btnStart?.addEventListener('click', () => {
+    activeLesson = null; // Clear any active lesson for standard games!
     if (selectedColor === 'random') {
       playerColor = Math.random() < 0.5 ? 'w' : 'b';
     } else {
@@ -1337,8 +1638,29 @@ function initPlaySetup() {
 
   btnRestart?.addEventListener('click', () => {
     isGameActive = false;
+    activeLesson = null; // Reset lesson status when leaving the game screen
     document.getElementById('gameSetupPanel').style.display = 'block';
     document.getElementById('gamePlayArea').style.display = 'none';
+  });
+
+  btnRestartGame?.addEventListener('click', () => {
+    activeLesson = null; // Restarting resets to a clean state
+    resetGame();
+    showToast("🔄 Game restarted!");
+  });
+
+  btnResign?.addEventListener('click', () => {
+    if (!isGameActive) {
+      showToast("⚠️ No active game to resign!");
+      return;
+    }
+    isGameActive = false;
+    activeLesson = null;
+    showToast("🏳️ You resigned the game. AI wins!");
+    document.getElementById('coachAdvice').innerHTML = `🏳️ <strong>You resigned.</strong> Stockfish wins this round. Reflect on the match, and click <strong>Restart</strong> or <strong>New Game</strong> to try again!`;
+    profile.gamesPlayed++;
+    profile.addXP(calculateXP('game', 'loss'));
+    updateHeaderStats();
   });
 }
 

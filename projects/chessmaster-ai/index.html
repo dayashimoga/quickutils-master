@@ -7,7 +7,7 @@
     <meta name="description" content="Zero-cost adaptive chess learning platform. Personal AI coach, knowledge graph, weakness detection, and Grandmaster roadmap — from beginner to master.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
     <link rel="stylesheet" href="quickutils-core.css">
-    <link rel="stylesheet" href="style.css?v=2.0.2">
+    <link rel="stylesheet" href="style.css?v=2.0.3">
 </head>
 <body>
     <div class="toast-container" id="toastContainer"></div>
@@ -58,6 +58,14 @@
 
         <!-- Main -->
         <main class="main-content">
+            <div class="mobile-header-bar">
+                <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+                <div class="mobile-brand">👑 ChessOS</div>
+                <div class="mobile-stats-row">
+                    <span>⚡ <span id="mobileXp">0</span></span>
+                    <span style="margin-left:8px;">♟️ <span id="mobileElo">850</span></span>
+                </div>
+            </div>
             <header class="header">
                 <div class="header-title" id="pageTitle">Today's Training Mission</div>
                 <div class="header-right">
@@ -156,7 +164,7 @@
             <section id="journey-view" class="view-panel">
                 <div class="glass-card" style="position:relative;overflow:hidden;">
                     <h2 class="card-title">🗺️ Your Grandmaster Journey</h2>
-                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:20px;">Duolingo-style milestone path. Click nodes to see required skills, openings, and endgames.</p>
+                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:20px;">Duolingo-style milestone path. Click any node to view required skills and immediately launch direct, interactive practice labs to master each rank.</p>
                     <div class="journey-path-container" id="journeyContainer">
                         <svg class="journey-connector-svg" id="journeyConnector"></svg>
                         <!-- Milestone nodes rendered dynamically -->
@@ -241,11 +249,13 @@
                                 </div>
                                 <div class="coach-body" id="coachAdvice">White plays first. I'll evaluate positions dynamically.</div>
                             </div>
-                            <div class="hud-btn-row">
-                                <button class="hud-btn" id="btnRestart">🔄 Reset</button>
-                                <button class="hud-btn" id="btnUndo">↩️ Undo</button>
-                                <button class="hud-btn primary-btn" id="btnGetHint">💡 Hint</button>
-                            </div>
+                             <div class="hud-btn-row">
+                                 <button class="hud-btn" id="btnResign" style="background:var(--danger-glow);color:var(--danger);border-color:rgba(239,68,68,0.2);">🏳️ Resign</button>
+                                 <button class="hud-btn" id="btnRestartGame">🔄 Restart</button>
+                                 <button class="hud-btn" id="btnRestart">🆕 New Game</button>
+                                 <button class="hud-btn" id="btnUndo">↩️ Undo</button>
+                                 <button class="hud-btn primary-btn" id="btnGetHint">💡 Hint</button>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -283,23 +293,38 @@
 
             <!-- 6. OPENING LAB -->
             <section id="opening-view" class="view-panel">
-                <div class="glass-card">
-                    <h2 class="card-title">🧪 Opening Lab & Repertoire Builder</h2>
-                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Build your White and Black repertoires. Practice with spaced repetition drills.</p>
-                    <div class="opening-tree-grid">
-                        <div>
-                            <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:8px;">Your Repertoire Lines</h3>
-                            <div id="repertoireList" style="display:flex;flex-direction:column;gap:8px;"></div>
-                        </div>
-                        <div class="glass-card" style="background:rgba(255,255,255,0.01);">
-                            <h3 id="repTitle" style="font-size:0.88rem;font-weight:700;">Select a line</h3>
-                            <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:8px;"><strong>Moves:</strong> <span id="repMoves" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);">—</span></div>
-                            <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Plans:</strong> <span id="repPlans">—</span></div>
-                            <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Traps:</strong> <span id="repTraps">—</span></div>
-                            <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Goals:</strong> <span id="repGoals">—</span></div>
-                            <div style="margin-top:12px;display:flex;gap:8px;">
-                                <button class="hud-btn primary-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnDrillOpening">📖 Practice Recall</button>
-                                <button class="hud-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnExplainPlans">💡 Explain Plans</button>
+                <div class="academy-grid">
+                    <div class="glass-card" style="margin-bottom:0;">
+                        <h2 class="card-title">🧪 Opening Lab & Repertoire Builder</h2>
+                        <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Build your White and Black repertoires. Practice with spaced repetition drills.</p>
+                        <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:8px;">Your Repertoire Lines</h3>
+                        <div id="repertoireList" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;"></div>
+                    </div>
+                    <div class="glass-card" id="openingDetail">
+                        <h3 id="repTitle" style="font-size:0.88rem;font-weight:700;margin-bottom:12px;">Select a line</h3>
+                        <div class="split-layout">
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:8px;"><strong>Moves:</strong> <span id="repMoves" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);">—</span></div>
+                                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Plans:</strong> <span id="repPlans">—</span></div>
+                                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Traps:</strong> <span id="repTraps">—</span></div>
+                                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;"><strong>Goals:</strong> <span id="repGoals">—</span></div>
+                                <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+                                    <button class="hud-btn primary-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnDrillOpening">📖 Practice Recall</button>
+                                    <button class="hud-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnExplainPlans">💡 Explain Plans</button>
+                                </div>
+                            </div>
+                            <div style="width:280px;flex-shrink:0;">
+                                <div class="lesson-board-mini" id="openingBoard" style="width:260px;height:260px;margin:0 auto 10px auto;font-size:0.55rem;">Interactive Board</div>
+                                <div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px;">
+                                    <button class="hud-btn" id="btnOpeningFirst" style="padding:4px 8px;font-size:0.7rem;">⏮️</button>
+                                    <button class="hud-btn" id="btnOpeningPrev" style="padding:4px 8px;font-size:0.7rem;">◀️</button>
+                                    <button class="hud-btn" id="btnOpeningNext" style="padding:4px 8px;font-size:0.7rem;">▶️</button>
+                                    <button class="hud-btn" id="btnOpeningLast" style="padding:4px 8px;font-size:0.7rem;">⏭️</button>
+                                </div>
+                                <div id="openingMoveGuidePanel" style="background:rgba(59,130,246,0.03);border:1px solid rgba(59,130,246,0.15);padding:10px;border-radius:8px;font-size:0.72rem;line-height:1.4;">
+                                    <strong style="color:var(--accent-blue);">💡 Interactive Guide:</strong>
+                                    <div id="openingGuideText" style="margin-top:4px;color:var(--text-secondary);min-height:50px;">Select an opening line to start studying moves step-by-step.</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -317,22 +342,24 @@
 
             <!-- 8. STRATEGY ACADEMY -->
             <section id="strategy-view" class="view-panel">
-                <div class="glass-card">
-                    <h2 class="card-title">🏛️ Strategy Academy</h2>
-                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Learn positional chess concepts that separate club players from masters.</p>
-                    <div id="strategyList" style="display:flex;flex-direction:column;gap:10px;"></div>
-                </div>
-                <div class="glass-card" id="strategyDetail" style="display:none;">
-                    <h3 id="strategyTitle" style="font-size:0.88rem;font-weight:700;margin-bottom:8px;"></h3>
-                    <div class="lesson-split">
-                        <div>
-                            <div id="strategyLesson" class="lesson-text"></div>
-                            <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Squares:</strong> <span id="strategySquares" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);font-size:0.75rem;"></span></div>
-                            <button id="btnPlayStrategy" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
-                        </div>
-                        <div>
-                            <div class="lesson-board-mini" id="strategyBoard">Interactive board position</div>
-                            <div style="margin-top:8px;font-size:0.72rem;color:var(--text-muted);">FEN: <code id="strategyFen" style="font-size:0.68rem;"></code></div>
+                <div class="academy-grid">
+                    <div class="glass-card" style="margin-bottom:0;">
+                        <h2 class="card-title">🏛️ Strategy Academy</h2>
+                        <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">Learn positional chess concepts that separate club players from masters.</p>
+                        <div id="strategyList" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;"></div>
+                    </div>
+                    <div class="glass-card" id="strategyDetail">
+                        <h3 id="strategyTitle" style="font-size:0.88rem;font-weight:700;margin-bottom:8px;">Select a Strategy</h3>
+                        <div class="split-layout">
+                            <div style="flex:1;min-width:0;">
+                                <div id="strategyLesson" class="lesson-text">Select a topic on the left to start.</div>
+                                <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Squares:</strong> <span id="strategySquares" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);font-size:0.75rem;">—</span></div>
+                                <button id="btnPlayStrategy" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
+                            </div>
+                            <div style="width:280px;flex-shrink:0;">
+                                <div class="lesson-board-mini" id="strategyBoard" style="width:260px;height:260px;margin:0 auto 8px auto;font-size:0.55rem;">Interactive board position</div>
+                                <div style="font-size:0.72rem;color:var(--text-muted);text-align:center;">FEN: <code id="strategyFen" style="font-size:0.65rem;"></code></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -340,59 +367,90 @@
 
             <!-- 9. ENDGAME ACADEMY -->
             <section id="endgame-view" class="view-panel">
-                <div class="glass-card">
-                    <h2 class="card-title">📖 Endgame Curriculum</h2>
-                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">From opposition to fortress defense. Master endgames tier by tier.</p>
-                    <div id="endgameList" style="display:flex;flex-direction:column;gap:10px;"></div>
+                <div class="academy-grid">
+                    <div class="glass-card" style="margin-bottom:0;">
+                        <h2 class="card-title">📖 Endgame Curriculum</h2>
+                        <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:14px;">From opposition to fortress defense. Master endgames tier by tier.</p>
+                        <div id="endgameList" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;"></div>
+                    </div>
+                    <div class="glass-card" id="endgameDetail">
+                        <h3 id="endgameTitle" style="font-size:0.88rem;font-weight:700;margin-bottom:8px;">Select an Endgame</h3>
+                        <div class="split-layout">
+                            <div style="flex:1;min-width:0;">
+                                <div id="endgameLesson" class="lesson-text">Select an endgame on the left to start.</div>
+                                <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Idea:</strong> <span id="endgameKeyIdea" style="color:var(--accent-blue);font-size:0.75rem;">—</span></div>
+                                <button id="btnPlayEndgame" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
+                            </div>
+                            <div style="width:280px;flex-shrink:0;">
+                                <div class="lesson-board-mini" id="endgameBoard" style="width:260px;height:260px;margin:0 auto 8px auto;font-size:0.55rem;">Interactive board position</div>
+                                <div style="font-size:0.72rem;color:var(--text-muted);text-align:center;">FEN: <code id="endgameFen" style="font-size:0.65rem;"></code></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- 10. FAMOUS GAMES -->
             <section id="famous-view" class="view-panel">
-                <div class="glass-card">
-                    <h2 class="card-title">🎓 Famous Games Academy</h2>
-                    <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:12px;">Study immortal games from the greatest players in history.</p>
-                    <div class="gm-selector" id="gmSelector"></div>
-                    <div class="game-list" id="gameList"></div>
-                </div>
-                <div class="glass-card" id="gameDetail" style="display:none;">
-                    <h3 id="gameTitle" style="font-size:0.9rem;font-weight:700;margin-bottom:4px;"></h3>
-                    <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;" id="gameMeta"></div>
-                    <div id="gameThemes" style="margin-bottom:12px;"></div>
-                    <div style="margin-bottom:14px;display:flex;gap:8px;">
-                        <button id="btnStartGuessChallenge" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;">🎮 Start Guess the Move Challenge</button>
+                <div class="academy-grid">
+                    <div class="glass-card" style="margin-bottom:0;">
+                        <h2 class="card-title">🎓 Famous Games Academy</h2>
+                        <p style="color:var(--text-secondary);font-size:0.78rem;margin-bottom:12px;">Study immortal games from the greatest players in history.</p>
+                        <div class="gm-selector" id="gmSelector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+                        <div class="game-list" id="gameList" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;"></div>
                     </div>
-                    <div id="guessTheMoveChallenge" style="display:none;margin-bottom:14px;background:rgba(245,158,11,0.02);border:1px solid rgba(245,158,11,0.15);padding:12px;border-radius:8px;">
-                        <h4 style="font-size:0.82rem;font-weight:700;color:var(--accent-gold);margin-bottom:6px;">🎯 Guess the Move Challenge</h4>
-                        <p id="guessPrompt" style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:10px;">Follow the game moves. We will pause at critical points and ask you to guess the GM's choice!</p>
-                        <div class="board-container" style="max-width:320px;margin:10px auto;"><div class="chess-board" id="famousBoard" style="width:300px;height:300px;font-size:0.6rem;"></div></div>
-                        <div style="display:flex;gap:12px;margin-bottom:10px;align-items:center;">
-                            <button id="btnGuessNext" class="hud-btn" style="padding:6px 14px;font-size:0.72rem;">Next Move →</button>
-                            <div id="guessStats" style="font-size:0.72rem;color:var(--text-muted);font-weight:600;"></div>
-                        </div>
-                        <div id="guessInputArea" style="display:none;margin-bottom:10px;">
-                            <label style="font-size:0.75rem;font-weight:600;display:block;margin-bottom:4px;">Predict the GM's Move (SAN or algebraic):</label>
-                            <div style="display:flex;gap:8px;margin-bottom:8px;">
-                                <input type="text" id="guessInputMove" class="elo-input" style="flex:1;font-size:0.75rem;" placeholder="e.g. Nxb5, Rxd7">
-                                <button id="btnSubmitGuess" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;">Submit Prediction</button>
+                    <div class="glass-card" id="gameDetail">
+                        <h3 id="gameTitle" style="font-size:0.9rem;font-weight:700;margin-bottom:4px;">Select a Game</h3>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;" id="gameMeta"></div>
+                        <div id="gameThemes" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+                        
+                        <div class="split-layout">
+                            <div style="width:280px;flex-shrink:0;">
+                                <div class="board-container" style="width:260px;height:260px;margin:0 auto 10px auto;">
+                                    <div class="chess-board" id="famousBoard" style="width:100%;height:100%;font-size:0.55rem;"></div>
+                                </div>
+                                <div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px;">
+                                    <button class="hud-btn" id="btnFamousFirst" style="padding:4px 8px;font-size:0.7rem;">⏮️</button>
+                                    <button class="hud-btn" id="btnFamousPrev" style="padding:4px 8px;font-size:0.7rem;">◀️</button>
+                                    <button class="hud-btn" id="btnFamousNext" style="padding:4px 8px;font-size:0.7rem;">▶️</button>
+                                    <button class="hud-btn" id="btnFamousLast" style="padding:4px 8px;font-size:0.7rem;">⏭️</button>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <button id="btnStartGuessChallenge" class="hud-btn primary-btn" style="padding:6px 14px;font-size:0.72rem;width:100%;">🎮 Play Guess the Move Challenge</button>
+                                </div>
+                                <div id="guessTheMoveChallenge" style="display:none;margin-bottom:14px;background:rgba(245,158,11,0.02);border:1px solid rgba(245,158,11,0.15);padding:12px;border-radius:8px;">
+                                    <h4 style="font-size:0.82rem;font-weight:700;color:var(--accent-gold);margin-bottom:6px;">🎯 Guess the Move</h4>
+                                    <p id="guessPrompt" style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:10px;line-height:1.4;"></p>
+                                    <div style="display:flex;gap:12px;margin-bottom:10px;align-items:center;justify-content:space-between;">
+                                        <button id="btnGuessNext" class="hud-btn" style="padding:6px 12px;font-size:0.7rem;">Next Move →</button>
+                                        <div id="guessStats" style="font-size:0.7rem;color:var(--text-muted);font-weight:600;"></div>
+                                    </div>
+                                    <div id="guessInputArea" style="display:none;margin-bottom:10px;">
+                                        <label style="font-size:0.72rem;font-weight:600;display:block;margin-bottom:4px;">Predict the GM's Move:</label>
+                                        <div style="display:flex;gap:8px;margin-bottom:8px;">
+                                            <input type="text" id="guessInputMove" class="elo-input" style="flex:1;font-size:0.72rem;" placeholder="e.g. Nxb5, Rxd7">
+                                            <button id="btnSubmitGuess" class="hud-btn primary-btn" style="padding:6px 10px;font-size:0.72rem;">Submit</button>
+                                        </div>
+                                        <div>
+                                            <textarea id="guessReasoning" class="elo-input" style="width:100%;height:48px;font-size:0.7rem;resize:none;" placeholder="Reasoning (optional)..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div id="guessFeedback" style="padding:8px;border-radius:6px;font-size:0.72rem;margin-bottom:10px;display:none;"></div>
+                                </div>
                             </div>
-                            <div style="margin-top:6px;">
-                                <textarea id="guessReasoning" class="elo-input" style="width:100%;height:48px;font-size:0.72rem;resize:none;" placeholder="Explain your reasoning (optional)..."></textarea>
-                            </div>
-                        </div>
-                        <div id="guessFeedback" style="padding:10px;border-radius:8px;font-size:0.75rem;margin-bottom:10px;display:none;"></div>
-                    </div>
-                    <div class="game-viewer">
-                        <div>
-                            <h4 style="font-size:0.8rem;font-weight:600;margin-bottom:6px;">Moves</h4>
-                            <div id="gamePGN" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;line-height:1.8;color:var(--text-secondary);max-height:280px;overflow-y:auto;"></div>
-                        </div>
-                        <div class="annotation-panel">
-                            <h4 style="font-size:0.8rem;font-weight:600;margin-bottom:6px;">Key Annotations</h4>
-                            <div id="gameAnnotations" style="display:flex;flex-direction:column;gap:8px;"></div>
-                            <div style="margin-top:12px;border-top:1px solid var(--border-color);padding-top:10px;">
-                                <h4 style="font-size:0.78rem;font-weight:600;margin-bottom:4px;">Lesson Summary</h4>
-                                <div id="gameLessonSummary" style="font-size:0.75rem;color:var(--text-secondary);line-height:1.5;"></div>
+                            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;">
+                                <div>
+                                    <h4 style="font-size:0.78rem;font-weight:600;margin-bottom:4px;">Moves</h4>
+                                    <div id="gamePGN" style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;line-height:1.6;color:var(--text-secondary);max-height:150px;overflow-y:auto;background:rgba(255,255,255,0.01);padding:6px;border:1px solid var(--border-color);border-radius:6px;"></div>
+                                </div>
+                                <div class="annotation-panel">
+                                    <h4 style="font-size:0.78rem;font-weight:600;margin-bottom:4px;">Key Annotations</h4>
+                                    <div id="gameAnnotations" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;font-size:0.72rem;"></div>
+                                    <div style="margin-top:8px;border-top:1px solid var(--border-color);padding-top:6px;">
+                                        <h4 style="font-size:0.75rem;font-weight:600;margin-bottom:3px;">Lesson Summary</h4>
+                                        <div id="gameLessonSummary" style="font-size:0.72rem;color:var(--text-secondary);line-height:1.4;"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -536,7 +594,7 @@
                         </div>
                     </div>
                     <div style="display:flex;gap:4px;margin-bottom:14px;" id="assessProgressDots"></div>
-                    <div style="display:flex;gap:16px;align-items:start;">
+                    <div class="split-layout">
                         <div style="flex:1;">
                             <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;" id="assessInstruction">Find the best move in this position.</p>
                             <div class="board-container" style="width:340px;height:340px;">
@@ -642,7 +700,7 @@
                         </div>
                     </div>
                     <div style="display:flex;gap:4px;margin-bottom:12px;" id="bossProgressDots"></div>
-                    <div style="display:flex;gap:16px;align-items:start;">
+                    <div class="split-layout">
                         <div class="lesson-board-mini" id="bossBoard" style="max-width:300px;height:300px;">Board</div>
                         <div style="flex:1;">
                             <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;" id="bossPuzzleInfo"></p>
@@ -813,6 +871,6 @@
     </div>
 
     <script src="quickutils-core.js"></script>
-    <script type="module" src="script.js?v=2.0.2"></script>
+    <script type="module" src="script.js?v=2.0.3"></script>
 </body>
 </html>
