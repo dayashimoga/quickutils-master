@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-26T03:45:24.396254Z",
+  "updatedAt": "2026-06-27T03:31:20.497549Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -194,9 +194,8 @@
     },
     "global": {
       "dji": {
-        "current": 51920.62,
+        "current": 51876.11,
         "history_30d": [
-          49693.2,
           50063.46,
           49526.17,
           49686.12,
@@ -225,41 +224,41 @@
           51712.71,
           51666.84,
           51848.9,
-          51920.62
+          51920.62,
+          51876.11
         ],
-        "delta_1d": 0.14,
-        "delta_1w": 0.83,
-        "delta_1m": 2.89,
-        "delta_3m": 12.97,
-        "delta_6m": 7.18,
-        "delta_1y": 19.67,
+        "delta_1d": -0.09,
+        "delta_1w": 0.6,
+        "delta_1m": 2.43,
+        "delta_3m": 14.85,
+        "delta_6m": 6.45,
+        "delta_1y": 18.39,
         "signal": "Strong Buy",
-        "rsi": 61.79,
+        "rsi": 61.12,
         "macd": {
-          "macd": 495.26,
-          "signal": 482.39,
-          "hist": 12.87
+          "macd": 489.16,
+          "signal": 483.75,
+          "hist": 5.41
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 52959.03,
-          "stop_loss": 49324.59,
+          "target": 52913.63,
+          "stop_loss": 49282.3,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          51989.0,
-          52063.51,
-          52138.02,
-          52212.53,
-          52287.04,
-          52361.55,
-          52436.06
+          52044.01,
+          52117.37,
+          52190.74,
+          52264.1,
+          52337.47,
+          52410.84,
+          52484.2
         ]
       },
       "nasdaq": {
-        "current": 25358.6,
+        "current": 25297.62,
         "history_30d": [
-          26402.34,
           26635.22,
           26225.14,
           26090.73,
@@ -288,39 +287,40 @@
           26166.6,
           25587.04,
           25476.64,
-          25358.6
+          25358.6,
+          25297.62
         ],
-        "delta_1d": -0.46,
-        "delta_1w": -2.55,
-        "delta_1m": -4.87,
-        "delta_3m": 18.45,
-        "delta_6m": 7.63,
-        "delta_1y": 25.74,
+        "delta_1d": -0.24,
+        "delta_1w": -4.6,
+        "delta_1m": -5.16,
+        "delta_3m": 20.76,
+        "delta_6m": 7.13,
+        "delta_1y": 24.78,
         "signal": "Strong Sell",
-        "rsi": 42.94,
+        "rsi": 42.3,
         "macd": {
-          "macd": -30.56,
-          "signal": 115.64,
-          "hist": -146.2
+          "macd": -77.6,
+          "signal": 76.99,
+          "hist": -154.59
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 25865.77,
-          "stop_loss": 24090.67,
+          "target": 25803.57,
+          "stop_loss": 24032.74,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          25857.86,
-          25832.36,
-          25806.86,
-          25781.36,
-          25755.86,
-          25730.36,
-          25704.87
+          25741.44,
+          25710.81,
+          25680.17,
+          25649.54,
+          25618.91,
+          25588.27,
+          25557.64
         ]
       },
       "nikkei": {
-        "current": 69115.04,
+        "current": 69360.88,
         "history_30d": [
           60815.95,
           60550.59,
@@ -351,39 +351,39 @@
           69788.38,
           69174.97,
           72366.34,
-          69115.04
+          69360.88
         ],
-        "delta_1d": -4.49,
-        "delta_1w": -3.0,
-        "delta_1m": 6.84,
-        "delta_3m": 28.94,
-        "delta_6m": 41.05,
-        "delta_1y": 74.6,
+        "delta_1d": -4.15,
+        "delta_1w": -2.65,
+        "delta_1m": 7.22,
+        "delta_3m": 29.4,
+        "delta_6m": 41.55,
+        "delta_1y": 75.22,
         "signal": "Buy",
-        "rsi": 55.12,
+        "rsi": 55.83,
         "macd": {
-          "macd": 2024.15,
-          "signal": 2046.97,
-          "hist": -22.82
+          "macd": 2043.76,
+          "signal": 2050.89,
+          "hist": -7.13
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 70497.34,
-          "stop_loss": 65659.29,
+          "target": 70748.1,
+          "stop_loss": 65892.84,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          71709.82,
-          72043.6,
-          72377.39,
-          72711.17,
-          73044.96,
-          73378.74,
-          73712.53
+          71742.6,
+          72077.97,
+          72413.34,
+          72748.71,
+          73084.08,
+          73419.45,
+          73754.82
         ]
       },
       "hangseng": {
-        "current": 22545.13,
+        "current": 22671.86,
         "history_30d": [
           26389.04,
           25962.73,
@@ -414,41 +414,40 @@
           23336.28,
           23412.18,
           23076.91,
-          22545.13
+          22671.86
         ],
-        "delta_1d": -2.3,
-        "delta_1w": -5.77,
-        "delta_1m": -10.99,
-        "delta_3m": -10.05,
-        "delta_6m": -11.48,
-        "delta_1y": -7.32,
+        "delta_1d": -1.76,
+        "delta_1w": -5.24,
+        "delta_1m": -10.49,
+        "delta_3m": -9.54,
+        "delta_6m": -10.98,
+        "delta_1y": -6.8,
         "signal": "Strong Sell",
-        "rsi": 23.23,
+        "rsi": 24.01,
         "macd": {
-          "macd": -662.84,
-          "signal": -491.35,
-          "hist": -171.49
+          "macd": -652.73,
+          "signal": -489.33,
+          "hist": -163.4
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 22996.03,
-          "stop_loss": 21417.87,
+          "target": 23125.3,
+          "stop_loss": 21538.27,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          23308.81,
-          23210.06,
-          23111.32,
-          23012.57,
-          22913.83,
-          22815.08,
-          22716.34
+          23325.7,
+          23227.78,
+          23129.85,
+          23031.92,
+          22933.99,
+          22836.07,
+          22738.14
         ]
       },
       "ftse": {
-        "current": 10529.9,
+        "current": 10508.0,
         "history_30d": [
-          10372.9,
           10195.4,
           10323.8,
           10330.6,
@@ -477,43 +476,43 @@
           10437.9,
           10428.9,
           10461.6,
-          10529.9
+          10529.9,
+          10508.0
         ],
-        "delta_1d": 0.65,
-        "delta_1w": 1.25,
-        "delta_1m": 0.24,
-        "delta_3m": 4.19,
-        "delta_6m": 6.48,
-        "delta_1y": 20.77,
+        "delta_1d": -0.21,
+        "delta_1w": 1.4,
+        "delta_1m": 0.79,
+        "delta_3m": 5.37,
+        "delta_6m": 6.46,
+        "delta_1y": 20.29,
         "signal": "Strong Buy",
-        "rsi": 58.4,
+        "rsi": 56.71,
         "macd": {
-          "macd": 26.22,
-          "signal": 14.27,
-          "hist": 11.96
+          "macd": 30.21,
+          "signal": 17.45,
+          "hist": 12.76
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 10740.5,
-          "stop_loss": 10003.4,
+          "target": 10718.16,
+          "stop_loss": 9982.6,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          10439.01,
-          10441.84,
-          10444.67,
-          10447.5,
-          10450.33,
-          10453.15,
-          10455.98
+          10452.42,
+          10455.82,
+          10459.22,
+          10462.63,
+          10466.03,
+          10469.43,
+          10472.83
         ]
       }
     },
     "crypto": {
       "btc": {
-        "current": 59434.34,
+        "current": 60239.12,
         "history_30d": [
-          74344.7,
           73536.55,
           73372.52,
           73754.84,
@@ -542,41 +541,41 @@
           63952.11,
           62668.02,
           60995.13,
-          59434.34
+          59721.68,
+          60239.12
         ],
-        "delta_1d": -2.56,
-        "delta_1w": -7.48,
-        "delta_1m": -6.85,
-        "delta_3m": -23.27,
-        "delta_6m": -12.6,
-        "delta_1y": -44.43,
+        "delta_1d": 0.87,
+        "delta_1w": -4.74,
+        "delta_1m": -1.12,
+        "delta_3m": -22.38,
+        "delta_6m": -11.42,
+        "delta_1y": -43.75,
         "signal": "Strong Sell",
-        "rsi": 29.9,
+        "rsi": 32.88,
         "macd": {
-          "macd": -2242.77,
-          "signal": -2293.86,
-          "hist": 51.09
+          "macd": -2271.18,
+          "signal": -2285.66,
+          "hist": 14.48
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 60623.03,
-          "stop_loss": 56462.62,
+          "target": 61443.9,
+          "stop_loss": 57227.16,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          60006.25,
-          59662.24,
-          59318.24,
-          58974.23,
-          58630.23,
-          58286.22,
-          57942.22
+          60025.22,
+          59712.16,
+          59399.09,
+          59086.03,
+          58772.97,
+          58459.9,
+          58146.84
         ]
       },
       "eth": {
-        "current": 1538.55,
+        "current": 1580.3,
         "history_30d": [
-          2022.2,
           2007.55,
           2011.98,
           2019.46,
@@ -605,41 +604,41 @@
           1726.51,
           1665.44,
           1619.92,
-          1538.55
+          1564.82,
+          1580.3
         ],
-        "delta_1d": -5.02,
-        "delta_1w": -11.54,
-        "delta_1m": -13.06,
-        "delta_3m": -33.56,
-        "delta_6m": -21.86,
-        "delta_1y": -36.32,
+        "delta_1d": 0.99,
+        "delta_1w": -7.29,
+        "delta_1m": -0.04,
+        "delta_3m": -31.85,
+        "delta_6m": -19.93,
+        "delta_1y": -34.8,
         "signal": "Strong Sell",
-        "rsi": 29.1,
+        "rsi": 32.55,
         "macd": {
-          "macd": -76.76,
-          "signal": -78.49,
-          "hist": 1.72
+          "macd": -77.32,
+          "signal": -77.92,
+          "hist": 0.6
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 1569.32,
-          "stop_loss": 1461.62,
+          "target": 1611.91,
+          "stop_loss": 1501.28,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          1584.16,
-          1572.86,
-          1561.55,
-          1550.25,
-          1538.94,
-          1527.64,
-          1516.33
+          1582.94,
+          1572.45,
+          1561.96,
+          1551.46,
+          1540.97,
+          1530.48,
+          1519.99
         ]
       },
       "sol": {
-        "current": 67.49,
+        "current": 72.07,
         "history_30d": [
-          82.37,
           81.99,
           81.93,
           82.55,
@@ -668,35 +667,36 @@
           71.91,
           69.64,
           67.98,
-          67.49
+          67.57,
+          72.07
         ],
-        "delta_1d": -0.72,
-        "delta_1w": -7.76,
-        "delta_1m": -1.79,
-        "delta_3m": -21.73,
-        "delta_6m": -20.26,
-        "delta_1y": -51.47,
-        "signal": "Strong Sell",
-        "rsi": 39.3,
+        "delta_1d": 6.66,
+        "delta_1w": -0.48,
+        "delta_1m": 13.51,
+        "delta_3m": -16.34,
+        "delta_6m": -15.42,
+        "delta_1y": -49.31,
+        "signal": "Buy",
+        "rsi": 49.82,
         "macd": {
-          "macd": -1.94,
-          "signal": -2.33,
-          "hist": 0.39
+          "macd": -1.63,
+          "signal": -2.19,
+          "hist": 0.56
         },
         "pattern": {
-          "pattern": "Consolidation",
-          "target": 68.84,
-          "stop_loss": 64.12,
-          "strength": "Neutral"
+          "pattern": "Cup & Handle",
+          "target": 79.28,
+          "stop_loss": 68.31,
+          "strength": "Bullish"
         },
         "forecast_7d": [
-          66.4,
-          66.06,
-          65.72,
-          65.38,
-          65.05,
-          64.71,
-          64.37
+          67.26,
+          67.0,
+          66.74,
+          66.48,
+          66.22,
+          65.96,
+          65.7
         ]
       }
     },
@@ -1083,9 +1083,8 @@
   },
   "macroData": {
     "usdInr": {
-      "current": 94.39,
+      "current": 94.3,
       "history_30d": [
-        95.97,
         96.27,
         96.57,
         96.53,
@@ -1114,39 +1113,40 @@
         94.7,
         95.18,
         94.44,
-        94.39
+        94.4,
+        94.3
       ],
-      "delta_1d": -0.05,
-      "delta_1w": 0.05,
-      "delta_1m": -1.73,
-      "delta_3m": 0.97,
-      "delta_6m": 4.92,
-      "delta_1y": 9.74,
+      "delta_1d": -0.11,
+      "delta_1w": -0.03,
+      "delta_1m": -1.82,
+      "delta_3m": 1.79,
+      "delta_6m": 4.77,
+      "delta_1y": 9.64,
       "signal": "Strong Sell",
-      "rsi": 43.52,
+      "rsi": 42.72,
       "macd": {
-        "macd": -0.2,
-        "signal": -0.09,
+        "macd": -0.23,
+        "signal": -0.12,
         "hist": -0.11
       },
       "pattern": {
-        "pattern": "Cup & Handle",
-        "target": 103.83,
-        "stop_loss": 89.61,
-        "strength": "Bullish"
+        "pattern": "Consolidation",
+        "target": 96.19,
+        "stop_loss": 89.58,
+        "strength": "Neutral"
       },
       "forecast_7d": [
-        94.45,
-        94.39,
-        94.33,
-        94.27,
-        94.2,
-        94.14,
-        94.08
+        94.35,
+        94.28,
+        94.21,
+        94.15,
+        94.08,
+        94.02,
+        93.95
       ]
     },
     "crudeOil": {
-      "current": 74.33,
+      "current": 73.57,
       "history_30d": [
         105.72,
         109.26,
@@ -1177,35 +1177,35 @@
         77.08,
         73.74,
         75.26,
-        74.33
+        73.57
       ],
-      "delta_1d": -1.24,
-      "delta_1w": -6.91,
-      "delta_1m": -21.17,
-      "delta_3m": -33.97,
-      "delta_6m": 19.42,
-      "delta_1y": 9.83,
+      "delta_1d": -2.25,
+      "delta_1w": -7.86,
+      "delta_1m": -21.97,
+      "delta_3m": -34.65,
+      "delta_6m": 18.2,
+      "delta_1y": 8.62,
       "signal": "Strong Sell",
-      "rsi": 27.69,
+      "rsi": 27.05,
       "macd": {
-        "macd": -6.79,
-        "signal": -5.76,
-        "hist": -1.03
+        "macd": -6.85,
+        "signal": -5.78,
+        "hist": -1.08
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 75.82,
-        "stop_loss": 70.61,
+        "target": 75.04,
+        "stop_loss": 69.89,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        72.87,
-        71.63,
-        70.39,
-        69.15,
-        67.91,
-        66.67,
-        65.43
+        72.77,
+        71.52,
+        70.28,
+        69.04,
+        67.79,
+        66.55,
+        65.3
       ]
     },
     "inflation": {
@@ -1215,7 +1215,43 @@
   },
   "newsData": [
     {
-      "title": "South Korea's Kospi plunges more than 8% as chipmakers slide, trading halted ",
+      "title": "Power Grid of India board okays raising borrowing limit to Rs 2.2 lakh cr ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/power-grid-of-india-board-okays-raising-borrowing-limit-to-rs-2-2-lakh-cr/articleshow/132014308.cms",
+      "time": "Fri, 26 Jun 2026 16:38:38 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Goldman Sachs upgrades India's growth outlook after US-Iran peace deal ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/goldman-sachs-upgrades-indias-growth-outlook-after-us-iran-peace-deal/articleshow/132009446.cms",
+      "time": "Fri, 26 Jun 2026 13:14:44 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "GIFT Nifty tumbles over 150 points as global sell-off in AI stocks rattles sentiment ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/gift-nifty-tumbles-over-150-points-as-global-sell-off-in-ai-stocks-rattles-sentiment/articleshow/132009209.cms",
+      "time": "Fri, 26 Jun 2026 12:10:51 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ITC, HUL among 10 FMCG stocks that have tumbled up to 31% in 2026. How many do you have? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/itc-hul-among-10-fmcg-stocks-that-have-tumbled-up-to-31-in-2026-how-many-do-you-have/slideshow/132006987.cms",
+      "time": "Fri, 26 Jun 2026 09:38:09 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Why Rakesh Jhunjhunwala bought Titan shares when everyone else was selling? Raamdeo Agrawal explains ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-rakesh-jhunjhunwala-bought-titan-shares-when-everyone-else-was-selling-raamdeo-agrawal-explains/articleshow/132006819.cms",
+      "time": "Fri, 26 Jun 2026 09:36:21 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Up to 42% upside! 9 stocks Jefferies, Motilal Oswal, others started coverage on. Do you own any? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/up-to-42-upside-9-stocks-jefferies-motilal-oswal-others-started-coverage-on-do-you-own-any/slideshow/132006673.cms",
+      "time": "Fri, 26 Jun 2026 09:16:42 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "South Korean stocks in tailspin as Kospi crashes 8%, head for worst week since March ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/south-koreas-kospi-plunges-more-than-8-as-chipmakers-slide-trading-halted/articleshow/132006456.cms",
       "time": "Fri, 26 Jun 2026 09:06:35 +0530",
       "source": "ET Markets"
@@ -1356,42 +1392,6 @@
       "title": "Why is market rising today? Sensex soars 800 pts, Nifty above 24,250. 3 key factors powering D-St bulls ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-is-market-rising-today-sensex-soars-800-points-nifty-above-24250-key-factors-powering-d-street-bulls/articleshow/131985817.cms",
       "time": "Thu, 25 Jun 2026 12:24:57 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Manappuram Finance, Muthoot Finance, other gold financier stocks drop up to 3%. Here's why ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/manappuram-finance-muthoot-finance-other-gold-financier-stocks-drop-up-to-3-heres-why/articleshow/131984827.cms",
-      "time": "Thu, 25 Jun 2026 11:45:51 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Chemicals shares rise 4% on hopes of Tata Sons listing after RBI\u2019s new norms ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tata-chemicals-shares-rise-4-on-hopes-of-tata-sons-listing-after-rbis-new-norms/articleshow/131983070.cms",
-      "time": "Thu, 25 Jun 2026 10:42:05 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Vedanta, NALCO, Hindustan Zinc shares fall up to 3% as silver, aluminium, other metal prices tumble. Here's why ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/vedanta-nalco-hindustan-zinc-shares-fall-up-to-3-as-silver-aluminium-other-metal-prices-tumble-heres-why/articleshow/131982887.cms",
-      "time": "Thu, 25 Jun 2026 10:36:10 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sterlite Technologies surges 5% on QIP launch, sets Rs 613.69 floor price ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sterlite-technologies-surges-5-on-qip-launch-sets-rs-613-69-floor-price/articleshow/131982771.cms",
-      "time": "Thu, 25 Jun 2026 10:29:02 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "IndiGo, SpiceJet shares rally up to 4% as crude oil prices fall below pre-war levels after 42% crash ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/indigo-spicejet-shares-rally-up-to-4-as-crude-oil-prices-fall-below-pre-war-levels-after-46-crash/articleshow/131982485.cms",
-      "time": "Thu, 25 Jun 2026 10:11:56 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Stock Market Holiday 2026: Are NSE, BSE closed on June 26 for Muharram? Check market closing dates list ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/stock-market-holiday-2026-are-nse-bse-closed-tomorrow-on-june-26-for-muharram-check-market-closing-dates-list/articleshow/131982291.cms",
-      "time": "Thu, 25 Jun 2026 10:00:53 +0530",
       "source": "ET Markets"
     }
   ]
