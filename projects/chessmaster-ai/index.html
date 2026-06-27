@@ -169,7 +169,8 @@
                         <svg class="journey-connector-svg" id="journeyConnector"></svg>
                         <!-- Milestone nodes rendered dynamically -->
                     </div>
-                    <div id="journeyOverlay" class="milestone-details-panel" style="position:absolute;display:none;"></div>
+                    <div id="journeyOverlayBackdrop" class="sidebar-backdrop" style="display:none;z-index:9999;" onclick="document.getElementById('journeyOverlay').style.display='none';this.style.display='none';"></div>
+                    <div id="journeyOverlay" class="milestone-details-panel" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);display:none;z-index:10000;width:90%;max-width:380px;"></div>
                 </div>
             </section>
 

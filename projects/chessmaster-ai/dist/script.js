@@ -486,6 +486,7 @@ function initJourneyView() {
 
 function showMilestoneDetails(m, idx, nodeEl) {
   const overlay = document.getElementById('journeyOverlay');
+  const backdrop = document.getElementById('journeyOverlayBackdrop');
   const pct = Math.min(100, Math.max(0, ((profile.elo - (MILESTONES[idx-1]?.elo || 0)) / (m.elo - (MILESTONES[idx-1]?.elo || 0))) * 100));
   
   const challengeList = (m.challenges || []).map(c => `<li>${c}</li>`).join('');
@@ -505,17 +506,17 @@ function showMilestoneDetails(m, idx, nodeEl) {
     <div style="font-size:0.72rem;color:var(--accent-blue);margin-top:4px;margin-bottom:12px;"><strong>Target:</strong> ${m.target}</div>
     <div style="display:flex;gap:6px;margin-top:8px;">
       <button class="hud-btn primary-btn" style="font-size:0.7rem;padding:6px 10px;flex:1;" onclick="launchJourneyLab('${m.title}')">🚀 Launch Practice Lab</button>
-      <button class="hud-btn" style="font-size:0.7rem;padding:6px 10px;" onclick="document.getElementById('journeyOverlay').style.display='none'">✕ Close</button>
+      <button class="hud-btn" style="font-size:0.7rem;padding:6px 10px;" onclick="document.getElementById('journeyOverlay').style.display='none';document.getElementById('journeyOverlayBackdrop').style.display='none';">✕ Close</button>
     </div>`;
   overlay.style.display = 'block';
-  overlay.style.top = (nodeEl.offsetTop + 70) + 'px';
-  overlay.style.left = '50%';
-  overlay.style.transform = 'translateX(-50%)';
+  if (backdrop) backdrop.style.display = 'block';
 }
 
 window.launchJourneyLab = function(title) {
   const overlay = document.getElementById('journeyOverlay');
+  const backdrop = document.getElementById('journeyOverlayBackdrop');
   if (overlay) overlay.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
 
   showToast(`🚀 Launching Lab for ${title}...`);
   const t = title.toLowerCase();
@@ -914,7 +915,8 @@ function initStrategyAcademy() {
     div.style.cursor = 'pointer';
     div.innerHTML = `<div class="tactic-name">${s.name}</div><div class="tactic-desc">${s.desc}</div>`;
     div.addEventListener('click', () => {
-      document.getElementById('strategyDetail').style.display = 'block';
+      list.querySelectorAll('.tactic-card').forEach(c => c.classList.remove('active-card'));
+      div.classList.add('active-card');
       document.getElementById('strategyTitle').textContent = s.name;
       document.getElementById('strategyLesson').textContent = s.lesson;
       document.getElementById('strategySquares').textContent = s.keySquares.join(', ');
@@ -929,7 +931,7 @@ function initStrategyAcademy() {
         playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
         newPlayBtn.addEventListener('click', () => {
           activeLesson = { ...s, type: 'strategy' };
-          document.querySelector('.nav-item[data-target="play"]')?.click();
+          navigateToView('play');
           chess = new Chess(s.fen);
           playerColor = 'w';
           isGameActive = true;
@@ -941,6 +943,10 @@ function initStrategyAcademy() {
     });
     list.appendChild(div);
   });
+
+  // Auto-click first strategy card to ensure the board is visible immediately
+  const firstCard = list.querySelector('.tactic-card');
+  if (firstCard) firstCard.click();
 }
 
 // ═══════════════════════════════════════════════════
@@ -961,34 +967,62 @@ function initEndgameAcademy() {
     items.forEach(eg => {
       const card = document.createElement('div');
       card.className = 'tactic-card';
-      card.innerHTML = `<div class="tactic-name">${eg.name}</div><div class="tactic-desc">${eg.desc}</div><div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;">💡 ${eg.keyIdea}</div>`;
+      card.innerHTML = `<div class="tactic-name">${eg.name}</div><div class="tactic-desc">${eg.desc}</div>`;
       card.addEventListener('click', () => {
-        activeLesson = { ...eg, type: 'endgame' };
-        document.querySelector('.nav-item[data-target="play"]')?.click();
-        chess = new Chess(eg.fen);
-        playerColor = eg.fen.split(' ')[1] || 'w';
-        isGameActive = true;
-        buildBoard();
-        document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning key move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
-        showToast(`📖 Endgame: ${eg.name} loaded on the board!`);
+        list.querySelectorAll('.tactic-card').forEach(c => c.classList.remove('active-card'));
+        card.classList.add('active-card');
+        document.getElementById('endgameTitle').textContent = eg.name;
+        document.getElementById('endgameLesson').textContent = eg.desc;
+        document.getElementById('endgameKeyIdea').textContent = eg.keyIdea;
+        document.getElementById('endgameFen').textContent = eg.fen;
+        
+        const egChess = new Chess(eg.fen);
+        renderBoardTo('endgameBoard', egChess, null, [], null);
+
+        const playBtn = document.getElementById('btnPlayEndgame');
+        if (playBtn) {
+          const newPlayBtn = playBtn.cloneNode(true);
+          playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+          newPlayBtn.addEventListener('click', () => {
+            activeLesson = { ...eg, type: 'endgame' };
+            navigateToView('play');
+            chess = new Chess(eg.fen);
+            playerColor = eg.fen.split(' ')[1] || 'w';
+            isGameActive = true;
+            buildBoard();
+            document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning key move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+            showToast(`📖 Endgame: ${eg.name} loaded on the board!`);
+          });
+        }
       });
       grid.appendChild(card);
     });
     section.appendChild(grid);
     list.appendChild(section);
   });
+
+  // Auto-click first endgame card
+  const firstCard = list.querySelector('.tactic-card');
+  if (firstCard) firstCard.click();
 }
 
 // ═══════════════════════════════════════════════════
 // FAMOUS GAMES ACADEMY
 // ═══════════════════════════════════════════════════
+let famousStudyState = {
+  active: false,
+  game: null,
+  moves: [],
+  currentPly: 0
+};
+
 function initFamousGames() {
   const selector = document.getElementById('gmSelector');
   const gameList = document.getElementById('gameList');
   if (!selector) return;
+  selector.innerHTML = '';
 
   const gms = [...new Set(FAMOUS_GAMES_DB.map(g => g.white))];
-  // Add 'All' button first
   const allBtn = document.createElement('button');
   allBtn.className = 'gm-btn active';
   allBtn.textContent = 'All Games';
@@ -1013,24 +1047,84 @@ function initFamousGames() {
 
   renderGameList(FAMOUS_GAMES_DB);
 
+  // Wire study navigation buttons
+  const fBtnFirst = document.getElementById('btnFamousFirst');
+  const fBtnPrev = document.getElementById('btnFamousPrev');
+  const fBtnNext = document.getElementById('btnFamousNext');
+  const fBtnLast = document.getElementById('btnFamousLast');
+
+  if (fBtnFirst) {
+    const newBtn = fBtnFirst.cloneNode(true);
+    fBtnFirst.parentNode.replaceChild(newBtn, fBtnFirst);
+    newBtn.addEventListener('click', () => jumpToFamousPly(0));
+  }
+  if (fBtnPrev) {
+    const newBtn = fBtnPrev.cloneNode(true);
+    fBtnPrev.parentNode.replaceChild(newBtn, fBtnPrev);
+    newBtn.addEventListener('click', () => {
+      if (famousStudyState.active && famousStudyState.currentPly > 0) {
+        jumpToFamousPly(famousStudyState.currentPly - 1);
+      }
+    });
+  }
+  if (fBtnNext) {
+    const newBtn = fBtnNext.cloneNode(true);
+    fBtnNext.parentNode.replaceChild(newBtn, fBtnNext);
+    newBtn.addEventListener('click', () => {
+      if (famousStudyState.active && famousStudyState.currentPly < famousStudyState.moves.length) {
+        jumpToFamousPly(famousStudyState.currentPly + 1);
+      }
+    });
+  }
+  if (fBtnLast) {
+    const newBtn = fBtnLast.cloneNode(true);
+    fBtnLast.parentNode.replaceChild(newBtn, fBtnLast);
+    newBtn.addEventListener('click', () => {
+      if (famousStudyState.active) {
+        jumpToFamousPly(famousStudyState.moves.length);
+      }
+    });
+  }
+
   // Wire Guess the Move challenge buttons
-  document.getElementById('btnStartGuessChallenge')?.addEventListener('click', () => {
-    const list = document.getElementById('gameList');
-    const activeEntry = list.querySelector('.game-entry.active-game');
-    if (!activeEntry) { showToast('⚠️ Select a famous game first!'); return; }
-    
-    const titleText = document.getElementById('gameTitle').textContent;
-    const game = FAMOUS_GAMES_DB.find(g => g.title === titleText);
-    if (game) {
-      startGuessChallenge(game);
-    }
-  });
+  const guessBtn = document.getElementById('btnStartGuessChallenge');
+  if (guessBtn) {
+    const newGuessBtn = guessBtn.cloneNode(true);
+    guessBtn.parentNode.replaceChild(newGuessBtn, guessBtn);
+    newGuessBtn.addEventListener('click', () => {
+      const list = document.getElementById('gameList');
+      const activeEntry = list.querySelector('.game-entry.active-game');
+      if (!activeEntry) { showToast('⚠️ Select a famous game first!'); return; }
+      
+      const titleText = document.getElementById('gameTitle').textContent;
+      const game = FAMOUS_GAMES_DB.find(g => g.title === titleText);
+      if (game) {
+        startGuessChallenge(game);
+      }
+    });
+  }
 
-  document.getElementById('btnGuessNext')?.addEventListener('click', advanceGuessMove);
-  document.getElementById('btnSubmitGuess')?.addEventListener('click', submitGuess);
-  document.getElementById('guessInputMove')?.addEventListener('keypress', e => { if (e.key === 'Enter') submitGuess(); });
+  const btnNextG = document.getElementById('btnGuessNext');
+  if (btnNextG) {
+    const newBtn = btnNextG.cloneNode(true);
+    btnNextG.parentNode.replaceChild(newBtn, btnNextG);
+    newBtn.addEventListener('click', advanceGuessMove);
+  }
+
+  const btnSub = document.getElementById('btnSubmitGuess');
+  if (btnSub) {
+    const newBtn = btnSub.cloneNode(true);
+    btnSub.parentNode.replaceChild(newBtn, btnSub);
+    newBtn.addEventListener('click', submitGuess);
+  }
+
+  const inputG = document.getElementById('guessInputMove');
+  if (inputG) {
+    const newInp = inputG.cloneNode(true);
+    inputG.parentNode.replaceChild(newInp, inputG);
+    newInp.addEventListener('keypress', e => { if (e.key === 'Enter') submitGuess(); });
+  }
 }
-
 
 function renderGameList(games) {
   const list = document.getElementById('gameList');
@@ -1046,6 +1140,9 @@ function renderGameList(games) {
     });
     list.appendChild(div);
   });
+  
+  const firstGame = list.querySelector('.game-entry');
+  if (firstGame) firstGame.click();
 }
 
 function showGameDetail(game) {
@@ -1057,7 +1154,49 @@ function showGameDetail(game) {
   themes.innerHTML = '';
   game.themes.forEach(t => { const s = document.createElement('span'); s.className = 'theme-tag'; s.textContent = t; themes.appendChild(s); });
 
-  document.getElementById('gamePGN').textContent = game.pgn;
+  document.getElementById('guessTheMoveChallenge').style.display = 'none';
+
+  const tempChess = new Chess();
+  try {
+    tempChess.loadPgn(game.pgn);
+  } catch(e) {
+    console.warn("Failed to load PGN", e);
+  }
+  const moves = tempChess.history({ verbose: true });
+  
+  famousStudyState = {
+    active: true,
+    game,
+    moves,
+    currentPly: 0
+  };
+
+  const gamePGN = document.getElementById('gamePGN');
+  gamePGN.innerHTML = '';
+  let movePairDiv = null;
+  moves.forEach((mv, idx) => {
+    if (idx % 2 === 0) {
+      movePairDiv = document.createElement('div');
+      movePairDiv.style.display = 'inline-block';
+      movePairDiv.style.marginRight = '8px';
+      const moveNumSpan = document.createElement('span');
+      moveNumSpan.textContent = `${Math.floor(idx/2) + 1}. `;
+      moveNumSpan.style.color = 'var(--text-muted)';
+      movePairDiv.appendChild(moveNumSpan);
+      gamePGN.appendChild(movePairDiv);
+    }
+    const moveSpan = document.createElement('span');
+    moveSpan.className = 'famous-pgn-move';
+    moveSpan.textContent = mv.san + ' ';
+    moveSpan.style.cursor = 'pointer';
+    moveSpan.style.padding = '1px 3px';
+    moveSpan.style.borderRadius = '3px';
+    moveSpan.dataset.ply = idx + 1;
+    moveSpan.addEventListener('click', () => {
+      jumpToFamousPly(idx + 1);
+    });
+    movePairDiv.appendChild(moveSpan);
+  });
 
   const ann = document.getElementById('gameAnnotations');
   ann.innerHTML = '';
@@ -1068,6 +1207,46 @@ function showGameDetail(game) {
   });
 
   document.getElementById('gameLessonSummary').textContent = game.lessonSummary;
+  
+  jumpToFamousPly(0);
+}
+
+function jumpToFamousPly(ply) {
+  if (!famousStudyState.active) return;
+  famousStudyState.currentPly = ply;
+  
+  const fChess = new Chess();
+  for (let i = 0; i < ply; i++) {
+    fChess.move(famousStudyState.moves[i].san);
+  }
+  
+  const pgnContainer = document.getElementById('gamePGN');
+  pgnContainer.querySelectorAll('.famous-pgn-move').forEach(span => {
+    const sPly = parseInt(span.dataset.ply);
+    if (sPly === ply) {
+      span.style.background = 'var(--accent-blue-glow)';
+      span.style.color = 'var(--accent-blue)';
+      span.style.fontWeight = '700';
+    } else {
+      span.style.background = '';
+      span.style.color = '';
+      span.style.fontWeight = '';
+    }
+  });
+  
+  if (gtmState && gtmState.active) {
+    gtmState.active = false;
+    document.getElementById('guessTheMoveChallenge').style.display = 'none';
+    showToast("Study mode activated. Guess challenge paused.");
+  }
+  
+  let lastMove = [];
+  if (ply > 0) {
+    const lastM = famousStudyState.moves[ply - 1];
+    lastMove = [lastM.from, lastM.to];
+  }
+  
+  renderBoardTo('famousBoard', fChess, null, lastMove, null);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1295,9 +1474,33 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       if (piece) {
         const pDiv = document.createElement('div');
         pDiv.className = 'piece';
+        
+        // Piece sliding animation using relative translations
         if (lastMoves.length === 2 && lastMoves[1] === sq) {
           pDiv.classList.add('piece-animated');
+          
+          const sqToColRow = (s, flipped) => {
+            const f = s.charCodeAt(0) - 97;
+            const r = 8 - parseInt(s[1]);
+            return flipped ? { col: 7 - f, row: 7 - r } : { col: f, row: r };
+          };
+          
+          const fromColRow = sqToColRow(lastMoves[0], isFlipped);
+          const toColRow = sqToColRow(lastMoves[1], isFlipped);
+          const dc = fromColRow.col - toColRow.col;
+          const dr = fromColRow.row - toColRow.row;
+          
+          pDiv.style.transform = `translate(${dc * 100}%, ${dr * 100}%)`;
+          pDiv.style.transition = 'none';
+          
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              pDiv.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+              pDiv.style.transform = 'translate(0, 0)';
+            });
+          });
         }
+        
         const key = piece.color + piece.type;
         pDiv.style.backgroundImage = `url('${PU[key]}')`;
         div.appendChild(pDiv);
