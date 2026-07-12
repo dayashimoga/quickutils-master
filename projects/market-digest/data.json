@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-11T02:40:45.311744Z",
+  "updatedAt": "2026-07-12T02:48:39.373836Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 64056.83,
+        "current": 64055.03,
         "history_30d": [
-          63561.05,
           63543.2,
           64421.32,
           65710.4,
@@ -542,41 +541,41 @@
           63297.39,
           62257.57,
           63193.15,
-          64056.83
+          64127.14,
+          64055.03
         ],
-        "delta_1d": 1.37,
-        "delta_1w": 0.8,
-        "delta_1m": 0.81,
-        "delta_3m": -20.59,
-        "delta_6m": -4.78,
-        "delta_1y": -45.49,
+        "delta_1d": -0.11,
+        "delta_1w": 0.09,
+        "delta_1m": -0.29,
+        "delta_3m": -22.02,
+        "delta_6m": -2.9,
+        "delta_1y": -45.46,
         "signal": "Strong Buy",
-        "rsi": 53.54,
+        "rsi": 53.47,
         "macd": {
-          "macd": -439.48,
-          "signal": -1051.51,
-          "hist": 612.03
+          "macd": -294.11,
+          "signal": -899.13,
+          "hist": 605.02
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 65337.97,
-          "stop_loss": 60853.99,
+          "target": 65336.13,
+          "stop_loss": 60852.28,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          61369.93,
-          61285.29,
-          61200.66,
-          61116.03,
-          61031.4,
-          60946.77,
-          60862.13
+          61626.61,
+          61557.32,
+          61488.04,
+          61418.75,
+          61349.47,
+          61280.18,
+          61210.9
         ]
       },
       "eth": {
-        "current": 1791.64,
+        "current": 1804.68,
         "history_30d": [
-          1672.28,
           1665.13,
           1680.21,
           1724.61,
@@ -605,41 +604,41 @@
           1768.51,
           1742.68,
           1744.48,
-          1791.64
+          1795.69,
+          1804.68
         ],
-        "delta_1d": 2.7,
-        "delta_1w": 0.48,
-        "delta_1m": 4.71,
-        "delta_3m": -23.0,
-        "delta_6m": -9.03,
-        "delta_1y": -39.43,
+        "delta_1d": 0.5,
+        "delta_1w": 0.4,
+        "delta_1m": 3.76,
+        "delta_3m": -23.82,
+        "delta_6m": -6.81,
+        "delta_1y": -38.68,
         "signal": "Strong Buy",
-        "rsi": 57.25,
+        "rsi": 58.51,
         "macd": {
-          "macd": 4.9,
-          "signal": -18.24,
-          "hist": 23.15
+          "macd": 10.42,
+          "signal": -12.46,
+          "hist": 22.88
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 1827.47,
-          "stop_loss": 1702.06,
+          "target": 1840.77,
+          "stop_loss": 1714.45,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          1713.72,
-          1714.85,
-          1715.98,
-          1717.12,
-          1718.25,
-          1719.38,
-          1720.51
+          1726.94,
+          1728.63,
+          1730.32,
+          1732.01,
+          1733.7,
+          1735.4,
+          1737.09
         ]
       },
       "sol": {
-        "current": 77.62,
+        "current": 76.73,
         "history_30d": [
-          66.82,
           66.75,
           68.87,
           71.17,
@@ -668,35 +667,36 @@
           80.65,
           77.79,
           78.05,
-          77.62
+          78.07,
+          76.73
         ],
-        "delta_1d": -0.55,
-        "delta_1w": -4.67,
-        "delta_1m": 11.33,
-        "delta_3m": -16.67,
-        "delta_6m": -6.68,
-        "delta_1y": -52.35,
+        "delta_1d": -1.72,
+        "delta_1w": -6.34,
+        "delta_1m": 4.87,
+        "delta_3m": -20.43,
+        "delta_6m": -5.99,
+        "delta_1y": -52.25,
         "signal": "Buy",
-        "rsi": 53.45,
+        "rsi": 51.17,
         "macd": {
-          "macd": 1.75,
-          "signal": 1.46,
-          "hist": 0.29
+          "macd": 1.55,
+          "signal": 1.48,
+          "hist": 0.07
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 79.17,
-          "stop_loss": 73.74,
+          "target": 78.26,
+          "stop_loss": 72.89,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          80.68,
-          81.12,
-          81.56,
-          82.0,
-          82.44,
-          82.88,
-          83.32
+          80.6,
+          81.01,
+          81.42,
+          81.83,
+          82.24,
+          82.66,
+          83.07
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 76.0,
+      "current": 76.01,
       "history_30d": [
         93.71,
         92.05,
@@ -1177,16 +1177,16 @@
         74.16,
         78.02,
         76.3,
-        76.0
+        76.01
       ],
-      "delta_1d": -0.39,
-      "delta_1w": 5.85,
-      "delta_1m": -16.89,
-      "delta_3m": -20.17,
-      "delta_6m": 22.6,
-      "delta_1y": 10.72,
+      "delta_1d": -0.38,
+      "delta_1w": 5.86,
+      "delta_1m": -16.88,
+      "delta_3m": -20.16,
+      "delta_6m": 22.62,
+      "delta_1y": 8.03,
       "signal": "Sell",
-      "rsi": 39.77,
+      "rsi": 39.79,
       "macd": {
         "macd": -4.81,
         "signal": -5.85,
@@ -1194,8 +1194,8 @@
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 77.52,
-        "stop_loss": 72.2,
+        "target": 77.53,
+        "stop_loss": 72.21,
         "strength": "Neutral"
       },
       "forecast_7d": [
@@ -1214,6 +1214,54 @@
     }
   },
   "newsData": [
+    {
+      "title": "SIF AUM jumps 29% to Rs 17,858 crore in June; inflows surge 171% MoM ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sif-aum-jumps-29-to-rs-17858-crore-in-june-inflows-surge-171-mom/articleshow/132329280.cms",
+      "time": "Sat, 11 Jul 2026 16:38:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "DMart Q1 results: Cons PAT up 11% to Rs 860 crore, revenue rises to Rs 18,795 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/dmart-q1-results-cons-pat-up-11-to-rs-860-crore-revenue-rises-to-rs-18795-crore/articleshow/132324295.cms",
+      "time": "Sat, 11 Jul 2026 16:17:15 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Nearly 60% of foreign inflows into India-focused funds withdrawn since 2024 peak: Report ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nearly-60-of-foreign-inflows-into-india-focused-funds-withdrawn-since-2024-peak-report/articleshow/132328818.cms",
+      "time": "Sat, 11 Jul 2026 15:59:22 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Unique Picks: 7 stocks held by a single MF scheme in June; rally up to 120% in 3 months ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/unique-picks-7-stocks-held-by-a-single-mf-scheme-in-june-rally-up-to-120-in-3-months/slideshow/132325855.cms",
+      "time": "Sat, 11 Jul 2026 11:48:11 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Midcap bets! InCred picks 6 stocks with up to 54% upside potential. See full list ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/midcap-bets-incred-picks-6-stocks-with-up-to-54-upside-potential-see-full-list/slideshow/132325125.cms",
+      "time": "Sat, 11 Jul 2026 10:43:54 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Gainers: 10 stocks that gained for 5 days in a row ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-10-stocks-that-gained-for-5-days-in-a-row/slideshow/132325025.cms",
+      "time": "Sat, 11 Jul 2026 10:34:52 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Will Google be Berkshire CEO Greg Abel's best stock pick after predecessor Warren Buffett's Apple bet? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/will-google-be-berkshire-ceo-greg-abels-best-stock-pick-after-predecessor-warren-buffetts-apple-bet/articleshow/132324438.cms",
+      "time": "Sat, 11 Jul 2026 09:41:51 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "TCS, HDFC Bank, 8 others with up to 49% upside. How many in your portfolio? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tcs-hdfc-bank-8-others-with-up-to-49-upside-how-many-in-your-portfolio/slideshow/132324420.cms",
+      "time": "Sat, 11 Jul 2026 09:34:06 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Groww faces technical glitch, client withdrawals hit ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/groww-restores-services-after-technical-glitch-affects-fund-withdrawals/articleshow/132323541.cms",
@@ -1344,54 +1392,6 @@
       "title": "HFCL shares rally 4% after Rs 495 crore order win. Should you buy after 200% surge in 2026? ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/hfcl-shares-rally-4-after-rs-495-crore-order-win-should-you-buy-after-200-surge-in-2026/articleshow/132304675.cms",
       "time": "Fri, 10 Jul 2026 11:56:42 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Blue Jet Healthcare shares rally 9% after Rs 800 crore QIP allotment ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/blue-jet-healthcare-shares-rally-9-after-rs-800-crore-qip-allotment/articleshow/132304507.cms",
-      "time": "Fri, 10 Jul 2026 11:46:26 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Adani flagship is the next big India pick for Singapore\u2019s Helios ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/adani-flagship-is-the-next-big-india-pick-for-singapores-helios/articleshow/132304170.cms",
-      "time": "Fri, 10 Jul 2026 11:30:53 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Dixon Tech shares jump 4% on govt nod to form JV with Vivo. What are experts saying? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dixon-tech-shares-jump-4-on-govt-nod-to-form-jv-with-vivo-what-are-experts-saying/articleshow/132303973.cms",
-      "time": "Fri, 10 Jul 2026 11:15:57 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Did Goldiam International shares really crash 24% in one day? Here\u2019s how the bonus math works ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/did-goldiam-international-shares-really-crash-24-in-one-day-heres-how-the-bonus-math-works/articleshow/132303512.cms",
-      "time": "Fri, 10 Jul 2026 10:46:10 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Kalyan Jewellers jumps 9%, m-cap swells by Rs 13,280 crore in 3 days. What's next? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/kalyan-jewellers-jumps-9-extends-3-day-rally-to-36-whats-next/articleshow/132303291.cms",
-      "time": "Fri, 10 Jul 2026 10:28:14 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "TCS Q1 results after party: Infosys, Wipro, other IT stocks jump up to 4%. Why are analysts bullish despite AI worries? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tcs-q1-results-after-party-infosys-wipro-other-it-stocks-jump-up-to-4-why-are-analysts-bullish-despite-ai-worries/articleshow/132302918.cms",
-      "time": "Fri, 10 Jul 2026 10:01:06 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Dr. Reddy's Lab among 4 F&amp;O stocks that saw a high increase in futures open interest ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dr-reddys-lab-among-4-fampo-stocks-that-saw-a-high-increase-in-futures-open-interest/slideshow/132303201.cms",
-      "time": "Fri, 10 Jul 2026 09:56:41 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Vedanta Aluminum shares to see 22% rally? Motilal Oswal initiates coverage with Buy, lists key tailwinds ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/vedanta-aluminum-shares-to-see-22-rally-motilal-oswal-initiates-coverage-with-buy-lists-key-tailwinds/articleshow/132302749.cms",
-      "time": "Fri, 10 Jul 2026 09:49:02 +0530",
       "source": "ET Markets"
     }
   ]
