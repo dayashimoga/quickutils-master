@@ -111,7 +111,7 @@
                 <div class="grid-2">
                     <div class="glass-card">
                         <h2 class="card-title">🎯 Today's Mission</h2>
-                        <p $script:count++; ' class="section-desc"' >Personalized tasks based on your weakness analysis and current milestone.</p>
+                        <p  class="section-desc" >Personalized tasks based on your weakness analysis and current milestone.</p>
                         <div id="missionTasks" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
                         <div style="border-top:1px solid var(--border-color);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:0.72rem;color:var(--text-secondary)">Est. <strong id="missionTime">75</strong> min | <strong id="missionXP">0</strong> XP | +<strong id="missionElo">0</strong> Elo</span>
@@ -149,7 +149,7 @@
                 <!-- Quests & Streaks Overhaul -->
                 <div class="glass-card" id="questsCard" style="margin-top:16px;margin-bottom:16px;">
                     <h2 class="card-title">⚡ Daily Quests & Streaks</h2>
-                    <p $script:count++; ' class="section-desc-sm"' >Complete tasks to earn bonus XP. Practice daily to maintain streaks!</p>
+                    <p  class="section-desc-sm" >Complete tasks to earn bonus XP. Practice daily to maintain streaks!</p>
                     <div id="questsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
                     <div id="streaksList" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
                 </div>
@@ -178,7 +178,7 @@
             <section id="daily-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">⚡ Skill Training Exercises</h2>
-                    <p $script:count++; ' class="section-desc"' >Quick challenges to sharpen tactical vision and pattern recognition.</p>
+                    <p  class="section-desc" >Quick challenges to sharpen tactical vision and pattern recognition.</p>
                     <div class="grid-3" id="dailyChallenges">
                         <div class="tactic-card" id="btnDailyBlitz" class="cursor-pointer">
                             <div class="tactic-icon">🧩</div>
@@ -266,7 +266,7 @@
             <section id="review" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">🔍 Game Review Engine</h2>
-                    <p $script:count++; ' class="section-desc-sm"' >Paste PGN to analyze accuracy, blunders, and get an estimated performance rating.</p>
+                    <p  class="section-desc-sm" >Paste PGN to analyze accuracy, blunders, and get an estimated performance rating.</p>
                     <textarea id="pgnInput" class="elo-input" style="width:100%;height:72px;font-size:0.72rem;margin-bottom:10px;resize:none;" placeholder="Paste PGN here..."></textarea>
                     <div style="display:flex;gap:8px;margin-bottom:14px;">
                         <button id="btnReviewPgn" class="hud-btn primary-btn" style="padding:7px 14px;">🔍 Analyze</button>
@@ -297,7 +297,7 @@
                 <div class="academy-grid">
                     <div class="glass-card" class="mb-0">
                         <h2 class="card-title">🧪 Opening Lab & Repertoire Builder</h2>
-                        <p $script:count++; ' class="section-desc"' >Build your White and Black repertoires. Practice with spaced repetition drills.</p>
+                        <p  class="section-desc" >Build your White and Black repertoires. Practice with spaced repetition drills.</p>
                         <h3 style="font-size:0.82rem;font-weight:700;margin-bottom:8px;">Your Repertoire Lines</h3>
                         <div id="repertoireList" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;"></div>
                     </div>
@@ -306,15 +306,15 @@
                         <div class="split-layout">
                             <div style="flex:1;min-width:0;">
                                 <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:8px;"><strong>Moves:</strong> <span id="repMoves" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);">—</span></div>
-                                <div $script:count++; ' class="section-note"' ><strong>Plans:</strong> <span id="repPlans">—</span></div>
-                                <div $script:count++; ' class="section-note"' ><strong>Traps:</strong> <span id="repTraps">—</span></div>
-                                <div $script:count++; ' class="section-note"' ><strong>Goals:</strong> <span id="repGoals">—</span></div>
+                                <div  class="section-note" ><strong>Plans:</strong> <span id="repPlans">—</span></div>
+                                <div  class="section-note" ><strong>Traps:</strong> <span id="repTraps">—</span></div>
+                                <div  class="section-note" ><strong>Goals:</strong> <span id="repGoals">—</span></div>
                                 <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
                                     <button class="hud-btn primary-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnDrillOpening">📖 Practice Recall</button>
                                     <button class="hud-btn" style="padding:6px 10px;font-size:0.72rem;" id="btnExplainPlans">💡 Explain Plans</button>
                                 </div>
                             </div>
-                            <div $script:count++; ' class="sidebar-panel"' >
+                            <div  class="sidebar-panel" >
                                 <div class="lesson-board-mini" id="openingBoard" style="width:260px;height:260px;margin:0 auto 10px auto;font-size:0.55rem;">Interactive Board</div>
                                 <div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px;">
                                     <button class="hud-btn" id="btnOpeningFirst" style="padding:4px 8px;font-size:0.7rem;">⏮️</button>
@@ -336,7 +336,7 @@
             <section id="tactics-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">🎯 Tactics Progression Academy</h2>
-                    <p $script:count++; ' class="section-desc"' >Master each tactical motif to advance. Click a category to practice puzzles.</p>
+                    <p  class="section-desc" >Master each tactical motif to advance. Click a category to practice puzzles.</p>
                     <div class="tactics-grid" id="tacticsGrid"></div>
                 </div>
             </section>
@@ -346,7 +346,7 @@
                 <div class="academy-grid">
                     <div class="glass-card" class="mb-0">
                         <h2 class="card-title">🏛️ Strategy Academy</h2>
-                        <p $script:count++; ' class="section-desc"' >Learn positional chess concepts that separate club players from masters.</p>
+                        <p  class="section-desc" >Learn positional chess concepts that separate club players from masters.</p>
                         <div id="strategyList" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;"></div>
                     </div>
                     <div class="glass-card" id="strategyDetail">
@@ -357,7 +357,7 @@
                                 <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Squares:</strong> <span id="strategySquares" style="font-family:'JetBrains Mono',monospace;color:var(--accent-blue);font-size:0.75rem;">—</span></div>
                                 <button id="btnPlayStrategy" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
                             </div>
-                            <div $script:count++; ' class="sidebar-panel"' >
+                            <div  class="sidebar-panel" >
                                 <div class="lesson-board-mini" id="strategyBoard" style="width:260px;height:260px;margin:0 auto 8px auto;font-size:0.55rem;">Interactive board position</div>
                                 <div style="font-size:0.72rem;color:var(--text-muted);text-align:center;">FEN: <code id="strategyFen" style="font-size:0.65rem;"></code></div>
                             </div>
@@ -371,7 +371,7 @@
                 <div class="academy-grid">
                     <div class="glass-card" class="mb-0">
                         <h2 class="card-title">📖 Endgame Curriculum</h2>
-                        <p $script:count++; ' class="section-desc"' >From opposition to fortress defense. Master endgames tier by tier.</p>
+                        <p  class="section-desc" >From opposition to fortress defense. Master endgames tier by tier.</p>
                         <div id="endgameList" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;"></div>
                     </div>
                     <div class="glass-card" id="endgameDetail">
@@ -382,7 +382,7 @@
                                 <div style="margin-top:10px;"><strong style="font-size:0.75rem;">Key Idea:</strong> <span id="endgameKeyIdea" style="color:var(--accent-blue);font-size:0.75rem;">—</span></div>
                                 <button id="btnPlayEndgame" class="hud-btn primary-btn" style="margin-top:12px;padding:6px 12px;font-size:0.72rem;">🎮 Play Lesson on Board</button>
                             </div>
-                            <div $script:count++; ' class="sidebar-panel"' >
+                            <div  class="sidebar-panel" >
                                 <div class="lesson-board-mini" id="endgameBoard" style="width:260px;height:260px;margin:0 auto 8px auto;font-size:0.55rem;">Interactive board position</div>
                                 <div style="font-size:0.72rem;color:var(--text-muted);text-align:center;">FEN: <code id="endgameFen" style="font-size:0.65rem;"></code></div>
                             </div>
@@ -396,7 +396,7 @@
                 <div class="academy-grid">
                     <div class="glass-card" class="mb-0">
                         <h2 class="card-title">🎓 Famous Games Academy</h2>
-                        <p $script:count++; ' class="section-desc-sm"' >Study immortal games from the greatest players in history.</p>
+                        <p  class="section-desc-sm" >Study immortal games from the greatest players in history.</p>
                         <div class="gm-selector" id="gmSelector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
                         <div class="game-list" id="gameList" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;"></div>
                     </div>
@@ -406,7 +406,7 @@
                         <div id="gameThemes" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;"></div>
                         
                         <div class="split-layout">
-                            <div $script:count++; ' class="sidebar-panel"' >
+                            <div  class="sidebar-panel" >
                                 <div class="board-container" style="width:260px;height:260px;margin:0 auto 10px auto;">
                                     <div class="chess-board" id="famousBoard" style="width:100%;height:100%;font-size:0.55rem;"></div>
                                 </div>
@@ -462,12 +462,12 @@
             <section id="coach-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">🧠 Weakness Detection & AI Coach</h2>
-                    <p $script:count++; ' class="section-desc"' >Your personal coach analyzes patterns and tells you exactly what to study and <em>why</em>.</p>
+                    <p  class="section-desc" >Your personal coach analyzes patterns and tells you exactly what to study and <em>why</em>.</p>
                     <div class="grid-2" id="weaknessCards"></div>
                 </div>
                 <div class="glass-card">
                     <h2 class="card-title">🧙‍♂️ Coach's Speech Bubble & Forecast</h2>
-                    <p $script:count++; ' class="section-desc-sm"' >Your personal coach's daily analysis and ELO improvement projections.</p>
+                    <p  class="section-desc-sm" >Your personal coach's daily analysis and ELO improvement projections.</p>
                     <div id="coachSpeechBubble" class="coach-speech-bubble" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);padding:14px;border-radius:12px;font-size:0.8rem;line-height:1.5;margin-bottom:12px;">
                         🧙‍♂️ Coach AI: Evaluating your games...
                     </div>
@@ -499,7 +499,7 @@
             <section id="tournament-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">🏆 Tournament Center</h2>
-                    <p $script:count++; ' class="section-desc"' >Compete in simulated tournament pairings against AI opponents matched to your ELO. Track your Tournament Performance Rating (TPR).</p>
+                    <p  class="section-desc" >Compete in simulated tournament pairings against AI opponents matched to your ELO. Track your Tournament Performance Rating (TPR).</p>
                     <div class="grid-2">
                         <div class="stat-card">
                             <div class="stat-val" style="color:var(--accent-gold);">🏆</div>
@@ -559,7 +559,7 @@
                 <div id="communityContent">
                     <div class="glass-card">
                         <h2 class="card-title">👥 Study Profile & Community</h2>
-                        <p $script:count++; ' class="section-desc"' >Track your study sessions, create study groups, and compare progress across skill categories.</p>
+                        <p  class="section-desc" >Track your study sessions, create study groups, and compare progress across skill categories.</p>
                     </div>
                 </div>
             </section>
@@ -677,7 +677,7 @@
             <section id="boss-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">🐉 Boss Battles & Certifications</h2>
-                    <p $script:count++; ' class="section-desc"' >Prove your mastery through timed challenges. Earn certifications and unlock rewards.</p>
+                    <p  class="section-desc" >Prove your mastery through timed challenges. Earn certifications and unlock rewards.</p>
                     <div class="grid-2" id="bossGrid"></div>
                 </div>
                 <div class="glass-card" id="bossActivePanel" class="hidden">
@@ -705,7 +705,7 @@
                     <div class="text-center">
                         <div style="font-size:3rem;margin-bottom:8px;" id="bossResultIcon">🏆</div>
                         <h3 id="bossResultTitle" style="font-size:1.1rem;font-weight:800;">Challenge Complete!</h3>
-                        <p id="bossResultDesc" $script:count++; ' class="section-note"' ></p>
+                        <p id="bossResultDesc"  class="section-note" ></p>
                         <div class="grid-4" style="margin-top:16px;">
                             <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="bossResScore">0%</div><div class="stat-lbl">Accuracy</div></div>
                             <div class="stat-card"><div class="stat-val" style="font-size:1rem;" id="bossResTime">0s</div><div class="stat-lbl">Time</div></div>
@@ -762,13 +762,13 @@
             <section id="vis-lab-view" class="view-panel">
                 <div class="glass-card">
                     <h2 class="card-title">👁️ Visualization & Calculation Lab</h2>
-                    <p $script:count++; ' class="section-desc"' >Train your chess vision and calculate multiple moves ahead mentally.</p>
+                    <p  class="section-desc" >Train your chess vision and calculate multiple moves ahead mentally.</p>
                     
                     <div class="grid-2">
                         <!-- Blindfold Board Color Trainer -->
                         <div class="glass-card" style="background:rgba(255,255,255,0.01);">
-                            <h3 $script:count++; ' class="section-subtitle"' >🧑‍🦯 Blindfold Color Trainer</h3>
-                            <p $script:count++; ' class="section-desc-xs"' >Identify the color of a square from coordinates without looking at the board.</p>
+                            <h3  class="section-subtitle" >🧑‍🦯 Blindfold Color Trainer</h3>
+                            <p  class="section-desc-xs" >Identify the color of a square from coordinates without looking at the board.</p>
                             <div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;text-align:center;margin-bottom:10px;">
                                 <div id="bfQuestion" style="font-size:1.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent-blue);margin-bottom:10px;">Press Start</div>
                                 <div style="display:flex;gap:8px;justify-content:center;">
@@ -782,8 +782,8 @@
 
                         <!-- Board Memory Trainer -->
                         <div class="glass-card" style="background:rgba(255,255,255,0.01);">
-                            <h3 $script:count++; ' class="section-subtitle"' >🧠 Position Memory Trainer</h3>
-                            <p $script:count++; ' class="section-desc-xs"' >Remember piece positions shown for 5 seconds and reconstruct the board.</p>
+                            <h3  class="section-subtitle" >🧠 Position Memory Trainer</h3>
+                            <p  class="section-desc-xs" >Remember piece positions shown for 5 seconds and reconstruct the board.</p>
                             <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
                                 <div id="memBoardText" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">Board Hidden</div>
                                 <div id="memTimer" style="font-size:1.5rem;font-weight:800;color:var(--accent-gold);margin-bottom:8px;display:none;">5</div>
@@ -800,8 +800,8 @@
                     <div class="grid-2" style="margin-top:12px;">
                         <!-- Move Sequence Trainer -->
                         <div class="glass-card" style="background:rgba(255,255,255,0.01);">
-                            <h3 $script:count++; ' class="section-subtitle"' >🎬 Move Sequence Memory</h3>
-                            <p $script:count++; ' class="section-desc-xs"' >Mentally follow a list of chess moves and type the final position coordinates.</p>
+                            <h3  class="section-subtitle" >🎬 Move Sequence Memory</h3>
+                            <p  class="section-desc-xs" >Mentally follow a list of chess moves and type the final position coordinates.</p>
                             <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
                                 <div id="seqMoves" style="font-size:0.9rem;font-weight:700;color:var(--accent-blue);margin-bottom:8px;min-height:24px;">Click Start to begin</div>
                                 <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
@@ -815,8 +815,8 @@
 
                         <!-- Calculation Trainer -->
                         <div class="glass-card" style="background:rgba(255,255,255,0.01);">
-                            <h3 $script:count++; ' class="section-subtitle"' >🧮 Candidate Moves Calculation</h3>
-                            <p $script:count++; ' class="section-desc-xs"' >Find checkmates and combinations 3-5 moves deep from candidates.</p>
+                            <h3  class="section-subtitle" >🧮 Candidate Moves Calculation</h3>
+                            <p  class="section-desc-xs" >Find checkmates and combinations 3-5 moves deep from candidates.</p>
                             <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center;margin-bottom:10px;">
                                 <div id="calcFen" style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">Press Start</div>
                                 <div id="calcGoal" style="font-size:0.78rem;font-weight:700;color:var(--accent-blue);margin-bottom:8px;">Find candidate moves</div>
