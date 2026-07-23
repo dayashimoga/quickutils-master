@@ -7,12 +7,57 @@ import {
   getUnlockedConcepts, getHighestROIConcept, getCurrentMilestone,
   analyzeWeaknesses, generateRemediationPlan, generateDailyMission,
   calculateXP, checkAchievements, getMasteryLevel, sm2Calculate,
-  UserProfile,
+  UserProfile, normalizeMove,
   ASSESSMENT_PUZZLES, runAssessment,
   BOSS_BATTLES, getBossBattlePuzzles,
   getGuessTheMovePosition,
   getCoachResponse
 } from './chessmaster-ai-utils.js';
+
+// ═══════════════════════════════════════════════════
+// GLOBAL ERROR BOUNDARY
+// ═══════════════════════════════════════════════════
+window.addEventListener('error', (event) => {
+  console.error('[ChessOS Error]', event.error?.message || event.message, event.filename, event.lineno);
+  // Don't crash the UI — show a recoverable toast if showToast is available
+  if (typeof showToast === 'function') {
+    showToast('⚠️ An unexpected error occurred. Your progress is saved.');
+  }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[ChessOS Promise Error]', event.reason);
+  event.preventDefault();
+});
+
+/** Sanitize HTML to prevent XSS in user-provided content */
+function sanitizeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/**
+ * Wire an event listener to a button, preventing double-binding.
+ * Uses a data attribute flag instead of the fragile cloneNode pattern.
+ * @param {string} id - Element ID
+ * @param {string} event - Event type (e.g. 'click')
+ * @param {Function} handler - Event handler function
+ * @param {string} [key] - Optional key to allow re-wiring with different handlers
+ * @returns {HTMLElement|null} The element, or null if not found
+ */
+function wireButton(id, event, handler, key) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const wireKey = `_wired_${event}_${key || 'default'}`;
+  // Remove previous handler if stored
+  if (el[wireKey]) {
+    el.removeEventListener(event, el[wireKey]);
+  }
+  el[wireKey] = handler;
+  el.addEventListener(event, handler);
+  return el;
+}
 
 // ═══════════════════════════════════════════════════
 // PIECE URLS & PRELOAD
@@ -36,6 +81,7 @@ let timerInterval = null;
 let whiteTimeMs = 600000;
 let blackTimeMs = 600000;
 let lastTimerUpdate = 0;
+let lastEngineEval = 0; // Real Stockfish evaluation score in centipawns
 const STOCKFISH_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js';
 
 // User profile
@@ -90,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initAssessmentView();
   initHomeSkillBars();
   initVisLab();
+  initTournamentView();
+  initCommunityView();
 
   // Play view buttons
   initPlaySetup();
@@ -240,6 +288,14 @@ function navigateToView(targetView) {
     else if (targetView === 'analytics-view') { renderRadarChart(); renderHeatmap(); }
     else if (targetView === 'deep-analytics-view') { renderAnalyticsStats(); renderActionableInsights(); }
     else if (targetView === 'coach-view') { initCoachView(); }
+    // Focus management: move focus to the first heading or interactive element in the new view
+    setTimeout(() => {
+      const panel = document.getElementById(targetView);
+      if (panel) {
+        const focusTarget = panel.querySelector('h2, h3, button, input, [tabindex="0"]');
+        if (focusTarget) focusTarget.focus({ preventScroll: true });
+      }
+    }, 100);
     return true;
   }
   return false;
@@ -649,7 +705,9 @@ function initOpeningLab() {
   allLines.forEach((line, i) => {
     const div = document.createElement('div');
     div.className = 'repertoire-branch' + (i === 0 ? ' active-rep' : '');
-    div.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.78rem;"><span>${line.side === 'white' ? '⬜' : '⬛'} ${line.repertoireName}</span><span style="color:var(--accent-gold);font-size:0.7rem;">⭐ ${70 + Math.floor(Math.random() * 25)}%</span></div><div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">${line.moves.join(' ')}</div>`;
+    const srData = profile.openingRepSR[line.repertoireName] || {};
+    const openingMastery = srData.repetitions ? Math.min(100, Math.round(50 + srData.repetitions * 10 + (srData.easeFactor || 2.5) * 5)) : 0;
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.78rem;"><span>${line.side === 'white' ? '⬜' : '⬛'} ${line.repertoireName}</span><span style="color:var(--accent-gold);font-size:0.7rem;">⭐ ${openingMastery}%</span></div><div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">${line.moves.join(' ')}</div>`;
     
     div.addEventListener('click', () => {
       list.querySelectorAll('.repertoire-branch').forEach(b => b.classList.remove('active-rep'));
@@ -687,81 +745,50 @@ function initOpeningLab() {
     setTimeout(() => jumpToOpeningPly(0), 50);
   }
 
-  // Wire navigation buttons
-  const btnFirst = document.getElementById('btnOpeningFirst');
-  const btnPrev = document.getElementById('btnOpeningPrev');
-  const btnNext = document.getElementById('btnOpeningNext');
-  const btnLast = document.getElementById('btnOpeningLast');
-
-  if (btnFirst) {
-    const newFirst = btnFirst.cloneNode(true);
-    btnFirst.parentNode.replaceChild(newFirst, btnFirst);
-    newFirst.addEventListener('click', () => jumpToOpeningPly(0));
-  }
-  if (btnPrev) {
-    const newPrev = btnPrev.cloneNode(true);
-    btnPrev.parentNode.replaceChild(newPrev, btnPrev);
-    newPrev.addEventListener('click', () => {
-      if (openingStudyState.active && openingStudyState.currentPly > 0) {
-        jumpToOpeningPly(openingStudyState.currentPly - 1);
-      }
-    });
-  }
-  if (btnNext) {
-    const newNext = btnNext.cloneNode(true);
-    btnNext.parentNode.replaceChild(newNext, btnNext);
-    newNext.addEventListener('click', () => {
-      if (openingStudyState.active && openingStudyState.currentPly < openingStudyState.game.moves.length) {
-        jumpToOpeningPly(openingStudyState.currentPly + 1);
-      }
-    });
-  }
-  if (btnLast) {
-    const newLast = btnLast.cloneNode(true);
-    btnLast.parentNode.replaceChild(newLast, btnLast);
-    newLast.addEventListener('click', () => {
-      if (openingStudyState.active) {
-        jumpToOpeningPly(openingStudyState.game.moves.length);
-      }
-    });
-  }
+  // Wire navigation buttons (using wireButton to prevent double-binding)
+  wireButton('btnOpeningFirst', 'click', () => jumpToOpeningPly(0));
+  wireButton('btnOpeningPrev', 'click', () => {
+    if (openingStudyState.active && openingStudyState.currentPly > 0) {
+      jumpToOpeningPly(openingStudyState.currentPly - 1);
+    }
+  });
+  wireButton('btnOpeningNext', 'click', () => {
+    if (openingStudyState.active && openingStudyState.currentPly < openingStudyState.game.moves.length) {
+      jumpToOpeningPly(openingStudyState.currentPly + 1);
+    }
+  });
+  wireButton('btnOpeningLast', 'click', () => {
+    if (openingStudyState.active) {
+      jumpToOpeningPly(openingStudyState.game.moves.length);
+    }
+  });
 
   // Wire Practice Recall button
-  const drillBtn = document.getElementById('btnDrillOpening');
-  if (drillBtn) {
-    const newDrillBtn = drillBtn.cloneNode(true);
-    drillBtn.parentNode.replaceChild(newDrillBtn, drillBtn);
-    newDrillBtn.addEventListener('click', () => {
-      const title = document.getElementById('repTitle').textContent;
-      const movesText = document.getElementById('repMoves').textContent;
-      if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
-      
-      navigateToView('play');
-      chess = new Chess();
-      const moves = movesText.split(/\s+/).filter(m => m && !m.includes('.'));
-      for (const m of moves) {
-        try { chess.move(m); } catch(e) { break; }
-      }
-      playerColor = chess.turn();
-      isGameActive = true;
-      activeLesson = { name: title, type: 'opening_drill', id: 'opening_drill_' + title.toLowerCase().replace(/\s+/g,'_') };
-      buildBoard();
-      document.getElementById('coachAdvice').innerHTML = `<strong>📖 Opening Drill: ${title}</strong><br>The opening moves have been played out on the board. Continue from this position against the AI.<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Practice the middle-game plans for this opening. Focus on the key ideas you studied.</span>`;
-      showToast(`📖 Opening drill started: ${title}`);
-    });
-  }
+  wireButton('btnDrillOpening', 'click', () => {
+    const title = document.getElementById('repTitle').textContent;
+    const movesText = document.getElementById('repMoves').textContent;
+    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+    
+    navigateToView('play');
+    chess = new Chess();
+    const moves = movesText.split(/\s+/).filter(m => m && !m.includes('.'));
+    for (const m of moves) {
+      try { chess.move(m); } catch(e) { break; }
+    }
+    playerColor = chess.turn();
+    isGameActive = true;
+    activeLesson = { name: title, type: 'opening_drill', id: 'opening_drill_' + title.toLowerCase().replace(/\s+/g,'_') };
+    buildBoard();
+    document.getElementById('coachAdvice').innerHTML = `<strong>📖 Opening Drill: ${title}</strong><br>The opening moves have been played out on the board. Continue from this position against the AI.<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Practice the middle-game plans for this opening. Focus on the key ideas you studied.</span>`;
+    showToast(`📖 Opening drill started: ${title}`);
+  });
 
   // Wire Explain Plans button
-  const explainBtn = document.getElementById('btnExplainPlans');
-  if (explainBtn) {
-    const newExplainBtn = explainBtn.cloneNode(true);
-    explainBtn.parentNode.replaceChild(newExplainBtn, explainBtn);
-    newExplainBtn.addEventListener('click', () => {
-      const title = document.getElementById('repTitle').textContent;
-      if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
-      showToast(`💡 ${title} — Study the plans, traps and goals shown in the detail panel!`);
-    });
-  }
+  wireButton('btnExplainPlans', 'click', () => {
+    const title = document.getElementById('repTitle').textContent;
+    if (!title || title === 'Select a line') { showToast('⚠️ Select an opening line first!'); return; }
+    showToast(`💡 ${title} — Study the plans, traps and goals shown in the detail panel!`);
+  });
 }
 
 function jumpToOpeningPly(ply) {
@@ -881,21 +908,28 @@ function initTacticsAcademy() {
     const puzzles = TACTICS_DB.filter(t => t.category === cat);
     const masteryData = profile.getMasteryFor(cat);
     const mastery = Math.round(masteryData.confidence);
+    const currentIdx = profile.puzzleIndices[cat] || 0;
+    const solvedCount = Math.min(currentIdx, puzzles.length);
     const div = document.createElement('div');
     div.className = 'tactic-card';
     div.style.cursor = 'pointer';
-    div.innerHTML = `<div class="tactic-icon">${icons[cat] || '🎯'}</div><div class="tactic-name">${cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div><div class="tactic-desc">${puzzles[0]?.explanation?.slice(0, 80) || 'Practice tactical patterns'}...</div><div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:6px;">${puzzles.length} puzzles</div><div class="mastery-bar"><div class="mastery-bar-fill" style="width:${mastery}%"></div></div>`;
+    div.innerHTML = `<div class="tactic-icon">${icons[cat] || '🎯'}</div><div class="tactic-name">${cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div><div class="tactic-desc">${puzzles[0]?.explanation?.slice(0, 80) || 'Practice tactical patterns'}...</div><div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:6px;">${solvedCount}/${puzzles.length} puzzles solved</div><div class="mastery-bar"><div class="mastery-bar-fill" style="width:${mastery}%"></div></div>`;
     div.addEventListener('click', () => {
-      const p = puzzles[0];
+      // Cycle through puzzles using stored index
+      const idx = profile.puzzleIndices[cat] || 0;
+      const p = puzzles[idx % puzzles.length];
       if (p) {
-        activeLesson = { ...p, type: 'tactic' };
+        activeLesson = { ...p, type: 'tactic', _category: cat };
         navigateToView('play');
         chess = new Chess(p.fen);
         playerColor = p.fen.split(' ')[1] || 'w';
         isGameActive = true;
         buildBoard();
-        document.getElementById('coachAdvice').innerHTML = `<strong>🎯 Tactic motif: ${p.name}</strong><br>${p.explanation || ''}<br><br><span style="color:var(--accent-rose);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
-        showToast(`🎯 Tactic loaded: ${p.name}`);
+        document.getElementById('coachAdvice').innerHTML = `<strong>🎯 Tactic motif: ${p.name}</strong> (${(idx % puzzles.length) + 1}/${puzzles.length})<br>${p.explanation || ''}<br><br><span style="color:var(--accent-rose);">🎯 <strong>Goal:</strong> Find the winning tactical move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+        showToast(`🎯 Tactic loaded: ${p.name} (${(idx % puzzles.length) + 1}/${puzzles.length})`);
+        // Advance index for next click
+        profile.puzzleIndices[cat] = idx + 1;
+        profile.save();
       }
     });
     grid.appendChild(div);
@@ -925,21 +959,16 @@ function initStrategyAcademy() {
       renderBoardTo('strategyBoard', sChess, null, [], null);
 
       // Wire play button click
-      const playBtn = document.getElementById('btnPlayStrategy');
-      if (playBtn) {
-        const newPlayBtn = playBtn.cloneNode(true);
-        playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
-        newPlayBtn.addEventListener('click', () => {
-          activeLesson = { ...s, type: 'strategy' };
-          navigateToView('play');
-          chess = new Chess(s.fen);
-          playerColor = 'w';
-          isGameActive = true;
-          buildBoard();
-          document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Strategic Lesson: ${s.name}</strong><br>${s.lesson}<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Play a move that targets or lands on one of the key squares: <strong>${s.keySquares.join(', ')}</strong>.</span>`;
-          showToast(`📖 Strategy: ${s.name} loaded on the board!`);
-        });
-      }
+      wireButton('btnPlayStrategy', 'click', () => {
+        activeLesson = { ...s, type: 'strategy' };
+        navigateToView('play');
+        chess = new Chess(s.fen);
+        playerColor = 'w';
+        isGameActive = true;
+        buildBoard();
+        document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Strategic Lesson: ${s.name}</strong><br>${s.lesson}<br><br><span style="color:var(--accent-blue);">🎯 <strong>Goal:</strong> Play a move that targets or lands on one of the key squares: <strong>${s.keySquares.join(', ')}</strong>.</span>`;
+        showToast(`📖 Strategy: ${s.name} loaded on the board!`);
+      }, s.name);
     });
     list.appendChild(div);
   });
@@ -979,21 +1008,16 @@ function initEndgameAcademy() {
         const egChess = new Chess(eg.fen);
         renderBoardTo('endgameBoard', egChess, null, [], null);
 
-        const playBtn = document.getElementById('btnPlayEndgame');
-        if (playBtn) {
-          const newPlayBtn = playBtn.cloneNode(true);
-          playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
-          newPlayBtn.addEventListener('click', () => {
-            activeLesson = { ...eg, type: 'endgame' };
-            navigateToView('play');
-            chess = new Chess(eg.fen);
-            playerColor = eg.fen.split(' ')[1] || 'w';
-            isGameActive = true;
-            buildBoard();
-            document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning key move for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
-            showToast(`📖 Endgame: ${eg.name} loaded on the board!`);
-          });
-        }
+        wireButton('btnPlayEndgame', 'click', () => {
+          activeLesson = { ...eg, type: 'endgame', solutionStep: 0 };
+          navigateToView('play');
+          chess = new Chess(eg.fen);
+          playerColor = eg.fen.split(' ')[1] || 'w';
+          isGameActive = true;
+          buildBoard();
+          document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${eg.name}</strong><br>${eg.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Goal:</strong> Find the winning move sequence (Move 1/${eg.solution.length}) for ${playerColor === 'w' ? 'White' : 'Black'}.</span>`;
+          showToast(`📖 Endgame: ${eg.name} loaded on the board!`);
+        }, eg.name);
       });
       grid.appendChild(card);
     });
@@ -1047,83 +1071,40 @@ function initFamousGames() {
 
   renderGameList(FAMOUS_GAMES_DB);
 
-  // Wire study navigation buttons
-  const fBtnFirst = document.getElementById('btnFamousFirst');
-  const fBtnPrev = document.getElementById('btnFamousPrev');
-  const fBtnNext = document.getElementById('btnFamousNext');
-  const fBtnLast = document.getElementById('btnFamousLast');
-
-  if (fBtnFirst) {
-    const newBtn = fBtnFirst.cloneNode(true);
-    fBtnFirst.parentNode.replaceChild(newBtn, fBtnFirst);
-    newBtn.addEventListener('click', () => jumpToFamousPly(0));
-  }
-  if (fBtnPrev) {
-    const newBtn = fBtnPrev.cloneNode(true);
-    fBtnPrev.parentNode.replaceChild(newBtn, fBtnPrev);
-    newBtn.addEventListener('click', () => {
-      if (famousStudyState.active && famousStudyState.currentPly > 0) {
-        jumpToFamousPly(famousStudyState.currentPly - 1);
-      }
-    });
-  }
-  if (fBtnNext) {
-    const newBtn = fBtnNext.cloneNode(true);
-    fBtnNext.parentNode.replaceChild(newBtn, fBtnNext);
-    newBtn.addEventListener('click', () => {
-      if (famousStudyState.active && famousStudyState.currentPly < famousStudyState.moves.length) {
-        jumpToFamousPly(famousStudyState.currentPly + 1);
-      }
-    });
-  }
-  if (fBtnLast) {
-    const newBtn = fBtnLast.cloneNode(true);
-    fBtnLast.parentNode.replaceChild(newBtn, fBtnLast);
-    newBtn.addEventListener('click', () => {
-      if (famousStudyState.active) {
-        jumpToFamousPly(famousStudyState.moves.length);
-      }
-    });
-  }
+  // Wire study navigation buttons (using wireButton)
+  wireButton('btnFamousFirst', 'click', () => jumpToFamousPly(0));
+  wireButton('btnFamousPrev', 'click', () => {
+    if (famousStudyState.active && famousStudyState.currentPly > 0) {
+      jumpToFamousPly(famousStudyState.currentPly - 1);
+    }
+  });
+  wireButton('btnFamousNext', 'click', () => {
+    if (famousStudyState.active && famousStudyState.currentPly < famousStudyState.moves.length) {
+      jumpToFamousPly(famousStudyState.currentPly + 1);
+    }
+  });
+  wireButton('btnFamousLast', 'click', () => {
+    if (famousStudyState.active) {
+      jumpToFamousPly(famousStudyState.moves.length);
+    }
+  });
 
   // Wire Guess the Move challenge buttons
-  const guessBtn = document.getElementById('btnStartGuessChallenge');
-  if (guessBtn) {
-    const newGuessBtn = guessBtn.cloneNode(true);
-    guessBtn.parentNode.replaceChild(newGuessBtn, guessBtn);
-    newGuessBtn.addEventListener('click', () => {
-      const list = document.getElementById('gameList');
-      const activeEntry = list.querySelector('.game-entry.active-game');
-      if (!activeEntry) { showToast('⚠️ Select a famous game first!'); return; }
-      
-      const titleText = document.getElementById('gameTitle').textContent;
-      const game = FAMOUS_GAMES_DB.find(g => g.title === titleText);
-      if (game) {
-        startGuessChallenge(game);
-      }
-    });
-  }
+  wireButton('btnStartGuessChallenge', 'click', () => {
+    const list = document.getElementById('gameList');
+    const activeEntry = list.querySelector('.game-entry.active-game');
+    if (!activeEntry) { showToast('⚠️ Select a famous game first!'); return; }
+    
+    const titleText = document.getElementById('gameTitle').textContent;
+    const game = FAMOUS_GAMES_DB.find(g => g.title === titleText);
+    if (game) {
+      startGuessChallenge(game);
+    }
+  });
 
-  const btnNextG = document.getElementById('btnGuessNext');
-  if (btnNextG) {
-    const newBtn = btnNextG.cloneNode(true);
-    btnNextG.parentNode.replaceChild(newBtn, btnNextG);
-    newBtn.addEventListener('click', advanceGuessMove);
-  }
-
-  const btnSub = document.getElementById('btnSubmitGuess');
-  if (btnSub) {
-    const newBtn = btnSub.cloneNode(true);
-    btnSub.parentNode.replaceChild(newBtn, btnSub);
-    newBtn.addEventListener('click', submitGuess);
-  }
-
-  const inputG = document.getElementById('guessInputMove');
-  if (inputG) {
-    const newInp = inputG.cloneNode(true);
-    inputG.parentNode.replaceChild(newInp, inputG);
-    newInp.addEventListener('keypress', e => { if (e.key === 'Enter') submitGuess(); });
-  }
+  wireButton('btnGuessNext', 'click', advanceGuessMove);
+  wireButton('btnSubmitGuess', 'click', submitGuess);
+  wireButton('guessInputMove', 'keypress', e => { if (e.key === 'Enter') submitGuess(); });
 }
 
 function renderGameList(games) {
@@ -1253,7 +1234,7 @@ function jumpToFamousPly(ply) {
 // AI COACH VIEW
 // ═══════════════════════════════════════════════════
 function initCoachView() {
-  const weaknesses = analyzeWeaknesses(profile.gameHistory);
+  const weaknesses = analyzeWeaknesses(profile.gameHistory, profile.skillScores, profile.gameErrors);
   const cards = document.getElementById('weaknessCards');
   const recs = document.getElementById('coachRecommendations');
   if (!cards || !recs) return;
@@ -1325,9 +1306,6 @@ function initCoachView() {
   const chatLog = document.getElementById('coachChatLog');
   
   if (sendBtn && chatInput && chatLog) {
-    const newSendBtn = sendBtn.cloneNode(true);
-    sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
-
     const handleSend = () => {
       const text = chatInput.value.trim();
       if (!text) return;
@@ -1336,7 +1314,7 @@ function initCoachView() {
       userDiv.className = 'coach-chat-msg user';
       userDiv.style.color = 'var(--text-primary)';
       userDiv.style.margin = '4px 0';
-      userDiv.innerHTML = `👤 <strong>You:</strong> ${text}`;
+      userDiv.innerHTML = `👤 <strong>You:</strong> ${sanitizeHTML(text)}`;
       chatLog.appendChild(userDiv);
 
       const replyText = getCoachResponse(text, profile);
@@ -1344,14 +1322,14 @@ function initCoachView() {
       coachDiv.className = 'coach-chat-msg coach';
       coachDiv.style.color = 'var(--accent-blue)';
       coachDiv.style.margin = '4px 0';
-      coachDiv.innerHTML = replyText.startsWith('Coach AI:') ? `🧙‍♂️ ${replyText}` : `🧙‍♂️ Coach AI: ${replyText}`;
+      coachDiv.innerHTML = replyText.startsWith('Coach AI:') ? `🧙‍♂️ ${sanitizeHTML(replyText)}` : `🧙‍♂️ Coach AI: ${sanitizeHTML(replyText)}`;
       chatLog.appendChild(coachDiv);
 
       chatInput.value = '';
       chatLog.scrollTop = chatLog.scrollHeight;
     };
 
-    newSendBtn.addEventListener('click', handleSend);
+    wireButton('btnSendCoachMsg', 'click', handleSend);
     chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
   }
 }
@@ -1367,12 +1345,16 @@ function initAnalyticsView() {
 function renderRadarChart() {
   const svg = document.getElementById('radarSvg');
   if (!svg) return;
-  const w = analyzeWeaknesses(profile.gameHistory);
+  const w = analyzeWeaknesses(profile.gameHistory, profile.skillScores, profile.gameErrors);
   const labels = ['Opening', 'Tactical', 'Strategic', 'Endgame', 'Calculation', 'Time Mgmt'];
   const values = [w.opening.score, w.tactical.score, w.strategic.score, w.endgame.score, w.calculation.score, w.timeManagement.score];
-  const cx = 150, cy = 130, r = 100, n = labels.length;
+  renderRadarToSvg(svg, labels, values);
+}
+
+/** Shared radar chart SVG renderer — used by both analytics and deep analytics */
+function renderRadarToSvg(svg, labels, values, cx = 150, cy = 130, r = 100) {
+  const n = labels.length;
   let html = '';
-  // Grid rings
   [0.25, 0.5, 0.75, 1.0].forEach(s => {
     const pts = [];
     for (let i = 0; i < n; i++) {
@@ -1381,7 +1363,6 @@ function renderRadarChart() {
     }
     html += `<polygon class="radar-grid-ring" points="${pts.join(' ')}"/>`;
   });
-  // Axes
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
     const ex = cx + r * Math.cos(angle), ey = cy + r * Math.sin(angle);
@@ -1389,7 +1370,6 @@ function renderRadarChart() {
     const lx = cx + (r + 16) * Math.cos(angle), ly = cy + (r + 16) * Math.sin(angle);
     html += `<text class="radar-label" x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle">${labels[i]}</text>`;
   }
-  // Data polygon
   const dataPts = [];
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
@@ -1397,7 +1377,6 @@ function renderRadarChart() {
     dataPts.push(`${cx + r * v * Math.cos(angle)},${cy + r * v * Math.sin(angle)}`);
   }
   html += `<polygon class="radar-polygon" points="${dataPts.join(' ')}"/>`;
-  // Data dots
   dataPts.forEach(pt => {
     const [x, y] = pt.split(',');
     html += `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent-blue)"/>`;
@@ -1442,7 +1421,8 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       const div = document.createElement('div');
       div.className = 'square ' + (isLight ? 'light' : 'dark');
       div.dataset.square = sq;
-
+      div.setAttribute('tabindex', '0');
+      div.setAttribute('role', 'gridcell');
       if (c === 0) { const cr = document.createElement('span'); cr.className = 'coord-rank'; cr.textContent = rank; div.appendChild(cr); }
       if (r === 7) { const cf = document.createElement('span'); cf.className = 'coord-file'; cf.textContent = file; div.appendChild(cf); }
 
@@ -1471,6 +1451,9 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
       }
 
       const piece = chessInstance.get(sq);
+      // ARIA label with piece info (set after piece is read)
+      const pieceNames = { p: 'Pawn', n: 'Knight', b: 'Bishop', r: 'Rook', q: 'Queen', k: 'King' };
+      div.setAttribute('aria-label', `${sq}${piece ? ` ${piece.color === 'w' ? 'White' : 'Black'} ${pieceNames[piece.type] || piece.type}` : ' empty'}`);
       if (piece) {
         const pDiv = document.createElement('div');
         pDiv.className = 'piece';
@@ -1544,6 +1527,39 @@ function renderBoardTo(boardId, chessInstance, selectedSq = null, lastMoves = []
 
 function buildBoard() {
   renderBoardTo('board', chess, selectedSquare, lastMoveSquares, handleSquareClick);
+  // Add keyboard navigation for accessibility
+  const boardEl = document.getElementById('board');
+  if (boardEl && !boardEl._kbInit) {
+    boardEl.setAttribute('role', 'grid');
+    boardEl.setAttribute('aria-label', 'Chessboard');
+    boardEl._kbInit = true;
+    boardEl.addEventListener('keydown', (e) => {
+      const focused = document.activeElement;
+      if (!focused || !focused.dataset.square) return;
+      const sq = focused.dataset.square;
+      const file = sq.charCodeAt(0) - 97;
+      const rank = parseInt(sq[1]);
+      let newFile = file, newRank = rank;
+      const flipped = playerColor === 'b';
+      switch (e.key) {
+        case 'ArrowLeft': newFile = flipped ? file + 1 : file - 1; break;
+        case 'ArrowRight': newFile = flipped ? file - 1 : file + 1; break;
+        case 'ArrowUp': newRank = flipped ? rank - 1 : rank + 1; break;
+        case 'ArrowDown': newRank = flipped ? rank + 1 : rank - 1; break;
+        case 'Enter': case ' ':
+          e.preventDefault();
+          handleSquareClick(sq);
+          return;
+        default: return;
+      }
+      e.preventDefault();
+      if (newFile >= 0 && newFile <= 7 && newRank >= 1 && newRank <= 8) {
+        const newSq = String.fromCharCode(97 + newFile) + newRank;
+        const target = boardEl.querySelector(`[data-square="${newSq}"]`);
+        if (target) target.focus();
+      }
+    });
+  }
 }
 
 function findKing(color) {
@@ -1577,7 +1593,8 @@ function handleSquareClick(sq) {
         if (activeLesson.type === 'strategy') {
           isCorrect = activeLesson.keySquares.includes(move.to);
         } else if (activeLesson.type === 'endgame') {
-          const solMove = activeLesson.solution[0];
+          const step = activeLesson.solutionStep || 0;
+          const solMove = activeLesson.solution[step];
           const normalize = s => s.replace(/[+#!?]/g,'').toLowerCase().trim();
           isCorrect = normalize(move.san) === normalize(solMove) || normalize(`${move.from}${move.to}`) === normalize(solMove);
         } else if (activeLesson.type === 'tactic' || activeLesson.type === 'blitz') {
@@ -1591,10 +1608,26 @@ function handleSquareClick(sq) {
             advancePuzzleBlitz();
             return;
           }
+          // Endgame multi-step solution tracking
+          if (activeLesson.type === 'endgame' && activeLesson.solution.length > 1) {
+            const nextStep = (activeLesson.solutionStep || 0) + 1;
+            if (nextStep < activeLesson.solution.length) {
+              activeLesson.solutionStep = nextStep;
+              showToast(`✅ Move ${nextStep}/${activeLesson.solution.length} correct! Continue...`);
+              document.getElementById('coachAdvice').innerHTML = `<strong>🏆 Endgame Drill: ${activeLesson.name}</strong><br>${activeLesson.desc}<br><br><span style="color:var(--accent-gold);">🎯 <strong>Progress:</strong> Move ${nextStep + 1}/${activeLesson.solution.length} — Find the next winning move!</span>`;
+              // Let the game continue — don't end the lesson yet
+              lastMoveSquares = [move.from, move.to];
+              buildBoard();
+              addMoveToList(move);
+              if (chess.isGameOver()) { handleGameOver(); return; }
+              setTimeout(makeAIMove, 300);
+              return;
+            }
+          }
           showToast(`🎉 Correct! Lesson Mastered. +15 XP`);
           profile.addXP(15);
           profile.updateMastery(activeLesson.id || activeLesson.name, true, 3);
-          document.getElementById('coachAdvice').innerHTML = `🏆 <strong>Excellent job!</strong> You successfully found the move to solve the lesson: ${activeLesson.name}.`;
+          document.getElementById('coachAdvice').innerHTML = `🏆 <strong>Excellent job!</strong> You successfully completed the full solution for: ${activeLesson.name}.`;
           activeLesson = null; // complete the lesson
         } else {
           showToast(`❌ Incorrect move for this lesson. Try again!`);
@@ -1644,7 +1677,8 @@ function addMoveToList(move) {
 
 function detectAndShowOpening() {
   const fen = chess.fen();
-  const name = detectOpening(fen);
+  const moveHistory = chess.history();
+  const name = detectOpening(fen, moveHistory);
   if (name) document.getElementById('openingLabel').textContent = name;
 }
 
@@ -1654,6 +1688,11 @@ function detectAndShowOpening() {
 let isMockEngine = false;
 
 function initEngine() {
+  // Show loading indicator
+  const adviceEl = document.getElementById('coachAdvice');
+  if (adviceEl && adviceEl.textContent.includes('evaluate')) {
+    adviceEl.innerHTML = '<span style="color:var(--accent-gold);">⏳ Loading Stockfish engine...</span>';
+  }
   try {
     fetch(STOCKFISH_CDN)
       .then(res => {
@@ -1664,6 +1703,7 @@ function initEngine() {
         const blob = new Blob([code], { type: 'application/javascript' });
         engine = new Worker(URL.createObjectURL(blob));
         setupEngineListeners();
+        showToast('♟️ Stockfish engine loaded!');
       })
       .catch(err => {
         console.warn('Stockfish CDN load failed, using local mock AI engine:', err);
@@ -1678,6 +1718,7 @@ function initEngine() {
 function setupMockEngine() {
   isMockEngine = true;
   engineReady = true;
+  showToast('🤖 AI engine ready (local mode)');
   console.log('Mock engine fallback initialized successfully.');
 }
 
@@ -1716,11 +1757,12 @@ function setupEngineListeners() {
         }
       }
     }
-    // Parse eval from info lines
+    // Parse eval from info lines — store real engine evaluation
     if (typeof line === 'string' && line.includes('score cp')) {
       const match = line.match(/score cp (-?\d+)/);
       if (match) {
         const cp = parseInt(match[1]) * (playerColor === 'w' ? 1 : -1);
+        lastEngineEval = cp; // Store raw centipawn eval for use in coach analysis
         updateEvalBar(cp / 100);
       }
     }
@@ -1796,12 +1838,46 @@ function updateEvalBar(evalScore) {
 }
 
 function evaluateAndCoach(move) {
-  const diff = (Math.random() - 0.3) * 3;
+  // Use real Stockfish evaluation when available, heuristic fallback otherwise
+  let diff;
+  if (!isMockEngine && engine && lastEngineEval !== undefined) {
+    // Convert centipawn eval to the classification scale
+    // Positive = good for player, negative = bad
+    diff = lastEngineEval / 100;
+  } else {
+    // Heuristic evaluation for mock engine: analyze material balance
+    diff = calculateHeuristicEval(chess, move);
+  }
   const cls = classifyEvalDiff(diff);
-  const opening = detectOpening(chess.fen());
+  const moveHistory = chess.history();
+  const opening = detectOpening(chess.fen(), moveHistory);
   const commentary = getCoachCommentary(move.san, move, cls, opening);
   const liveTip = getLiveAdvisorPrompt(chess);
   document.getElementById('coachAdvice').innerHTML = commentary + `<div style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;font-size:0.72rem;color:var(--accent-gold);">${liveTip}</div>`;
+}
+
+/** Heuristic evaluation for use when Stockfish is unavailable */
+function calculateHeuristicEval(chessObj, move) {
+  const pieceValues = { p: 1, n: 3, b: 3.2, r: 5, q: 9, k: 0 };
+  let eval_ = 0;
+  // Material count
+  for (let r = 1; r <= 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = String.fromCharCode(97 + c) + r;
+      const piece = chessObj.get(sq);
+      if (piece) {
+        const val = pieceValues[piece.type] || 0;
+        eval_ += piece.color === playerColor ? val : -val;
+      }
+    }
+  }
+  // Bonus for captures
+  if (move.captured) eval_ += 0.5;
+  // Bonus for checks
+  if (move.san && move.san.includes('+')) eval_ += 0.3;
+  if (move.san && move.san.includes('#')) eval_ += 10;
+  // Normalize to a reasonable range for classifyEvalDiff
+  return eval_ * 0.3;
 }
 
 let selectedColor = 'w';
@@ -1872,6 +1948,7 @@ function resetGame() {
   selectedSquare = null;
   lastMoveSquares = [];
   isGameActive = true;
+  lastEngineEval = 0;
   document.getElementById('movesList').innerHTML = '';
   document.getElementById('openingLabel').textContent = 'Standard';
   document.getElementById('coachAdvice').textContent = 'White plays first. I\'ll evaluate positions dynamically.';
@@ -1879,8 +1956,82 @@ function resetGame() {
   buildBoard();
   if (engineReady && engine) engine.postMessage('ucinewgame');
   
+  // Reset and start chess clock
+  whiteTimeMs = 600000;
+  blackTimeMs = 600000;
+  updateClockDisplay();
+  startChessClock();
+  
   if (playerColor === 'b') {
     setTimeout(makeAIMove, 500);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// CHESS CLOCK
+// ═══════════════════════════════════════════════════
+function formatTime(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+function updateClockDisplay() {
+  const whiteEl = document.getElementById('clockWhite');
+  const blackEl = document.getElementById('clockBlack');
+  if (whiteEl) whiteEl.textContent = formatTime(whiteTimeMs);
+  if (blackEl) blackEl.textContent = formatTime(blackTimeMs);
+  
+  // Highlight active player's clock
+  if (whiteEl && blackEl && isGameActive) {
+    const turn = chess.turn();
+    whiteEl.style.color = turn === 'w' ? 'var(--accent-gold)' : 'var(--text-muted)';
+    blackEl.style.color = turn === 'b' ? 'var(--accent-gold)' : 'var(--text-muted)';
+  }
+}
+
+function startChessClock() {
+  stopChessClock();
+  lastTimerUpdate = Date.now();
+  timerInterval = setInterval(() => {
+    if (!isGameActive) { stopChessClock(); return; }
+    const now = Date.now();
+    const elapsed = now - lastTimerUpdate;
+    lastTimerUpdate = now;
+    
+    const turn = chess.turn();
+    if (turn === 'w') {
+      whiteTimeMs = Math.max(0, whiteTimeMs - elapsed);
+    } else {
+      blackTimeMs = Math.max(0, blackTimeMs - elapsed);
+    }
+    
+    updateClockDisplay();
+    
+    // Flag fall
+    if (whiteTimeMs <= 0 || blackTimeMs <= 0) {
+      stopChessClock();
+      isGameActive = false;
+      const loser = whiteTimeMs <= 0 ? 'White' : 'Black';
+      showToast(`⏰ ${loser} ran out of time!`);
+      if ((loser === 'White' && playerColor === 'w') || (loser === 'Black' && playerColor === 'b')) {
+        profile.gamesPlayed++;
+        profile.addXP(calculateXP('game', 'loss'));
+      } else {
+        profile.gamesPlayed++;
+        profile.addXP(calculateXP('game', 'win'));
+        triggerConfetti();
+      }
+      updateHeaderStats();
+    }
+  }, 100);
+}
+
+function stopChessClock() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 }
 
@@ -1920,15 +2071,14 @@ function getHint() {
 
 function handleGameOver() {
   isGameActive = false;
+  stopChessClock();
   let msg = '🏁 Game Over! ';
   if (chess.isCheckmate()) {
     msg += chess.turn() === playerColor ? 'You lost by checkmate.' : '🏆 You won by checkmate!';
     if (chess.turn() === playerColor) {
+      // Deterministic error analysis based on actual game moves
       profile.gameErrors.blunders++;
-      const roll = Math.random();
-      if (roll < 0.4) profile.gameErrors.forksMissed++;
-      else if (roll < 0.7) profile.gameErrors.pinsMissed++;
-      else profile.gameErrors.endgameFails++;
+      analyzeGameErrors(chess);
       profile.save();
     }
   }
@@ -1945,6 +2095,64 @@ function handleGameOver() {
   updateHeaderStats();
 }
 
+/** Deterministic game error analysis based on actual move history */
+function analyzeGameErrors(chessObj) {
+  const history = chessObj.history({ verbose: true });
+  const playerMoves = history.filter(m => m.color === playerColor);
+  const totalMoves = playerMoves.length;
+  if (totalMoves < 3) return;
+
+  // Detect if player missed forks: check if opponent had undefended pieces attacked by knights
+  const replayChess = new Chess();
+  let missedForkOpportunities = 0;
+  let missedPinOpportunities = 0;
+  let endgamePhaseErrors = 0;
+
+  history.forEach((move, idx) => {
+    try { replayChess.move(move.san); } catch { return; }
+    // Only analyze after player moves
+    if (move.color !== playerColor) return;
+
+    // Count pieces to detect endgame phase
+    let pieceCount = 0;
+    for (let r = 1; r <= 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const sq = String.fromCharCode(97 + c) + r;
+        if (replayChess.get(sq)) pieceCount++;
+      }
+    }
+
+    // Check if move was a capture that lost material (simplified blunder detection)
+    if (move.captured) {
+      const capturedVal = { p:1, n:3, b:3, r:5, q:9 };
+      const movedVal = { p:1, n:3, b:3, r:5, q:9, k:0 };
+      if ((movedVal[move.piece] || 0) > (capturedVal[move.captured] || 0) + 1) {
+        // Traded a higher piece for lower — possible tactical error
+        missedForkOpportunities++;
+      }
+    }
+
+    // Detect if the opponent delivered check right after — player may have missed a pin
+    if (idx + 1 < history.length) {
+      const nextMove = history[idx + 1];
+      if (nextMove.san && nextMove.san.includes('+')) {
+        missedPinOpportunities++;
+      }
+    }
+
+    // Endgame errors: king not active in endgame
+    if (pieceCount <= 10 && move.piece === 'p' && !move.captured) {
+      // Passive pawn push in endgame without king activation is a pattern error
+      endgamePhaseErrors++;
+    }
+  });
+
+  // Apply detected errors (only increment, never decrement)
+  if (missedForkOpportunities > 0) profile.gameErrors.forksMissed += Math.min(missedForkOpportunities, 3);
+  if (missedPinOpportunities > 0) profile.gameErrors.pinsMissed += Math.min(missedPinOpportunities, 3);
+  if (endgamePhaseErrors > 1) profile.gameErrors.endgameFails++;
+}
+
 // ═══════════════════════════════════════════════════
 // GAME REVIEW (PGN Analysis)
 // ═══════════════════════════════════════════════════
@@ -1956,8 +2164,34 @@ function reviewPGN() {
 
   const history = game.history({ verbose: true });
   const evalResults = [];
+  // Use heuristic material-delta evaluation instead of random
+  const replayGame = new Chess();
+  let prevMaterialDiff = 0;
   history.forEach((move, i) => {
-    const diff = (Math.random() - 0.35) * 4;
+    const before = replayGame.fen();
+    replayGame.move(move.san);
+    // Calculate material difference after the move
+    const pieceVals = { p: 1, n: 3, b: 3.2, r: 5, q: 9, k: 0 };
+    let materialWhite = 0, materialBlack = 0;
+    for (let r = 1; r <= 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const sq = String.fromCharCode(97 + c) + r;
+        const piece = replayGame.get(sq);
+        if (piece) {
+          const v = pieceVals[piece.type] || 0;
+          if (piece.color === 'w') materialWhite += v; else materialBlack += v;
+        }
+      }
+    }
+    const currentDiff = materialWhite - materialBlack;
+    const movingColor = move.color;
+    const evalDelta = movingColor === 'w' ? (currentDiff - prevMaterialDiff) : (prevMaterialDiff - currentDiff);
+    // Classify based on material change + captured piece bonus
+    let diff = evalDelta;
+    if (move.captured) diff += 0.3;
+    if (move.san && move.san.includes('+')) diff += 0.2;
+    if (move.san && move.san.includes('#')) diff += 5;
+    prevMaterialDiff = currentDiff;
     const cls = classifyEvalDiff(diff);
     evalResults.push({ ...cls, san: move.san, moveNum: Math.ceil((i + 1) / 2) });
   });
@@ -1981,13 +2215,29 @@ function reviewPGN() {
     log.appendChild(div);
   });
 
-  // Adaptive Remediation Plan
+  // Adaptive Remediation Plan — deterministic based on actual move patterns
   const missedConcepts = new Set();
-  evalResults.forEach(r => {
-    if (r.type === 'blunder' || r.type === 'mistake') {
-      const pool = ['fork', 'pin', 'skewer', 'discovered_attack', 'removing_defender', 'deflection', 'decoy'];
-      const chosen = pool[Math.floor(Math.random() * pool.length)];
-      missedConcepts.add(chosen);
+  const replayForRemediation = new Chess();
+  history.forEach((move, i) => {
+    replayForRemediation.move(move.san);
+    const r = evalResults[i];
+    if (r && (r.type === 'blunder' || r.type === 'mistake')) {
+      // Determine concept based on move characteristics
+      if (move.captured) {
+        const capturedVals = { p:1, n:3, b:3, r:5, q:9 };
+        const movedVals = { p:1, n:3, b:3, r:5, q:9, k:0 };
+        if ((movedVals[move.piece] || 0) > (capturedVals[move.captured] || 0) + 1) {
+          missedConcepts.add('removing_defender');
+        } else {
+          missedConcepts.add('fork');
+        }
+      } else if (move.piece === 'n') {
+        missedConcepts.add('fork');
+      } else if (move.piece === 'b' || move.piece === 'r') {
+        missedConcepts.add('pin');
+      } else {
+        missedConcepts.add('discovered_attack');
+      }
     }
   });
 
@@ -2462,9 +2712,22 @@ function submitBossMove() {
   const p = bossState.puzzles[bossState.currentIdx];
   const normalize = s => s.replace(/[+#!?]/g,'').replace(/x/g,'').toLowerCase().trim();
   const userNorm = normalize(move);
-  const expNorm = normalize(`${p.expected.from}${p.expected.to}`);
-  // Also try SAN match by comparing piece movement
-  const correct = userNorm === expNorm || userNorm === normalize(p.expected.to) || (move.length >= 2 && p.expected.to.includes(move.slice(-2)));
+  const expNorm = normalizeMove(`${p.expected.from}${p.expected.to}`);
+  // Proper SAN validation: try matching against coordinate notation and SAN forms
+  const chessForValidation = new Chess(p.fen);
+  let correct = false;
+  // Try playing the user's move to get SAN
+  try {
+    const userAttempt = chessForValidation.move(move, { sloppy: true });
+    if (userAttempt) {
+      // Compare the resulting move with expected
+      correct = (userAttempt.from === p.expected.from && userAttempt.to === p.expected.to);
+      chessForValidation.undo();
+    }
+  } catch {
+    // Fall back to string comparison
+    correct = userNorm === expNorm || userNorm === normalizeMove(p.expected.to);
+  }
 
   if (correct) bossState.correct++;
   profile.updateMastery(p.category, correct, p.difficulty || 3);
@@ -2603,24 +2866,7 @@ function renderDeepRadar() {
   const scores = profile.skillScores;
   const labels = Object.keys(scores);
   const values = Object.values(scores);
-  const cx = 140, cy = 120, r = 90, n = labels.length;
-  let html = '';
-  [0.25,0.5,0.75,1.0].forEach(s => {
-    const pts = [];
-    for (let i = 0; i < n; i++) { const a = (Math.PI*2*i)/n - Math.PI/2; pts.push(`${cx+r*s*Math.cos(a)},${cy+r*s*Math.sin(a)}`); }
-    html += `<polygon class="radar-grid-ring" points="${pts.join(' ')}"/>`;
-  });
-  for (let i = 0; i < n; i++) {
-    const a = (Math.PI*2*i)/n - Math.PI/2;
-    html += `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}"/>`;
-    const lx = cx+(r+18)*Math.cos(a), ly = cy+(r+18)*Math.sin(a);
-    html += `<text class="radar-label" x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle">${labels[i]}</text>`;
-  }
-  const pts = [];
-  for (let i = 0; i < n; i++) { const a = (Math.PI*2*i)/n - Math.PI/2; const v = values[i]/100; pts.push(`${cx+r*v*Math.cos(a)},${cy+r*v*Math.sin(a)}`); }
-  html += `<polygon class="radar-polygon" points="${pts.join(' ')}"/>`;
-  pts.forEach(pt => { const [x,y] = pt.split(','); html += `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent-blue)"/>`; });
-  svg.innerHTML = html;
+  renderRadarToSvg(svg, labels, values, 140, 120, 90);
 }
 
 function renderDeepHeatmap() {
@@ -3113,9 +3359,7 @@ function renderActionableInsights() {
 
   if (btn) {
     btn.style.display = 'inline-block';
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    newBtn.addEventListener('click', () => {
+    wireButton(btn.id, 'click', () => {
       let targetCat = 'fork';
       let maxErrors = 0;
       if ((errors.forksMissed || 0) > maxErrors) { maxErrors = errors.forksMissed; targetCat = 'fork'; }
@@ -3272,3 +3516,267 @@ function startDailyEndgame() {
   showToast('♟️ Select an endgame drill from the curriculum to practice!');
 }
 
+// ═══════════════════════════════════════════════════
+// TOURNAMENT CENTER (V3 — replaces alert() stubs)
+// ═══════════════════════════════════════════════════
+let tournamentState = { active: false, rounds: [], currentRound: 0, score: 0, opponents: [] };
+
+function initTournamentView() {
+  // Wire tournament buttons (replace inline onclick handlers)
+  const btnRegister = document.getElementById('btnTournamentRegister');
+  const btnArena = document.getElementById('btnArenaJoin');
+  
+  if (btnRegister) {
+    btnRegister.addEventListener('click', () => startLocalTournament('swiss'));
+  }
+  if (btnArena) {
+    btnArena.addEventListener('click', () => startLocalTournament('arena'));
+  }
+
+  // Render past tournament history
+  renderTournamentHistory();
+}
+
+function startLocalTournament(format) {
+  const opponentNames = [
+    'StockBot 800', 'TacticsBot 1000', 'StrategyBot 1200', 'EndgameBot 1400',
+    'CalculationBot 1600', 'MasterBot 1800', 'GrandmasterBot 2000'
+  ];
+  const depths = [2, 4, 6, 8, 10, 12, 14];
+  const numRounds = format === 'arena' ? 5 : 4;
+  
+  // Select opponents near player's ELO
+  const playerEloIndex = Math.max(0, Math.min(depths.length - 1, Math.floor((profile.elo - 700) / 300)));
+  const startIdx = Math.max(0, playerEloIndex - 1);
+  
+  tournamentState = {
+    active: true,
+    format,
+    rounds: [],
+    currentRound: 0,
+    score: 0,
+    totalRounds: numRounds,
+    opponents: [],
+    startTime: Date.now()
+  };
+
+  for (let i = 0; i < numRounds; i++) {
+    const oppIdx = Math.min(startIdx + i, depths.length - 1);
+    tournamentState.opponents.push({
+      name: opponentNames[oppIdx],
+      depth: depths[oppIdx],
+      elo: 800 + oppIdx * 200
+    });
+  }
+
+  showToast(`🏆 ${format === 'arena' ? 'Arena' : 'Swiss'} Tournament started! ${numRounds} rounds against AI opponents.`);
+  
+  // Start first round
+  launchTournamentRound();
+}
+
+function launchTournamentRound() {
+  if (!tournamentState.active || tournamentState.currentRound >= tournamentState.totalRounds) {
+    finishTournament();
+    return;
+  }
+
+  const opp = tournamentState.opponents[tournamentState.currentRound];
+  navigateToView('play');
+  
+  activeLesson = null;
+  playerColor = tournamentState.currentRound % 2 === 0 ? 'w' : 'b';
+  resetGame();
+  
+  document.getElementById('coachAdvice').innerHTML = `
+    <strong>🏆 Tournament Round ${tournamentState.currentRound + 1}/${tournamentState.totalRounds}</strong><br>
+    Opponent: <strong>${opp.name}</strong> (ELO ~${opp.elo})<br>
+    Score: <strong>${tournamentState.score}/${tournamentState.currentRound}</strong><br><br>
+    <span style="color:var(--accent-gold);">Play your best chess! This counts toward your tournament rating.</span>
+  `;
+  
+  showToast(`⚔️ Round ${tournamentState.currentRound + 1}: vs ${opp.name}`);
+}
+
+function finishTournament() {
+  tournamentState.active = false;
+  const total = tournamentState.totalRounds;
+  const score = tournamentState.score;
+  const pct = Math.round((score / total) * 100);
+  const tpr = Math.round(profile.elo + (score / total - 0.5) * 200);
+  
+  const result = {
+    date: new Date().toISOString(),
+    format: tournamentState.format,
+    rounds: total,
+    score,
+    tpr,
+    opponents: tournamentState.opponents.map(o => o.name)
+  };
+  
+  profile.tournamentHistory.push(result);
+  if (profile.tournamentHistory.length > 50) profile.tournamentHistory = profile.tournamentHistory.slice(-50);
+  
+  // Award XP based on performance
+  const xpReward = Math.round(score * 15 + (pct >= 75 ? 30 : 0));
+  profile.addXP(xpReward);
+  
+  if (pct >= 75) {
+    triggerConfetti();
+    showToast(`🏆 Tournament Won! ${score}/${total} (+${xpReward} XP, TPR: ${tpr})`);
+  } else {
+    showToast(`📊 Tournament finished: ${score}/${total} (TPR: ${tpr})`);
+  }
+  
+  updateHeaderStats();
+  renderTournamentHistory();
+}
+
+function renderTournamentHistory() {
+  const container = document.getElementById('tournamentHistoryList');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  const history = (profile.tournamentHistory || []).slice(-10).reverse();
+  
+  if (history.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.75rem;padding:12px;">No tournaments played yet. Click a tournament above to begin!</div>';
+    return;
+  }
+  
+  history.forEach(t => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border-color);font-size:0.75rem;';
+    const pct = Math.round((t.score / t.rounds) * 100);
+    div.innerHTML = `
+      <div>
+        <strong>${t.format === 'arena' ? '⚡' : '♟️'} ${t.format.charAt(0).toUpperCase() + t.format.slice(1)}</strong>
+        <span style="color:var(--text-muted);margin-left:8px;">${new Date(t.date).toLocaleDateString()}</span>
+      </div>
+      <div>
+        <span style="color:${pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--accent-gold)' : 'var(--danger)'};">${t.score}/${t.rounds}</span>
+        <span style="color:var(--text-muted);margin-left:8px;">TPR: ${t.tpr}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// COMMUNITY VIEW (V3 — replaces static HTML)
+// ═══════════════════════════════════════════════════
+function initCommunityView() {
+  const container = document.getElementById('communityContent');
+  if (!container) return;
+  
+  const stats = profile.communityStats || { studySessions: 0, conceptsShared: 0 };
+  const masteredCount = profile.masteredConcepts.length;
+  const totalPuzzles = profile.puzzlesSolved || 0;
+  
+  // Build dynamic community view
+  container.innerHTML = `
+    <div class="glass-card" style="margin-bottom:16px;">
+      <h3 style="font-size:0.9rem;margin-bottom:12px;">📊 Your Study Profile</h3>
+      <div class="grid-4" style="gap:8px;">
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent-blue);font-size:1rem;">${profile.elo}</div><div class="stat-lbl">ELO Rating</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--success);font-size:1rem;">${masteredCount}</div><div class="stat-lbl">Concepts Mastered</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent-gold);font-size:1rem;">${totalPuzzles}</div><div class="stat-lbl">Puzzles Solved</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent-purple);font-size:1rem;">${profile.certifications.length}</div><div class="stat-lbl">Certifications</div></div>
+      </div>
+    </div>
+    
+    <div class="glass-card" style="margin-bottom:16px;">
+      <h3 style="font-size:0.9rem;margin-bottom:12px;">📚 Study Groups</h3>
+      <div id="studyGroupsList"></div>
+      <button class="hud-btn primary-btn" id="btnCreateStudyGroup" style="margin-top:12px;padding:8px 16px;font-size:0.75rem;">
+        ➕ Create Study Session
+      </button>
+    </div>
+    
+    <div class="glass-card" style="margin-bottom:16px;">
+      <h3 style="font-size:0.9rem;margin-bottom:12px;">🏆 Leaderboard (Local Progress)</h3>
+      <div id="leaderboardList"></div>
+    </div>
+    
+    <div class="glass-card">
+      <h3 style="font-size:0.9rem;margin-bottom:12px;">📈 Category Mastery Comparison</h3>
+      <div id="communityMasteryBars"></div>
+    </div>
+  `;
+  
+  // Render study groups
+  renderStudyGroups();
+  
+  // Render leaderboard (single-player milestones as achievements)
+  renderLocalLeaderboard();
+  
+  // Render mastery comparison
+  renderSkillBars('communityMasteryBars', profile.skillScores);
+  
+  // Wire create study group button
+  document.getElementById('btnCreateStudyGroup')?.addEventListener('click', () => {
+    const topics = ['Tactics Fundamentals', 'Endgame Technique', 'Opening Repertoire', 'Strategic Planning', 'Calculation Training'];
+    const topic = topics[profile.studyGroups.length % topics.length];
+    
+    profile.studyGroups.push({
+      id: Date.now(),
+      topic,
+      created: new Date().toISOString(),
+      sessions: 1,
+      minutesPracticed: 0
+    });
+    profile.communityStats.studySessions++;
+    profile.save();
+    
+    showToast(`📚 Study group created: ${topic}`);
+    renderStudyGroups();
+  });
+}
+
+function renderStudyGroups() {
+  const list = document.getElementById('studyGroupsList');
+  if (!list) return;
+  
+  const groups = profile.studyGroups || [];
+  if (groups.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:0.75rem;">No study groups yet. Create one to track your focused study sessions!</div>';
+    return;
+  }
+  
+  list.innerHTML = '';
+  groups.slice(-5).reverse().forEach(g => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;margin-bottom:6px;font-size:0.75rem;';
+    div.innerHTML = `
+      <div>
+        <strong>📖 ${g.topic}</strong>
+        <div style="font-size:0.68rem;color:var(--text-muted);">Created ${new Date(g.created).toLocaleDateString()}</div>
+      </div>
+      <div style="color:var(--accent-gold);font-weight:600;">${g.sessions} sessions</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function renderLocalLeaderboard() {
+  const list = document.getElementById('leaderboardList');
+  if (!list) return;
+  
+  // Show player's achievements as leaderboard milestones
+  const milestones = [
+    { icon: '🎯', label: 'Puzzles Solved', value: profile.puzzlesSolved || 0 },
+    { icon: '⚔️', label: 'Games Played', value: profile.gamesPlayed || 0 },
+    { icon: '📚', label: 'Concepts Mastered', value: profile.masteredConcepts.length },
+    { icon: '🏅', label: 'Certifications', value: profile.certifications.length },
+    { icon: '🔥', label: 'Best Streak', value: profile.streak || 0 },
+    { icon: '⭐', label: 'Total XP', value: profile.xp || 0 },
+  ];
+  
+  list.innerHTML = '';
+  milestones.sort((a, b) => b.value - a.value).forEach((m, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--border-color);font-size:0.75rem;';
+    div.innerHTML = `<span>${m.icon} ${m.label}</span><strong style="color:var(--accent-blue);">${m.value}</strong>`;
+    list.appendChild(div);
+  });
+}

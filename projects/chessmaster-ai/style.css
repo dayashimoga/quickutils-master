@@ -588,3 +588,58 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: 'Int
   .academy-grid { grid-template-columns: 1fr; }
   .split-layout { flex-direction: column; }
 }
+
+/* === ACCESSIBILITY: Focus visible outlines === */
+.square:focus-visible {
+  outline: 3px solid var(--accent-gold);
+  outline-offset: -3px;
+  z-index: 10;
+}
+.nav-item:focus-visible,
+.hud-btn:focus-visible,
+.tactic-card:focus-visible,
+.repertoire-branch:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* === ACCESSIBILITY: Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .piece-animated {
+    transition: none !important;
+  }
+}
+
+/* === CLOCK DISPLAY === */
+.clock-timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  transition: color 0.2s ease;
+}
+
+/* === EXTRACTED UTILITY CLASSES (from inline styles) === */
+.section-desc { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 14px; }
+.section-desc-sm { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 12px; }
+.section-desc-xs { font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 10px; }
+.section-subtitle { font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+.section-note { font-size: 0.78rem; color: var(--text-secondary); margin-top: 6px; }
+.btn-sm { padding: 4px 8px; font-size: 0.7rem; }
+.btn-md { padding: 6px 16px; font-size: 0.75rem; }
+.btn-action { padding: 7px 14px; }
+.btn-xs { padding: 6px 10px; font-size: 0.72rem; }
+.hidden { display: none; }
+.text-lg { font-size: 1rem; }
+.flex-1 { flex: 1; }
+.glass-bg { background: rgba(255,255,255,0.01); }
+.mb-0 { margin-bottom: 0; }
+.text-center { text-align: center; }
+.flex-gap { display: flex; gap: 8px; }
+.flex-gap-center { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.sidebar-panel { width: 280px; flex-shrink: 0; }
+.cursor-pointer { cursor: pointer; }

@@ -20,7 +20,7 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: 'python3 -m http.server 8080',
+    command: process.platform === 'win32' ? 'npx -y serve -l 8080 .' : 'python3 -m http.server 8080',
     port: 8080,
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
