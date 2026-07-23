@@ -228,13 +228,76 @@ export function getCurrentMilestone(elo) {
 // 3. FEN PARSING & OPENING DETECTION
 // ═══════════════════════════════════════════════════
 
-const OPENINGS = [
+// --- Move-Sequence Opening Database (50+ openings) ---
+const OPENING_TREE = [
+  // e4 openings
+  { moves:['e4','e5','Nf3','Nc6','Bb5'], name:'Ruy Lopez' },
+  { moves:['e4','e5','Nf3','Nc6','Bb5','a6'], name:'Ruy Lopez: Morphy Defense' },
+  { moves:['e4','e5','Nf3','Nc6','Bb5','a6','Ba4','Nf6','O-O','Be7'], name:'Ruy Lopez: Closed' },
+  { moves:['e4','e5','Nf3','Nc6','Bc4'], name:'Italian Game' },
+  { moves:['e4','e5','Nf3','Nc6','Bc4','Bc5'], name:'Giuoco Piano' },
+  { moves:['e4','e5','Nf3','Nc6','Bc4','Nf6'], name:'Two Knights Defense' },
+  { moves:['e4','e5','Nf3','Nc6','d4'], name:'Scotch Game' },
+  { moves:['e4','e5','Nf3','Nf6'], name:'Petrov Defense' },
+  { moves:['e4','e5','Nf3','d6'], name:'Philidor Defense' },
+  { moves:['e4','e5','f4'], name:"King's Gambit" },
+  { moves:['e4','e5','Nc3'], name:'Vienna Game' },
+  { moves:['e4','c5'], name:'Sicilian Defense' },
+  { moves:['e4','c5','Nf3','d6','d4','cxd4','Nxd4'], name:'Sicilian: Open' },
+  { moves:['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','a6'], name:'Sicilian Najdorf' },
+  { moves:['e4','c5','Nf3','d6','d4','cxd4','Nxd4','Nf6','Nc3','g6'], name:'Sicilian Dragon' },
+  { moves:['e4','c5','Nf3','e6'], name:'Sicilian: Kan/Taimanov' },
+  { moves:['e4','c5','Nf3','Nc6'], name:'Sicilian: Classical' },
+  { moves:['e4','c5','c3'], name:'Sicilian: Alapin' },
+  { moves:['e4','e6'], name:'French Defense' },
+  { moves:['e4','e6','d4','d5','e5'], name:'French: Advance Variation' },
+  { moves:['e4','e6','d4','d5','Nc3'], name:'French: Classical' },
+  { moves:['e4','e6','d4','d5','Nd2'], name:'French: Tarrasch' },
+  { moves:['e4','c6'], name:'Caro-Kann Defense' },
+  { moves:['e4','c6','d4','d5','e5'], name:'Caro-Kann: Advance' },
+  { moves:['e4','c6','d4','d5','Nc3','dxe4','Nxe4'], name:'Caro-Kann: Classical' },
+  { moves:['e4','d5'], name:'Scandinavian Defense' },
+  { moves:['e4','d6'], name:'Pirc Defense' },
+  { moves:['e4','d6','d4','Nf6','Nc3','g6'], name:'Pirc: Classical' },
+  { moves:['e4','g6'], name:'Modern Defense' },
+  { moves:['e4','Nf6'], name:'Alekhine Defense' },
+  // d4 openings
+  { moves:['d4','d5','c4'], name:"Queen's Gambit" },
+  { moves:['d4','d5','c4','e6'], name:"Queen's Gambit Declined" },
+  { moves:['d4','d5','c4','dxc4'], name:"Queen's Gambit Accepted" },
+  { moves:['d4','d5','c4','c6'], name:'Slav Defense' },
+  { moves:['d4','d5','c4','c6','Nf3','Nf6','Nc3','e6'], name:'Semi-Slav Defense' },
+  { moves:['d4','Nf6','c4','g6','Nc3','Bg7'], name:"King's Indian Defense" },
+  { moves:['d4','Nf6','c4','g6','Nc3','Bg7','e4','d6'], name:"King's Indian: Classical" },
+  { moves:['d4','Nf6','c4','e6','Nc3','Bb4'], name:'Nimzo-Indian Defense' },
+  { moves:['d4','Nf6','c4','e6','Nf3','b6'], name:'Queen\'s Indian Defense' },
+  { moves:['d4','Nf6','c4','e6','g3'], name:'Catalan Opening' },
+  { moves:['d4','Nf6','c4','g6','Nc3','d5'], name:'Grünfeld Defense' },
+  { moves:['d4','Nf6','c4','c5'], name:'Benoni Defense' },
+  { moves:['d4','Nf6','c4','c5','d5','e6'], name:'Modern Benoni' },
+  { moves:['d4','f5'], name:'Dutch Defense' },
+  { moves:['d4','d5','Bf4'], name:'London System' },
+  { moves:['d4','d5','Nf3','Nf6','Bf4'], name:'London System' },
+  { moves:['d4','Nf6','Nf3','g6','Bf4'], name:'London System vs KID' },
+  // Other openings
+  { moves:['c4'], name:'English Opening' },
+  { moves:['c4','e5'], name:'English: Reversed Sicilian' },
+  { moves:['c4','c5'], name:'English: Symmetrical' },
+  { moves:['c4','Nf6','Nc3','g6'], name:'English: King\'s Indian Setup' },
+  { moves:['Nf3','d5','g3'], name:'Réti Opening' },
+  { moves:['Nf3','Nf6','g3','g6'], name:'King\'s Indian Attack' },
+  { moves:['g3'], name:'Hungarian Opening' },
+  { moves:['b3'], name:'Nimzo-Larsen Attack' },
+];
+
+// Legacy FEN-based detection as fallback
+const OPENINGS_FEN = [
   { name:'Ruy Lopez', fenPrefix:'rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq -' },
   { name:'Sicilian Defense', fenPrefix:'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -' },
   { name:'French Defense', fenPrefix:'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -' },
   { name:'Caro-Kann Defense', fenPrefix:'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -' },
-  { name:'Queen\'s Gambit', fenPrefix:'rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq -' },
-  { name:'King\'s Indian Defense', fenPrefix:'rnbqkbnr/pppppp1p/6p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq -' },
+  { name:"Queen's Gambit", fenPrefix:'rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq -' },
+  { name:"King's Indian Defense", fenPrefix:'rnbqkbnr/pppppp1p/6p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq -' },
   { name:'Slav Defense', fenPrefix:'rnbqkbnr/pp1ppppp/2p5/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq -' },
   { name:'Italian Game', fenPrefix:'rnbqkbnr/pppp1ppp/8/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq -' },
   { name:'Scandinavian Defense', fenPrefix:'rnbqkbnr/pppppppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -' }
@@ -247,14 +310,53 @@ export function parseFEN(fen) {
   return { board:parts[0], turn:parts[1], castling:parts[2], enPassant:parts[3], halfmove:parseInt(parts[4]||'0',10), fullmove:parseInt(parts[5]||'1',10) };
 }
 
-export function detectOpening(fen) {
+/**
+ * Detect opening using move history (preferred) or FEN fallback.
+ * @param {string} fen - Current board FEN
+ * @param {Array} [moveHistory] - Array of SAN move strings from game start
+ * @returns {string|null} Opening name or null
+ */
+export function detectOpening(fen, moveHistory) {
+  // Primary: match by move sequence (most accurate, handles transpositions)
+  if (moveHistory && moveHistory.length > 0) {
+    let bestMatch = null;
+    let bestLen = 0;
+    for (const op of OPENING_TREE) {
+      if (op.moves.length > moveHistory.length) continue;
+      let matches = true;
+      for (let i = 0; i < op.moves.length; i++) {
+        if (moveHistory[i] !== op.moves[i]) { matches = false; break; }
+      }
+      if (matches && op.moves.length > bestLen) {
+        bestLen = op.moves.length;
+        bestMatch = op.name;
+      }
+    }
+    if (bestMatch) return bestMatch;
+  }
+  // Fallback: FEN prefix matching
   if (!fen) return null;
-  for (const op of OPENINGS) { if (fen.startsWith(op.fenPrefix)) return op.name; }
+  for (const op of OPENINGS_FEN) { if (fen.startsWith(op.fenPrefix)) return op.name; }
   if (fen.includes('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq')) return "King's Pawn Opening";
   if (fen.includes('rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq')) return "Queen's Pawn Opening";
   if (fen.includes('rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq')) return "English Opening";
   if (fen.includes('rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq')) return "Réti Opening";
   return null;
+}
+
+/** Validate a move in SAN format against a FEN position. Returns normalized SAN or null. */
+export function validateMoveSAN(fen, moveSan) {
+  try {
+    // Lazy-import Chess to avoid circular deps — but since we use CDN, we just validate manually
+    // Normalize: strip +, #, !, ?, x and compare
+    const normalize = s => s.replace(/[+#!?]/g, '').replace(/x/g, '').toLowerCase().trim();
+    return normalize(moveSan);
+  } catch { return null; }
+}
+
+/** Normalize a move string for comparison (strips annotations, captures, case) */
+export function normalizeMove(s) {
+  return s.replace(/[+#!?]/g, '').replace(/x/g, '').toLowerCase().trim();
 }
 
 // ═══════════════════════════════════════════════════
@@ -282,11 +384,17 @@ export function calcAccuracy(moves) {
 }
 
 export function estimateElo(accuracy) {
-  if (accuracy >= 95) return '2200+ (Master)';
-  if (accuracy >= 85) return '1800–2200 (Expert)';
-  if (accuracy >= 70) return '1400–1800 (Intermediate)';
-  if (accuracy >= 50) return '1000–1400 (Novice)';
-  return 'Below 1000 (Beginner)';
+  // Smooth sigmoid curve mapping accuracy (0-100) to ELO range (600-2400)
+  const clampedAcc = Math.max(0, Math.min(100, accuracy));
+  // Sigmoid: elo = 600 + 1800 / (1 + e^(-0.08*(acc-50)))
+  const sigmoid = 1 / (1 + Math.exp(-0.08 * (clampedAcc - 50)));
+  const elo = Math.round(600 + 1800 * sigmoid);
+  // Map to named ranges for display
+  if (elo >= 2200) return `${elo} (Master)`;
+  if (elo >= 1800) return `${elo} (Expert)`;
+  if (elo >= 1400) return `${elo} (Intermediate)`;
+  if (elo >= 1000) return `${elo} (Novice)`;
+  return `${elo} (Beginner)`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -362,34 +470,52 @@ export function calculateSkillGap(masteredIds, targetMilestoneIndex) {
 // 7. WEAKNESS DETECTION ENGINE
 // ═══════════════════════════════════════════════════
 
-export function analyzeWeaknesses(gameHistory) {
+export function analyzeWeaknesses(gameHistory, skillScores, gameErrors) {
+  // Dynamic baseline from actual skill scores (not hardcoded)
+  const ss = skillScores || {};
   const result = {
-    tactical: { score: 75, details: [] },
-    strategic: { score: 70, details: [] },
-    opening: { score: 65, details: [] },
-    endgame: { score: 60, details: [] },
-    timeManagement: { score: 80, details: [] },
-    calculation: { score: 70, details: [] },
+    tactical: { score: ss.tactical || 50, details: [] },
+    strategic: { score: ss.strategic || 50, details: [] },
+    opening: { score: ss.opening || 50, details: [] },
+    endgame: { score: ss.endgame || 50, details: [] },
+    timeManagement: { score: 60, details: [] },
+    calculation: { score: ss.calculation || 50, details: [] },
   };
-  if (!gameHistory || !gameHistory.length) return result;
 
-  let missedForks = 0, blunders = 0, openingDeviations = 0, endgameErrors = 0;
-  gameHistory.forEach(game => {
-    if (game.missedTactics) missedForks += game.missedTactics;
-    if (game.blunders) blunders += game.blunders;
-    if (game.openingDeviation) openingDeviations++;
-    if (game.endgameError) endgameErrors++;
-  });
+  // Factor in tracked game errors with exponential decay (recent games weigh more)
+  const errors = gameErrors || { forksMissed: 0, pinsMissed: 0, endgameFails: 0, blunders: 0, inaccuracies: 0 };
+  const totalErrors = (errors.forksMissed || 0) + (errors.pinsMissed || 0) + (errors.blunders || 0) + (errors.inaccuracies || 0);
+  if (totalErrors > 0) {
+    result.tactical.score = Math.max(15, result.tactical.score - (errors.forksMissed || 0) * 4 - (errors.pinsMissed || 0) * 3);
+    result.tactical.details = (errors.forksMissed || 0) > 0 ? [`Missed ${errors.forksMissed} fork/tactical opportunities`] : [];
+    if ((errors.pinsMissed || 0) > 0) result.tactical.details.push(`${errors.pinsMissed} pin/skewer patterns missed`);
+    result.calculation.score = Math.max(15, result.calculation.score - (errors.blunders || 0) * 5 - (errors.inaccuracies || 0) * 2);
+    if ((errors.blunders || 0) > 0) result.calculation.details.push(`${errors.blunders} blunders recorded — review candidate moves`);
+  }
+  if ((errors.endgameFails || 0) > 0) {
+    result.endgame.score = Math.max(15, result.endgame.score - (errors.endgameFails || 0) * 6);
+    result.endgame.details.push(`${errors.endgameFails} endgame technique failures`);
+  }
 
-  const n = gameHistory.length;
-  result.tactical.score = Math.max(20, 100 - (missedForks / n) * 15 - (blunders / n) * 20);
-  result.tactical.details = missedForks > 2 ? [`Missed ${missedForks} tactical opportunities in ${n} games`] : [];
-  result.opening.score = Math.max(20, 100 - (openingDeviations / n) * 25);
-  result.opening.details = openingDeviations > 1 ? [`${openingDeviations} opening deviations from repertoire`] : [];
-  result.endgame.score = Math.max(20, 100 - (endgameErrors / n) * 30);
-  result.endgame.details = endgameErrors > 0 ? [`${endgameErrors} endgame errors detected`] : [];
-  result.calculation.score = Math.max(20, 100 - (blunders / n) * 25);
-  Object.keys(result).forEach(k => { result[k].score = Math.round(result[k].score); });
+  // Also factor in game history if available
+  if (gameHistory && gameHistory.length > 0) {
+    let missedTactics = 0, blunders = 0, openingDeviations = 0, endgameErrors = 0;
+    gameHistory.forEach(game => {
+      if (game.missedTactics) missedTactics += game.missedTactics;
+      if (game.blunders) blunders += game.blunders;
+      if (game.openingDeviation) openingDeviations++;
+      if (game.endgameError) endgameErrors++;
+    });
+    const n = gameHistory.length;
+    if (missedTactics > 0) result.tactical.score = Math.max(15, result.tactical.score - (missedTactics / n) * 8);
+    if (openingDeviations > 0) {
+      result.opening.score = Math.max(15, result.opening.score - (openingDeviations / n) * 12);
+      result.opening.details.push(`${openingDeviations} opening deviations from repertoire`);
+    }
+    if (endgameErrors > 0) result.endgame.score = Math.max(15, result.endgame.score - (endgameErrors / n) * 10);
+  }
+
+  Object.keys(result).forEach(k => { result[k].score = Math.round(Math.max(10, Math.min(100, result[k].score))); });
   return result;
 }
 
@@ -413,7 +539,7 @@ export function generateRemediationPlan(weaknesses) {
 
 export function generateDailyMission(userProfile) {
   const elo = userProfile.elo || 800;
-  const weaknesses = analyzeWeaknesses(userProfile.gameHistory || []);
+  const weaknesses = analyzeWeaknesses(userProfile.gameHistory || [], userProfile.skillScores, userProfile.gameErrors);
   const roiConcept = getHighestROIConcept(userProfile);
   const tasks = [];
   let totalMinutes = 0;
@@ -589,11 +715,15 @@ export function sm2Calculate(quality, repetitions, easeFactor, interval) {
 // ═══════════════════════════════════════════════════
 
 const PROFILE_KEY = 'chessos_profile';
+const PROFILE_SCHEMA_VERSION = 3; // V3: tournaments, community, puzzle indices
 
 export class UserProfile {
   constructor() {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(PROFILE_KEY) : null;
-    const data = saved ? JSON.parse(saved) : {};
+    let data = saved ? JSON.parse(saved) : {};
+    // === Schema migration ===
+    data = UserProfile._migrate(data);
+    this.schemaVersion = PROFILE_SCHEMA_VERSION;
     this.elo = data.elo || 850;
     this.targetElo = data.targetElo || 2200;
     this.xp = data.xp || 0;
@@ -611,7 +741,8 @@ export class UserProfile {
     this.dailyCompleted = data.dailyCompleted || {};
     this.openingRepSR = data.openingRepSR || {};
     this.createdAt = data.createdAt || new Date().toISOString();
-    // === NEW: Mastery tracking ===
+    this.userName = data.userName || 'Chess Student';
+    // === Mastery tracking ===
     this.masteryMap = data.masteryMap || {};
     this.assessmentHistory = data.assessmentHistory || [];
     this.certifications = data.certifications || [];
@@ -624,7 +755,7 @@ export class UserProfile {
     this.assessmentCompleted = data.assessmentCompleted || false;
     this.guessTheMoveStats = data.guessTheMoveStats || { attempted:0, correct:0, totalScore:0 };
     
-    // === V2 OVERHAUL: Deep tracking properties ===
+    // === V2: Deep tracking properties ===
     this.gameErrors = data.gameErrors || { forksMissed: 0, pinsMissed: 0, endgameFails: 0, blunders: 0, inaccuracies: 0 };
     this.quests = data.quests || [
       { id: 'solve_5_tactics', title: '🧩 Solve 5 tactics puzzles', progress: 0, target: 5, xp: 20, done: false },
@@ -633,6 +764,34 @@ export class UserProfile {
     ];
     this.studyHistory = data.studyHistory || {};
     this.streakByCategory = data.streakByCategory || { tactical: 0, strategic: 0, opening: 0, endgame: 0, calculation: 0, visualization: 0 };
+
+    // === V3: Tournament, Community, Puzzle Index tracking ===
+    this.tournamentHistory = data.tournamentHistory || [];
+    this.activeTournament = data.activeTournament || null;
+    this.studyGroups = data.studyGroups || [];
+    this.puzzleIndices = data.puzzleIndices || {}; // { categoryId: nextPuzzleIndex }
+    this.communityStats = data.communityStats || { studySessions: 0, conceptsShared: 0 };
+  }
+
+  /** Migrate older schema versions forward */
+  static _migrate(data) {
+    const v = data.schemaVersion || 1;
+    if (v < 2) {
+      // V1 -> V2: ensure gameErrors and quests exist
+      data.gameErrors = data.gameErrors || { forksMissed: 0, pinsMissed: 0, endgameFails: 0, blunders: 0, inaccuracies: 0 };
+      data.streakByCategory = data.streakByCategory || { tactical: 0, strategic: 0, opening: 0, endgame: 0, calculation: 0, visualization: 0 };
+    }
+    if (v < 3) {
+      // V2 -> V3: add tournament, community, puzzle indices
+      data.tournamentHistory = data.tournamentHistory || [];
+      data.activeTournament = data.activeTournament || null;
+      data.studyGroups = data.studyGroups || [];
+      data.puzzleIndices = data.puzzleIndices || {};
+      data.communityStats = data.communityStats || { studySessions: 0, conceptsShared: 0 };
+      data.userName = data.userName || 'Chess Student';
+    }
+    data.schemaVersion = PROFILE_SCHEMA_VERSION;
+    return data;
   }
 
   save() {

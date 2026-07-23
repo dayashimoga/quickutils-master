@@ -681,6 +681,7 @@
         "project_type": "chessmaster-ai",
         "root_dir": "projects/chessmaster-ai",
         "custom_domain": "chessmaster.quickutils.top",
+        "build_command": "mkdir -p dist && cp index.html script.js chessmaster-ai-utils.js style.css quickutils-core.* _headers dist/ 2>/dev/null || true",
         "destination_dir": "dist"
     },
     "earthexplorer": {
