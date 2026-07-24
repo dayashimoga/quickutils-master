@@ -242,6 +242,13 @@ function initNavigation() {
       }
       else if (target === 'journey-view') setTimeout(drawJourneyConnectors, 50);
       else if (target === 'analytics-view') { renderRadarChart(); renderHeatmap(); }
+      else if (target === 'deep-analytics-view') { renderAnalyticsStats(); renderDeepRadar(); renderDeepHeatmap(); renderActionableInsights(); renderEloChart(); }
+      else if (target === 'coach-view') { initCoachView(); }
+      else if (target === 'community-view') { initCommunityView(); }
+      else if (target === 'assessment-view') { initAssessmentView(); }
+      else if (target === 'boss-view') { initBossBattles(); }
+      else if (target === 'skilltree-view') { initSkillTree(); }
+      else if (target === 'vis-lab-view') { initVisLab(); }
     });
   });
 
@@ -286,8 +293,13 @@ function navigateToView(targetView) {
     if (targetView === 'play') { buildBoard(); if (!engineReady) initEngine(); }
     else if (targetView === 'journey-view') setTimeout(drawJourneyConnectors, 50);
     else if (targetView === 'analytics-view') { renderRadarChart(); renderHeatmap(); }
-    else if (targetView === 'deep-analytics-view') { renderAnalyticsStats(); renderActionableInsights(); }
+    else if (targetView === 'deep-analytics-view') { renderAnalyticsStats(); renderDeepRadar(); renderDeepHeatmap(); renderActionableInsights(); renderEloChart(); }
     else if (targetView === 'coach-view') { initCoachView(); }
+    else if (targetView === 'community-view') { initCommunityView(); }
+    else if (targetView === 'assessment-view') { initAssessmentView(); }
+    else if (targetView === 'boss-view') { initBossBattles(); }
+    else if (targetView === 'skilltree-view') { initSkillTree(); }
+    else if (targetView === 'vis-lab-view') { initVisLab(); }
     // Focus management: move focus to the first heading or interactive element in the new view
     setTimeout(() => {
       const panel = document.getElementById(targetView);
