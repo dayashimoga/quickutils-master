@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.1] - 2026-07-24
+
+### 🔴 Critical Fixes
+- **Fixed**: Cloudflare edge cache serving stale JS — added `?v=3.0.1` cache-bust to all 6 static assets
+- **Fixed**: Navigation click handler missing view init calls for 7 views (deep-analytics, coach, community, assessment, boss, skilltree, vis-lab)
+- **Fixed**: `navigateToView()` missing render calls for deep-analytics radar/heatmap/ELO chart
+
+### ✨ Enhancements
+- **Spaced Repetition**: SM-2 algorithm now wired on opening sequence completion — calculates next review date and interval
+- **Opening Lab**: Repertoire list now shows next review date (📅 date or ⏰ Due now) per line
+- **Cache-busting**: All CSS/JS assets include `?v=3.0.1` to prevent stale Cloudflare edge responses
+
+### 📦 Deployment
+- Synced all source → `dist/` directory
+- Pushed to `origin/main` for Cloudflare Pages auto-deploy
+
 ## [3.0.0] - 2026-07-23
 
 ### 🔴 Critical Fixes (Sprint 1)

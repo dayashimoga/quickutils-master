@@ -719,7 +719,8 @@ function initOpeningLab() {
     div.className = 'repertoire-branch' + (i === 0 ? ' active-rep' : '');
     const srData = profile.openingRepSR[line.repertoireName] || {};
     const openingMastery = srData.repetitions ? Math.min(100, Math.round(50 + srData.repetitions * 10 + (srData.easeFactor || 2.5) * 5)) : 0;
-    div.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.78rem;"><span>${line.side === 'white' ? '⬜' : '⬛'} ${line.repertoireName}</span><span style="color:var(--accent-gold);font-size:0.7rem;">⭐ ${openingMastery}%</span></div><div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">${line.moves.join(' ')}</div>`;
+    const reviewLabel = srData.nextReview ? (new Date(srData.nextReview) <= new Date() ? '<span style="color:var(--danger);font-size:0.62rem;">⏰ Due now</span>' : `<span style="font-size:0.62rem;color:var(--text-muted);">📅 ${srData.nextReview}</span>`) : '<span style="font-size:0.62rem;color:var(--text-muted);">New</span>';
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.78rem;"><span>${line.side === 'white' ? '⬜' : '⬛'} ${line.repertoireName}</span><span style="color:var(--accent-gold);font-size:0.7rem;">⭐ ${openingMastery}%</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px;"><span style="font-size:0.68rem;color:var(--text-muted);">${line.moves.join(' ')}</span>${reviewLabel}</div>`;
     
     div.addEventListener('click', () => {
       list.querySelectorAll('.repertoire-branch').forEach(b => b.classList.remove('active-rep'));
@@ -826,6 +827,13 @@ function jumpToOpeningPly(ply) {
   
   if (ply >= moves.length) {
     guideText.innerHTML += "<br><span style='color:var(--success);font-weight:700;'>🎉 Opening sequence completed!</span>";
+    // SM-2 spaced repetition update on opening completion
+    const repName = openingStudyState.game.repertoireName;
+    const prev = profile.openingRepSR[repName] || { repetitions: 0, easeFactor: 2.5, interval: 1 };
+    const result = sm2Calculate(4, prev.repetitions, prev.easeFactor, prev.interval);
+    profile.openingRepSR[repName] = result;
+    profile.save();
+    guideText.innerHTML += `<br><span style='font-size:0.72rem;color:var(--text-muted);'>📅 Next review: ${result.nextReview} (interval: ${result.interval}d)</span>`;
   }
   
   let lastMove = [];

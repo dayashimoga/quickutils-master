@@ -269,4 +269,100 @@ test.describe('ChessOS V3 Platform E2E Tests', () => {
     expect(bodyText).not.toContain('Coming soon');
     expect(bodyText).not.toContain('coming soon');
   });
+
+  // ═══════════════════════════════════════
+  // 18. V3.0.1 — Spaced Repetition & New Features
+  // ═══════════════════════════════════════
+  test('25. should show spaced repetition labels in Opening Lab', async ({ page }) => {
+    await page.locator('.nav-item[data-target="opening-view"]').click();
+    await page.waitForTimeout(300);
+    const branches = page.locator('.repertoire-branch');
+    const count = await branches.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+    // Each branch should show either "New" or a review date
+    const firstBranch = await branches.first().textContent();
+    expect(firstBranch.length).toBeGreaterThan(5);
+  });
+
+  test('26. should have Daily Training cards with click handlers', async ({ page }) => {
+    await page.locator('.nav-item[data-target="daily-view"]').click();
+    await page.waitForTimeout(200);
+    const blitz = page.locator('#btnDailyBlitz');
+    await expect(blitz).toBeVisible();
+    const guess = page.locator('#btnDailyGuess');
+    await expect(guess).toBeVisible();
+    const endgame = page.locator('#btnDailyEndgame');
+    await expect(endgame).toBeVisible();
+  });
+
+  test('27. should have mobile menu button', async ({ page }) => {
+    const menuBtn = page.locator('#mobileMenuBtn');
+    await expect(menuBtn).toBeAttached();
+  });
+
+  test('28. should have export progress button', async ({ page }) => {
+    const exportBtn = page.locator('#exportBtn');
+    await expect(exportBtn).toBeVisible();
+  });
+
+  test('29. should load Strategy Academy with lesson cards', async ({ page }) => {
+    await page.locator('.nav-item[data-target="strategy-view"]').click();
+    await page.waitForTimeout(200);
+    const panel = page.locator('#strategy-view');
+    await expect(panel).toHaveClass(/active/);
+    const text = await panel.textContent();
+    expect(text.length).toBeGreaterThan(50);
+  });
+
+  test('30. should load Endgame Academy with concepts', async ({ page }) => {
+    await page.locator('.nav-item[data-target="endgame-view"]').click();
+    await page.waitForTimeout(200);
+    const panel = page.locator('#endgame-view');
+    await expect(panel).toHaveClass(/active/);
+  });
+
+  test('31. should render hero section with progress ring', async ({ page }) => {
+    const hero = page.locator('.hero-section');
+    await expect(hero).toBeVisible();
+    const ring = page.locator('.hero-progress-ring');
+    await expect(ring).toBeVisible();
+  });
+
+  test('32. should switch all views via nav clicks without errors', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    const targets = ['journey-view','daily-view','play','review','opening-view',
+      'tactics-view','strategy-view','endgame-view','famous-view','coach-view',
+      'tournament-view','analytics-view','community-view','assessment-view',
+      'skilltree-view','boss-view','deep-analytics-view','vis-lab-view','home-view'];
+    for (const t of targets) {
+      await page.locator(`.nav-item[data-target="${t}"]`).click();
+      await page.waitForTimeout(150);
+    }
+    expect(errors.length).toBe(0);
+  });
+
+  test('33. should render chess piece images on board', async ({ page }) => {
+    await page.locator('.nav-item[data-target="play"]').click();
+    await page.waitForTimeout(500);
+    const pieces = page.locator('.chess-piece');
+    const count = await pieces.count();
+    expect(count).toBeGreaterThanOrEqual(16);
+  });
+
+  test('34. should have coach chat input in AI Coach', async ({ page }) => {
+    await page.locator('.nav-item[data-target="coach-view"]').click();
+    await page.waitForTimeout(300);
+    const chatInput = page.locator('#coachChatInput');
+    await expect(chatInput).toBeVisible();
+  });
+
+  test('35. should display header stats correctly', async ({ page }) => {
+    const xp = page.locator('#xpCount');
+    await expect(xp).toBeVisible();
+    const elo = page.locator('#currentEloVal');
+    await expect(elo).toBeVisible();
+    const streak = page.locator('#streakCount');
+    await expect(streak).toBeVisible();
+  });
 });

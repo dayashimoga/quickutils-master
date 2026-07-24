@@ -1,29 +1,22 @@
 # ChessOS V3 — Active TODO
 
-## V3.0.0 Status: ✅ COMPLETE
+## V3.0.1 Status: ✅ COMPLETE
 
-All 4 sprints delivered. No outstanding items.
+All sprints delivered. Deployment verified on https://chessmaster.quickutils.top/
 
-## Future Improvements (V4 Candidates)
+### Resolved in V3.0.1
+- [x] Fix Cloudflare edge cache serving stale JS files
+- [x] Cache-bust all 6 static assets with `?v=3.0.1`
+- [x] Wire SM-2 spaced repetition on opening completion
+- [x] Show next review dates in Opening Lab repertoire list
+- [x] Add nav click handlers for 7 missing view init calls
+- [x] Sync source → dist and deploy
 
-### High Priority
-- [ ] Service worker for offline support and Stockfish caching
-- [ ] Module splitting — break script.js into per-view modules
-- [ ] SRI (Subresource Integrity) hashes for CDN dependencies
-- [ ] Puzzle database expansion — import Lichess puzzle database
-- [ ] Time control selection in game setup (3+2, 5+3, 10+5, 15+10)
-
-### Medium Priority
-- [ ] Opening database expansion — full ECO code coverage (3000+ openings)
-- [ ] PGN export from played games
-- [ ] Tablebase endgame lookup integration
-- [ ] robots.txt and sitemap.xml for SEO
-- [ ] localStorage encryption for profile data
-- [ ] Debounced profile saves for rapid-fire updates
-
-### Low Priority
-- [ ] Dark/light theme per-section override
-- [ ] Sound effects for moves, captures, check
-- [ ] Move auto-complete in Guess the Move
-- [ ] Animated board coordinates toggle
-- [ ] Print-friendly stylesheet for certificate modal
+### Future Considerations (V4)
+- [ ] Build system (Vite/Rollup) for minification and tree-shaking
+- [ ] Service Worker for offline play
+- [ ] WebRTC multiplayer via PeerJS
+- [ ] Server-side ELO tracking with Cloudflare Workers
+- [ ] OAuth integration for persistent accounts
+- [ ] Opening Explorer API integration (Lichess)
+- [ ] Puzzle rating system (Glicko-2)
