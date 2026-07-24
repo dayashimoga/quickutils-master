@@ -12,7 +12,7 @@ import {
   BOSS_BATTLES, getBossBattlePuzzles,
   getGuessTheMovePosition,
   getCoachResponse
-} from './chessmaster-ai-utils.js';
+} from './chessmaster-ai-utils.js?v=3.0.1';
 
 // ═══════════════════════════════════════════════════
 // GLOBAL ERROR BOUNDARY
