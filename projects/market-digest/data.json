@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-12T03:26:51.973105Z",
+  "updatedAt": "2026-09-13T03:32:42.313210Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -194,7 +194,7 @@
     },
     "global": {
       "dji": {
-        "current": 52573.3,
+        "current": 52573.29,
         "history_30d": [
           52485.03,
           53178.41,
@@ -225,7 +225,7 @@
           52786.07,
           52380.66,
           52064.1,
-          52573.3
+          52573.29
         ],
         "delta_1d": 0.98,
         "delta_1w": -2.07,
@@ -242,8 +242,8 @@
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 53624.77,
-          "stop_loss": 49944.64,
+          "target": 53624.76,
+          "stop_loss": 49944.63,
           "strength": "Neutral"
         },
         "forecast_7d": [
@@ -251,7 +251,7 @@
           52762.17,
           52725.66,
           52689.14,
-          52652.63,
+          52652.62,
           52616.11,
           52579.59
         ]
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 77238.31,
+        "current": 77224.98,
         "history_30d": [
-          63402.17,
           62975.59,
           63024.32,
           62818.65,
@@ -542,41 +541,41 @@
           78438.58,
           78259.52,
           76568.12,
-          77238.31
+          77173.8,
+          77224.98
         ],
-        "delta_1d": 0.88,
-        "delta_1w": -3.87,
-        "delta_1m": -1.4,
-        "delta_3m": 21.06,
-        "delta_6m": -4.25,
-        "delta_1y": -33.47,
+        "delta_1d": 0.07,
+        "delta_1w": -2.39,
+        "delta_1m": 0.18,
+        "delta_3m": 21.12,
+        "delta_6m": -5.98,
+        "delta_1y": -33.4,
         "signal": "Buy",
-        "rsi": 54.98,
+        "rsi": 54.95,
         "macd": {
-          "macd": 2024.74,
-          "signal": 2761.33,
-          "hist": -736.59
+          "macd": 1806.19,
+          "signal": 2569.48,
+          "hist": -763.28
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 78783.08,
-          "stop_loss": 73376.39,
+          "target": 78769.48,
+          "stop_loss": 73363.73,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          83382.82,
-          83920.57,
-          84458.33,
-          84996.08,
-          85533.83,
-          86071.58,
-          86609.34
+          82808.3,
+          83279.39,
+          83750.49,
+          84221.59,
+          84692.69,
+          85163.79,
+          85634.89
         ]
       },
       "eth": {
-        "current": 2511.48,
+        "current": 2519.49,
         "history_30d": [
-          1883.99,
           1880.65,
           1880.91,
           1873.94,
@@ -605,41 +604,41 @@
           2484.94,
           2466.91,
           2437.1,
-          2511.48
+          2514.73,
+          2519.49
         ],
-        "delta_1d": 3.05,
-        "delta_1w": -0.12,
-        "delta_1m": -0.15,
-        "delta_3m": 40.46,
-        "delta_6m": 7.94,
-        "delta_1y": -46.74,
+        "delta_1d": 0.19,
+        "delta_1w": 1.15,
+        "delta_1m": 3.93,
+        "delta_3m": 39.52,
+        "delta_6m": 6.35,
+        "delta_1y": -46.03,
         "signal": "Strong Buy",
-        "rsi": 62.97,
+        "rsi": 63.48,
         "macd": {
-          "macd": 89.45,
-          "signal": 108.09,
-          "hist": -18.63
+          "macd": 87.6,
+          "signal": 104.03,
+          "hist": -16.43
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2561.71,
-          "stop_loss": 2385.91,
+          "target": 2569.88,
+          "stop_loss": 2393.52,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2650.79,
-          2670.8,
-          2690.82,
-          2710.83,
-          2730.85,
-          2750.87,
-          2770.88
+          2641.47,
+          2659.51,
+          2677.55,
+          2695.6,
+          2713.64,
+          2731.68,
+          2749.72
         ]
       },
       "sol": {
-        "current": 101.62,
+        "current": 101.82,
         "history_30d": [
-          76.18,
           75.33,
           75.27,
           74.54,
@@ -668,35 +667,36 @@
           103.33,
           101.61,
           98.69,
-          101.62
+          102.4,
+          101.82
         ],
-        "delta_1d": 2.97,
-        "delta_1w": -4.54,
-        "delta_1m": 8.51,
-        "delta_3m": 32.28,
-        "delta_6m": 9.09,
-        "delta_1y": -58.06,
+        "delta_1d": -0.57,
+        "delta_1w": -1.97,
+        "delta_1m": 8.42,
+        "delta_3m": 32.46,
+        "delta_6m": 5.59,
+        "delta_1y": -58.03,
         "signal": "Buy",
-        "rsi": 57.54,
+        "rsi": 57.46,
         "macd": {
-          "macd": 4.16,
-          "signal": 5.35,
-          "hist": -1.19
+          "macd": 3.93,
+          "signal": 5.08,
+          "hist": -1.15
         },
         "pattern": {
           "pattern": "Bull Flag",
-          "target": 109.75,
+          "target": 109.97,
           "stop_loss": 73.05,
           "strength": "Strong Bullish"
         },
         "forecast_7d": [
-          111.29,
-          112.33,
-          113.37,
-          114.4,
-          115.44,
-          116.48,
-          117.52
+          110.87,
+          111.82,
+          112.78,
+          113.73,
+          114.68,
+          115.64,
+          116.59
         ]
       }
     },
@@ -1083,7 +1083,7 @@
   },
   "macroData": {
     "usdInr": {
-      "current": 95.54,
+      "current": 95.55,
       "history_30d": [
         95.33,
         95.1,
@@ -1114,16 +1114,16 @@
         94.82,
         95.11,
         95.69,
-        95.54
+        95.55
       ],
-      "delta_1d": -0.16,
-      "delta_1w": 1.18,
-      "delta_1m": 0.15,
-      "delta_3m": 0.72,
-      "delta_6m": 1.75,
-      "delta_1y": 8.51,
+      "delta_1d": -0.15,
+      "delta_1w": 1.19,
+      "delta_1m": 0.16,
+      "delta_3m": 0.73,
+      "delta_6m": 1.76,
+      "delta_1y": 8.52,
       "signal": "Buy",
-      "rsi": 54.24,
+      "rsi": 54.37,
       "macd": {
         "macd": -0.09,
         "signal": -0.17,
@@ -1131,8 +1131,8 @@
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 97.45,
-        "stop_loss": 90.76,
+        "target": 97.46,
+        "stop_loss": 90.77,
         "strength": "Neutral"
       },
       "forecast_7d": [
@@ -1140,13 +1140,13 @@
         94.94,
         94.93,
         94.91,
-        94.89,
+        94.9,
         94.88,
         94.86
       ]
     },
     "crudeOil": {
-      "current": 104.42,
+      "current": 104.61,
       "history_30d": [
         90.12,
         83.77,
@@ -1177,35 +1177,35 @@
         97.92,
         101.21,
         107.63,
-        104.42
+        104.61
       ],
-      "delta_1d": -2.98,
-      "delta_1w": 9.32,
-      "delta_1m": 17.35,
-      "delta_3m": 19.57,
-      "delta_6m": 1.24,
-      "delta_1y": 57.33,
+      "delta_1d": -2.81,
+      "delta_1w": 9.52,
+      "delta_1m": 17.57,
+      "delta_3m": 19.79,
+      "delta_6m": 1.43,
+      "delta_1y": 56.16,
       "signal": "Strong Buy",
-      "rsi": 68.04,
+      "rsi": 68.44,
       "macd": {
-        "macd": 3.98,
+        "macd": 3.99,
         "signal": 2.62,
-        "hist": 1.36
+        "hist": 1.37
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 106.51,
-        "stop_loss": 99.2,
+        "target": 106.7,
+        "stop_loss": 99.38,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        100.72,
-        101.35,
-        101.97,
-        102.59,
-        103.21,
-        103.83,
-        104.45
+        100.75,
+        101.37,
+        101.99,
+        102.62,
+        103.24,
+        103.86,
+        104.48
       ]
     },
     "inflation": {
@@ -1214,6 +1214,72 @@
     }
   },
   "newsData": [
+    {
+      "title": "HDFC Bank submits two candidates to RBI for next CEO ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hdfc-bank-submits-names-of-two-ceo-candidates-to-rbi-reports/articleshow/134129717.cms",
+      "time": "Sat, 12 Sep 2026 17:28:01 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Weak technical setup to keep bulls under pressure ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-weak-technical-setup-to-keep-bulls-under-pressure/articleshow/134125578.cms",
+      "time": "Sat, 12 Sep 2026 16:20:38 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Explained: What Sebi\u2019s proposed CAS changes mean for expiry-day trading and settlement ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/explained-what-sebis-proposed-cas-changes-mean-for-expiry-day-trading-and-settlement/articleshow/134122773.cms",
+      "time": "Sat, 12 Sep 2026 15:28:13 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Demat 2.0 explained: Why it matters for bond market investors ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/demat-2-0-explained-why-it-matters-for-bond-market-investors/articleshow/134116662.cms",
+      "time": "Sat, 12 Sep 2026 13:24:36 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Goldman Sachs\u2019 India Portfolio; 10 stocks rally up to 130% in CY26 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/goldman-sachs-india-portfolio-10-stocks-rally-up-to-130-in-cy26/slideshow/134116554.cms",
+      "time": "Sat, 12 Sep 2026 13:06:28 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "BSE volumes ease after sharp rebound; CAS remains in focus: Nuvama ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bse-volumes-ease-after-sharp-rebound-cas-remains-in-focus-nuvama/articleshow/134115840.cms",
+      "time": "Sat, 12 Sep 2026 13:03:25 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi proposes new CAS framework, two options for expiry-day settlement ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-proposes-new-cas-framework-two-options-for-expiry-day-settlement/articleshow/134113792.cms",
+      "time": "Sat, 12 Sep 2026 12:15:56 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "PMS Tracker: East Green, Atlas Integrated Finance, Hem Securities, 7 others deliver up to 14.7% returns in August ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/pms-tracker-east-green-atlas-integrated-finance-hem-securities-7-others-deliver-up-to-14-7-returns-in-august/articleshow/134111444.cms",
+      "time": "Sat, 12 Sep 2026 11:26:55 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Gainers: 9 smallcap stocks gain for 5 days in a row ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-9-smallcap-stocks-gain-for-5-days-in-a-row/slideshow/134112346.cms",
+      "time": "Sat, 12 Sep 2026 11:25:00 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Jefferies picks 5 financial stocks with upside of up to 25%. How many do you have? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jefferies-picks-5-financial-stocks-with-upside-of-up-to-25-how-many-do-you-have/slideshow/134108138.cms",
+      "time": "Sat, 12 Sep 2026 09:51:44 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "NSE IPO: Market dominance vs regulatory risks; what investors should know from the RHP ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nse-ipo-market-dominance-vs-regulatory-risks-what-investors-should-know-from-the-rhp/articleshow/134107678.cms",
+      "time": "Sat, 12 Sep 2026 09:48:55 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Global funds sour on India stocks as some cut allocation to zero ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/global-funds-sour-on-india-stocks-as-some-cut-allocation-to-zero/articleshow/134104559.cms",
@@ -1326,72 +1392,6 @@
       "title": "Sri Lotus Developers shares jump 3% to fresh 52-week high after Capital Group buys nearly 2% stake ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/sri-lotus-developers-shares-jump-3-to-fresh-52-week-high-after-capital-group-buys-nearly-2-stake/articleshow/134056130.cms",
       "time": "Fri, 11 Sep 2026 14:23:04 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Jefferies' 25% CAGR club: Paytm, Groww among 5 financial stocks that can deliver up to 25% returns ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jefferies-25-cagr-club-paytm-groww-among-5-financial-stocks-that-can-deliver-up-to-25-returns/articleshow/134055438.cms",
-      "time": "Fri, 11 Sep 2026 14:21:40 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Jefferies cuts KEI Industries target price by 11%. Will UltraTech\u2019s entry put the company at risk? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jefferies-cuts-kei-industries-target-price-by-11-will-ultratechs-entry-put-the-company-at-risk/articleshow/134056011.cms",
-      "time": "Fri, 11 Sep 2026 14:17:52 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Hidden goldmine! How NSE IPO will unlock Rs 95,000 crore value for over 20 listed companies ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hidden-goldmine-how-nse-ipo-will-unlock-rs-95000-crore-value-for-over-20-listed-companies/articleshow/134055566.cms",
-      "time": "Fri, 11 Sep 2026 14:10:11 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "GFF 2026: Digital finance has scaled, now trust and resilience must catch up, says RBI\u2019s Deputy Governor Murmu ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/digital-finance-has-scaled-now-trust-and-resilience-must-catch-up-rbis-deputy-governor-murmu/articleshow/134103426.cms",
-      "time": "Fri, 11 Sep 2026 14:09:30 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Earning in dollars doesn\u2019t make NRIs better investors: Currency advantage alone isn\u2019t enough ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/earning-in-dollars-doesnt-make-nris-better-investors-currency-advantage-alone-isnt-enough/articleshow/134053709.cms",
-      "time": "Fri, 11 Sep 2026 13:57:05 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bernstein names Paytm stock as its top pick, lists 3 strong growth drivers for fintech giant ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bernstein-names-paytm-stock-as-its-top-pick-lists-3-strong-growth-drivers-for-fintech-giant/articleshow/134051463.cms",
-      "time": "Fri, 11 Sep 2026 12:30:34 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Oracle earnings show slower cash burn as AI spending starts to pay off; stock jumps 4% after market ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/oracle-earnings-show-slower-cash-burn-as-ai-spending-starts-to-pay-off-stock-jumps-4-after-market/articleshow/134051217.cms",
-      "time": "Fri, 11 Sep 2026 12:25:22 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Retail algo trading gets a makeover: how APIs, AI and regulation are opening the door for Indian traders ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/retail-algo-trading-gets-a-makeover-how-apis-ai-and-regulation-are-opening-the-door-for-indian-traders/articleshow/134049975.cms",
-      "time": "Fri, 11 Sep 2026 11:56:44 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Midcap rally hides a deeper split: Every second stock down but index up 11% in 1 year. Are investors walking on thin ice? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/midcap-rally-hides-a-deeper-split-every-second-down-but-index-up-11-in-1-year-are-investors-walking-on-thin-ice/articleshow/134049249.cms",
-      "time": "Fri, 11 Sep 2026 11:36:08 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "HDFC Bank shares fall 2% to fresh 52-week low despite victory in Credit Suisse AT1 bonds cases in Bahrain ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hdfc-bank-shares-fall-2-to-fresh-52-week-low-despite-victory-in-credit-suisse-at1-bonds-cases-in-bahrain/articleshow/134048892.cms",
-      "time": "Fri, 11 Sep 2026 11:31:39 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "$4 billion CIO Nimesh Chandan spots 4 bullish signals for Indian stocks. What changed? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/4-billion-cio-nimesh-chandan-spots-4-bullish-signals-for-indian-stocks-what-changed/articleshow/134048593.cms",
-      "time": "Fri, 11 Sep 2026 11:25:12 +0530",
       "source": "ET Markets"
     }
   ]
