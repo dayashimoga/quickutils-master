@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-03T04:06:29.045286Z",
+  "updatedAt": "2026-10-04T04:39:21.049038Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 84678.07,
+        "current": 84804.01,
         "history_30d": [
-          81271.74,
           79671.97,
           79823.87,
           80350.05,
@@ -542,41 +541,41 @@
           83622.43,
           83553.85,
           84853.1,
-          84678.07
+          84497.21,
+          84804.01
         ],
-        "delta_1d": -0.21,
-        "delta_1w": 0.26,
-        "delta_1m": 9.72,
-        "delta_3m": 34.92,
-        "delta_6m": 14.81,
-        "delta_1y": -30.74,
+        "delta_1d": 0.36,
+        "delta_1w": 1.56,
+        "delta_1m": 9.75,
+        "delta_3m": 33.59,
+        "delta_6m": 15.25,
+        "delta_1y": -30.73,
         "signal": "Strong Buy",
-        "rsi": 63.82,
+        "rsi": 63.85,
         "macd": {
-          "macd": 2005.64,
-          "signal": 2134.94,
-          "hist": -129.3
+          "macd": 1942.93,
+          "signal": 2094.23,
+          "hist": -151.3
         },
         "pattern": {
           "pattern": "Cup & Handle",
-          "target": 93145.88,
-          "stop_loss": 79327.48,
+          "target": 93284.41,
+          "stop_loss": 79441.31,
           "strength": "Bullish"
         },
         "forecast_7d": [
-          85080.2,
-          85345.51,
-          85610.82,
-          85876.13,
-          86141.44,
-          86406.75,
-          86672.06
+          85591.16,
+          85882.23,
+          86173.3,
+          86464.37,
+          86755.44,
+          87046.51,
+          87337.57
         ]
       },
       "eth": {
-        "current": 2681.74,
+        "current": 2691.8,
         "history_30d": [
-          2508.02,
           2456.08,
           2480.74,
           2514.55,
@@ -605,41 +604,41 @@
           2676.72,
           2683.68,
           2705.54,
-          2681.74
+          2668.15,
+          2691.8
         ],
-        "delta_1d": -0.88,
-        "delta_1w": -0.19,
-        "delta_1m": 6.64,
-        "delta_3m": 45.48,
-        "delta_6m": 32.79,
-        "delta_1y": -40.6,
-        "signal": "Buy",
-        "rsi": 60.59,
+        "delta_1d": 0.89,
+        "delta_1w": 0.12,
+        "delta_1m": 6.57,
+        "delta_3m": 42.99,
+        "delta_6m": 34.3,
+        "delta_1y": -40.04,
+        "signal": "Strong Buy",
+        "rsi": 60.95,
         "macd": {
-          "macd": 71.29,
-          "signal": 81.19,
-          "hist": -9.91
+          "macd": 66.88,
+          "signal": 78.16,
+          "hist": -11.28
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2735.37,
-          "stop_loss": 2547.65,
+          "target": 2745.64,
+          "stop_loss": 2557.21,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2741.64,
-          2752.0,
-          2762.36,
-          2772.73,
-          2783.09,
-          2793.46,
-          2803.82
+          2749.32,
+          2759.82,
+          2770.31,
+          2780.8,
+          2791.3,
+          2801.79,
+          2812.28
         ]
       },
       "sol": {
-        "current": 119.39,
+        "current": 120.63,
         "history_30d": [
-          103.98,
           101.95,
           103.19,
           106.45,
@@ -668,35 +667,36 @@
           119.06,
           117.99,
           118.4,
-          119.39
+          118.62,
+          120.63
         ],
-        "delta_1d": 0.84,
-        "delta_1w": -2.19,
-        "delta_1m": 16.59,
-        "delta_3m": 66.12,
-        "delta_6m": 44.63,
-        "delta_1y": -48.76,
+        "delta_1d": 1.69,
+        "delta_1w": 1.51,
+        "delta_1m": 18.51,
+        "delta_3m": 64.23,
+        "delta_6m": 46.57,
+        "delta_1y": -47.09,
         "signal": "Strong Buy",
-        "rsi": 63.36,
+        "rsi": 64.91,
         "macd": {
-          "macd": 5.26,
-          "signal": 5.55,
-          "hist": -0.29
+          "macd": 5.1,
+          "signal": 5.45,
+          "hist": -0.35
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 121.78,
-          "stop_loss": 113.42,
+          "target": 123.04,
+          "stop_loss": 114.6,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          122.23,
-          123.04,
-          123.85,
-          124.66,
-          125.48,
-          126.29,
-          127.1
+          123.18,
+          124.02,
+          124.86,
+          125.7,
+          126.54,
+          127.37,
+          128.21
         ]
       }
     },
@@ -976,7 +976,7 @@
       "delta_1m": 6.92,
       "delta_3m": 37.88,
       "delta_6m": -6.85,
-      "delta_1y": 58.45,
+      "delta_1y": 56.18,
       "signal": "Buy",
       "rsi": 53.71,
       "macd": {
@@ -1006,6 +1006,78 @@
     }
   },
   "newsData": [
+    {
+      "title": "9 penny stocks crash up to 57% in just 2 months ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/9-penny-stocks-crash-up-to-57-in-just-2-months/slideshow/134669386.cms",
+      "time": "Sun, 04 Oct 2026 09:22:13 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Will Nifty, Sensex plunge for 9th straight week? TCS Q2, 4 factors to drive Dalal Street from Monday ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/will-nifty-sensex-plunge-for-9th-straight-week-tcs-q2-4-factors-to-drive-dalal-street-from-monday/articleshow/134669285.cms",
+      "time": "Sun, 04 Oct 2026 09:14:26 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "D-Mart Q2 revenue rises 18% to Rs 19,206 cr; store count at 518 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/d-mart-q2-revenue-rise-18-pc-to-rs-19206-cr-store-count-at-518/articleshow/134656472.cms",
+      "time": "Sat, 03 Oct 2026 15:36:18 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi examining position limits for non-agri contracts to boost liquidity ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-examining-position-limits-for-non-agri-contracts-to-boost-liquidity/articleshow/134656225.cms",
+      "time": "Sat, 03 Oct 2026 15:16:13 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Oversold Nifty may rebound as volatility stays high ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-oversold-nifty-may-rebound-as-volatility-stays-high/articleshow/134654990.cms",
+      "time": "Sat, 03 Oct 2026 15:08:01 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Cube Highways Trust secures Rs.1,150 crore through AAA-rated NCDs ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/cube-highways-trust-secures-rs-1150-crore-through-aaa-rated-ncds/articleshow/134655392.cms",
+      "time": "Sat, 03 Oct 2026 14:10:16 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi to soon issue framework on Closing Auction Session; receives over 3,500 comments ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-to-soon-issue-framework-on-closing-auction-session-receives-over-3500-comments/articleshow/134655426.cms",
+      "time": "Sat, 03 Oct 2026 14:08:16 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "9 large-cap stocks that surged over 50% in the first half of FY27 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/9-large-cap-stocks-that-surged-over-50-in-the-first-half-of-fy27/slideshow/134653712.cms",
+      "time": "Sat, 03 Oct 2026 12:00:20 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Stocks to buy: Axis picks 7 largecap stocks with upside potential of up to 44%. See full list ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/stocks-to-buy-axis-picks-7-largecap-stocks-with-upside-potential-of-up-to-44-see-full-list/slideshow/134653534.cms",
+      "time": "Sat, 03 Oct 2026 11:45:39 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Losers: 14 midcap stocks decline for 5 consecutive sessions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-losers-14-midcap-stocks-decline-for-5-consecutive-sessions/slideshow/134652347.cms",
+      "time": "Sat, 03 Oct 2026 10:19:57 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Bleak Winter! Why analysts are hinting at painful October even after 8 weeks of Nifty correction? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bleak-winter-why-analysts-are-hinting-at-painful-october-even-after-8-weeks-of-nifty-correction/articleshow/134651765.cms",
+      "time": "Sat, 03 Oct 2026 09:45:48 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "\u200bBonus issues &amp; stock split: 5 stocks rewarding shareholders next week ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bonus-issues-stock-split-5-stocks-rewarding-shareholders-next-week/slideshow/134651748.cms",
+      "time": "Sat, 03 Oct 2026 09:32:49 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Largecaps face investor apathy, mid and smallcaps fuel euphoria: Kotak Institutional Equities ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/large-caps-face-investor-apathy-mid-and-small-caps-fuel-euphoria/articleshow/134650331.cms",
@@ -1112,78 +1184,6 @@
       "title": "Adani Group has Rs 2.6 lakh crore projects completed or under execution in Maharashtra: Pranav Adani ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/adani-group-has-rs-2-6-lakh-crore-projects-completed-or-under-execution-in-maharashtra-pranav-adani/articleshow/134622802.cms",
       "time": "Thu, 01 Oct 2026 21:00:08 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi revamps Document Number Verification System, adds subject matter as mandatory field ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-revamps-document-number-verification-system-adds-subject-matter-as-mandatory-field/articleshow/134621918.cms",
-      "time": "Thu, 01 Oct 2026 19:58:00 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "RBI eases bank stake rules, allows one-time approval for MFs, insurers for holdings up to 10% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/rbi-eases-bank-stake-rules-allows-one-time-approval-for-mfs-insurers-for-holdings-up-to-10/articleshow/134621230.cms",
-      "time": "Thu, 01 Oct 2026 19:23:12 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi asks stock brokers to display investor warnings on apps and websites ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-asks-stock-brokers-to-display-investor-warnings-on-apps-and-websites/articleshow/134620344.cms",
-      "time": "Thu, 01 Oct 2026 18:42:28 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bharat Dynamics among 5 capital goods stocks that hit 52-week lows and slipped up to 17% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bharat-dynamics-among-5-capital-goods-stocks-that-hit-52-week-lows-and-slipped-up-to-17-in-a-month/slideshow/134619866.cms",
-      "time": "Thu, 01 Oct 2026 18:23:47 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Market wrap: Infosys, HDFC Bank, Bajaj Auto, Maruti Suzuki among top gainers and losers on Nifty and Sensex on Thursday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-wrap-infosys-hdfc-bank-bajaj-auto-maruti-suzuki-among-top-gainers-and-losers-on-nifty-and-sensex-on-thursday/articleshow/134617786.cms",
-      "time": "Thu, 01 Oct 2026 17:15:56 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Kotak warns small and midcap euphoria may turn sour as investors chase quick returns ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/kotak-warns-small-and-midcap-euphoria-may-turn-sour-as-investors-chase-quick-returns/articleshow/134615987.cms",
-      "time": "Thu, 01 Oct 2026 16:04:12 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "10 microcap stocks slumped up to 32% in just one month. Were they in your portfolio? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/10-microcap-stocks-slipped-up-to-32-in-just-one-month-is-your-portfolio-hit/slideshow/134615866.cms",
-      "time": "Thu, 01 Oct 2026 15:53:58 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "AMC stocks face rough waters; Kotak sees selective opportunities in SBI, HDFC AMC ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/amc-stocks-face-rough-waters-kotak-sees-selective-opportunities-in-sbi-hdfc-amc/articleshow/134614886.cms",
-      "time": "Thu, 01 Oct 2026 15:27:41 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "PB Fintech shares crash 50% from peak, fall below 2021 IPO price. More downside coming? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/pb-fintech-shares-crash-50-from-peak-fall-below-2021-ipo-price-more-downside-coming/articleshow/134614821.cms",
-      "time": "Thu, 01 Oct 2026 15:22:24 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "US 10-year yield at 24-year high rattles Nifty, rupee and bond markets. Why is India hit hard? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/us-10-year-yield-at-24-year-high-rattles-nifty-rupee-and-bond-markets-why-is-india-hit-hard/articleshow/134613973.cms",
-      "time": "Thu, 01 Oct 2026 14:42:14 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Motors PV shares fall over 3% despite 40% Q2 sales growth; Nifty Auto index down over 4% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tata-motors-pv-shares-fall-over-3-despite-40-q2-sales-growth-nifty-auto-index-down-over-4/articleshow/134613600.cms",
-      "time": "Thu, 01 Oct 2026 14:27:31 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Stock Market Holiday: Are BSE, NSE open or closed for Gandhi Jayanti tomorrow? Check upcoming market holidays ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/stock-market-holiday-are-bse-nse-open-or-closed-for-gandhi-jayanti-tomorrow-check-upcoming-market-holidays/articleshow/134613448.cms",
-      "time": "Thu, 01 Oct 2026 14:20:07 +0530",
       "source": "ET Markets"
     }
   ]
