@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T03:21:09.001486Z",
+  "updatedAt": "2026-10-19T03:33:26.487388Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -320,9 +320,8 @@
         ]
       },
       "nikkei": {
-        "current": 65324.29,
+        "current": 64534.03,
         "history_30d": [
-          66215.34,
           64325.64,
           64214.48,
           65020.94,
@@ -351,35 +350,36 @@
           67777.52,
           67744.29,
           64425.95,
-          65324.29
+          65324.29,
+          64534.03
         ],
-        "delta_1d": 1.39,
-        "delta_1w": -5.38,
-        "delta_1m": 2.05,
-        "delta_3m": -3.57,
-        "delta_6m": 14.76,
-        "delta_1y": 35.31,
+        "delta_1d": -1.21,
+        "delta_1w": -6.51,
+        "delta_1m": 1.64,
+        "delta_3m": -6.13,
+        "delta_6m": 14.21,
+        "delta_1y": 31.21,
         "signal": "Sell",
-        "rsi": 43.71,
+        "rsi": 41.03,
         "macd": {
-          "macd": 307.01,
-          "signal": 635.59,
-          "hist": -328.58
+          "macd": 73.37,
+          "signal": 523.14,
+          "hist": -449.77
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 66630.78,
-          "stop_loss": 62058.08,
+          "target": 65824.71,
+          "stop_loss": 61307.33,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          68409.43,
-          68549.41,
-          68689.38,
-          68829.36,
-          68969.33,
-          69109.31,
-          69249.28
+          68180.19,
+          68308.99,
+          68437.8,
+          68566.6,
+          68695.4,
+          68824.2,
+          68953.0
         ]
       },
       "hangseng": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 81736.32,
+        "current": 82522.06,
         "history_30d": [
-          80901.46,
           81233.68,
           81142.61,
           86602.91,
@@ -542,41 +541,41 @@
           81562.49,
           82141.46,
           81500.8,
-          81736.32
+          81382.15,
+          82522.06
         ],
-        "delta_1d": 0.29,
-        "delta_1w": -0.03,
-        "delta_1m": -3.16,
-        "delta_3m": 30.11,
-        "delta_6m": 24.39,
-        "delta_1y": -23.75,
-        "signal": "Strong Sell",
-        "rsi": 47.43,
+        "delta_1d": 1.4,
+        "delta_1w": -0.69,
+        "delta_1m": -2.29,
+        "delta_3m": 27.93,
+        "delta_6m": 24.49,
+        "delta_1y": -24.06,
+        "signal": "Sell",
+        "rsi": 50.65,
         "macd": {
-          "macd": 109.76,
-          "signal": 613.93,
-          "hist": -504.17
+          "macd": 78.49,
+          "signal": 502.32,
+          "hist": -423.83
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 83371.05,
-          "stop_loss": 77649.5,
+          "target": 84172.5,
+          "stop_loss": 78395.96,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          82748.83,
-          82697.74,
-          82646.65,
-          82595.56,
-          82544.47,
-          82493.39,
-          82442.3
+          82374.08,
+          82296.09,
+          82218.1,
+          82140.11,
+          82062.12,
+          81984.13,
+          81906.14
         ]
       },
       "eth": {
-        "current": 2416.81,
+        "current": 2424.92,
         "history_30d": [
-          2611.35,
           2631.96,
           2643.0,
           2776.47,
@@ -605,41 +604,41 @@
           2418.21,
           2440.48,
           2419.77,
-          2416.81
+          2399.8,
+          2424.92
         ],
-        "delta_1d": -0.12,
-        "delta_1w": -1.13,
-        "delta_1m": -10.33,
-        "delta_3m": 28.97,
-        "delta_6m": 40.14,
-        "delta_1y": -37.88,
+        "delta_1d": 1.05,
+        "delta_1w": -2.87,
+        "delta_1m": -9.75,
+        "delta_3m": 26.81,
+        "delta_6m": 35.1,
+        "delta_1y": -39.14,
         "signal": "Strong Sell",
-        "rsi": 38.36,
+        "rsi": 40.09,
         "macd": {
-          "macd": -42.71,
-          "signal": -15.85,
-          "hist": -26.86
+          "macd": -45.86,
+          "signal": -22.07,
+          "hist": -23.79
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2465.15,
-          "stop_loss": 2295.97,
+          "target": 2473.42,
+          "stop_loss": 2303.67,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2452.54,
-          2442.36,
-          2432.18,
-          2421.99,
-          2411.81,
-          2401.63,
-          2391.45
+          2425.74,
+          2414.26,
+          2402.79,
+          2391.31,
+          2379.84,
+          2368.37,
+          2356.89
         ]
       },
       "sol": {
-        "current": 103.8,
+        "current": 105.39,
         "history_30d": [
-          112.6,
           111.01,
           111.13,
           118.75,
@@ -668,35 +667,36 @@
           104.07,
           105.33,
           104.3,
-          103.8
+          103.31,
+          105.39
         ],
-        "delta_1d": -0.48,
-        "delta_1w": -1.67,
-        "delta_1m": -14.52,
-        "delta_3m": 39.25,
-        "delta_6m": 45.85,
-        "delta_1y": -44.69,
+        "delta_1d": 2.01,
+        "delta_1w": -1.26,
+        "delta_1m": -13.66,
+        "delta_3m": 38.78,
+        "delta_6m": 42.46,
+        "delta_1y": -43.88,
         "signal": "Strong Sell",
-        "rsi": 37.94,
+        "rsi": 41.85,
         "macd": {
-          "macd": -1.84,
-          "signal": -0.02,
-          "hist": -1.82
+          "macd": -1.97,
+          "signal": -0.42,
+          "hist": -1.55
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 105.88,
-          "stop_loss": 98.61,
+          "target": 107.5,
+          "stop_loss": 100.12,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          107.78,
-          107.36,
-          106.93,
-          106.51,
-          106.08,
-          105.66,
-          105.24
+          106.39,
+          105.9,
+          105.4,
+          104.9,
+          104.4,
+          103.91,
+          103.41
         ]
       }
     },
@@ -971,7 +971,7 @@
   },
   "macroData": {
     "usdInr": {
-      "current": 94.96,
+      "current": 94.87,
       "history_30d": [
         94.49,
         94.82,
@@ -1002,41 +1002,40 @@
         95.29,
         95.15,
         94.52,
-        94.96
+        94.87
       ],
-      "delta_1d": 0.47,
-      "delta_1w": -1.88,
-      "delta_1m": -0.88,
-      "delta_3m": -1.66,
-      "delta_6m": 0.75,
-      "delta_1y": 8.14,
+      "delta_1d": 0.37,
+      "delta_1w": -1.97,
+      "delta_1m": -0.97,
+      "delta_3m": -1.75,
+      "delta_6m": 0.66,
+      "delta_1y": 7.81,
       "signal": "Sell",
-      "rsi": 40.52,
+      "rsi": 39.26,
       "macd": {
-        "macd": -0.1,
+        "macd": -0.11,
         "signal": 0.1,
         "hist": -0.21
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 96.86,
-        "stop_loss": 90.21,
+        "target": 96.77,
+        "stop_loss": 90.13,
         "strength": "Neutral"
       },
       "forecast_7d": [
+        96.02,
         96.04,
-        96.05,
+        96.06,
         96.07,
         96.09,
-        96.1,
-        96.12,
-        96.14
+        96.11,
+        96.12
       ]
     },
     "crudeOil": {
-      "current": 109.86,
+      "current": 108.0,
       "history_30d": [
-        96.28,
         97.92,
         101.21,
         107.63,
@@ -1065,35 +1064,36 @@
         105.69,
         106.06,
         105.92,
-        109.86
+        109.86,
+        108.0
       ],
-      "delta_1d": 3.72,
-      "delta_1w": 4.91,
-      "delta_1m": 4.81,
-      "delta_3m": 20.71,
-      "delta_6m": 15.06,
-      "delta_1y": 79.25,
+      "delta_1d": -1.69,
+      "delta_1w": 1.27,
+      "delta_1m": 3.98,
+      "delta_3m": 14.81,
+      "delta_6m": 9.67,
+      "delta_1y": 77.02,
       "signal": "Strong Buy",
-      "rsi": 65.87,
+      "rsi": 60.79,
       "macd": {
-        "macd": 2.21,
-        "signal": 2.0,
-        "hist": 0.21
+        "macd": 2.27,
+        "signal": 2.05,
+        "hist": 0.22
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 112.06,
-        "stop_loss": 104.37,
+        "target": 110.16,
+        "stop_loss": 102.6,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        105.36,
+        105.39,
         105.47,
-        105.57,
-        105.68,
-        105.79,
-        105.9,
-        106.01
+        105.56,
+        105.64,
+        105.73,
+        105.81,
+        105.9
       ]
     },
     "inflation": {
@@ -1103,183 +1103,183 @@
   },
   "newsData": [
     {
-      "title": "Central Bank of India Q2 profit rises 21% as loans grow 30% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/central-bank-of-india-q2-profit-rises-21-as-loans-grow-30/articleshow/135014014.cms",
-      "time": "Sat, 17 Oct 2026 17:44:25 +0530",
+      "title": "IDBI Bank shares in focus as Q2 net profit falls 39%; NII tanks nearly 50% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/idbi-bank-shares-in-focus-as-q2-net-profit-falls-39-nii-tanks-nearly-50-yoy/articleshow/135038766.cms",
+      "time": "Mon, 19 Oct 2026 08:57:46 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "ixigo Q2 profit at Rs 63 cr on robust show in hotel booking biz ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/ixigo-q2-profit-at-rs-63-cr-on-robust-show-in-hotel-booking-biz/articleshow/135012396.cms",
-      "time": "Sat, 17 Oct 2026 16:21:46 +0530",
+      "title": "L&amp;T Finance among 4 F&amp;O stocks with a sharp rise in futures open interest ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lampt-finance-among-4-fampo-stocks-with-a-sharp-rise-in-futures-open-interest/slideshow/135038726.cms",
+      "time": "Mon, 19 Oct 2026 08:49:00 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "ICICI Bank Q2 Results: Net profit jumps 20% YoY to Rs 14,843 crore, NII rises 18% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/icici-bank-q2-results-net-profit-jumps-20-to-rs-14843-crore-nii-rises-18-yoy/articleshow/135011810.cms",
-      "time": "Sat, 17 Oct 2026 15:47:31 +0530",
+      "title": "U-turn from regulator may be new lifeline to Indian derivatives ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/u-turn-from-regulator-may-be-new-lifeline-to-indian-derivatives/articleshow/135038625.cms",
+      "time": "Mon, 19 Oct 2026 08:47:36 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "IDBI Bank Q2 results: Net profit tanks 39% YoY to Rs 2,205 crore; NII dips 49% YoY ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/idbi-bank-q2-results-net-profit-tanks-39-yoy-to-rs-2205-crore-nii-dips-49-yoy/articleshow/135011867.cms",
-      "time": "Sat, 17 Oct 2026 15:44:42 +0530",
+      "title": "HFCL among 3 stocks closing above VWAP ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hfcl-among-3-stocks-closing-above-vwap/slideshow/135038565.cms",
+      "time": "Mon, 19 Oct 2026 08:35:59 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Nifty reclaims 200 WMA; eyes further gains as key resistance shapes next move ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nifty-reclaims-200-wma-eyes-further-gains-as-key-resistance-shapes-next-move/articleshow/135011480.cms",
-      "time": "Sat, 17 Oct 2026 15:19:28 +0530",
+      "title": "\u200bHBL Engineering among 4 stocks showing RSI trending up ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hbl-engineering-among-4-stocks-showing-rsi-trending-up/slideshow/135038502.cms",
+      "time": "Mon, 19 Oct 2026 08:30:37 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "10 smallcap stocks surge up to 65% in 3 months despite market weakness ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/10-smallcap-stocks-surge-up-to-65-in-3-months-despite-market-weakness/slideshow/135010857.cms",
-      "time": "Sat, 17 Oct 2026 14:16:40 +0530",
+      "title": "Wipro among 4 stocks showing White Marubozu pattern ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/wipro-among-4-stocks-showing-white-marubozu-pattern/slideshow/135038438.cms",
+      "time": "Mon, 19 Oct 2026 08:23:43 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "HDFC Bank Q2 Results: Net profit rises 5% YoY to Rs 19,510 crore; NII grows 10% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/hdfc-bank-q2-results-net-profit-rises-5-yoy-to-rs-19510-crore-nii-grows-10/articleshow/135010605.cms",
-      "time": "Sat, 17 Oct 2026 14:16:36 +0530",
+      "title": "HBL Engineering among 4 stocks showing RSI trending up ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/hbl-engineering-among-4-stocks-showing-rsi-trending-up/slideshow/135038358.cms",
+      "time": "Mon, 19 Oct 2026 08:18:51 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Axis Bank Q2 Results: Net profit jumps 38% YoY to Rs 7,003 crore, NII rises 12% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/axis-bank-q2-results-net-profit-jumps-38-yoy-to-rs-7003-crore-nii-rises-12/articleshow/135009892.cms",
-      "time": "Sat, 17 Oct 2026 13:12:58 +0530",
+      "title": "RIL Share Price Live Updates: RIL's recent returns reflect market challenges ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/ril-share-price-live-19-oct-2026/liveblog/135038202.cms",
+      "time": "Mon, 19 Oct 2026 08:10:23 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "8 small, midcap stocks with upside potential of up to 50%. How many are in your portfolio? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/8-small-midcap-stocks-with-upside-potential-of-up-to-50-how-many-are-in-your-portfolio/slideshow/135009761.cms",
-      "time": "Sat, 17 Oct 2026 12:40:01 +0530",
+      "title": "Positive Breakout: These 6 stocks cross above their 200 DMAs ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/positive-breakout-these-6-stocks-cross-above-their-200-dmas/slideshow/135037931.cms",
+      "time": "Mon, 19 Oct 2026 07:42:41 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Nicholas Sleep\u2019s investing lessons: Why patience, conviction and long-term thinking matter ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nicholas-sleeps-investing-lessons-why-patience-conviction-and-long-term-thinking-matter/articleshow/135009564.cms",
-      "time": "Sat, 17 Oct 2026 12:38:15 +0530",
+      "title": "Sensex Today | Nifty 50 | Stock Market Live Updates: GIFT Nifty signals a muted start; Asian shares trade lower ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/live-blog/bse-sensex-today-nifty50-stock-market-live-updates-gift-nifty-vedanta-hdfc-bank-share-price-19-october-2026/liveblog/135037753.cms",
+      "time": "Mon, 19 Oct 2026 07:22:42 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Concurrent Gainers: 15 stocks gain for 5 days in a row ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-15-stocks-gain-for-5-days-in-a-row/slideshow/135008981.cms",
-      "time": "Sat, 17 Oct 2026 11:53:45 +0530",
+      "title": "Stocks in news: Vedanta, HDFC Bank, ICICI Bank, Axis Bank, HFCL, IREDA, Zen Tech and Oil India ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/stocks-in-news-vedanta-hdfc-bank-icici-bank-axis-bank-hfcl-ireda-zen-tech-and-oil-india/articleshow/135037012.cms",
+      "time": "Mon, 19 Oct 2026 06:00:00 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Why India's steel demand is defying global weakness ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/why-indias-steel-demand-is-defying-global-weakness/articleshow/135008082.cms",
-      "time": "Sat, 17 Oct 2026 11:08:59 +0530",
+      "title": "D-St set for a cautious opening as GIFT Nifty signals muted start ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/pre-market-action-heres-the-trade-setup-for-todays-session/articleshow/135036997.cms",
+      "time": "Mon, 19 Oct 2026 06:00:00 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "IT's time to celebrate when chips are down; Nifty IT soars 11.7% to log biggest weekly rally since 2008 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/its-time-to-celebrate-when-chips-are-down-nifty-it-soars-11-7-to-log-biggest-weekly-rally-since-2008/articleshow/135007166.cms",
-      "time": "Sat, 17 Oct 2026 09:46:40 +0530",
+      "title": "Pharma Q2 Outlook: Pricing pressure, US competition to weigh on select players ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indias-pharmaceutical-companies-to-report-mixed-results-as-domestic-growth-offsets-pricing-pressures/articleshow/135037267.cms",
+      "time": "Mon, 19 Oct 2026 05:59:30 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Crompton Greaves Consumer Electricals Ltd Q2 Results: Profit surges 65% to Rs 124 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/crompton-greaves-q2-results-profit-surges-65-to-rs-124-crore/articleshow/134998426.cms",
-      "time": "Fri, 16 Oct 2026 21:03:01 +0530",
+      "title": "Nifty rally faces crucial test at key resistance levels: Analysts ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/nifty-gains-3-as-analysts-predict-recovery-key-resistance-levels-ahead/articleshow/135037107.cms",
+      "time": "Mon, 19 Oct 2026 05:44:32 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "DLF Q2 profit rises to Rs 1,301 crore as luxury project sells out ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/dlf-q2-profit-rises-to-rs-1301-crore-as-luxury-project-sells-out/articleshow/134996827.cms",
-      "time": "Fri, 16 Oct 2026 19:10:03 +0530",
+      "title": "Public sector banks' Rs 7.8 lakh core corporate loan pipeline signals capex revival ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/public-sector-banks-rs-7-8-lakh-core-corporate-loan-pipeline-signals-capex-revival/articleshow/135037258.cms",
+      "time": "Mon, 19 Oct 2026 05:30:00 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Ujjivan SFB to raise Rs 409 crore from IFC, three insurers ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/ujjivan-sfb-to-raise-rs-409-crore-from-ifc-three-insurers/articleshow/134996772.cms",
-      "time": "Fri, 16 Oct 2026 19:07:46 +0530",
+      "title": "Challenges ahead for Fairfax's management of IDBI Bank post \u20b952,878 crore stake deal approval ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/challenges-ahead-for-fairfaxs-management-of-idbi-bank-post-52878-crore-stake-deal-approval/articleshow/135037388.cms",
+      "time": "Mon, 19 Oct 2026 01:19:55 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Federal Bank Q2 profit jumps 45% to record Rs 1,386 crore ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/federal-bank-q2-profit-jumps-45-to-record-rs-1386-crore/articleshow/134996156.cms",
-      "time": "Fri, 16 Oct 2026 18:39:30 +0530",
+      "title": "Private banks' margins fall as FCNR deposits raise funding costs ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/private-banks-margins-fall-as-fcnr-deposits-raise-funding-costs/articleshow/135037360.cms",
+      "time": "Mon, 19 Oct 2026 01:07:35 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Kotak Mahindra Bank among 5 stocks that hit 52-week highs &amp; rallied up to 15% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/kotak-mahindra-bank-among-5-stocks-that-hit-52-week-highs-amp-rallied-up-to-15-in-a-month/slideshow/134995212.cms",
-      "time": "Fri, 16 Oct 2026 17:56:43 +0530",
+      "title": "Banks also count cost of insurance payout curbs ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/banks-also-count-cost-of-insurance-payout-curbs/articleshow/135037310.cms",
+      "time": "Mon, 19 Oct 2026 00:51:37 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "LTM Q2 Results: PAT remains flat at Rs 1,380 crore; revenue rises 14% YoY; co declares Rs 25 per share dividend ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/ltm-q2-results-pat-remains-flat-at-rs-1380-crore-revenue-rises-14-yoy-co-declares-rs-25-per-share-dividend/articleshow/134994968.cms",
-      "time": "Fri, 16 Oct 2026 17:53:16 +0530",
+      "title": "Anup Bagchi backs 'exceptional' team as he connects the dots at HDFC Bank ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/anup-bagchi-backs-exceptional-team-as-he-connects-the-dots-at-hdfc-bank/articleshow/135037338.cms",
+      "time": "Mon, 19 Oct 2026 00:44:03 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Bajaj Housing Finance Q2 Results: PAT rises 18% YoY to Rs 757 crore, AUM grows 25% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bajaj-housing-finance-q2-results-pat-rises-18-yoy-to-rs-757-crore-aum-grows-25/articleshow/134993051.cms",
-      "time": "Fri, 16 Oct 2026 16:52:16 +0530",
+      "title": "Tata Sons reviews AoA to meet Sebi listing norms ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/tata-sons-reviews-aoa-to-meet-sebi-listing-norms/articleshow/135037264.cms",
+      "time": "Mon, 19 Oct 2026 00:31:52 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Urban Company Q2 Results: Loss widens to Rs 182 crore; revenue jumps 41% YoY ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/urban-company-q2-results-loss-widens-to-rs-182-crore-revenue-rises-41/articleshow/134992492.cms",
-      "time": "Fri, 16 Oct 2026 16:39:43 +0530",
+      "title": "Global investors against use of judicial anti-avoidance rule by tax officials ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/global-investors-against-use-of-judicial-anti-avoidance-rule-by-tax-officials/articleshow/135037287.cms",
+      "time": "Sun, 18 Oct 2026 23:17:00 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Market wrap: Tech Mahindra, TCS, InterGlobe, BSE top gainers and losers on Nifty and Sensex on Friday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-wrap-tech-mahindra-tcs-interglobe-bse-top-gainers-and-losers-on-nifty-and-sensex-on-friday/articleshow/134992216.cms",
-      "time": "Fri, 16 Oct 2026 16:34:23 +0530",
+      "title": "DIIs increase stake in 8 midcap stocks in Q2FY27 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/diis-increase-stake-in-8-midcap-stocks-in-q2fy27/slideshow/135027062.cms",
+      "time": "Sun, 18 Oct 2026 15:40:35 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Yes Bank Q2 preview: Will strong profit, NII growth offer relief for investors amid AT-1 bond saga? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/yes-bank-q2-preview-will-strong-profit-nii-growth-offer-relief-for-investors-amid-at-1-bond-saga/articleshow/134990515.cms",
-      "time": "Fri, 16 Oct 2026 15:28:59 +0530",
+      "title": "Bajaj Finance Q2 preview: Profit may jump 29%, NII 24% as strong loan growth lifts earnings ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bajaj-finance-q2-preview-profit-may-jump-29-nii-24-as-strong-loan-growth-lifts-earnings/articleshow/135026829.cms",
+      "time": "Sun, 18 Oct 2026 15:20:55 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Laurus Labs shifts gears as CDMO emerges as key growth driver; Nuvama sees 24% upside ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/laurus-labs-shifts-gears-as-cdmo-emerges-as-key-growth-driver-nuvama-sees-24-upside/articleshow/134990332.cms",
-      "time": "Fri, 16 Oct 2026 15:22:43 +0530",
+      "title": "FPI selling crosses Rs 52,000 crore in October as Nifty defies foreign exodus ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fpi-selling-crosses-rs-52000-crore-in-october-as-nifty-defies-foreign-exodus/articleshow/135025955.cms",
+      "time": "Sun, 18 Oct 2026 13:41:02 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "ICICI Bank Q2 Results Preview: PAT, NII may rise up to 21% YoY; margins, deposit growth in focus ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/icici-bank-q2-results-preview-pat-nii-may-rise-up-to-21-yoy-margins-deposit-growth-in-focus/articleshow/134988975.cms",
-      "time": "Fri, 16 Oct 2026 14:37:51 +0530",
+      "title": "FMCG firms grapple with input cost inflation in Q2, brace for margin pressure in H2 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fmcg-firms-grapple-with-input-cost-inflation-in-q2-brace-for-margin-pressure-in-h2/articleshow/135037464.cms",
+      "time": "Sun, 18 Oct 2026 13:28:33 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Mukesh Ambani taps massive Reliance workforce to boost Jio\u2019s record IPO ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/mukesh-ambani-taps-massive-reliance-workforce-to-boost-jios-record-ipo/articleshow/134988928.cms",
-      "time": "Fri, 16 Oct 2026 14:33:49 +0530",
+      "title": "FPIs pull out Rs 52,100 cr from equities in Oct so far amid global headwinds ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fpis-pull-out-rs-52100-cr-from-equities-in-oct-so-far-amid-global-headwinds/articleshow/135024995.cms",
+      "time": "Sun, 18 Oct 2026 12:03:22 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "10 stocks held by 100+ MF schemes in September rally up to 205% in CY26; 6 turn multibaggers ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/10-stocks-held-by-100-mf-schemes-in-september-rally-up-to-205-in-cy26-6-turn-multibaggers/slideshow/134987505.cms",
-      "time": "Fri, 16 Oct 2026 13:36:31 +0530",
+      "title": "Mcap of nine of top-10 most valued firms surges by Rs 3.65 lakh cr; TCS shines ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/mcap-of-nine-of-top-10-most-valued-firms-surges-by-rs-3-65-lakh-cr-tcs-shines/articleshow/135024970.cms",
+      "time": "Sun, 18 Oct 2026 12:01:44 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "From worst to best: How IT stocks staged a Rs 2.6 lakh crore revival this week ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/from-worst-to-best-how-it-stocks-staged-a-rs-2-6-lakh-crore-revival-this-week/articleshow/134986472.cms",
-      "time": "Fri, 16 Oct 2026 13:07:33 +0530",
+      "title": "Bonus issues, stock splits &amp; dividends: HDB Financial, IRFC, TechM among 19 stocks turning ex-record date this week ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bonus-issues-stock-splits-dividends-hdb-financial-irfc-techm-among-19-stocks-turning-ex-record-date-this-week/articleshow/135024511.cms",
+      "time": "Sun, 18 Oct 2026 11:23:26 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Indian Bank reports a Rs 1,388 crore gain from sale of NSE shares ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/indian-bank-reports-a-rs-1388-crore-gain-from-sale-of-nse-shares/articleshow/134985719.cms",
-      "time": "Fri, 16 Oct 2026 12:34:25 +0530",
+      "title": "10 penny stocks plunge up to 75% in six months ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/10-penny-stocks-plunge-up-to-75-in-six-months/slideshow/135024478.cms",
+      "time": "Sun, 18 Oct 2026 11:03:19 +0530",
       "source": "ET Markets"
     },
     {
-      "title": "Jio IPO GMP at 20%: Grey market signals Rs 220 premium as brokerages say subscribe ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jio-ipo-gmp-at-20-grey-market-signals-rs-220-premium-as-brokerages-say-subscribe/articleshow/134985658.cms",
-      "time": "Fri, 16 Oct 2026 12:33:15 +0530",
+      "title": "Can Nifty, Sensex rally further or will bears reign in? 5 factors to steer market this week ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/can-nifty-sensex-rally-further-or-will-bears-reign-in-5-factors-to-decide-market-action-next-week/articleshow/135023916.cms",
+      "time": "Sun, 18 Oct 2026 10:15:18 +0530",
       "source": "ET Markets"
     }
   ]
