@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-24T03:33:48.593417Z",
+  "updatedAt": "2026-10-25T03:30:39.527677Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 80890.14,
+        "current": 80847.43,
         "history_30d": [
-          84379.06,
           84034.92,
           84406.45,
           84458.09,
@@ -542,41 +541,41 @@
           82941.0,
           84011.97,
           81311.89,
-          80890.14
+          81074.19,
+          80847.43
         ],
-        "delta_1d": -0.52,
-        "delta_1w": -1.37,
-        "delta_1m": -4.27,
-        "delta_3m": 4.94,
-        "delta_6m": 25.92,
-        "delta_1y": -27.15,
+        "delta_1d": -0.28,
+        "delta_1w": -1.23,
+        "delta_1m": -4.62,
+        "delta_3m": 3.98,
+        "delta_6m": 27.85,
+        "delta_1y": -27.58,
         "signal": "Strong Sell",
-        "rsi": 44.6,
+        "rsi": 44.41,
         "macd": {
-          "macd": -84.03,
-          "signal": 176.7,
-          "hist": -260.72
+          "macd": -175.67,
+          "signal": 108.57,
+          "hist": -284.24
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 82507.94,
-          "stop_loss": 76845.63,
+          "target": 82464.38,
+          "stop_loss": 76805.06,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          81537.53,
-          81424.99,
-          81312.45,
-          81199.91,
-          81087.37,
-          80974.84,
-          80862.3
+          81316.92,
+          81197.35,
+          81077.77,
+          80958.2,
+          80838.63,
+          80719.05,
+          80599.48
         ]
       },
       "eth": {
-        "current": 2383.3,
+        "current": 2363.69,
         "history_30d": [
-          2687.3,
           2690.48,
           2695.21,
           2686.93,
@@ -605,41 +604,41 @@
           2446.73,
           2470.77,
           2386.19,
-          2383.3
+          2384.08,
+          2363.69
         ],
-        "delta_1d": -0.12,
-        "delta_1w": -1.06,
-        "delta_1m": -10.68,
-        "delta_3m": -1.69,
-        "delta_6m": 37.03,
-        "delta_1y": -39.43,
+        "delta_1d": -0.86,
+        "delta_1w": -1.71,
+        "delta_1m": -12.04,
+        "delta_3m": -4.06,
+        "delta_6m": 38.67,
+        "delta_1y": -40.21,
         "signal": "Strong Sell",
-        "rsi": 38.5,
+        "rsi": 36.95,
         "macd": {
-          "macd": -48.05,
-          "signal": -38.66,
-          "hist": -9.38
+          "macd": -50.62,
+          "signal": -41.04,
+          "hist": -9.58
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2430.97,
-          "stop_loss": 2264.14,
+          "target": 2410.96,
+          "stop_loss": 2245.51,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2352.36,
-          2339.19,
-          2326.02,
-          2312.85,
-          2299.68,
-          2286.51,
-          2273.34
+          2336.37,
+          2322.87,
+          2309.36,
+          2295.86,
+          2282.35,
+          2268.84,
+          2255.34
         ]
       },
       "sol": {
-        "current": 102.71,
+        "current": 102.38,
         "history_30d": [
-          117.01,
           122.01,
           121.43,
           122.06,
@@ -668,35 +667,36 @@
           106.42,
           106.79,
           103.54,
-          102.71
+          102.78,
+          102.38
         ],
-        "delta_1d": -0.8,
-        "delta_1w": -1.26,
-        "delta_1m": -13.41,
-        "delta_3m": 9.37,
-        "delta_6m": 40.37,
-        "delta_1y": -46.94,
+        "delta_1d": -0.39,
+        "delta_1w": -2.43,
+        "delta_1m": -14.43,
+        "delta_3m": 7.27,
+        "delta_6m": 41.37,
+        "delta_1y": -47.24,
         "signal": "Strong Sell",
-        "rsi": 38.28,
+        "rsi": 37.73,
         "macd": {
-          "macd": -2.19,
-          "signal": -1.53,
-          "hist": -0.65
+          "macd": -2.3,
+          "signal": -1.69,
+          "hist": -0.62
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 104.76,
-          "stop_loss": 97.57,
+          "target": 104.43,
+          "stop_loss": 97.26,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          100.92,
-          100.18,
-          99.44,
-          98.7,
-          97.96,
-          97.22,
-          96.48
+          99.93,
+          99.16,
+          98.39,
+          97.61,
+          96.84,
+          96.07,
+          95.3
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 111.66,
+      "current": 116.72,
       "history_30d": [
         105.68,
         108.75,
@@ -1177,35 +1177,35 @@
         108.79,
         108.82,
         113.17,
-        111.66
+        116.72
       ],
-      "delta_1d": -1.33,
-      "delta_1w": 1.64,
-      "delta_1m": 4.75,
-      "delta_3m": 32.79,
-      "delta_6m": 3.17,
-      "delta_1y": 69.21,
+      "delta_1d": 3.14,
+      "delta_1w": 6.24,
+      "delta_1m": 9.49,
+      "delta_3m": 38.8,
+      "delta_6m": 7.84,
+      "delta_1y": 77.01,
       "signal": "Strong Buy",
-      "rsi": 65.17,
+      "rsi": 74.05,
       "macd": {
-        "macd": 2.92,
-        "signal": 2.45,
-        "hist": 0.47
+        "macd": 3.32,
+        "signal": 2.53,
+        "hist": 0.79
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 113.89,
-        "stop_loss": 106.08,
+        "target": 119.05,
+        "stop_loss": 110.88,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        108.31,
-        108.51,
-        108.72,
-        108.92,
-        109.12,
-        109.33,
-        109.53
+        108.99,
+        109.22,
+        109.46,
+        109.69,
+        109.93,
+        110.16,
+        110.4
       ]
     },
     "inflation": {
@@ -1215,7 +1215,97 @@
   },
   "newsData": [
     {
-      "title": "India's net FDI inflows falls to $3 billion in August ",
+      "title": "AU Small Finance Bank Q2 profit jumps 53% to Rs 858 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/au-small-finance-bank-q2-profit-jumps-53-to-rs-858-crore/articleshow/135169847.cms",
+      "time": "Sat, 24 Oct 2026 17:21:56 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Govt of Singapore\u2019s India portfolio: 10 stocks rally up to 100% in FY27 so far ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/govt-of-singapores-india-portfolio-10-stocks-rally-up-to-100-in-fy27-so-far/slideshow/135167433.cms",
+      "time": "Sat, 24 Oct 2026 14:50:31 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Kotak Mahindra Bank Q2 results: Consolidated PAT rises 26% YoY to Rs 5,645 crore;  NII up 16% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/kotak-mahindra-bank-q2-results-consolidated-pat-rises-26-yoy-to-rs-5645-crore-lenders-nii-up-16/articleshow/135165924.cms",
+      "time": "Sat, 24 Oct 2026 13:54:37 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "FIIs dump Indian stocks for 10th straight week as markets slide: Is the worst over or more pain ahead? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fiis-dump-indian-stocks-for-10th-straight-week-as-markets-slide-is-the-worst-over-or-more-pain-ahead/articleshow/135165684.cms",
+      "time": "Sat, 24 Oct 2026 13:41:14 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Lenskart, Meesho among top picks as value retail leads India's consumption story: Siddhartha Khemka ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/lenskart-meesho-among-top-picks-as-value-retail-leads-indias-consumption-story-siddhartha-khemka/articleshow/135164184.cms",
+      "time": "Sat, 24 Oct 2026 12:07:01 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Losers: 13 stocks decline for 5 consecutive sessions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-losers-13-stocks-decline-for-5-consecutive-sessions/slideshow/135164244.cms",
+      "time": "Sat, 24 Oct 2026 11:47:00 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Jio IPO GMP today: Grey market signals over 22% listing gains; check allotment, listing date ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jio-ipo-gmp-today-grey-market-signals-over-22-listing-gains-check-allotment-listing-date/articleshow/135163795.cms",
+      "time": "Sat, 24 Oct 2026 11:42:41 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Jio IPO breaks multiple records: From fundraising to investor demand, how the mega issue rewrote India\u2019s IPO history ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/jio-ipo-breaks-multiple-records-from-fundraising-to-investor-demand-how-the-mega-issue-rewrote-indias-ipo-history/articleshow/135163295.cms",
+      "time": "Sat, 24 Oct 2026 11:20:10 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi orders Avadhut Sathe, academy to refund Rs 546 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-orders-avadhut-sathe-academy-to-refund-rs-546-crore/articleshow/135162877.cms",
+      "time": "Sat, 24 Oct 2026 11:01:13 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Radhakishan Damani portfolio: Top 10 stock holdings of the ace investor ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/radhakishan-damani-portfolio-top-10-stock-holdings-of-the-ace-investor/slideshow/135161767.cms",
+      "time": "Sat, 24 Oct 2026 09:41:55 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "BPCL reports 21.45% drop in Q2 FY27 net profit, attributes losses to fuel pricing issues ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bpcl-reports-21-45-drop-in-q2-fy27-net-profit-attributes-losses-to-fuel-pricing-issues/articleshow/135161389.cms",
+      "time": "Sat, 24 Oct 2026 09:32:02 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "DRL says cap on trade margins a positive, posts 36% dip in Q2 PAT ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/drl-says-cap-on-trade-margins-a-positive-posts-36-dip-in-q2-pat/articleshow/135161325.cms",
+      "time": "Sat, 24 Oct 2026 09:23:30 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Adani Power profit surges 142% on strong demand amid weak rains ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/adani-power-profit-surges-142-on-strong-demand-amid-weak-rains/articleshow/135161231.cms",
+      "time": "Sat, 24 Oct 2026 09:17:21 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "JSW Steel posts three-fold jump in profit, lines up capacity expansion ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jsw-steel-posts-three-fold-jump-in-profit-lines-up-capacity-expansion/articleshow/135161181.cms",
+      "time": "Sat, 24 Oct 2026 09:13:02 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Indians remit $2.7 billion overseas in August, led by travel ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/indians-remit-2-7-billion-overseas-in-august-led-by-travel/articleshow/135161011.cms",
+      "time": "Sat, 24 Oct 2026 09:00:47 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Gross FDI inflows to India fall to $11 billion in August ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/news/indias-net-fdi-inflows-falls-to-3-billion-in-august/articleshow/135160936.cms",
       "time": "Sat, 24 Oct 2026 08:54:13 +0530",
       "source": "ET Markets"
@@ -1254,6 +1344,12 @@
       "title": "Tata Motors CV posts Rs 2,138 crore Q2 profit ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/tata-motors-cv-posts-rs-2138-crore-q2-profit/articleshow/135154453.cms",
       "time": "Sat, 24 Oct 2026 00:38:33 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Private sector activity hits four month high in October ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/private-sector-activity-hits-four-month-high-in-october/articleshow/135161114.cms",
+      "time": "Sat, 24 Oct 2026 00:25:01 +0530",
       "source": "ET Markets"
     },
     {
@@ -1296,102 +1392,6 @@
       "title": "BPCL Q2 Results: Net profit declines 21% YoY to Rs 4,863 crore, revenue grows 29% ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bpcl-q2-results-net-profit-declines-21-yoy-to-rs-4863-crore-revenue-grows-29/articleshow/135149653.cms",
       "time": "Fri, 23 Oct 2026 20:57:55 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "RBI governor reiterates listing requirement for top NBFCs as focus intensifies on Tata Sons ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/rbi-governor-reiterates-listing-requirement-for-top-nbfcs-as-focus-intensifies-on-tata-sons/articleshow/135149631.cms",
-      "time": "Fri, 23 Oct 2026 20:55:41 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "SBI Cards Q2 profit jumps 75% YoY to Rs 778 crore as bad loan costs fall sharply ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/sbi-cards-q2-profit-jumps-75-yoy-to-rs-778-crore-as-bad-loan-costs-fall-sharply/articleshow/135147815.cms",
-      "time": "Fri, 23 Oct 2026 19:15:08 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bharat Electronics among 4 Sensex stocks to hit 52-week lows; shares fall up to 9% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/bharat-electronics-among-4-sensex-stocks-to-hit-52-week-lows-shares-fall-up-to-9-in-a-month/slideshow/135147674.cms",
-      "time": "Fri, 23 Oct 2026 19:04:27 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Dr Reddy\u2019s Q2 Results: Net profit falls 36% YoY to Rs 913 crore, revenue declines marginally ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/dr-reddys-q2-results-net-profit-falls-36-yoy-to-rs-913-crore-revenue-declines-marginally/articleshow/135147475.cms",
-      "time": "Fri, 23 Oct 2026 19:02:47 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Only 15% of midcap stocks above 50-DMA: Is buying the dip getting riskier? JM Financial spots signs of leadership shift ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/only-15-of-midcap-stocks-above-50-dma-is-buying-the-dip-getting-riskier-jm-financial-spots-signs-of-leadership-shift/articleshow/135146815.cms",
-      "time": "Fri, 23 Oct 2026 18:37:51 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Market wrap: Eternal, Apollo Hospital, Shriram Finance, Adani Enterprises among top gainers and losers on Nifty and Sensex on Friday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-wrap-eternal-apollo-hospital-shriram-finance-adani-enterprises-among-top-gainers-and-losers-on-nifty-and-sensex-on-friday/articleshow/135144888.cms",
-      "time": "Fri, 23 Oct 2026 17:30:35 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Infosys dividend alert! IT major announces Rs 26 per share dividend. Check record date ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/infosys-dividend-alert-it-major-announces-rs-26-per-share-dividend-check-record-date/articleshow/135143574.cms",
-      "time": "Fri, 23 Oct 2026 16:36:19 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Infosys Q2 Results: Profit rises 6% YoY to Rs 7,823 crore; co lowers revenue guidance ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/infosys-q2-results-profit-rises-6-yoy-to-rs-7823-crore-co-lowers-revenue-guidance/articleshow/135143193.cms",
-      "time": "Fri, 23 Oct 2026 16:21:38 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "IndusInd Bank Q2 Results: Lender posts profit of Rs 1,176 crore vs Rs 445 crore loss a year ago ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indusind-bank-q2-results-lender-posts-profit-of-rs-1176-crore-vs-rs-445-crore-loss-a-year-ago/articleshow/135142692.cms",
-      "time": "Fri, 23 Oct 2026 16:13:57 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Motors CV Q2 Results: Co swings to black with  Rs 1,254 crore profit; revenue jumps 37% YoY ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/tata-motors-cv-q2-results-automaker-swings-to-black-with-rs-1254-crore-profit-revenue-jumps-37-yoy/articleshow/135142700.cms",
-      "time": "Fri, 23 Oct 2026 16:13:02 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "JSW Steel Q2 Results: Net profit rockets 225% YoY to Rs 5,279 crore; revenue rises 21% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jsw-steel-q2-results-net-profit-rockets-225-yoy-to-rs-5279-crore-revenue-rises-21/articleshow/135141641.cms",
-      "time": "Fri, 23 Oct 2026 14:59:26 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Adani Power Q2 Results: Profit zooms 134% YoY to Rs 6,919 crore; revenue jumps 45% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/adani-power-q2-results-cons-profit-zooms-134-yoy-to-rs-6919-crore-revenue-jumps-45/articleshow/135141294.cms",
-      "time": "Fri, 23 Oct 2026 14:45:36 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "From mercury to gold? This San Francisco startup claims it can produce yellow metal at will ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/from-mercury-to-gold-this-san-francisco-startup-claims-it-can-produce-yellow-metal-at-will/articleshow/135140759.cms",
-      "time": "Fri, 23 Oct 2026 14:35:13 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sterlite Technologies Q2 Results: Profit surges 12,817% YoY to Rs 517 crore, revenue jumps 145% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/sterlite-technologies-q2-results-profit-surges-12817-yoy-to-rs-517-crore-revenue-jumps-145/articleshow/135140910.cms",
-      "time": "Fri, 23 Oct 2026 14:27:35 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "D-Street bleeds! Market value of all BSE-listed firms falls below Rs 450 lakh crore for first time since April. More pain ahead? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/d-street-bleeds-market-value-of-all-bse-listed-firms-falls-below-rs-450-lakh-crore-for-first-time-since-april-more-pain-ahead/articleshow/135140291.cms",
-      "time": "Fri, 23 Oct 2026 13:59:38 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "This Tata Group stock plunged 10% a day after rallying 19% post Q2 results. Do you own? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/this-tata-group-stock-plunged-10-a-day-after-rallying-19-post-q2-results-do-you-own/articleshow/135138992.cms",
-      "time": "Fri, 23 Oct 2026 12:56:07 +0530",
       "source": "ET Markets"
     }
   ]
