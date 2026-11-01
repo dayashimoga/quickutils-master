@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-31T04:25:25.920758Z",
+  "updatedAt": "2026-11-01T04:44:22.257383Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 77142.1,
+        "current": 77702.39,
         "history_30d": [
-          84853.1,
           84497.21,
           84763.58,
           86480.3,
@@ -542,41 +541,41 @@
           80805.08,
           81267.59,
           77775.11,
-          77142.1
+          77198.21,
+          77702.39
         ],
-        "delta_1d": -0.81,
-        "delta_1w": -3.6,
-        "delta_1m": -6.55,
-        "delta_3m": -1.41,
-        "delta_6m": 28.7,
-        "delta_1y": -29.59,
+        "delta_1d": 0.65,
+        "delta_1w": -2.88,
+        "delta_1m": -6.28,
+        "delta_3m": 0.04,
+        "delta_6m": 30.52,
+        "delta_1y": -29.4,
         "signal": "Strong Sell",
-        "rsi": 34.19,
+        "rsi": 36.84,
         "macd": {
-          "macd": -922.99,
-          "signal": -424.71,
-          "hist": -498.28
+          "macd": -1052.74,
+          "signal": -549.6,
+          "hist": -503.14
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 78684.94,
-          "stop_loss": 73284.99,
+          "target": 79256.44,
+          "stop_loss": 73817.27,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          79119.82,
-          78915.73,
-          78711.64,
-          78507.56,
-          78303.47,
-          78099.38,
-          77895.3
+          78705.2,
+          78489.62,
+          78274.04,
+          78058.46,
+          77842.88,
+          77627.3,
+          77411.72
         ]
       },
       "eth": {
-        "current": 2237.62,
+        "current": 2264.89,
         "history_30d": [
-          2705.54,
           2668.15,
           2687.26,
           2726.51,
@@ -605,41 +604,41 @@
           2347.73,
           2357.62,
           2249.5,
-          2237.62
+          2241.05,
+          2264.89
         ],
-        "delta_1d": -0.53,
-        "delta_1w": -3.84,
-        "delta_1m": -9.97,
-        "delta_3m": -8.95,
-        "delta_6m": 42.38,
-        "delta_1y": -41.84,
+        "delta_1d": 1.06,
+        "delta_1w": -2.39,
+        "delta_1m": -9.55,
+        "delta_3m": -6.33,
+        "delta_6m": 44.23,
+        "delta_1y": -41.54,
         "signal": "Strong Sell",
-        "rsi": 30.07,
+        "rsi": 33.82,
         "macd": {
-          "macd": -68.84,
-          "signal": -56.41,
-          "hist": -12.43
+          "macd": -69.93,
+          "signal": -59.07,
+          "hist": -10.86
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2282.37,
-          "stop_loss": 2125.74,
+          "target": 2310.19,
+          "stop_loss": 2151.65,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2244.12,
-          2229.58,
-          2215.05,
-          2200.52,
-          2185.98,
-          2171.45,
-          2156.91
+          2234.66,
+          2220.45,
+          2206.25,
+          2192.04,
+          2177.84,
+          2163.63,
+          2149.43
         ]
       },
       "sol": {
-        "current": 96.03,
+        "current": 95.39,
         "history_30d": [
-          118.4,
           118.62,
           119.65,
           121.53,
@@ -668,35 +667,36 @@
           101.25,
           102.31,
           95.49,
-          96.03
+          96.22,
+          95.39
         ],
-        "delta_1d": 0.57,
-        "delta_1w": -5.13,
-        "delta_1m": -12.01,
-        "delta_3m": -9.11,
-        "delta_6m": 36.39,
-        "delta_1y": -48.7,
+        "delta_1d": -0.86,
+        "delta_1w": -5.32,
+        "delta_1m": -13.31,
+        "delta_3m": -6.37,
+        "delta_6m": 33.77,
+        "delta_1y": -48.82,
         "signal": "Strong Sell",
-        "rsi": 30.88,
+        "rsi": 30.32,
         "macd": {
-          "macd": -3.27,
-          "signal": -2.55,
-          "hist": -0.72
+          "macd": -3.49,
+          "signal": -2.73,
+          "hist": -0.75
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 97.95,
-          "stop_loss": 91.23,
+          "target": 97.3,
+          "stop_loss": 90.62,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          95.78,
-          95.01,
-          94.23,
-          93.46,
-          92.69,
-          91.91,
-          91.14
+          94.94,
+          94.16,
+          93.38,
+          92.6,
+          91.82,
+          91.04,
+          90.27
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 117.64,
+      "current": 113.43,
       "history_30d": [
         100.34,
         99.25,
@@ -1177,35 +1177,35 @@
         113.88,
         115.32,
         114.88,
-        117.64
+        113.43
       ],
-      "delta_1d": 2.4,
-      "delta_1w": 0.79,
-      "delta_1m": 14.98,
-      "delta_3m": 48.24,
-      "delta_6m": 2.8,
-      "delta_1y": 80.79,
+      "delta_1d": -1.26,
+      "delta_1w": -2.82,
+      "delta_1m": 10.87,
+      "delta_3m": 42.93,
+      "delta_6m": -0.88,
+      "delta_1y": 74.8,
       "signal": "Strong Buy",
-      "rsi": 70.25,
+      "rsi": 62.1,
       "macd": {
-        "macd": 3.92,
-        "signal": 3.36,
-        "hist": 0.56
+        "macd": 3.59,
+        "signal": 3.3,
+        "hist": 0.29
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 119.99,
-        "stop_loss": 111.76,
+        "target": 115.7,
+        "stop_loss": 107.76,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        115.35,
-        115.9,
-        116.44,
-        116.98,
-        117.52,
-        118.07,
-        118.61
+        114.79,
+        115.31,
+        115.82,
+        116.34,
+        116.85,
+        117.37,
+        117.89
       ]
     },
     "inflation": {
@@ -1214,6 +1214,120 @@
     }
   },
   "newsData": [
+    {
+      "title": "Muthoot Finance Q2 cons profit jumps 36% YoY to Rs 3,278 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/muthoot-finance-q2-cons-profit-jumps-36-yoy-to-rs-3278-crore/articleshow/135401237.cms",
+      "time": "Sat, 31 Oct 2026 18:15:32 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi to release FII compliance consultation paper within weeks, says chairman Tuhin Kanta Pandey ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-to-release-fii-compliance-consultation-paper-within-weeks-says-chairman-tuhin-kanta-pandey/articleshow/135400429.cms",
+      "time": "Sat, 31 Oct 2026 17:36:29 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "NTPC Q2 Results: Standalone profit rises 14% YoY to Rs 5,320 crore; revenue up 17% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/ntpc-q2-results-net-profit-rises-14-yoy-to-rs-5320-crore-revenue-up-17/articleshow/135399399.cms",
+      "time": "Sat, 31 Oct 2026 16:57:35 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Weak Ahead: Nifty stands on firmer footing, but can it break past 23,450? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-weak-ahead-nifty-stands-on-firmer-footing-but-can-it-break-past-23450/articleshow/135396431.cms",
+      "time": "Sat, 31 Oct 2026 16:35:04 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "CDSL Q2 results: Net profit jumps 24% YoY to Rs 173 crore, revenue up 24% ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/cdsl-q2-results-net-profit-jumps-24-yoy-to-rs-173-crore-revenue-up-24/articleshow/135397659.cms",
+      "time": "Sat, 31 Oct 2026 15:50:46 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ET Wealth Expo | Only 6 of 1990's Sensex stocks survive: S Naren's case for smarter asset allocation ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/et-wealth-expo-only-6-of-1990s-sensex-stocks-survive-s-narens-case-for-smarter-asset-allocation/articleshow/135397428.cms",
+      "time": "Sat, 31 Oct 2026 15:40:24 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Turnaround Story: 8 stocks shift from loss to profit in September '26 quarter ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/turnaround-story-8-stocks-shift-from-loss-to-profit-in-september-26-quarter/slideshow/135395511.cms",
+      "time": "Sat, 31 Oct 2026 14:22:12 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Sebi pushes for resilient capital markets, focuses on investor protection: Chairman ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-pushes-for-resilient-capital-markets-focuses-on-investor-protection-chairman/articleshow/135393379.cms",
+      "time": "Sat, 31 Oct 2026 13:11:02 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Gainers: 8 stocks that gain for 5 days in a row ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-8-stocks-that-gain-for-5-days-in-a-row/slideshow/135392399.cms",
+      "time": "Sat, 31 Oct 2026 12:30:17 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ET Wealth Expo: Why market veteran S Naren thinks investors are getting gold, silver and asset allocation all wrong ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/et-wealth-expo-why-market-veteran-s-naren-thinks-investors-are-getting-gold-silver-and-asset-allocation-all-wrong/articleshow/135391370.cms",
+      "time": "Sat, 31 Oct 2026 12:05:25 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Diwali stock picks: SBI Securities lists 11 stocks with up to 22% upside potential. Do you own any? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/diwali-stock-picks-sbi-securities-lists-11-stocks-with-up-to-22-upside-potential-do-you-own-any/slideshow/135388727.cms",
+      "time": "Sat, 31 Oct 2026 10:13:23 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "LIC Housing Fin Q2 net profit grows 12% YoY ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/lic-housing-fin-q2-net-profit-grows-12-yoy/articleshow/135388049.cms",
+      "time": "Sat, 31 Oct 2026 10:03:16 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "New India slips into red with 1,267 cr loss in Q2 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/new-india-slips-into-red-with-1267-cr-loss-in-q2/articleshow/135387922.cms",
+      "time": "Sat, 31 Oct 2026 10:00:20 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Bank of Baroda's Q2 profit surges 36% YoY on NSE stake sale ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bank-of-barodas-q2-profit-surges-36-yoy-on-nse-stake-sale/articleshow/135387894.cms",
+      "time": "Sat, 31 Oct 2026 09:59:30 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Reliance Retail Q2 profit takes a hit on Qcomm push ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/reliance-retail-q2-profit-takes-a-hit-on-qcomm-push/articleshow/135387788.cms",
+      "time": "Sat, 31 Oct 2026 09:54:27 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Jio Platforms profit zooms 14% on healthy user mix, digital play ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jio-platforms-profit-zooms-14-on-healthy-user-mix-digital-play/articleshow/135387627.cms",
+      "time": "Sat, 31 Oct 2026 09:49:01 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Airtel Africa Q2 profit rises 16% to $254 million ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/airtel-africa-q2-profit-rises-16-to-254-million/articleshow/135387563.cms",
+      "time": "Sat, 31 Oct 2026 09:47:49 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Indian Oil net profit triples YoY to 21,630 cr in Q2 ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indian-oil-net-profit-triples-yoy-to-21630-cr-in-q2/articleshow/135387471.cms",
+      "time": "Sat, 31 Oct 2026 09:41:43 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "GAIL Q2 profit surges over two fold YoY to 4,650 cr despite global disruptions ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/gail-q2-profit-surges-over-two-fold-yoy-to-4650-cr-despite-global-disruptions/articleshow/135387433.cms",
+      "time": "Sat, 31 Oct 2026 09:40:48 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "ZEE profit sinks 40% YoY in Q2, but revenue rises on FIFA subscription growth ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/zee-profit-sinks-40-yoy-in-q2-but-revenue-rises-on-fifa-subscription-growth/articleshow/135387331.cms",
@@ -1236,6 +1350,12 @@
       "title": "Varun Beverages Q3 net profit rises 13% YoY, but margins fall ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/varun-beverages-q3-net-profit-rises-13-yoy-but-margins-fall/articleshow/135387006.cms",
       "time": "Sat, 31 Oct 2026 09:27:54 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Oil-to-chemicals business powers Reliance Industries' record quarterly net profit, up 34% to \u20b929,550 crore ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/oil-to-chemicals-business-powers-reliance-industries-record-quarterly-net-profit-up-34-to-29550-crore/articleshow/135387613.cms",
+      "time": "Sat, 31 Oct 2026 05:30:00 +0530",
       "source": "ET Markets"
     },
     {
@@ -1263,7 +1383,7 @@
       "source": "ET Markets"
     },
     {
-      "title": "Spandana Sphoorty returns to profit at Rs 18 crore in Q2FY27 ",
+      "title": "Spandana Sphoorty makes profit in Q2 against a loss year-ago ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/spandana-sphoorty-returns-to-profit-at-rs-18-crore-in-q2fy27/articleshow/135369091.cms",
       "time": "Fri, 30 Oct 2026 21:35:19 +0530",
       "source": "ET Markets"
@@ -1272,126 +1392,6 @@
       "title": "Bank of Baroda Q2 profit jumps 36% to Rs 6,532 crore on NSE stake sale ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bank-of-baroda-q2-profit-jumps-36-to-rs-6532-crore-on-nse-stake-sale/articleshow/135369087.cms",
       "time": "Fri, 30 Oct 2026 21:32:22 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Record earnings! 5 big takeaways from RIL Q2 results investors should watch for Monday trading ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/record-earnings-5-big-takeaways-from-ril-q2-results-investors-should-watch-for-monday-trading/articleshow/135367917.cms",
-      "time": "Fri, 30 Oct 2026 20:48:47 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Reliance Retail Q2 Results: Revenue up 6%, but late festive season, digital spends hit profit ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/reliance-retail-q2-results-net-profit-falls-24-yoy-to-rs-2611-crore-gross-revenue-rises-6/articleshow/135366729.cms",
-      "time": "Fri, 30 Oct 2026 20:15:00 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Reliance Industries Q2 Results: Profit shoots up 41% YoY to Rs 25,548 crore, revenue surges 29% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/reliance-industries-q2-results-profit-shoots-up-41-yoy-to-rs-25548-crore-revenue-up-12/articleshow/135361960.cms",
-      "time": "Fri, 30 Oct 2026 19:46:49 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Jio Platforms Q2 Results: Profit rises 14% YoY to Rs 8,389 crore; revenue up 11% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/jio-platforms-q2-results-profit-rises-14-yoy-to-rs-8389-crore-revenue-up-11/articleshow/135364558.cms",
-      "time": "Fri, 30 Oct 2026 19:13:48 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "NTPC Green Energy Q2 Results: Profit jumps 56% YoY to Rs 137 crore, revenue rises 53% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/ntpc-green-energy-q2-results-profit-jumps-56-yoy-to-rs-137-crore-revenue-rises-53/articleshow/135363615.cms",
-      "time": "Fri, 30 Oct 2026 18:43:34 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bank of Baroda Q2 Results: Standalone profit jumps 36% YoY to Rs 6,532 crore; NII up 9% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/bank-of-baroda-q2-results-standalone-profit-jumps-36-yoy-to-rs-6532-crore-nii-up-9/articleshow/135359927.cms",
-      "time": "Fri, 30 Oct 2026 17:19:21 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Coforge among 6 stocks hitting 52-week highs; rally up to 20% in a month ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/coforge-among-6-stocks-hitting-52-week-highs-rally-up-to-20-in-a-month/slideshow/135359688.cms",
-      "time": "Fri, 30 Oct 2026 17:02:58 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "8 midcap stocks with over 100% profit growth in Q2FY27 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/8-midcap-stocks-with-over-100-profit-growth-in-q2fy27/slideshow/135358493.cms",
-      "time": "Fri, 30 Oct 2026 16:36:25 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Aditya Birla Capital Q2 profit rises 38% to Rs 1,288-cr ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/aditya-birla-capital-q2-profit-rises-38-to-rs-1288-cr/articleshow/135357711.cms",
-      "time": "Fri, 30 Oct 2026 16:30:02 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Market wrap:  Shriram Finance, Nestle India, Trent, InterGlobe top gainers and losers on Nifty and Sensex on Friday ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-wrap-shriram-finance-nestle-india-trent-interglobe-top-gainers-and-losers-on-nifty-and-sensex-on-friday/articleshow/135357312.cms",
-      "time": "Fri, 30 Oct 2026 16:26:50 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sebi issues final order against Axis Capital, imposes regulatory censure; Axis Bank shares fall over 1% ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-issues-final-order-against-axis-capital-imposes-regulatory-censure-axis-bank-shares-fall-over-1/articleshow/135357153.cms",
-      "time": "Fri, 30 Oct 2026 16:15:07 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Asian Paints\u2019 consolidated profit jumps 7.5% YoY in Q2 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/asian-paints-consolidated-profit-jumps-7-5-yoy-in-q2/articleshow/135356862.cms",
-      "time": "Fri, 30 Oct 2026 16:08:58 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sensex rises 308 points, Nifty above 23,000 even as broader markets crash. Will D-Street bulls extend recovery next week? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/sensex-rises-308-points-nifty-above-23000-even-as-broader-markets-crash-will-d-street-bulls-extend-recovery-next-week/articleshow/135356125.cms",
-      "time": "Fri, 30 Oct 2026 16:05:37 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "FIIs hold $717 billion worth of Indian stocks, but trim exposure across 56% of Nifty 500 companies.  Where are they investing? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/fiis-hold-717-billion-worth-of-indian-stocks-but-trim-exposure-across-56-of-nifty-500-companies-where-are-they-investing/articleshow/135353242.cms",
-      "time": "Fri, 30 Oct 2026 14:37:37 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Sun Pharma Q2 Results: Profit falls 36% YoY to Rs 1,989 crore on exceptional charges ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/sun-pharma-q2-results-profit-falls-36-yoy-to-rs-1989-crore-on-exceptional-charges/articleshow/135352681.cms",
-      "time": "Fri, 30 Oct 2026 14:32:06 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Varun Beverages shares fall over 4% as Q3 margin pressure weighs despite a 33% YoY revenue growth ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/varun-beverages-shares-fall-over-4-as-q3-margin-pressure-weighs-despite-a-33-yoy-revenue-growth/articleshow/135352713.cms",
-      "time": "Fri, 30 Oct 2026 14:23:44 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Reliance Industries Q2 Results 2026 Live: RIL Q2 profit jumps 41% YoY to Rs 25,548 crore; co posts highest-ever quarterly revenue; Jio ARPU rises to Rs 218.8 ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/live-blog/ril-jio-platforms-q2-results-2026-live-updates-reliance-industries-jpl-quarter-2-earnings-result-fy27-revenue-dividend-share-price/liveblog/135351601.cms",
-      "time": "Fri, 30 Oct 2026 13:57:39 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Coal India shares fall 3% after Q2 results; Jefferies, Motilal Oswal, others cut target price ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/coal-india-shares-fall-3-after-q2-results-jefferies-motilal-oswal-others-cut-target-price/articleshow/135349282.cms",
-      "time": "Fri, 30 Oct 2026 12:46:49 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Explained: Why AI giants Google, Amazon, Intel shares crashed up to 23% in a single day ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/explained-why-ai-giants-google-amazon-intel-shares-crashed-up-to-23-in-a-single-day/articleshow/135349077.cms",
-      "time": "Fri, 30 Oct 2026 12:39:40 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Equitas SFB shares tumble 27% in 2 days on CEO exit. More pain ahead? ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/news/equitas-sfb-shares-tumble-27-in-2-days-on-ceo-exit-more-pain-ahead/articleshow/135348776.cms",
-      "time": "Fri, 30 Oct 2026 12:35:04 +0530",
       "source": "ET Markets"
     }
   ]
