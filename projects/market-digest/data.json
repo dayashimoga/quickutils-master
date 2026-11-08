@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-07T04:55:23.139652Z",
+  "updatedAt": "2026-11-08T04:48:17.704652Z",
   "marketData": {
     "regional": {
       "nifty": {
@@ -257,7 +257,7 @@
         ]
       },
       "nasdaq": {
-        "current": 24579.42,
+        "current": 24579.43,
         "history_30d": [
           26820.38,
           26797.54,
@@ -288,7 +288,7 @@
           25372.01,
           25736.51,
           24315.0,
-          24579.42
+          24579.43
         ],
         "delta_1d": 1.09,
         "delta_1w": -3.37,
@@ -305,15 +305,15 @@
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 25071.01,
-          "stop_loss": 23350.45,
+          "target": 25071.02,
+          "stop_loss": 23350.46,
           "strength": "Neutral"
         },
         "forecast_7d": [
           25206.91,
           25127.31,
-          25047.7,
-          24968.1,
+          25047.71,
+          24968.11,
           24888.5,
           24808.9,
           24729.3
@@ -511,9 +511,8 @@
     },
     "crypto": {
       "btc": {
-        "current": 75783.64,
+        "current": 75759.14,
         "history_30d": [
-          81676.34,
           82546.32,
           82912.23,
           83679.47,
@@ -542,41 +541,41 @@
           77345.05,
           80405.29,
           75942.12,
-          75783.64
+          75746.93,
+          75759.14
         ],
-        "delta_1d": -0.21,
-        "delta_1w": -3.15,
-        "delta_1m": -7.01,
-        "delta_3m": -5.06,
-        "delta_6m": 20.12,
-        "delta_1y": -26.69,
+        "delta_1d": 0.02,
+        "delta_1w": -1.2,
+        "delta_1m": -6.91,
+        "delta_3m": -5.71,
+        "delta_6m": 19.22,
+        "delta_1y": -25.93,
         "signal": "Strong Sell",
-        "rsi": 38.19,
+        "rsi": 38.15,
         "macd": {
-          "macd": -1394.39,
-          "signal": -1077.7,
-          "hist": -316.69
+          "macd": -1485.71,
+          "signal": -1159.77,
+          "hist": -325.94
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 77299.31,
-          "stop_loss": 71994.46,
+          "target": 77274.32,
+          "stop_loss": 71971.18,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          77061.69,
-          76839.49,
-          76617.29,
-          76395.09,
-          76172.89,
-          75950.69,
-          75728.49
+          76510.27,
+          76265.3,
+          76020.33,
+          75775.36,
+          75530.39,
+          75285.42,
+          75040.45
         ]
       },
       "eth": {
-        "current": 2240.19,
+        "current": 2231.9,
         "history_30d": [
-          2471.91,
           2485.54,
           2504.03,
           2534.7,
@@ -605,41 +604,41 @@
           2272.73,
           2422.31,
           2234.48,
-          2240.19
+          2235.05,
+          2231.9
         ],
-        "delta_1d": 0.26,
-        "delta_1w": -1.45,
-        "delta_1m": -7.42,
-        "delta_3m": -9.7,
-        "delta_6m": 25.92,
-        "delta_1y": -34.79,
+        "delta_1d": -0.14,
+        "delta_1w": -0.76,
+        "delta_1m": -7.0,
+        "delta_3m": -11.24,
+        "delta_6m": 25.18,
+        "delta_1y": -34.36,
         "signal": "Strong Sell",
-        "rsi": 40.06,
+        "rsi": 39.38,
         "macd": {
-          "macd": -58.64,
-          "signal": -60.85,
-          "hist": 2.21
+          "macd": -59.96,
+          "signal": -60.74,
+          "hist": 0.78
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 2284.99,
-          "stop_loss": 2128.18,
+          "target": 2276.54,
+          "stop_loss": 2120.3,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          2235.73,
-          2226.72,
-          2217.71,
-          2208.7,
-          2199.7,
-          2190.69,
-          2181.68
+          2223.06,
+          2213.76,
+          2204.46,
+          2195.16,
+          2185.86,
+          2176.57,
+          2167.27
         ]
       },
       "sol": {
-        "current": 89.89,
+        "current": 88.89,
         "history_30d": [
-          109.44,
           109.14,
           110.03,
           111.24,
@@ -668,35 +667,36 @@
           92.92,
           95.49,
           89.14,
-          89.89
+          90.06,
+          88.89
         ],
-        "delta_1d": 0.84,
-        "delta_1w": -4.83,
-        "delta_1m": -13.82,
-        "delta_3m": -12.89,
-        "delta_6m": 10.09,
-        "delta_1y": -44.41,
+        "delta_1d": -1.3,
+        "delta_1w": -3.21,
+        "delta_1m": -13.96,
+        "delta_3m": -16.5,
+        "delta_6m": 9.17,
+        "delta_1y": -43.78,
         "signal": "Strong Sell",
-        "rsi": 30.67,
+        "rsi": 29.74,
         "macd": {
-          "macd": -4.52,
-          "signal": -3.83,
-          "hist": -0.69
+          "macd": -4.66,
+          "signal": -4.0,
+          "hist": -0.67
         },
         "pattern": {
           "pattern": "Consolidation",
-          "target": 91.69,
-          "stop_loss": 85.4,
+          "target": 90.67,
+          "stop_loss": 84.45,
           "strength": "Neutral"
         },
         "forecast_7d": [
-          91.48,
-          90.83,
-          90.18,
-          89.53,
-          88.88,
-          88.23,
-          87.58
+          90.39,
+          89.72,
+          89.04,
+          88.37,
+          87.69,
+          87.02,
+          86.34
         ]
       }
     },
@@ -1146,7 +1146,7 @@
       ]
     },
     "crudeOil": {
-      "current": 97.76,
+      "current": 98.32,
       "history_30d": [
         105.28,
         102.59,
@@ -1177,35 +1177,35 @@
         103.6,
         94.62,
         98.29,
-        97.76
+        98.32
       ],
-      "delta_1d": -0.54,
-      "delta_1w": -16.9,
-      "delta_1m": -6.25,
-      "delta_3m": 9.95,
-      "delta_6m": -6.19,
-      "delta_1y": 54.24,
+      "delta_1d": 0.03,
+      "delta_1w": -16.42,
+      "delta_1m": -5.72,
+      "delta_3m": 10.58,
+      "delta_6m": -5.65,
+      "delta_1y": 54.52,
       "signal": "Sell",
-      "rsi": 38.77,
+      "rsi": 39.36,
       "macd": {
-        "macd": -0.79,
-        "signal": 1.48,
-        "hist": -2.27
+        "macd": -0.74,
+        "signal": 1.49,
+        "hist": -2.23
       },
       "pattern": {
         "pattern": "Consolidation",
-        "target": 99.72,
-        "stop_loss": 92.87,
+        "target": 100.29,
+        "stop_loss": 93.4,
         "strength": "Neutral"
       },
       "forecast_7d": [
-        109.0,
-        109.17,
-        109.33,
-        109.49,
-        109.66,
-        109.82,
-        109.98
+        109.08,
+        109.24,
+        109.41,
+        109.58,
+        109.75,
+        109.91,
+        110.08
       ]
     },
     "inflation": {
@@ -1214,6 +1214,96 @@
     }
   },
   "newsData": [
+    {
+      "title": "\u200bMarket Trading Guide: ITC, ICICI Bank among 5 stock recommendations for Muhurat trading session ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/market-trading-guide-itc-icici-bank-among-5-stock-recommendations-for-muhurat-trading-session/slideshow/135651235.cms",
+      "time": "Sun, 08 Nov 2026 09:39:18 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Hindalco Share Price Live Updates: Hindalco Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/hindalco-share-price-live-08-nov-2026/liveblog/135650037.cms",
+      "time": "Sun, 08 Nov 2026 08:30:08 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Titan Company Share Price Live Updates: Titan Company  Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/titan-company-stock-price-today-live-08-nov-2026/liveblog/135649916.cms",
+      "time": "Sun, 08 Nov 2026 08:17:28 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "ONGC Share Price Live Updates: ONGC Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/ongc-share-price-live-updates-08-nov-2026/liveblog/135649889.cms",
+      "time": "Sun, 08 Nov 2026 08:15:34 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Tata Consumer Share Price Live Updates: Tata Consumer Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/tata-consumer-stock-price-live-updates-08-nov-2026/liveblog/135649792.cms",
+      "time": "Sun, 08 Nov 2026 08:03:11 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dr Reddys Share Price Live Updates: Dr. Reddys Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/dr-reddys-stock-price-today-live-08-nov-2026/liveblog/135649786.cms",
+      "time": "Sun, 08 Nov 2026 08:02:51 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Bajaj Finance Share Price Live Updates: Bajaj Finance Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/bajaj-finance-share-price-today-live-08-nov-2026/liveblog/135649777.cms",
+      "time": "Sun, 08 Nov 2026 08:01:50 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Axis Bank Share Price Live Updates: Axis Bank's Current Price Surge ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/axis-bank-share-price-live-08-nov-2026/liveblog/135649766.cms",
+      "time": "Sun, 08 Nov 2026 08:01:23 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "UPL Share Price Live Updates: UPL  Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/upl-stock-price-livestock-price-today-live-updates-08-nov-2026/liveblog/135649756.cms",
+      "time": "Sun, 08 Nov 2026 08:00:55 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Maruti Suzuki Share Price Live Updates: Maruti Suzuki's Daily Price Movement ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/maruti-suzuki-share-price-live-updates-08-nov-2026/liveblog/135649750.cms",
+      "time": "Sun, 08 Nov 2026 08:00:40 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Apollo Hospital Share Price Live Updates: Apollo Hospital Stock Details ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/apollo-hospital-share-price-today-live-updates-08-nov-2026/liveblog/135649748.cms",
+      "time": "Sun, 08 Nov 2026 08:00:34 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Dalal Street Week Ahead: Nifty bulls come back to life, but 25,000\u201325,200 zone poses next test ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-nifty-bulls-come-back-to-life-but-2500025200-zone-poses-next-test/articleshow/135634291.cms",
+      "time": "Sat, 07 Nov 2026 16:37:31 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Concurrent Gainers: 9 stocks gain for 5 days in a row ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/concurrent-gainers-9-stocks-gain-for-5-days-in-a-row/slideshow/135631187.cms",
+      "time": "Sat, 07 Nov 2026 13:41:56 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Patakha stock picks! ICICI Bank, BEL, 6 other stocks with 62% to buy this Samvat 2083. See full list ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/patakha-stock-picks-icici-bank-bel-6-other-stocks-with-62-to-buy-this-samvat-2023-see-full-list/slideshow/135627923.cms",
+      "time": "Sat, 07 Nov 2026 11:13:51 +0530",
+      "source": "ET Markets"
+    },
+    {
+      "title": "Diwali shagun ke shares! Angel One selects 8 stocks with up to 50% upside to Buy this Diwali. How many do you own? ",
+      "link": "https://economictimes.indiatimes.com/markets/stocks/news/diwali-shagun-ke-shares-angel-one-selects-8-stocks-with-up-to-50-upside-to-buy-this-diwali-how-many-do-you-own/slideshow/135626837.cms",
+      "time": "Sat, 07 Nov 2026 10:14:51 +0530",
+      "source": "ET Markets"
+    },
     {
       "title": "Siemens Q2 Results: Profit grows 5% to Rs 504 crore ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/siemens-q2-results-profit-grows-5-to-rs-504-crore/articleshow/135605589.cms",
@@ -1302,96 +1392,6 @@
       "title": "L&amp;T Share Price Highlights: L&amp;T Stock Price History ",
       "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/lt-stock-price-live-updates-06-nov-2026/liveblog/135592148.cms",
       "time": "Fri, 06 Nov 2026 09:05:05 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Power Grid Share Price Highlights: Power Grid Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/power-grid-share-price-live-06-nov-2026/liveblog/135591983.cms",
-      "time": "Fri, 06 Nov 2026 08:55:24 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "BPCL Share Price Highlights: BPCL Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/bpcl-share-price-today-live-06-nov-2026/liveblog/135591973.cms",
-      "time": "Fri, 06 Nov 2026 08:55:06 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "ONGC Share Price Highlights: ONGC Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/ongc-stock-price-today-live-06-nov-2026/liveblog/135591741.cms",
-      "time": "Fri, 06 Nov 2026 08:42:29 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "UPL Share Price Highlights: UPL Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/upl-share-price-today-live-06-nov-2026/liveblog/135591691.cms",
-      "time": "Fri, 06 Nov 2026 08:40:50 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Hindalco Share Price Highlights: Hindalco Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/hindalco-share-price-live-updates-06-nov-2026/liveblog/135591679.cms",
-      "time": "Fri, 06 Nov 2026 08:40:32 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "IndusInd Bank Share Price Highlights: IndusInd Bank Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/indusind-bank-share-price-today-live-06-nov-2026/liveblog/135591674.cms",
-      "time": "Fri, 06 Nov 2026 08:40:23 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Gold, Silver Price Live updates: Check latest gold and silver prices on Dhanteras. Check 22K, 24K physical rates today (November 6) ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/live-blog/gold-silver-rates-live-updates-22k-24k-18k-mcx-gold-silver-price-on-dhanteras-6th-november-city-wise-latest-gold-news/liveblog/135591659.cms",
-      "time": "Fri, 06 Nov 2026 08:35:52 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Hero MotoCorp Share Price Highlights: Hero MotoCorp Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/hero-motocorp-stock-price-live-updates-06-nov-2026/liveblog/135591447.cms",
-      "time": "Fri, 06 Nov 2026 08:30:42 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "NTPC Share Price Highlights: NTPC Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/ntpc-stock-price-today-live-06-nov-2026/liveblog/135591438.cms",
-      "time": "Fri, 06 Nov 2026 08:30:24 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bajaj Finance Share Price Highlights: Bajaj Finance Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/bajaj-finance-share-price-live-updates-06-nov-2026/liveblog/135591433.cms",
-      "time": "Fri, 06 Nov 2026 08:30:11 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Coal India Share Price Highlights: Coal India Ltd Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/coal-india-ltd-stock-price-live-updates-06-nov-2026/liveblog/135591382.cms",
-      "time": "Fri, 06 Nov 2026 08:27:30 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "SBI Share Price Highlights: SBI Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/sbi-share-price-today-live-updates-06-nov-2026/liveblog/135591353.cms",
-      "time": "Fri, 06 Nov 2026 08:25:54 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Bajaj Finserv Share Price Highlights: Bajaj Finserv Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/bajaj-finserv-share-price-today-live-updates-06-nov-2026/liveblog/135591337.cms",
-      "time": "Fri, 06 Nov 2026 08:25:30 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Divis Labs Share Price Highlights: Divis Labs Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/divis-labs-share-price-today-live-06-nov-2026/liveblog/135591251.cms",
-      "time": "Fri, 06 Nov 2026 08:21:56 +0530",
-      "source": "ET Markets"
-    },
-    {
-      "title": "Tata Motors PV Share Price Highlights: Tata Motors PV Stock Price History ",
-      "link": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/tata-motors-pv-stock-price-live-updates-06-nov-2026/liveblog/135591235.cms",
-      "time": "Fri, 06 Nov 2026 08:20:56 +0530",
       "source": "ET Markets"
     }
   ]
